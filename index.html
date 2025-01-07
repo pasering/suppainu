@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>レベルアップシミュレーター</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+background-color: #f0f0f0;
+color: #333;
+margin: 20px;
+}
+h1 {
+text-align: center;
+color: #4CAF50;
+}
+table {
+width: 100%;
+border-collapse: collapse;
+margin-bottom: 20px;
+}
+th, td {
+border: 1px solid #ddd;
+padding: 8px;
+text-align: center;
+}
+th {
+background-color: #4CAF50;
+color: white;
+}
+.parameter {
+margin-bottom: 10px;
+}
+button {
+padding: 5px 10px;
+background-color: #4CAF50;
+color: white;
+border: none;
+cursor: pointer;
+}
+button:hover {
+background-color: #45a049;
+}
+#battleLog {
+margin-top: 20px;
+border: 1px solid #ddd;
+padding: 10px;
+background-color: #fff;
+font-size: 0.9em;
+}
+.player-log {
+color: blue;
+}
+.opponent-log {
+color: red;
+}
+.result-log {
+font-size: 1.5em;
+font-weight: bold;
+}
+#highScore {
+font-size: 1.5em;
+font-weight: bold;
+color: #4CAF50;
+}
+</style>
+</head>
+<body>
+<h1>レベルアップシミュレーター</h1>
+<p>ハイスコア: <span id="highScore">0</span></p>
+<table>
+<thead>
+<tr>
+<th>パラメーター</th>
+<th>現在の値</th>
+<th>操作</th>
+<th>次の成功率</th>
+</tr>
+</thead>
+<tbody id="parameters"></tbody>
+</table>
+<div>
+<p>残りスキルポイント: <span id="remainingPoints">50</span></p>
+<p>現在のレベル: <span id="currentLevel">1</span></p>
+<button onclick="levelUp()">レベルアップ</button>
+<button onclick="levelUpMultiple(10)">10LVUP</button>
+<button onclick="levelUpMax()">LVMAX</button>
+<button onclick="resetGame()">リセット</button>
+<button id="mockBattleButton" onclick="startMockBattle()">模擬戦</button>
+</div>
+<div id="battleLog" style="display:none;"></div>
+<script>
+const initialPoints = 50;
+let remainingPoints = initialPoints;
+let currentLevel = 1;
+let highScore = 0;
+const parameters = [
+{ name: '攻撃力', value: 1, failCount: 0 },
+{ name: '防御力', value: 1, failCount: 0 },
+{ name: '体力', value: 1, failCount: 0 },
+{ name: '素早さ', value: 1, failCount: 0 },
+{ name: '賢さ', value: 1, failCount: 0 },
+{ name: '運の良さ', value: 1, failCount: 0 }
+];
+
+function calculateSuccessRate(value, failCount) {
+let baseRate = Math.max(1, 100 - value);
+for (let i = 0; i < failCount; i++) {
+baseRate += baseRate * 0.3;
+}
+return Math.min(baseRate, 90);
+}
+
+function updateDisplay() {
+const parametersTbody = document.getElementById('parameters');
+parametersTbody.innerHTML = '';
+parameters.forEach((param, index) => {
+const successRate = calculateSuccessRate(param.value, param.failCount);
+parametersTbody.innerHTML += `
+<tr>
+<td>${param.name}</td>
+<td>${param.value}</td>
+<td>
+<button onclick="increaseParameter(${index})">UP</button>
+<button onclick="increaseParameterMultiple(${index}, 10)">×10回</button>
+</td>
+<td>${successRate.toFixed(2)}%</td>
+</tr>
+`;
+});
+document.getElementById('remainingPoints').innerText = remainingPoints;
+document.getElementById('currentLevel').innerText = currentLevel;
+document.getElementById('highScore').innerText = highScore;
+}
+
+function increaseParameter(index) {
+if (remainingPoints > 0) {
+const param = parameters[index];
+const successRate = calculateSuccessRate(param.value, param.failCount);
+if (Math.random() * 100 < successRate) {
+param.value += 1;
+param.failCount = 0;
+} else {
+param.failCount += 1;
+}
+remainingPoints -= 1;
+updateDisplay();
+}
+}
+
+function increaseParameterMultiple(index, times) {
+for (let i = 0; i < times; i++) {
+if (remainingPoints > 0) {
+increaseParameter(index);
+} else {
+break;
+}
+}
+}
+
+function levelUp() {
+if (currentLevel < 50) {
+remainingPoints += 10;
+currentLevel += 1;
+updateDisplay();
+} else {
+alert("最大レベルに達しました！");
+}
+}
+
+function levelUpMultiple(times) {
+for (let i = 0; i < times; i++) {
+if (currentLevel < 50) {
+levelUp();
+} else {
+break;
+}
+}
+}
+
+function levelUpMax() {
+while (currentLevel < 50) {
+levelUp();
+}
+}
+
+function resetGame() {
+remainingPoints = initialPoints;
+currentLevel = 1;
+parameters.forEach(param => {
+param.value = 1;
+param.failCount = 0;
+});
+updateDisplay();
+}
+
+function startMockBattle() {
+const battleLog = document.getElementById('battleLog');
+battleLog.style.display = 'block';
+battleLog.innerHTML = '';
+const opponent = {
+攻撃力: 80,
+防御力: 80,
+体力: 80,
+素早さ: 80,
+賢さ: 80,
+運の良さ: 80
+};
+const player = {};
+parameters.forEach(param => {
+player[param.name] = param.value + Math.floor(param.value * 0.25);
+});
+player.体力 = player.体力 || 1; // Ensure player has some health
+
+let totalDamage = 0;
+let criticalHits = 0;
+let consecutiveAttacks = 0;
+
+function logBattle(message, className) {
+battleLog.innerHTML += `<p class="${className}">${message}</p>`;
+}
+
+function calculateDamage(attacker, defender) {
+let damage = Math.ceil((attacker.攻撃力 - defender.防御力 / 2) * 0.1);
+damage = Math.max(damage, 1); // Ensure damage is at least 1
+if (Math.random() * 100 < attacker.運の良さ / 2) {
+damage += Math.ceil(damage * (attacker.運の良さ / 100));
+logBattle(`クリティカルヒット！ダメージが増加しました。`, attacker === player ? 'player-log' : 'opponent-log');
+if (attacker === player) criticalHits++;
+}
+return damage;
+}
+
+function battleTurn(attacker, defender, attackerName, defenderName, className) {
+if (Math.random() * 100 < (defender.素早さ + defender.運の良さ) * 0.2) {
+logBattle(`${attackerName}の攻撃は避けられた！`, className);
+return false;
+}
+let damage = calculateDamage(attacker, defender);
+defender.体力 -= damage;
+logBattle(`${attackerName}の攻撃！${defenderName}に${damage}のダメージ。残り体力: ${defender.体力}`, className);
+if (attacker === player) totalDamage += damage;
+if (defender.体力 <= 0) {
+logBattle(`${defenderName}は倒れた！`, className);
+return true;
+}
+return false;
+}
+
+function battle() {
+let playerTurn = player.素早さ >= opponent.素早さ;
+while (player.体力 > 0 && opponent.体力 > 0) {
+if (playerTurn) {
+if (battleTurn(player, opponent, 'プレイヤー', '相手', 'player-log')) {
+logBattle('プレイヤーの勝利！', 'result-log');
+break;
+}
+if (Math.random() * 100 < (player.素早さ - opponent.素早さ)) {
+logBattle('プレイヤーの連続攻撃！', 'player-log');
+consecutiveAttacks++;
+continue;
+}
+} else {
+if (battleTurn(opponent, player, '相手', 'プレイヤー', 'opponent-log')) {
+logBattle('相手の勝利...', 'result-log');
+break;
+}
+if (Math.random() * 100 < (opponent.素早さ - player.素早さ)) {
+logBattle('相手の連続攻撃！', 'opponent-log');
+continue;
+}
+}
+playerTurn = !playerTurn;
+}
+const score = (totalDamage + player.体力 + criticalHits + consecutiveAttacks) * (70 - currentLevel);
+logBattle(`スコア: ${score}`, 'result-log');
+if (score > highScore) {
+highScore = score;
+logBattle(`新しいハイスコア: ${highScore}`, 'result-log');
+}
+document.getElementById('highScore').innerText = highScore;
+}
+
+battle();
+}
+
+updateDisplay();
+</script>
+<br><br>
+<div style="font-size: 0.9em;">
+操作説明<br>
+・初期ステータスポイント50を使って各種ステータスを好きに上昇させてください。<br>
+・ステータスポイント１ポイントにつき1回、上昇成功の判定を行います。<br>
+・ステータスが高くなればなるほど、上昇成功率は下がっていきます。<br>
+・ステータス上昇を失敗するごとに次の成功率にボーナスが入ります。最大成功率は90％です。<br> 
+・レベルアップボタンを押すとレベルが上がり、ステータスポイントが10追加されます。<br>
+・最大レベルは50です。レベルが50に達すると、それ以上レベルアップできません。<br>
+・「模擬戦」ボタンを押すとCPUと対戦します。<br>
+・低いレベルで勝利するほどスコアが大きくなります。<br>
+</div>
+</body>
+</html>
