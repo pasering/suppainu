@@ -31,16 +31,24 @@ td.success-rate { background-color: #fff3e0; }
 .tooltip { position: relative; display: inline-block; }
 .tooltip .tooltiptext { visibility: hidden; width: 120px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; }
 .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+#itemContainer { display: flex; flex-direction: column; align-items: flex-start; }
+#itemList { border: 1px solid #ddd; padding: 10px; background-color: #fff; display: flex; flex-direction: row; flex-wrap: wrap; }
+.item { margin-right: 10px; }
+#itemGachaButton { background-color: red; font-size: 1.5em; }
 </style>
 </head>
 <body>
 <h1>乱数コロシアム</h1>
-<button class="uniform-button" onclick="resetHighScore()">ハイスコアリセット</button>
 <p>ハイスコア: <span id="highScore">0</span></p>
 <button class="uniform-button" onclick="levelUp()">レベルアップ</button>
 <button class="uniform-button" onclick="levelUpMultiple(10)">10LVUP</button>
 <button class="uniform-button" onclick="levelUpMax()">LVMAX</button>
-<button class="uniform-button" onclick="resetGame()">リセット</button>
+<button class="uniform-button" onclick="resetGame()">LVリセット</button>　
+<button class="uniform-button" onclick="resetHighScore()">ハイスコアリセット</button>
+
+<p>現在のレベル: <span id="currentLevel">1</span>　　残りステータスポイント: <span id="remainingPoints">50</span></p>
+
+
 <table>
 <thead>
 <tr><th>パラメーター</th><th>攻撃力</th><th>防御力</th><th>体力</th><th>素早さ</th><th>賢さ</th><th>運の良さ</th></tr>
@@ -58,10 +66,20 @@ td.success-rate { background-color: #fff3e0; }
 <tr class="success-rate"><td>成功率</td><td id="攻撃力成功率"></td><td id="防御力成功率"></td><td id="体力成功率"></td><td id="素早さ成功率"></td><td id="賢さ成功率"></td><td id="運の良さ成功率"></td></tr>
 </tbody>
 </table>
+<table style="width: 100%;">
+<tr>
+<td style="width: 25%;"><button id="itemGachaButton" class="uniform-button" onclick="itemGacha()">アイテムガチャ</button></td>
+<td style="width: 25%;" id="item1">アイテムなし</td>
+<td style="width: 25%;" id="item2">アイテムなし</td>
+<td style="width: 25%;" id="item3">アイテムなし</td>
+</tr>
+</table>
+<p>アイテムガチャ、何度でも引き直しＯＫ！1回２０ポイント！</p>
+<hr>
 <div>
 <input type="text" id="playerName" placeholder="プレイヤー名を入力">
-<p>現在のレベル: <span id="currentLevel">1</span></p>
-<p>残りステータスポイント: <span id="remainingPoints">50</span></p>
+<hr>
+
 <div class="tooltip"><button id="mockBattleButton" class="special-button slime-button" onclick="startMockBattle('スライム')">スライムと戦う</button>
 <span class="tooltiptext" id="slimeStats"></span></div>
 <div class="tooltip"><button id="mockBattleButton" class="special-button gorilla-button" onclick="startMockBattle('ゴリラ')">ゴリラと戦う</button>
@@ -74,6 +92,25 @@ td.success-rate { background-color: #fff3e0; }
 const initialPoints = 50;
 let remainingPoints = initialPoints, currentLevel = 1, highScore = 0;
 const parameters = [{ name: '攻撃力', value: 1, failCount: 0 }, { name: '防御力', value: 1, failCount: 0 }, { name: '体力', value: 1, failCount: 0 }, { name: '素早さ', value: 1, failCount: 0 }, { name: '賢さ', value: 1, failCount: 0 }, { name: '運の良さ', value: 1, failCount: 0 }];
+const items = [
+{ name: '包丁', effect: { '攻撃力': 5 } },
+{ name: '鋼の剣', effect: { '攻撃力': 10 } },
+{ name: '伝説の剣', effect: { '攻撃力': 15 } },
+{ name: '革ジャン', effect: { '防御力': 5 } },
+{ name: '防弾チョッキ', effect: { '防御力': 10 } },
+{ name: '戦闘用ダイヤの鎧', effect: { '防御力': 15 } },
+{ name: 'スニーカー', effect: { '素早さ': 5 } },
+{ name: '俊足', effect: { '素早さ': 10 } },
+{ name: 'ジェットシューズ', effect: { '素早さ': 15 } },
+{ name: '解体新書', effect: { 'クリティカル発生確率': 10 } },
+{ name: 'サーカスの服', effect: { '攻撃回避率': 10 } },
+{ name: 'ポーション', effect: { '体力': 10 } },
+{ name: 'ハイポーション', effect: { '体力': 20 } },
+{ name: '招き猫', effect: { '運の良さ': 10 } },
+{ name: 'ただのゴミ', effect: { '効果なし': 00 } }
+];
+
+let acquiredItems = [];
 
 function calculateSuccessRate(value, failCount) {
 let baseRate = Math.max(1, 100 - value);
@@ -90,6 +127,9 @@ document.getElementById(param.name + '成功率').innerText = successRate.toFixe
 document.getElementById('remainingPoints').innerText = remainingPoints;
 document.getElementById('currentLevel').innerText = currentLevel;
 document.getElementById('highScore').innerText = highScore;
+document.getElementById('item1').innerHTML = acquiredItems[0] ? `<div class="tooltip item">${acquiredItems[0].name}<span class="tooltiptext">${Object.entries(acquiredItems[0].effect).map(([key, value]) => `${key}: ${value}`).join('<br>')}</span></div>` : 'アイテムなし';
+document.getElementById('item2').innerHTML = acquiredItems[1] ? `<div class="tooltip item">${acquiredItems[1].name}<span class="tooltiptext">${Object.entries(acquiredItems[1].effect).map(([key, value]) => `${key}: ${value}`).join('<br>')}</span></div>` : 'アイテムなし';
+document.getElementById('item3').innerHTML = acquiredItems[2] ? `<div class="tooltip item">${acquiredItems[2].name}<span class="tooltiptext">${Object.entries(acquiredItems[2].effect).map(([key, value]) => `${key}: ${value}`).join('<br>')}</span></div>` : 'アイテムなし';
 }
 
 function increaseParameter(index) {
@@ -109,8 +149,7 @@ updateDisplay();
 
 function increaseParameterMultiple(index, times) {
 for (let i = 0; i < times; i++) {
-if (remainingPoints > 0
-) increaseParameter(index);
+if (remainingPoints > 0) increaseParameter(index);
 else break;
 }
 }
@@ -138,12 +177,28 @@ function resetGame() {
 remainingPoints = initialPoints;
 currentLevel = 1;
 parameters.forEach(param => { param.value = 1; param.failCount = 0; });
+acquiredItems = [];
 updateDisplay();
 }
 
 function resetHighScore() {
 highScore = 0;
 document.getElementById('highScore').innerText = highScore;
+}
+
+function itemGacha() {
+if (remainingPoints < 20) {
+alert("ステータスポイントが足りません！");
+return;
+}
+remainingPoints -= 20;
+const selectedItems = [];
+while (selectedItems.length < 3) {
+const item = items[Math.floor(Math.random() * items.length)];
+if (!selectedItems.includes(item)) selectedItems.push(item);
+}
+acquiredItems = selectedItems;
+updateDisplay();
 }
 
 function startMockBattle(opponentType) {
@@ -163,6 +218,13 @@ player[param.name] = param.value + (param.name !== '賢さ' ? intelligenceBonus 
 opponent[param.name] += (param.name !== '賢さ' ? opponentIntelligenceBonus : 0);
 });
 player.体力 = player.体力 || 1; // Ensure player has some health
+
+// Apply item effects
+acquiredItems.forEach(item => {
+Object.entries(item.effect).forEach(([key, value]) => {
+player[key] += value;
+});
+});
 
 let totalDamage = 0, criticalHits = 0, consecutiveAttacks = 0;
 
@@ -262,4 +324,3 @@ updateDisplay();
 </div>
 </body>
 </html>
-
