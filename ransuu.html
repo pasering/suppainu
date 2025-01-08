@@ -38,7 +38,8 @@ td.success-rate { background-color: #fff3e0; }
 </style>
 </head>
 <body>
-<h1>乱数コロシアム</h1>
+<h1>乱数コロシアム</h1><h2>  ver0.01</h2>
+
 <p>ハイスコア: <span id="highScore">0</span></p>
 <button class="uniform-button" onclick="levelUp()">レベルアップ</button>
 <button class="uniform-button" onclick="levelUpMultiple(10)">10LVUP</button>
@@ -74,7 +75,7 @@ td.success-rate { background-color: #fff3e0; }
 <td style="width: 25%;" id="item3">アイテムなし</td>
 </tr>
 </table>
-<p>アイテムガチャ、何度でも引き直しＯＫ！1回２０ポイント！</p>
+<p>アイテムガチャ、1回２０ポイント！ 何度でも引き直しＯＫ！</p>
 <hr>
 <div>
 <input type="text" id="playerName" placeholder="プレイヤー名を入力">
@@ -285,7 +286,7 @@ continue;
 playerTurn = !playerTurn;
 }
 let scoreMultiplier = opponentType === 'スライム' ? 0.5 : opponentType === 'ゴリラ' ? 0.75 : 1;
-const score = Math.floor((totalDamage + player.体力 + (criticalHits * 2) + (consecutiveAttacks * 2)) * (66 - currentLevel) * scoreMultiplier);
+const score = Math.floor((totalDamage + (player.体力 * 2) + (criticalHits * 2) + (consecutiveAttacks * 2)) * (60 - currentLevel) * scoreMultiplier);
 logBattle(`スコア: ${score}`, 'result-log');
 if (score > highScore) {
 highScore = score;
@@ -320,7 +321,23 @@ updateDisplay();
 ・ステータス強化に失敗すると次は少し成功しやすくなります。<br> 
 ・レベルアップボタンを押すとレベルが上がり、1LVにつき10ポイント追加されます。<br>
 ・最大レベルは50です。レベルが低いほど対戦時のスコアにボーナスが入ります。<br>
-・「〇〇と戦う」ボタンを押すとCPUと対戦します。ハイスコアを目指そう。<br>
+・「〇〇と戦う」ボタンを押すとCPUと対戦します。ハイスコアを目指そう。<br><br><br>
+アイテム一覧<br>
+包丁　攻撃力+5　
+鋼の剣　攻撃力+10　
+伝説の剣　攻撃力+15<br>
+革ジャン　防御力+5　
+防弾チョッキ　防御力+10　
+戦闘用ダイヤの鎧　防御力+15<br>
+スニーカー　素早さ+5　
+俊足　素早さ+10　
+ジェットシューズ　素早さ+15<br>
+解体新書　クリティカル発生確率+10　
+サーカスの服　攻撃回避率+10<br>
+ポーション　体力+10<br>
+ハイポーション　体力+20 <br>
+招き猫　運の良さ+10　
+ただのゴミ　効果なし<br>
 </div>
 </body>
 </html>
