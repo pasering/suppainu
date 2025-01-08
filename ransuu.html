@@ -108,7 +108,7 @@ const items = [
 { name: 'ハイポーション', effect: { '体力': 20 } },
 { name: '四葉のクローバー', effect: { '運の良さ': 10 } },
 { name: '招き猫', effect: { '運の良さ': 15 } },
-{ name: 'ただのゴミ', effect: { '効果なし': 00 } }
+{ name: 'ただのゴミ', effect: { '効果なし': 0 } }
 ];
 
 let acquiredItems = [];
@@ -202,6 +202,16 @@ acquiredItems = selectedItems;
 updateDisplay();
 }
 
+function calculateDodgeRate(player) {
+let dodgeRate = player.素早さ * 0.2 + player.運の良さ * 0.1;
+acquiredItems.forEach(item => {
+if (item.effect['攻撃回避率']) {
+dodgeRate += item.effect['攻撃回避率'];
+}
+});
+return dodgeRate;
+}
+
 function startMockBattle(opponentType) {
 const battleLog = document.getElementById('battleLog');
 battleLog.style.display = 'block';
@@ -245,7 +255,8 @@ return damage;
 }
 
 function battleTurn(attacker, defender, attackerName, defenderName, className) {
-if (Math.random() < 0.2) {
+const dodgeRate = calculateDodgeRate(defender);
+if (Math.random() * 100 < dodgeRate) {
 logBattle(`${attackerName}の攻撃は避けられた！`, className);
 return false;
 }
@@ -313,6 +324,7 @@ document.getElementById('dragonStats').innerHTML = showStats('ドラゴン');
 
 updateDisplay();
 </script>
+
 <br><br>
 <div style="font-size: 0.9em;">
 操作説明<br>
