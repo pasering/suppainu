@@ -38,7 +38,7 @@ td.success-rate { background-color: #fff3e0; }
 </style>
 </head>
 <body>
-<h1>乱数コロシアム</h1><h3>  ver0.03</h3>
+<h1>乱数コロシアム</h1><h3>  ver0.04</h3>
 
 <p>ハイスコア: <span id="highScore">0</span></p>
 <button class="uniform-button" onclick="levelUp()">レベルアップ</button>
@@ -296,7 +296,7 @@ continue;
 }
 playerTurn = !playerTurn;
 }
-let scoreMultiplier = opponentType === 'スライム' ? 0.5 : opponentType === 'ゴリラ' ? 0.75 : 1;
+let scoreMultiplier = opponentType === 'スライム' ? 0.4 : opponentType === 'ゴリラ' ? 0.7 : 1;
 const score = Math.floor((totalDamage + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 4)) * (62 - currentLevel) * scoreMultiplier);
 logBattle(`スコア: ${score}`, 'result-log');
 if (score > highScore) {
