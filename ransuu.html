@@ -304,6 +304,21 @@ highScore = score;
 logBattle(`新しいハイスコア: ${highScore}`, 'result-log');
 }
 document.getElementById('highScore').innerText = highScore;
+
+// 勝利ボーナスを追加
+if (opponent.体力 <= 0) {
+let bonus = 0;
+if (opponentType === 'スライム') {
+bonus = 500;
+} else if (opponentType === 'ゴリラ') {
+bonus = 1000;
+} else if (opponentType === 'ドラゴン') {
+bonus = 2000;
+}
+highScore += bonus;
+logBattle(`勝利ボーナス: ${bonus}点`, 'result-log');
+document.getElementById('highScore').innerText = highScore;
+}
 }
 
 battle();
