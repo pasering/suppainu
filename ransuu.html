@@ -38,7 +38,7 @@ td.success-rate { background-color: #fff3e0; }
 </style>
 </head>
 <body>
-<h1>乱数コロシアム</h1><h3>  ver0.06</h3>
+<h1>乱数コロシアム</h1><h3>  ver0.07</h3>
 
 <p>ハイスコア: <span id="highScore">0</span></p>
 <button class="uniform-button" onclick="levelUp()">レベルアップ</button>
@@ -218,8 +218,8 @@ battleLog.style.display = 'block';
 battleLog.innerHTML = '';
 const opponent = {
 'スライム': { 攻撃力: 30, 防御力: 30, 体力: 40, 素早さ: 30, 賢さ: 20, 運の良さ: 40 },
-'ゴリラ': { 攻撃力: 65, 防御力: 60, 体力: 60, 素早さ: 40, 賢さ: 40, 運の良さ: 20 },
-'ドラゴン': { 攻撃力: 70, 防御力: 70, 体力: 70, 素早さ: 65, 賢さ: 60, 運の良さ: 40 }
+'ゴリラ': { 攻撃力: 65, 防御力: 50, 体力: 60, 素早さ: 40, 賢さ: 40, 運の良さ: 20 },
+'ドラゴン': { 攻撃力: 70, 防御力: 65, 体力: 70, 素早さ: 65, 賢さ: 60, 運の良さ: 40 }
 }[opponentType];
 const player = {};
 const intelligenceBonus = Math.floor(parameters.find(param => param.name === '賢さ').value * 0.25);
@@ -312,8 +312,8 @@ battle();
 function showStats(opponentType) {
 const opponent = {
 'スライム': { 攻撃力: 30, 防御力: 30, 体力: 40, 素早さ: 30, 賢さ: 20, 運の良さ: 40 },
-'ゴリラ': { 攻撃力: 65, 防御力: 60, 体力: 60, 素早さ: 40, 賢さ: 40, 運の良さ: 20 },
-'ドラゴン': { 攻撃力: 70, 防御力: 70, 体力: 70, 素早さ: 65, 賢さ: 60, 運の良さ: 40 }
+'ゴリラ': { 攻撃力: 65, 防御力: 50, 体力: 60, 素早さ: 40, 賢さ: 40, 運の良さ: 20 },
+'ドラゴン': { 攻撃力: 70, 防御力: 65, 体力: 70, 素早さ: 65, 賢さ: 60, 運の良さ: 40 }
 }[opponentType];
 return `攻撃力: ${opponent.攻撃力}<br>防御力: ${opponent.防御力}<br>体力: ${opponent.体力}<br>素早さ: ${opponent.素早さ}<br>賢さ: ${opponent.賢さ}<br>運の良さ: ${opponent.運の良さ}`;
 }
