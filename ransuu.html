@@ -38,7 +38,7 @@ td.success-rate { background-color: #fff3e0; }
 </style>
 </head>
 <body>
-<h1>乱数コロシアム</h1><h3>  ver0.09</h3>
+<h1>乱数コロシアム</h1><h3>  ver0.10</h3>
 
 <p>ハイスコア: <span id="highScore">0</span></p>
 <button class="uniform-button" onclick="levelUp()">レベルアップ</button>
@@ -247,7 +247,7 @@ function calculateDamage(attacker, defender) {
 let damage = Math.ceil((attacker.攻撃力 - ( defender.防御力 - 10 )) * 0.1);
 damage = Math.max(damage, 1); // Ensure damage is at least 1
 if (Math.random() * 100 < attacker.運の良さ / 2) {
-damage += Math.ceil(damage * (attacker.運の良さ / 100));
+damage += Math.ceil(1.2 * damage * (attacker.運の良さ / 100));
 logBattle(`クリティカルヒット！ダメージが増加しました。`, attacker === player ? 'player-log' : 'opponent-log');
 if (attacker === player) criticalHits++;
 }
@@ -273,10 +273,18 @@ return false;
 
 function battle() {
 let playerTurn = player.素早さ >= opponent.素早さ;
+let victoryPoints = 0;
 while (player.体力 > 0 && opponent.体力 > 0) {
 if (playerTurn) {
 if (battleTurn(player, opponent, document.getElementById('playerName').value || 'プレイヤー', opponentType, 'player-log')) {
 logBattle('プレイヤーの勝利！', 'result-log');
+if (opponentType === 'スライム') {
+victoryPoints = 200;
+} else if (opponentType === 'ゴリラ') {
+victoryPoints = 400;
+} else if (opponentType === 'ドラゴン') {
+victoryPoints = 800;
+}
 break;
 }
 if (Math.random() * 100 < (player.素早さ - opponent.素早さ)) {
@@ -296,31 +304,20 @@ continue;
 }
 playerTurn = !playerTurn;
 }
-let scoreMultiplier = opponentType === 'スライム' ? 0.4 : opponentType === 'ゴリラ' ? 0.7 : 1;
-const score = Math.floor((totalDamage + (player.攻撃力 * 1.5) + (player.防御力) + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 4)) * (62 - currentLevel) * scoreMultiplier);
+const scoreMultiplier = opponentType === 'スライム' ? 0.4 : opponentType === 'ゴリラ' ? 0.7 : 1;
+const score = Math.floor((totalDamage + (player.攻撃力 * 1.5) + (player.防御力) + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 4) + victoryPoints) * (62 - currentLevel) * scoreMultiplier);
 logBattle(`スコア: ${score}`, 'result-log');
 if (score > highScore) {
 highScore = score;
 logBattle(`新しいハイスコア: ${highScore}`, 'result-log');
 }
 document.getElementById('highScore').innerText = highScore;
-
-// 勝利ボーナスを追加
-if (opponent.体力 <= 0) {
-let bonus = 0;
-if (opponentType === 'スライム') {
-bonus = 1000;
-} else if (opponentType === 'ゴリラ') {
-bonus = 2000;
-} else if (opponentType === 'ドラゴン') {
-bonus = 4000;
-}
-
-}
 }
 
 battle();
 }
+
+
 
 function showStats(opponentType) {
 const opponent = {
