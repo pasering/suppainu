@@ -244,7 +244,7 @@ battleLog.innerHTML += `<p class="${className}">${message}</p>`;
 }
 
 function calculateDamage(attacker, defender) {
-let damage = Math.ceil((attacker.攻撃力 - defender.防御力 / 2) * 0.1);
+let damage = Math.ceil((attacker.攻撃力 - ( defender.防御力 - 15 )) * 0.1);
 damage = Math.max(damage, 1); // Ensure damage is at least 1
 if (Math.random() * 100 < attacker.運の良さ / 2) {
 damage += Math.ceil(damage * (attacker.運の良さ / 100));
@@ -297,7 +297,7 @@ continue;
 playerTurn = !playerTurn;
 }
 let scoreMultiplier = opponentType === 'スライム' ? 0.4 : opponentType === 'ゴリラ' ? 0.7 : 1;
-const score = Math.floor((totalDamage + (player.防御力 / 2) + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 4)) * (62 - currentLevel) * scoreMultiplier);
+const score = Math.floor((totalDamage + (player.防御力) + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 4)) * (62 - currentLevel) * scoreMultiplier);
 logBattle(`スコア: ${score}`, 'result-log');
 if (score > highScore) {
 highScore = score;
