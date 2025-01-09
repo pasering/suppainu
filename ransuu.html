@@ -305,7 +305,7 @@ continue;
 playerTurn = !playerTurn;
 }
 const scoreMultiplier = opponentType === 'スライム' ? 0.4 : opponentType === 'ゴリラ' ? 0.7 : 1;
-const score = Math.floor((totalDamage + (player.攻撃力 * 1.5) + (player.防御力) + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 4) + victoryPoints) * (62 - currentLevel) * scoreMultiplier);
+const score = Math.floor((totalDamage + (player.攻撃力 * 1.5) + (player.防御力) + (player.体力 * 4) + (criticalHits * 4) + (consecutiveAttacks * 3) + victoryPoints) * (62 - currentLevel) * scoreMultiplier);
 logBattle(`スコア: ${score}`, 'result-log');
 if (score > highScore) {
 highScore = score;
