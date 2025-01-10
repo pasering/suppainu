@@ -38,7 +38,7 @@ td.success-rate { background-color: #fff3e0; }
 </style>
 </head>
 <body>
-<h1>乱数コロシアム</h1><h3>  ver0.10</h3>
+<h1>乱数コロシアム</h1><h3>  ver0.11</h3>
 
 <p>ハイスコア: <span id="highScore">0</span></p>
 <button class="uniform-button" onclick="levelUp()">レベルアップ</button>
@@ -48,7 +48,6 @@ td.success-rate { background-color: #fff3e0; }
 <button class="uniform-button" onclick="resetHighScore()">ハイスコアリセット</button>
 
 <p>現在のレベル: <span id="currentLevel">1</span>　　残りステータスポイント: <span id="remainingPoints">50</span></p>
-
 
 <table>
 <thead>
@@ -88,6 +87,16 @@ td.success-rate { background-color: #fff3e0; }
 <div class="tooltip"><button id="mockBattleButton" class="special-button dragon-button" onclick="startMockBattle('ドラゴン')">ドラゴンと戦う</button>
 <span class="tooltiptext" id="dragonStats"></span></div>
 </div>
+
+<div>
+<button class="uniform-button" onclick="getCurrentStatus()">現在のステータスを取得</button>
+<p id="currentStatus"></p>
+<textarea rows="1.5" cols="105" id="opponentStatus" placeholder="他プレイヤーのステータスをここにコピー"></textarea>
+<BR>
+<button class="uniform-button" onclick="startPlayerBattle()">このプレイヤーと対戦</button>
+</div>
+
+
 <div id="battleLog" style="display:none;"></div>
 <script>
 const initialPoints = 50;
@@ -317,8 +326,6 @@ document.getElementById('highScore').innerText = highScore;
 battle();
 }
 
-
-
 function showStats(opponentType) {
 const opponent = {
 'スライム': { 攻撃力: 30, 防御力: 30, 体力: 40, 素早さ: 30, 賢さ: 20, 運の良さ: 40 },
@@ -333,6 +340,129 @@ document.getElementById('gorillaStats').innerHTML = showStats('ゴリラ');
 document.getElementById('dragonStats').innerHTML = showStats('ドラゴン');
 
 updateDisplay();
+
+
+function getCurrentStatus() {
+const playerName = document.getElementById('playerName').value || 'プレイヤー';
+
+// ステータスにアイテム効果を反映
+const modifiedParameters = parameters.map(param => {
+const modifiedParam = { ...param };
+acquiredItems.forEach(item => {
+if (item.effect[modifiedParam.name]) {
+modifiedParam.value += item.effect[modifiedParam.name];
+}
+});
+return modifiedParam;
+});
+
+const status = `名前: ${playerName}, 攻撃力: ${modifiedParameters[0].value}, 防御力: ${modifiedParameters[1].value}, 体力: ${modifiedParameters[2].value}, 素早さ: ${modifiedParameters[3].value}, 賢さ: ${modifiedParameters[4].value}, 運の良さ: ${modifiedParameters[5].value}`;
+
+// ここでステータスをopponentStatusに表示
+document.getElementById('opponentStatus').value = status;
+}
+
+function parseStatus(status) {
+const parts = status.split(', ').map(part => part.split(': ')[1]);
+return {
+name: parts[0],
+攻撃力: parseInt(parts[1]),
+防御力: parseInt(parts[2]),
+体力: parseInt(parts[3]),
+素早さ: parseInt(parts[4]),
+賢さ: parseInt(parts[5]),
+運の良さ: parseInt(parts[6])
+};
+}
+
+function startPlayerBattle() {
+const opponentStatus = document.getElementById('opponentStatus').value;
+if (!opponentStatus) {
+alert('他プレイヤーのステータスを入力してください。');
+return;
+}
+
+const opponent = parseStatus(opponentStatus);
+const player = {
+name: document.getElementById('playerName').value || 'プレイヤー',
+攻撃力: parameters[0].value,
+防御力: parameters[1].value,
+体力: parameters[2].value,
+素早さ: parameters[3].value,
+賢さ: parameters[4].value,
+運の良さ: parameters[5].value
+};
+
+// アイテム補正を追加
+acquiredItems.forEach(item => {
+Object.entries(item.effect).forEach(([key, value]) => {
+player[key] += value;
+});
+});
+
+// 賢さの25％分の補正を追加
+const intelligenceBonus = Math.floor(player.賢さ * 0.25);
+const opponentIntelligenceBonus = Math.floor(opponent.賢さ * 0.25);
+['攻撃力', '防御力', '体力', '素早さ', '運の良さ'].forEach(param => {
+player[param] += intelligenceBonus;
+opponent[param] += opponentIntelligenceBonus;
+});
+
+const battleLog = document.getElementById('battleLog');
+battleLog.style.display = 'block';
+battleLog.innerHTML = '';
+
+function logBattle(message, className) {
+battleLog.innerHTML += `<p class="${className}">${message}</p>`;
+}
+
+function calculateDamage(attacker, defender) {
+let damage = Math.ceil((attacker.攻撃力 - (defender.防御力 - 10)) * 0.1);
+damage = Math.max(damage, 1); // Ensure damage is at least 1
+if (Math.random() * 100 < attacker.運の良さ / 2) {
+damage += Math.ceil(1.2 * damage * (attacker.運の良さ / 100));
+logBattle('クリティカルヒット！ダメージが増加しました。', attacker === player ? 'player-log' : 'opponent-log');
+}
+return damage;
+}
+
+function battleTurn(attacker, defender, attackerName, defenderName, className) {
+const dodgeRate = calculateDodgeRate(defender);
+if (Math.random() * 100 < dodgeRate) {
+logBattle(`${attackerName}の攻撃は避けられた！`, className);
+return false;
+}
+let damage = calculateDamage(attacker, defender);
+defender.体力 -= damage;
+logBattle(`${attackerName}の攻撃！${defenderName}に${damage}のダメージ。残り体力: ${defender.体力}`, className);
+if (defender.体力 <= 0) {
+logBattle(`${defenderName}は倒れた！`, className);
+return true;
+}
+return false;
+}
+
+function battle() {
+let playerTurn = player.素早さ >= opponent.素早さ;
+while (player.体力 > 0 && opponent.体力 > 0) {
+if (playerTurn) {
+if (battleTurn(player, opponent, player.name, opponent.name, 'player-log')) {
+logBattle('プレイヤーの勝利！', 'result-log');
+break;
+}
+} else {
+if (battleTurn(opponent, player, opponent.name, player.name, 'opponent-log')) {
+logBattle('相手の勝利...', 'result-log');
+break;
+}
+}
+playerTurn = !playerTurn;
+}
+}
+
+battle();
+}
+
 </script>
 
 <br><br>
@@ -344,9 +474,9 @@ updateDisplay();
 ・レベルアップボタンを押すとレベルが上がり、1LVにつき10ポイント追加されます。<br>
 ・最大レベルは50です。レベルが低いほど対戦時のスコアにボーナスが入ります。<br>
 ・「〇〇と戦う」ボタンを押すとCPUと対戦します。ハイスコアを目指そう。<br><br>
-  <hr>
-  <br>
-  
+<hr>
+<br>
+
 アイテム一覧<br>
 包丁：攻撃力+5　/　
 鋼の剣：攻撃力+10　/　
@@ -381,3 +511,5 @@ updateDisplay();
 </div>
 </body>
 </html>
+
+
