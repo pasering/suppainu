@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v31</title>
+<title>転生の女神 - プロトタイプ v32</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -555,6 +555,37 @@ body{
 .hud{flex-wrap:wrap!important}
 .prepareHeaderDock{flex:0 0 100%!important;width:100%!important}
 html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
+
+
+/* v32: keep preparation candidate switcher + remaining points pinned on desktop too */
+@media(min-width:621px){
+  .hud{
+    position:sticky!important;
+    top:0!important;
+    z-index:140!important;
+    overflow:visible!important;
+    background:rgba(10,8,24,.965)!important;
+    box-shadow:0 8px 28px rgba(0,0,0,.24);
+  }
+  .prepareHeaderDock:not(.hidden){
+    display:grid!important;
+    position:relative!important;
+    z-index:141!important;
+    width:100%!important;
+    flex:0 0 100%!important;
+    margin-top:3px!important;
+    padding:7px 9px!important;
+    background:rgba(14,11,32,.985)!important;
+    border-color:rgba(203,186,255,.34)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.28)!important;
+  }
+  .prepareHeaderNames{min-height:34px;align-items:center}
+  .prepareHeaderCandidate{padding:8px 13px!important;font-size:10.5px!important}
+  .prepareHeaderPoints{padding:5px 10px!important;border-left-color:rgba(243,200,106,.22)!important}
+  .prepareHeaderPoints b{font-size:20px!important}
+  #prepareScreen{scroll-margin-top:150px}
+}
 
 </style>
 </head>
