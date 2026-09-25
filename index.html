@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v29</title>
+<title>転生の女神 - プロトタイプ v30</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -397,6 +397,93 @@ body{
   .godCardThumb{width:48px;height:48px;border-radius:12px}
   .godMiniRow{grid-template-columns:34px minmax(0,1fr) auto}
   .godMiniPortrait{width:30px;height:30px;border-radius:10px}
+}
+
+
+
+/* v30: iPhone preparation toolbar repair / larger goddess / stronger candidate cards */
+.people{align-items:stretch!important}
+.person{
+  background:linear-gradient(180deg,rgba(16,13,38,.90),rgba(18,15,40,.82))!important;
+  border-color:rgba(218,207,255,.34)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  height:100%;
+}
+.person .pStatus{flex:1 1 auto}
+.person .charQuote{height:4.8em;min-height:4.8em;margin-top:auto}
+
+@media(max-width:620px){
+  /* legacy .goddess{transform:scale(.6)} was still shrinking the new portrait */
+  .goddess.goddessPortrait{
+    transform:none!important;
+    width:220px!important;
+    height:310px!important;
+    max-width:72vw;
+    border-radius:22px;
+  }
+  .goddessWrap{height:318px!important;align-items:flex-start!important}
+
+  /* Both controls are viewport-fixed while the preparation screen is open. */
+  #prepareScreen{padding-top:104px!important;overflow:visible!important}
+  #prepareScreen.hidden #candidateSelectorDock,
+  #prepareScreen.hidden #mobileBudgetDock{display:none!important}
+
+  #prepareScreen #candidateSelectorDock{
+    position:fixed!important;
+    left:8px!important;
+    right:8px!important;
+    top:calc(var(--hud-height, 305px) + 4px)!important;
+    margin:0!important;
+    padding:6px 8px!important;
+    z-index:98!important;
+    border-radius:12px!important;
+    background:rgba(13,10,31,.98)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.42)!important;
+    backdrop-filter:blur(14px)!important;
+  }
+  #prepareScreen #candidateSelectorDock .candidateSelectorLabel{display:none!important}
+  #prepareScreen #candidateSelectorDock .candidateTabs.compact{
+    display:flex!important;
+    gap:5px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    white-space:nowrap!important;
+    margin:0!important;
+    padding:0 0 1px!important;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  #prepareScreen #candidateSelectorDock .candidateTabs.compact::-webkit-scrollbar{display:none}
+  #prepareScreen #candidateSelectorDock .tab{
+    min-width:max-content!important;
+    padding:7px 11px!important;
+    font-size:10px!important;
+  }
+
+  #prepareScreen #mobileBudgetDock{
+    display:flex!important;
+    position:fixed!important;
+    left:8px!important;
+    right:8px!important;
+    top:calc(var(--hud-height, 305px) + 47px)!important;
+    bottom:auto!important;
+    margin:0!important;
+    padding:6px 10px!important;
+    min-height:48px;
+    z-index:97!important;
+    border-radius:12px!important;
+    background:rgba(15,11,31,.98)!important;
+    border-color:rgba(243,200,106,.46)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.38)!important;
+  }
+  #prepareScreen #mobileBudgetDock .mbLabel{font-size:8px!important}
+  #prepareScreen #mobileBudgetDock .mbValue{font-size:18px!important}
+  #prepareScreen #mobileBudgetDock .mbTotal{font-size:9px!important}
+
+  .people{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .person{min-height:270px!important;padding:10px 7px!important}
+  .person .charQuote{height:4.65em!important;min-height:4.65em!important;-webkit-line-clamp:3!important}
 }
 
 </style>
@@ -1309,11 +1396,11 @@ function deleteArchivedLog(id){const c=findCharacter(id);if(!c||(!c.departed&&c.
 
 function openTutorial(index=0){state.tutorialIndex=clamp(index,0,tutorialPages.length-1);$('#tutorialModal').classList.remove('hidden');renderTutorial()}
 function renderTutorial(){const i=state.tutorialIndex,[title,text]=tutorialPages[i];$('#tutorialStep').textContent=`TUTORIAL ${i+1} / ${tutorialPages.length}`;$('#tutorialTitle').textContent=title;$('#tutorialText').textContent=text;$('#tutorialPrev').disabled=i===0;$('#tutorialNext').textContent=i===tutorialPages.length-1?'ゲーム開始':'次へ';$('#tutorialDots').innerHTML=tutorialPages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}
-function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV27','1');$('#tutorialModal').classList.add('hidden')}
+function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV30','1');$('#tutorialModal').classList.add('hidden')}
 
-function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV27',JSON.stringify(copy))}catch(e){}}
-function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
-function hardReset(){['tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));location.reload()}
+function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV30',JSON.stringify(copy))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
+function hardReset(){['tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));location.reload()}
 
 $('#prepareBtn').onclick=()=>renderPrepare();
 $('#sendAllBtn').onclick=()=>beginYear();$('#sendAllTopBtn').onclick=()=>beginYear();
@@ -1343,7 +1430,7 @@ const resetGameFromButton=()=>{if(confirm('保存データを消して最初か�
    if(state.phase==='prepareScreen')renderPrepare();else if(state.phase==='yearPlayScreen')renderYearPlay('観測を再開しました。',0);else if(state.phase==='summaryScreen'){finishYear()}else renderArrival();
  }
  updateHudHeightVar();updateHUD();renderHall();renderUnlocks();renderPantheonMini();renderDemonSummary();
- if(!localStorage.getItem('tenseiGoddessTutorialSeenV27')&&!localStorage.getItem('tenseiGoddessTutorialSeenV25')&&!localStorage.getItem('tenseiGoddessTutorialSeenV24')&&!localStorage.getItem('tenseiGoddessTutorialSeenV23')&&!localStorage.getItem('tenseiGoddessTutorialSeenV22')&&!localStorage.getItem('tenseiGoddessTutorialSeenV21')&&!localStorage.getItem('tenseiGoddessTutorialSeenV20')&&!localStorage.getItem('tenseiGoddessTutorialSeenV19')&&!localStorage.getItem('tenseiGoddessTutorialSeenV13')&&!localStorage.getItem('tenseiGoddessTutorialSeenV12'))openTutorial(0);else maybeShowDemonIntro();
+ if(!localStorage.getItem('tenseiGoddessTutorialSeenV30')&&!localStorage.getItem('tenseiGoddessTutorialSeenV27')&&!localStorage.getItem('tenseiGoddessTutorialSeenV25')&&!localStorage.getItem('tenseiGoddessTutorialSeenV24')&&!localStorage.getItem('tenseiGoddessTutorialSeenV23')&&!localStorage.getItem('tenseiGoddessTutorialSeenV22')&&!localStorage.getItem('tenseiGoddessTutorialSeenV21')&&!localStorage.getItem('tenseiGoddessTutorialSeenV20')&&!localStorage.getItem('tenseiGoddessTutorialSeenV19')&&!localStorage.getItem('tenseiGoddessTutorialSeenV13')&&!localStorage.getItem('tenseiGoddessTutorialSeenV12'))openTutorial(0);else maybeShowDemonIntro();
 })();
 </script>
 </body>
