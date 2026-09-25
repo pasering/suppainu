@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v30</title>
+<title>転生の女神 - プロトタイプ v31</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -486,6 +486,76 @@ body{
   .person .charQuote{height:4.65em!important;min-height:4.65em!important;-webkit-line-clamp:3!important}
 }
 
+
+
+/* v31: reliable prepare selector in sticky HUD */
+.prepareHeaderDock{
+  grid-column:1/-1;
+  flex:1 0 100%;
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:7px 8px;
+  margin-top:1px;
+  border:1px solid rgba(203,186,255,.28);
+  border-radius:12px;
+  background:rgba(16,12,34,.96);
+  box-shadow:0 8px 24px rgba(0,0,0,.24);
+  backdrop-filter:blur(14px);
+}
+.prepareHeaderDock.hidden{display:none!important}
+.prepareHeaderNames{display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;min-width:0;padding:1px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.prepareHeaderNames::-webkit-scrollbar{display:none}
+.prepareHeaderCandidate{flex:0 0 auto;border:1px solid rgba(220,210,255,.22);background:rgba(255,255,255,.035);color:#eee8f8;border-radius:9px;padding:7px 11px;font:inherit;font-size:10px;font-weight:850;white-space:nowrap;cursor:pointer}
+.prepareHeaderCandidate.active{border-color:#b397ff;background:rgba(158,124,255,.22);color:#fff;box-shadow:inset 0 0 0 1px rgba(190,166,255,.10)}
+.prepareHeaderPoints{display:flex;align-items:baseline;gap:3px;white-space:nowrap;padding:4px 7px;border-left:1px solid rgba(255,255,255,.10)}
+.prepareHeaderPoints span,.prepareHeaderPoints small{font-size:8px;color:var(--muted)}
+.prepareHeaderPoints b{font-size:18px;color:var(--gold);line-height:1}
+.prepareHeaderPoints em{font-size:9px;color:var(--gold);font-style:normal;font-weight:850}
+
+/* Keep an ordinary selector in the page too; do not depend on sticky/fixed positioning. */
+#prepareScreen #candidateSelectorDock{
+  display:block!important;
+  position:relative!important;
+  left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+  width:auto!important;
+  margin:0 0 10px!important;
+  padding:8px 10px!important;
+  z-index:3!important;
+  background:rgba(16,12,34,.90)!important;
+  border:1px solid rgba(203,186,255,.28)!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.18)!important;
+}
+#prepareScreen #candidateSelectorDock .candidateSelectorLabel{display:block!important;margin-bottom:5px!important;color:#cfc3e6!important}
+#prepareScreen #candidateSelectorDock .candidateTabs.compact{display:flex!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;margin:0!important;padding:0 0 2px!important;gap:5px!important}
+#prepareScreen #candidateSelectorDock .tab{display:block!important;visibility:visible!important;opacity:1!important;min-width:max-content!important;padding:7px 11px!important}
+
+/* The old lower/floating budget widget is retired; budget now lives in the HUD. */
+#mobileBudgetDock{display:none!important}
+#prepareScreen{padding-top:18px!important;padding-bottom:18px!important}
+
+@media(max-width:980px){
+  .prepareHeaderDock{order:4;flex-basis:100%}
+}
+@media(max-width:620px){
+  .prepareHeaderDock{order:4;display:grid;grid-template-columns:minmax(0,1fr) auto;padding:5px 6px;gap:5px;border-radius:10px}
+  .prepareHeaderCandidate{padding:6px 9px;font-size:9px}
+  .prepareHeaderPoints{padding:3px 5px}
+  .prepareHeaderPoints b{font-size:16px}
+  #prepareScreen{padding-top:10px!important;padding-bottom:10px!important;overflow:visible!important}
+  #prepareScreen #candidateSelectorDock{margin-bottom:8px!important;padding:6px 7px!important}
+  #prepareScreen #candidateSelectorDock .candidateSelectorLabel{font-size:8px!important}
+}
+
+
+/* v31 hotfix: keep prepare HUD dock on its own row, fully retire legacy budget dock */
+.hud{flex-wrap:wrap!important}
+.prepareHeaderDock{flex:0 0 100%!important;width:100%!important}
+html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hidden!important;pointer-events:none!important}
+
 </style>
 </head>
 <body>
@@ -501,6 +571,10 @@ body{
     </div>
     <div class="hudActions"><button class="iconBtn" id="recordsBtn">記録</button><button class="iconBtn" id="skillsBtn">スキル</button><button class="iconBtn" id="tutorialBtn">遊び方</button><button class="iconBtn" id="resetBtn">最初から</button></div>
     <div class="mobileHudActions" aria-label="スマートフォン用メニュー"><button class="iconBtn" id="mobileRecordsBtn">記録</button><button class="iconBtn" id="mobileSkillsBtn">スキル</button><button class="iconBtn" id="mobileTutorialBtn">遊び方</button><button class="iconBtn dangerAction" id="mobileResetBtn">最初から</button></div>
+    <div class="prepareHeaderDock hidden" id="prepareHeaderDock">
+      <div class="prepareHeaderNames" id="prepareHeaderCandidates"></div>
+      <div class="prepareHeaderPoints"><span>残り</span><b id="prepareHeaderBudget">40</b><em>pt</em><small>/ <span id="prepareHeaderTotal">40</span></small></div>
+    </div>
   </header>
 
   <main class="main">
@@ -1046,11 +1120,20 @@ function renderArrival(){
  const yearLines=[`「${state.year}年目の転生者、${state.candidates.length}名が揃いました。今年も全員を送り出してください」`,`「今年の転生枠は${state.candidates.length}名です。どの者もすでに手続き済み。あとは女神さまの加護を待つだけです」`,`「新しい転生者をお連れしました。生き残るか、名を残すか、それとも……今年も観測をお願いします」`,`「${state.candidates.length}名とも転生準備は完了しています。加護の配分が済み次第、門を開きます」`,`「また一年が始まりますね。今回の${state.candidates.length}名がどんな人生を歩むのか、記録局も注目しています」`];
  $('#arrivalText').innerHTML=state.year===1?`「女神さま。今年の転生者はこの${state.candidates.length}名です。候補の差し替えはできません。<b>全員</b>に必要な加護を与え、異世界へ送り出してください」`:`${stablePick(yearLines,'arrival-year-'+state.year)}`;
 }
-function showOnly(id){['arrivalScreen','prepareScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0});updateHUD();saveGame()}
+function showOnly(id){['arrivalScreen','prepareScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
 
 function upgradeCost(v,cap){if(v>=cap)return 999;return 1+Math.floor(v/25)+(v>=80?1:0)}
 function buyUpgrade(key,amount){const c=state.candidates[state.currentCandidateIndex];for(let i=0;i<amount;i++){if(c[key]>=c.caps[key])break;const cost=upgradeCost(c[key],c.caps[key]);if(state.budget<cost)break;state.budget-=cost;c.blessingSpent=(c.blessingSpent||0)+cost;c[key]++}renderPrepare(true);updateHUD()}
 function toggleSkill(id){const s=skillById(id),c=state.candidates[state.currentCandidateIndex];if(state.faith<s.unlock)return toast(`女神信仰度 ${s.unlock} で解放されます。`);const idx=c.skills.indexOf(id);if(idx>=0){c.skills.splice(idx,1);state.budget+=s.cost;c.blessingSpent=Math.max(0,(c.blessingSpent||0)-s.cost)}else{if(state.budget<s.cost)return toast('加護ポイントが足りません。');c.skills.push(id);state.budget-=s.cost;c.blessingSpent=(c.blessingSpent||0)+s.cost}renderPrepare(true);updateHUD()}
+function renderPrepareHeaderDock(){
+ const dock=$('#prepareHeaderDock');if(!dock)return;
+ const show=state.phase==='prepareScreen'&&state.candidates?.length;
+ dock.classList.toggle('hidden',!show);if(!show)return;
+ const ordered=orderedCandidates();
+ $('#prepareHeaderCandidates').innerHTML=ordered.map(({c:x,i})=>`<button class="prepareHeaderCandidate ${i===state.currentCandidateIndex?'active':''}" data-header-candidate="${i}">${displayName(x)}</button>`).join('');
+ $$('[data-header-candidate]').forEach(b=>b.onclick=()=>{state.currentCandidateIndex=+b.dataset.headerCandidate;renderPrepare(true)});
+ $('#prepareHeaderBudget').textContent=state.budget;$('#prepareHeaderTotal').textContent=state.yearStartFaith;
+}
 function renderPrepare(preserveScroll=false){
  const y=window.scrollY;
  if($('#prepareScreen').classList.contains('hidden'))showOnly('prepareScreen');
@@ -1060,7 +1143,7 @@ function renderPrepare(preserveScroll=false){
  $$('#prepareModeTabs [data-prepare-mode]').forEach(b=>{const mode=b.dataset.prepareMode;b.classList.toggle('active',mode===state.prepareMode);b.disabled=(mode==='arts'&&!godArtsUnlocked())||(mode==='demon'&&!d.active);b.onclick=()=>switchPrepareMode(mode,true)});
  const paneMap={blessing:'#prepareBlessingPane',arts:'#prepareGodArtsPane',demon:'#prepareDemonPane'};Object.entries(paneMap).forEach(([k,sel])=>$(sel)?.classList.toggle('hidden',k!==state.prepareMode));
  const ordered=orderedCandidates();$('#candidateTabs').innerHTML=ordered.map(({c:x,i})=>`<button class="tab ${i===state.currentCandidateIndex?'active':''}" data-i="${i}"><div class="tn">${displayName(x)}</div></button>`).join('');
- $$('#candidateTabs .tab').forEach(el=>el.onclick=()=>{state.currentCandidateIndex=+el.dataset.i;renderPrepare(true)});
+ $$('#candidateTabs .tab').forEach(el=>el.onclick=()=>{state.currentCandidateIndex=+el.dataset.i;renderPrepare(true)});renderPrepareHeaderDock();
  $('#portraitInitial').innerHTML=avatarImg(c,'avatarThumb');$('#prepName').textContent=`${displayName(c)}　${c.age}歳・${c.gender==='male'?'男性':'女性'}`;$('#prepMarkerControls').innerHTML=markerControlsHTML(c);bindMarkerControls($('#prepMarkerControls'),()=>renderPrepare(true));
  $('#prepBio').innerHTML=`${generationLabel(c)} / ${c.background}<div class="charQuote">${characterQuote(c,'prepare')}</div><div class="renameRow"><input id="renameInput" class="renameInput" maxlength="24" value="${c.name.replace(/&/g,'&amp;').replace(/\"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" aria-label="転生者の名前"><button class="miniBtn" id="renameBtn">名前変更</button></div><div class="riskNote"><b>転生直後の危険度：${riskLabel(c)}</b><br>賢さが高いほど生存しやすく、積極性が高いほど功績と危険の両方が増えます。<br><b>現在の加護 ${(c.blessingSpent||0)}pt → 転生時の帰依心 +${blessingDevotionGain(c.blessingSpent||0)}</b></div>`;$('#renameBtn').onclick=renameCurrentCandidate;$('#renameInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();renameCurrentCandidate()}};
  const fixed=[['帰依心',c.devotion,100,'行動が女神信仰へ反映される強さ'],['積極性',c.activity,100,'成長しやすいが危険にも飛び込みやすい'],['正義感',c.justice,100,'高いほど善行、低いほど悪事に寄りやすい'],['知名度',c.fame,100,'功績でも悪行でも上昇。高いほど女神信仰度への影響が大きい']];
@@ -1068,11 +1151,11 @@ function renderPrepare(preserveScroll=false){
  $('#prepStats').innerHTML=fixed.map(([n,v,cap,d])=>`<div class="statCard"><div class="statTop"><b>${n}</b><span>${v}</span></div><div class="bar"><i style="width:${statPercent(v,cap)}%"></i></div><div class="cap">${d}</div></div>`).join('')+grow.map(([n,k])=>`<div class="statCard"><div class="statTop"><b>${n}</b><span>${c[k]} / 上限 ${c.caps[k]}</span></div><div class="bar"><i style="width:${statPercent(c[k],c.caps[k])}%"></i></div><div class="cap">次の+1：${upgradeCost(c[k],c.caps[k])}pt</div><div class="upgradeActions"><button class="miniBtn" data-up="${k}" data-amt="1">+1</button><button class="miniBtn" data-up="${k}" data-amt="5">+5</button></div></div>`).join('');
  $$('[data-up]').forEach(b=>b.onclick=()=>buyUpgrade(b.dataset.up,+b.dataset.amt));
  $('#ownedSkillsText').textContent=c.skills.length?c.skills.map(id=>skillById(id)?.name).filter(Boolean).join(' / '):'まだスキルはありません。';
- $('#budgetTotal').textContent=state.yearStartFaith;$('#budgetLeft').textContent=state.budget;$('#faithReadOnly').textContent=state.faith;if($('#mobileBudgetLeft'))$('#mobileBudgetLeft').textContent=state.budget;if($('#mobileBudgetTotal'))$('#mobileBudgetTotal').textContent=state.yearStartFaith;
+ $('#budgetTotal').textContent=state.yearStartFaith;$('#budgetLeft').textContent=state.budget;$('#faithReadOnly').textContent=state.faith;if($('#mobileBudgetLeft'))$('#mobileBudgetLeft').textContent=state.budget;if($('#mobileBudgetTotal'))$('#mobileBudgetTotal').textContent=state.yearStartFaith;renderPrepareHeaderDock();
  const configured=state.skillPresets.map((ids,i)=>({ids:ids.filter(id=>skillById(id)),i})).filter(x=>x.ids.length);$('#preparePresetQuick').innerHTML=configured.map(({ids,i})=>{const missing=ids.filter(id=>!c.skills.includes(id)&&state.faith>=skillById(id).unlock),need=missing.reduce((t,id)=>t+(skillById(id)?.cost||0),0),allLocked=ids.every(id=>state.faith<(skillById(id)?.unlock||0));return `<button class="quickPresetBtn" data-quick-preset="${i}" ${allLocked||state.budget<need?'disabled':''}>${presetDisplayName(i)}${need?`　${need}pt`:'　適用済み'}</button>`}).join('')||'<span class="sub" style="margin:0">設定済みプリセットはありません。画面上部の「スキル」から作成できます。</span>';$$('[data-quick-preset]').forEach(b=>b.onclick=()=>applySkillPreset(+b.dataset.quickPreset));
  const unlockedSkills=[...skillDefs].filter(sk=>state.faith>=sk.unlock).sort((a,b)=>a.unlock-b.unlock||a.cost-b.cost||a.id.localeCompare(b.id));$('#prepareSkillQuick').innerHTML=unlockedSkills.map(sk=>{const active=c.skills.includes(sk.id);return `<button class="quickSkillBtn ${active?'active':''}" data-quick-skill="${sk.id}"><b>${active?'✓ ':''}${sk.name}</b><span>${sk.cost}pt / ${active?'クリックで解除':'クリックで付与'}</span></button>`}).join('');$$('[data-quick-skill]').forEach(b=>b.onclick=()=>toggleSkill(b.dataset.quickSkill));
  if($('#godArtsLockedPanel'))$('#godArtsLockedPanel').classList.toggle('hidden',godArtsUnlocked());if($('#demonLockedPanel'))$('#demonLockedPanel').classList.toggle('hidden',d.active);renderGodArts();renderDemonDefense();
- if(preserveScroll)requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:'auto'}));
+ updateHudHeightVar();if(preserveScroll)requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:'auto'}));
 }
 function resetBlessings(){ensureGodArtState();const d=ensureDemonState();state.budget=Math.max(0,state.yearStartFaith-(state.godArtsSpentThisYear||0)-(d.active?d.investment||0:0));state.candidates=state.candidates.map(c=>{const raw=c._base?JSON.parse(JSON.stringify(c._base)):JSON.parse(JSON.stringify(c));raw._base=JSON.parse(JSON.stringify(raw));return raw});state.currentCandidateIndex=0;renderPrepare(true);toast('新人への加護だけをリセットしました。神業と魔王軍防衛への投入は維持されます。')}
 
