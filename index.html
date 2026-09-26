@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v38</title>
+<title>転生の女神 - プロトタイプ v40</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -788,6 +788,114 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .aiNotice{font-size:8px;margin-bottom:12px}
 }
 
+
+/* v39: goddess rank-up & staged faith goals */
+.progressNoticeModal{
+  width:min(620px,100%);
+  text-align:left;
+  overflow:hidden;
+  position:relative
+}
+.progressNoticeModal::before{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(243,200,106,.16),transparent 42%),
+    radial-gradient(circle at 100% 35%,rgba(158,124,255,.12),transparent 38%);
+  pointer-events:none
+}
+.progressNoticeModal > *{position:relative;z-index:1}
+.progressNoticeHero{
+  text-align:center;
+  padding:8px 6px 13px
+}
+.progressNoticeIcon{
+  font-size:38px;line-height:1;
+  filter:drop-shadow(0 6px 15px rgba(0,0,0,.28));
+  margin-bottom:8px
+}
+.progressNoticeHero h2{font-size:24px;margin:0 0 6px}
+.progressNoticeLead{font-size:11px;color:#d8cfea;line-height:1.7}
+.rankChangeBox{
+  display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;
+  border:1px solid rgba(243,200,106,.30);border-radius:15px;
+  background:linear-gradient(135deg,rgba(243,200,106,.09),rgba(158,124,255,.08));
+  padding:12px;margin:8px 0 12px;text-align:center
+}
+.rankChangeBox .rankName{font-size:15px;font-weight:950}
+.rankChangeBox .arrow{font-size:20px;color:var(--gold)}
+.progressUnlockGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.progressUnlockCard{
+  border:1px solid var(--line);border-radius:12px;
+  background:rgba(255,255,255,.035);padding:10px
+}
+.progressUnlockCard .k{font-size:8px;color:var(--muted);font-weight:850;letter-spacing:.08em}
+.progressUnlockCard .v{font-size:12px;font-weight:900;line-height:1.55;margin-top:3px}
+.progressUnlockList{
+  margin-top:10px;border-top:1px solid var(--line);padding-top:10px;
+  font-size:10.5px;line-height:1.75;color:#e9e2f6
+}
+.progressUnlockList b{color:#ffe2a0}
+.goalResult.success{border-color:rgba(116,232,177,.34);background:rgba(53,152,105,.08)}
+.goalResult.fail{border-color:rgba(255,177,105,.34);background:rgba(152,89,38,.09)}
+.goalResult{
+  border:1px solid var(--line);border-radius:15px;padding:13px;margin:8px 0 12px
+}
+.goalResultTitle{font-size:16px;font-weight:950;margin-bottom:5px}
+.goalResultBody{font-size:11px;line-height:1.7;color:#e8e0f5}
+.nextGoalBox{
+  border:1px solid rgba(198,178,255,.28);border-radius:13px;padding:11px 12px;
+  background:rgba(102,78,161,.09);margin-top:10px
+}
+.nextGoalBox .ngLabel{font-size:8px;color:var(--violet2);font-weight:900;letter-spacing:.11em}
+.nextGoalBox .ngTitle{font-size:13px;font-weight:950;margin-top:3px}
+.nextGoalBox .ngText{font-size:10px;color:#d9d0e8;line-height:1.6;margin-top:3px}
+.currentFaithGoal{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center
+}
+.currentFaithGoal .goalMain{font-size:11px;font-weight:900;line-height:1.55}
+.currentFaithGoal .goalMeta{font-size:10px;color:#cfc5df;text-align:right;white-space:nowrap}
+.goalCompleteText{font-size:11px;font-weight:900;color:#ffe6a8}
+@media(max-width:620px){
+ .progressNoticeHero h2{font-size:20px}
+ .progressUnlockGrid{grid-template-columns:1fr}
+ .rankChangeBox{grid-template-columns:1fr auto 1fr;padding:10px 7px}
+ .rankChangeBox .rankName{font-size:12px}
+ .currentFaithGoal{grid-template-columns:1fr}
+ .currentFaithGoal .goalMeta{text-align:left}
+}
+
+
+/* v40: visible staged objective in the Hall of Reincarnation */
+.arrivalGoalBanner{
+  width:min(100%,760px);
+  margin:-2px auto 12px;
+  border:1px solid rgba(243,200,106,.34);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(45,34,79,.86),rgba(15,12,35,.86));
+  box-shadow:0 9px 26px rgba(0,0,0,.22);
+  backdrop-filter:blur(9px);
+  padding:10px 13px;
+}
+.arrivalGoalBanner .agbTop{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-bottom:5px
+}
+.arrivalGoalBanner .agbLabel{
+  font-size:8px;font-weight:950;letter-spacing:.14em;color:#f6cb73
+}
+.arrivalGoalBanner .agbDeadline{
+  font-size:9px;color:#d7cde5;white-space:nowrap
+}
+.arrivalGoalBanner .agbTitle{font-size:13px;font-weight:950;color:#fff;margin-bottom:3px}
+.arrivalGoalBanner .agbText{font-size:10px;line-height:1.6;color:#e4ddef}
+.arrivalGoalBanner .goalBar{margin-top:7px;height:5px}
+@media(max-width:620px){
+ .arrivalGoalBanner{margin:0 0 10px;padding:9px 10px}
+ .arrivalGoalBanner .agbTitle{font-size:12px}
+ .arrivalGoalBanner .agbText{font-size:9px}
+}
+
 </style>
 </head>
 <body>
@@ -815,6 +923,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
       <div class="scene">
         <div class="stars"></div><div class="templeFloor"></div>
         <div class="sceneTitle"><div class="eyebrow">HALL OF REINCARNATION</div><h1>転生の間</h1><p id="arrivalSub">今年、あなたが送り出す転生者たちが到着した。</p></div>
+        <div class="arrivalGoalBanner" id="arrivalGoalBanner"></div>
         <div class="cast">
           <div class="goddessWrap"><div class="goddess goddessPortrait" id="arrivalGoddessPortrait" role="button" tabindex="0" title="女神の成長と解放を見る"><img class="goddessArt" src="assets/goddess-player.png" alt="転生の女神のビジュアル"><div class="goddessFrame"></div><div class="gName">転生の女神（あなた）</div></div></div>
           <div class="people" id="arrivalPeople"></div>
@@ -929,7 +1038,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 <div class="modalBack hidden" id="tutorialModal"><div class="modal"><div class="step" id="tutorialStep">TUTORIAL 1 / 5</div><h2 id="tutorialTitle"></h2><p id="tutorialText"></p><div class="modalActions"><div class="tutorialDots" id="tutorialDots"></div><div style="display:flex;gap:8px"><button class="btn secondary" id="tutorialPrev">戻る</button><button class="btn gold" id="tutorialNext">次へ</button></div></div></div></div>
 <div class="modalBack hidden" id="recordsModal"><div class="modal archiveModal"><button class="closeX" id="recordsClose">閉じる</button><div class="step">GODDESS ARCHIVE</div><h2>転生記録</h2><div class="archiveTabs"><button class="archiveTab active" data-archive="living">生存者</button><button class="archiveTab" data-archive="dead">死亡者</button><button class="archiveTab" data-archive="departed">離脱者</button><button class="archiveTab" data-archive="hall">殿堂入り</button></div><div id="recordsBody"></div></div></div>
 <div class="modalBack hidden" id="skillLibraryModal"><div class="modal skillLibraryModal"><button class="closeX" id="skillLibraryClose">閉じる</button><div class="step">SKILLS / PRESETS</div><div class="skillLibraryHeader"><div><h2>スキル・プリセット一覧</h2><p class="sub">全スキルの解放条件・コスト・効果を確認できます。4つのプリセットは名前も内容もいつでも上書きできます。</p></div></div><div class="sectionLabel">Custom Presets</div><div class="skillLibraryPresetGrid" id="skillLibraryPresetGrid"></div><div class="sectionLabel">Skill Catalog</div><div class="skillLibraryCatalog" id="skillLibraryCatalog"></div></div></div>
-<div class="modalBack hidden" id="pantheonModal"><div class="modal pantheonModal"><button class="closeX" id="pantheonClose">閉じる</button><div class="step">PANTHEON / WORLD FAITH</div><h2>この世界の神々</h2><p class="sub">世界の信仰は三柱の神々の間で揺れ動いています。あなたはまだ小さな新興信仰。100年目までに世界シェア30％超を目指しましょう。<br>転生の女神の「女神信仰度」は、そのまま世界における信仰値として扱われます。</p><div class="pantheonGoal" id="pantheonGoal"></div><div class="pantheonLayout"><div class="godList" id="godList"></div><div class="godDetail" id="godDetail"></div></div></div></div>
+<div class="modalBack hidden" id="pantheonModal"><div class="modal pantheonModal"><button class="closeX" id="pantheonClose">閉じる</button><div class="step">PANTHEON / WORLD FAITH</div><h2>この世界の神々</h2><p class="sub">世界の信仰は三柱の神々の間で揺れ動いています。あなたはまだ小さな新興信仰。段階目標を一つずつ越え、100年目までに信仰率1位を目指しましょう。<br>転生の女神の「女神信仰度」は、そのまま世界における信仰値として扱われます。</p><div class="pantheonGoal" id="pantheonGoal"></div><div class="pantheonLayout"><div class="godList" id="godList"></div><div class="godDetail" id="godDetail"></div></div></div></div>
 <div class="modalBack hidden" id="goddessGrowthModal"><div class="modal goddessGrowthModal"><button class="closeX" id="goddessGrowthClose">閉じる</button><div class="step">GODDESS PROGRESSION</div><h2>女神の成長と解放</h2><p class="sub">女神信仰度が上がると称号・年間転生枠・付与できるスキル・神業が増えていきます。信仰度は加護ポイントとして使っても減りません。</p><div id="goddessGrowthCurrent"></div><div class="growthRoadmap" id="goddessGrowthRoadmap"></div></div></div>
 <div class="modalBack hidden" id="godArtIntroModal"><div class="modal"><div class="step">DIVINE ART UNLOCKED</div><h2>神業が使えるようになりました</h2><p>集まった信仰は、もう新人転生者への加護だけに使う必要はありません。
 
@@ -938,6 +1047,16 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 同じ人物へ何度でも神業を重ねられます。ただし、どれほど力を注いでも寿命だけは越えられません。</p><div class="modalActions" style="justify-content:flex-end"><button class="btn gold" id="godArtIntroClose">神業を確認する</button></div></div></div>
 <div class="modalBack hidden" id="skillPresetModal"><div class="modal skillPresetModal"><button class="closeX" id="skillPresetClose">閉じる</button><div class="step">SKILL PRESET EDITOR</div><h2 id="skillPresetTitle">プリセット1を編集</h2><p class="sub">プリセット名と、現在解放済みのスキルを自由に設定できます。保存すると同じ枠を上書きします。</p><input class="presetNameInput" id="presetNameInput" maxlength="24" value="プリセット1" aria-label="プリセット名"><div class="presetEditorList" id="presetEditorList" style="margin-top:10px"></div><div class="modalActions"><div class="sub" id="presetEditorCost" style="margin:0"></div><button class="btn gold" id="skillPresetSave">この内容で上書き保存</button></div></div></div>
 <div class="modalBack hidden" id="demonIntroModal"><div class="modal demonStory"><div class="step" id="demonIntroStep">URGENT REPORT</div><h2 id="demonIntroTitle">魔王軍、活動活発化</h2><div class="speakerLine">案内役</div><p id="demonIntroText"></p><div class="modalActions"><div></div><button class="btn gold" id="demonIntroNext">次へ</button></div></div></div>
+
+
+<div class="modalBack hidden" id="progressNoticeModal">
+  <div class="modal progressNoticeModal">
+    <div id="progressNoticeBody"></div>
+    <div class="modalActions" style="justify-content:flex-end">
+      <button class="btn gold" id="progressNoticeNext">確認</button>
+    </div>
+  </div>
+</div>
 
 <div class="modalBack hidden" id="portraitEditorModal">
   <div class="modal portraitEditorModal">
@@ -1058,7 +1177,7 @@ const tutorialPages=[
  ['ポイントを残す意味','加護ポイントは翌年へ持ち越せません。ただし月次観測中に転生者が死亡した場合、残りポイントでその死を救済できます。救済費用は活動1〜2年目30ptから始まり、長く活動するほど上昇します。寿命による自然死は救済できません。救済時の帰依心・正義感・積極性ボーナスは、その人物の生涯で最初の救済1回だけ発生します。「年末まで一気に」で飛ばした月の死亡も救えません。'],
  ['人には性格と才能がある','帰依心は「その人が女神をどれだけ信じているか」。加護を多く与えるほど転生時の帰依心も上がります。積極性は功績と危険の両方を増幅。正義感は善悪の傾向を決め、強さと賢さには個人ごとの成長上限があります。'],
  ['送り出した後も人生は続く','転生者は毎年12か月活動します。転生直後の数年間は世界に不慣れで最も危険です。賢いほど危険を避け、強いほど窮地を切り抜けやすく、積極的なほど功績と引き換えに危険へ踏み込みます。数年を生き抜けば適応しますが、高齢になると再び危険になります。'],
- ['三柱の神々と信仰シェア','この世界の信仰は合計20,000で固定され、三柱の神が奪い合います。あなたは信仰40から開始。信仰6,000で世界シェア30％です。転生者の活躍で他神から信仰を奪えますが、あなたが他神を大きく上回るほど既存教団の巻き返しも強くなります。特にシェア65％を超える頃から巻き返しは最大級になります。100年目までに30％超、そして信仰率ナンバーワンを目指しましょう。'],
+ ['三柱の神々と信仰シェア','この世界の信仰は合計20,000で固定され、三柱の神が奪い合います。あなたは信仰40から開始。信仰6,000で世界シェア30％です。転生者の活躍で他神から信仰を奪えますが、あなたが他神を大きく上回るほど既存教団の巻き返しも強くなります。特にシェア65％を超える頃から巻き返しは最大級になります。15年目・25年目・50年目の段階目標を越え、100年目までに信仰率ナンバーワンを目指しましょう。'],
  ['信仰を集め、女神として成長','転生者の善行や偉業は女神信仰度を高め、悪行は下げます。各転生者の知名度が高いほど、その善悪は女神の評判へ大きく波及します。帰依心が低い者は別の神へ改宗し、あなたのもとを離れることもあります。']
 ]
 
@@ -1067,9 +1186,153 @@ const state={
  candidates:[],active:[],dead:[],departed:[],hall:[],currentCandidateIndex:0,month:0,phase:'arrival',
  tutorialIndex:0,annualLog:[],newUnlocks:[],lastRank:'新人女神',yearFinalized:false,usedNames:[],summarySelected:'all',summarySort:'generation_asc',archiveMode:'living',archiveSelected:null,pantheon:null,pantheonSelected:'player',lastPantheonReport:null,
  godArtsSpentThisYear:0,godArtTargetId:null,godArtIntroSeen:false,demonIntroIndex:0,prepareMode:'blessing',skillPresets:[[],[],[],[]],skillPresetNames:['プリセット1','プリセット2','プリセット3','プリセット4'],presetEditIndex:0,achievements:{},
+ faithGoalResults:{},rankNoticeSeen:{},progressionVersion:2,
  demonArmy:{active:false,introSeen:false,activatedYear:null,trigger:null,threat:0,investment:0,recommended:0,planYear:null,yearPlan:null,yearWins:0,yearLosses:0,lastReport:null}
 };
 
+
+
+const faithGoalDefs=[
+ {id:'g5_f50',year:5,title:'最初の一歩',short:'5年目までに信仰度50',type:'faith',target:50,gift:10},
+ {id:'g15_f100',year:15,title:'最初の信仰基盤',short:'15年目までに信仰度100',type:'faith',target:100,gift:15},
+ {id:'g25_f1000',year:25,title:'小さな教団から神格へ',short:'25年目までに信仰度850',type:'faith',target:850,gift:30},
+ {id:'g50_f3500',year:50,title:'世界に名を刻む女神',short:'50年目までに信仰度3,600',type:'faith',target:3600,gift:50},
+ {id:'g100_rank1',year:100,title:'世界で最も信じられる神へ',short:'100年目までに信仰率1位',type:'rank1',gift:100}
+];
+const progressNoticeQueue=[];
+let progressNoticeOpen=false;
+
+function ensureProgressionState(){
+ state.faithGoalResults=state.faithGoalResults&&typeof state.faithGoalResults==='object'?state.faithGoalResults:{};
+ state.rankNoticeSeen=state.rankNoticeSeen&&typeof state.rankNoticeSeen==='object'?state.rankNoticeSeen:{};
+ const pv=Number(state.progressionVersion)||0;
+ if(pv<1){
+   // Old saves have no reliable faith history at past deadlines, so do not retroactively judge them.
+   for(const g of faithGoalDefs)if(g.year<state.year&&!state.faithGoalResults[g.id])state.faithGoalResults[g.id]={legacy:true,year:g.year};
+ }
+ if(pv<2){
+   // v40 added the 5-year milestone. Existing games already past year 5 simply skip retroactive judgement.
+   if(state.year>5&&!state.faithGoalResults.g5_f50)state.faithGoalResults.g5_f50={legacy:true,year:5};
+ }
+ state.progressionVersion=2;
+}
+function pantheonPlayerRank(){
+ const gods=pantheonShares().slice().sort((a,b)=>b.worldFaith-a.worldFaith);
+ return gods.findIndex(g=>g.id==='player')+1;
+}
+function faithGoalSuccess(g){
+ if(g.type==='faith')return state.faith>=g.target;
+ if(g.type==='rank1')return pantheonPlayerRank()===1;
+ return false;
+}
+function currentFaithGoal(){
+ ensureProgressionState();
+ return faithGoalDefs.find(g=>!state.faithGoalResults[g.id]&&state.year<=g.year)||
+        faithGoalDefs.find(g=>!state.faithGoalResults[g.id])||null;
+}
+function goalConditionText(g){
+ return g.type==='rank1'
+   ? `${g.year}年目終了時に、三柱の神々の中で信仰率1位になる`
+   : `${g.year}年目終了時に、女神信仰度${g.target.toLocaleString()}以上に到達する`;
+}
+function goalProgressText(g){
+ if(!g)return '';
+ if(g.type==='rank1')return `現在 ${playerShare().toFixed(2)}% / ${pantheonPlayerRank()}位`;
+ return `現在 ${state.faith.toLocaleString()} / ${g.target.toLocaleString()}`;
+}
+function nextGoalAfter(g){
+ const i=faithGoalDefs.findIndex(x=>x.id===g.id);
+ return i>=0?faithGoalDefs[i+1]||null:null;
+}
+function evaluateFaithGoalAtYear(){
+ ensureProgressionState();
+ const g=faithGoalDefs.find(x=>x.year===state.year);
+ if(!g||state.faithGoalResults[g.id])return null;
+ const success=faithGoalSuccess(g),before=state.faith,rankPos=pantheonPlayerRank(),share=playerShare();
+ let gift=0;
+ if(!success){
+   gift=g.gift;
+   state.faith=clamp(state.faith+gift,0,WORLD_FAITH_TOTAL-2);
+   state.yearDelta+=gift;
+   normalizeRivalPool();
+   if(state.lastPantheonReport){
+     state.lastPantheonReport.after=playerShare();
+     state.lastPantheonReport.userDelta=state.yearDelta;
+     state.lastPantheonReport.goalGift=gift;
+   }
+ }
+ const result={success,year:state.year,faithBeforeGift:before,faithAfter:state.faith,rankPos,share,gift};
+ state.faithGoalResults[g.id]=result;
+ return {goal:g,result};
+}
+function enqueueProgressNotice(item){
+ if(!item)return;
+ progressNoticeQueue.push(item);
+ showNextProgressNotice();
+}
+function showNextProgressNotice(){
+ if(progressNoticeOpen||!progressNoticeQueue.length)return;
+ progressNoticeOpen=true;
+ const item=progressNoticeQueue[0],body=$('#progressNoticeBody'),btn=$('#progressNoticeNext');
+ if(item.type==='rank'){
+   const d=item.data,skillText=d.skills.length?d.skills.join('、'):'今回新たに解放されたスキルはありません';
+   const artText=d.arts.length?d.arts.join('、'):'なし';
+   body.innerHTML=`<div class="progressNoticeHero"><div class="progressNoticeIcon">✨</div><div class="step">GODDESS RANK UP</div><h2>女神ランクアップ！</h2><div class="progressNoticeLead">信仰が集まり、神界でのあなたの格付けが上昇しました。</div></div>
+   <div class="rankChangeBox"><div><div class="sub">これまで</div><div class="rankName">${d.oldRank.name}</div></div><div class="arrow">→</div><div><div class="sub">NEW</div><div class="rankName">${d.newRank.name}</div></div></div>
+   <div class="progressUnlockGrid"><div class="progressUnlockCard"><div class="k">年間転生枠</div><div class="v">${d.oldRank.slots}人 → ${d.newRank.slots}人${d.newRank.slots>d.oldRank.slots?' に増加':'（変化なし）'}</div></div><div class="progressUnlockCard"><div class="k">現在の女神信仰度</div><div class="v">${state.faith.toLocaleString()}</div></div></div>
+   <div class="progressUnlockList"><b>新たに解放されたスキル</b><br>${skillText}${d.arts.length?`<br><br><b>新たに解放された神業</b><br>${artText}`:''}</div>`;
+   btn.textContent='新しい力を確認';
+ }else{
+   const {goal:g,result:r}=item.data,next=nextGoalAfter(g);
+   const beforeText=g.type==='rank1'
+     ? `判定時：世界シェア ${r.share.toFixed(2)}% / ${r.rankPos}位`
+     : `判定時：信仰度 ${r.faithBeforeGift.toLocaleString()} / 目標 ${g.target.toLocaleString()}`;
+   body.innerHTML=`<div class="progressNoticeHero"><div class="progressNoticeIcon">${r.success?'🏆':'🌱'}</div><div class="step">FAITH MILESTONE / ${g.year} YEARS</div><h2>${r.success?'目標達成！':'目標判定'}</h2><div class="progressNoticeLead">${g.title}</div></div>
+   <div class="goalResult ${r.success?'success':'fail'}"><div class="goalResultTitle">${r.success?'おめでとうございます！':'今回は目標に届きませんでした'}</div><div class="goalResultBody">${goalConditionText(g)}<br>${beforeText}${r.success?'':`<br><br>神界からささやかな支援として <b>信仰度 +${r.gift}</b> が贈られました。現在 ${r.faithAfter.toLocaleString()}。`}</div></div>
+   ${next?`<div class="nextGoalBox"><div class="ngLabel">NEXT GOAL</div><div class="ngTitle">${next.title}</div><div class="ngText">${goalConditionText(next)}<br>${goalProgressText(next)}</div></div>`:`<div class="nextGoalBox"><div class="ngLabel">MAIN GOALS COMPLETE</div><div class="ngTitle">ここから先は、あなた自身の神話です。</div><div class="ngText">世界シェアや実績、殿堂入りを好きなだけ伸ばしていきましょう。</div></div>`}`;
+   btn.textContent=next?'次の目標へ':'確認';
+ }
+ $('#progressNoticeModal').classList.remove('hidden');
+ if(typeof playAchievementChime==='function')playAchievementChime();
+}
+function closeProgressNotice(){
+ $('#progressNoticeModal').classList.add('hidden');
+ if(progressNoticeQueue.length)progressNoticeQueue.shift();
+ progressNoticeOpen=false;
+ saveGame();
+ setTimeout(showNextProgressNotice,80);
+}
+function maybeQueueRankUp(oldFaith,newFaith){
+ ensureProgressionState();
+ const oldRank=getRank(oldFaith),newRank=getRank(newFaith);
+ if(!oldRank||!newRank||oldRank.name===newRank.name)return;
+ const key=String(newRank.min);
+ if(state.rankNoticeSeen[key])return;
+ state.rankNoticeSeen[key]={year:state.year};
+ const skills=skillDefs.filter(s=>s.unlock>oldFaith&&s.unlock<=newFaith).map(s=>s.name);
+ const arts=godArtDefs.filter(a=>a.unlock>oldFaith&&a.unlock<=newFaith).map(a=>a.name);
+ enqueueProgressNotice({type:'rank',data:{oldRank,newRank,skills,arts}});
+}
+
+function renderArrivalFaithGoal(){
+ const el=$('#arrivalGoalBanner');if(!el)return;
+ const g=currentFaithGoal();
+ if(!g){
+   el.innerHTML=`<div class="agbTop"><span class="agbLabel">MAIN OBJECTIVE</span><span class="agbDeadline">主要目標達成済み</span></div><div class="agbTitle">ここから先は、あなた自身の神話です。</div><div class="agbText">世界シェア・実績・殿堂入りを好きなだけ伸ばしていきましょう。</div>`;
+   return;
+ }
+ const remaining=Math.max(0,g.year-state.year);
+ const pct=g.type==='faith'?clamp(state.faith/g.target*100,0,100):clamp((4-pantheonPlayerRank())/3*100,0,100);
+ el.innerHTML=`<div class="agbTop"><span class="agbLabel">${state.year===1?'FIRST GOAL':'CURRENT GOAL'}</span><span class="agbDeadline">${g.year}年目の年末に判定${remaining?` / あと${remaining}年`:''}</span></div><div class="agbTitle">${g.title}</div><div class="agbText">${goalConditionText(g)}<br>${goalProgressText(g)}</div><div class="goalBar"><i style="width:${pct}%"></i></div>`;
+}
+
+function renderCurrentFaithGoalHTML(){
+ const g=currentFaithGoal();
+ if(!g)return `<div class="goalCompleteText">段階目標はすべて判定済みです。ここから先は自由に世界一の神格を目指せます。</div>`;
+ const remain=Math.max(0,g.year-state.year);
+ const pct=g.type==='faith'?clamp(state.faith/g.target*100,0,100):clamp((4-pantheonPlayerRank())/3*100,0,100);
+ return `<div class="currentFaithGoal"><div><div class="goalMain">${g.title}<br>${goalConditionText(g)}</div><div class="goalBar"><i style="width:${pct}%"></i></div></div><div class="goalMeta">${goalProgressText(g)}<br>${remain?`判定まであと${remain}年`:`今年の年末に判定`}</div></div>`;
+}
 
 function actualSentCount(){return Math.max(0,(state.totalSent||0)-(state.candidates?.length||0))}
 function characterStatTotal(c){return (c?.devotion||0)+(c?.activity||0)+(c?.justice||0)+(c?.strength||0)+(c?.intelligence||0)}
@@ -1299,9 +1562,9 @@ function renderPantheonMini(){const html=pantheonMiniHTML();if($('#pantheonMini'
 function openPantheon(id=null){normalizePantheon();if(id)state.pantheonSelected=id;$('#pantheonModal').classList.remove('hidden');renderPantheon()}
 function closePantheon(){$('#pantheonModal').classList.add('hidden')}
 function renderPantheon(){
- const gods=pantheonShares(),selected=gods.find(g=>g.id===state.pantheonSelected)||gods[0],share=playerShare(),goal=state.pantheon.goalShare,vis=godVisual(selected.id);
- const rankPos=[...gods].sort((a,b)=>b.share-a.share).findIndex(g=>g.id==='player')+1,goalState=state.year>=100?(share>=goal&&rankPos===1?'目標達成':'目標未達'):`残り ${100-state.year}年`;
- $('#pantheonGoal').innerHTML=`<div class="pantheonGoalTop"><span>世界総信仰 20,000固定 / 100年目までに30％超（6,000）＆信仰率1位を目指す</span><span>現在 ${share.toFixed(2)}% / ${gods.length}柱中${rankPos}位 / ${goalState}</span></div><div class="goalBar"><i style="width:${clamp(share/goal*100,0,100)}%"></i></div>`;
+ const gods=pantheonShares(),selected=gods.find(g=>g.id===state.pantheonSelected)||gods[0],share=playerShare(),vis=godVisual(selected.id);
+ const rankPos=[...gods].sort((a,b)=>b.share-a.share).findIndex(g=>g.id==='player')+1;
+ $('#pantheonGoal').innerHTML=renderCurrentFaithGoalHTML();
  $('#godList').innerHTML=gods.map(g=>{const gv=godVisual(g.id);return `<button class="godCard ${g.id===selected.id?'active':''}" data-god-id="${g.id}"><div class="godCardThumb"><img src="${gv.thumb}" alt="${g.name}"></div><div class="godCardBody"><div class="godCardTop"><div><div class="godCardName">${g.name}</div><div class="godCardMeta">${g.kind} / ${g.epithet}</div></div></div><div class="godCardMeta">信仰値 ${Math.round(g.worldFaith).toLocaleString()} / 20,000</div></div><div class="godCardShare">${g.share.toFixed(1)}%</div></button>`}).join('');
  $$('[data-god-id]').forEach(b=>b.onclick=()=>{state.pantheonSelected=b.dataset.godId;renderPantheon()});
  const dynRank=selected.id==='player'?getRank(state.faith).name:selected.kind;
@@ -1662,9 +1925,10 @@ function renderArrival(){
  showOnly('arrivalScreen');const batch=orderedCandidates().map(x=>x.c);
  $('#arrivalPeople').innerHTML=batch.map((c,i)=>`<div class="person arrivalReveal ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)}</div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`).join('');
  $('#arrivalSub').textContent=`${state.year}年目。${state.candidates.length}名の新たな転生者が到着した。総合ステータス順に表示中。`;
+ renderArrivalFaithGoal();
  $('#arrivalSpeaker').textContent=state.year===1?'案内役':'転生管理局';
  const yearLines=[`「${state.year}年目の転生者、${state.candidates.length}名が揃いました。今年も全員を送り出してください」`,`「今年の転生枠は${state.candidates.length}名です。どの者もすでに手続き済み。あとは女神さまの加護を待つだけです」`,`「新しい転生者をお連れしました。生き残るか、名を残すか、それとも……今年も観測をお願いします」`,`「${state.candidates.length}名とも転生準備は完了しています。加護の配分が済み次第、門を開きます」`,`「また一年が始まりますね。今回の${state.candidates.length}名がどんな人生を歩むのか、記録局も注目しています」`];
- const message=state.year===1?`「女神さま。今年の転生者はこの${state.candidates.length}名です。候補の差し替えはできません。<b>全員</b>に必要な加護を与え、異世界へ送り出してください」`:`${stablePick(yearLines,'arrival-year-'+state.year)}`;
+ const message=state.year===1?`「女神さま。今年の転生者はこの${state.candidates.length}名です。まずは<b>5年目の年末までに信仰度50</b>を目指しましょう。全員に必要な加護を与え、異世界へ送り出してください」`:`${stablePick(yearLines,'arrival-year-'+state.year)}`;
  animateArrivalMessage(message);
 }
 function showOnly(id){['arrivalScreen','prepareScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
@@ -1935,10 +2199,14 @@ function finishYear(){
    state.active.forEach(c=>{if(c.alive&&!c.departed)c.age++});
    const newlyDead=state.active.filter(c=>!c.alive);newlyDead.forEach(c=>{if(!state.dead.some(d=>d.id===c.id))state.dead.push(c)});state.active=state.active.filter(c=>c.alive);finalizeDemonYear();updatePantheonYear();state.yearFinalized=true;
  }
+ ensureProgressionState();
+ const goalOutcome=evaluateFaithGoalAtYear();
  const oldRank=getRank(state.yearStartFaith),newRank=getRank(state.faith);const unlockedNow=skillDefs.filter(s=>s.unlock>state.yearStartFaith&&s.unlock<=state.faith).map(s=>s.name);state.newUnlocks=unlockedNow;const pr=state.lastPantheonReport;
  showOnly('summaryScreen');$('#summaryYear').textContent=state.year;$('#summaryLead').innerHTML=`女神信仰度は <b>${state.yearStartFaith}</b> → <b>${state.faith}</b>（${state.yearDelta>=0?'+':''}${state.yearDelta}）。${oldRank.name!==newRank.name?`称号が「${newRank.name}」になりました。`: `現在の称号は「${newRank.name}」です。`}${unlockedNow.length?` 新たに ${unlockedNow.join('、')} が解放されました。`:''}${pr?` 世界信仰シェアは <b>${pr.before.toFixed(2)}%</b> → <b>${pr.after.toFixed(2)}%</b>。`:''}`;
  const yearChars=[...state.active,...state.dead,...state.departed].filter(c=>(c.history||[]).some(h=>h.year===state.year)).filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i).sort((a,b)=>Math.abs(b.lastYearFaith)-Math.abs(a.lastYearFaith));
  renderSummaryTabs(yearChars);renderUnlocks();renderPantheonMini();renderDemonSummary();saveGame();
+ if(goalOutcome)enqueueProgressNotice({type:'goal',data:goalOutcome});
+ maybeQueueRankUp(state.yearStartFaith,state.faith);
 }
 function renderSummaryTabs(chars){
  const ordered=[...chars].sort((a,b)=>{const ha=historyForYear(a),hb=historyForYear(b);const oa=ha&&!ha.aliveEnd&&!ha.departedEnd?2:ha?.departedEnd?1:0,ob=hb&&!hb.aliveEnd&&!hb.departedEnd?2:hb?.departedEnd?1:0;return oa-ob||Math.abs((hb?.faith||0))-Math.abs((ha?.faith||0))});
@@ -2032,12 +2300,14 @@ function openTutorial(index=0){state.tutorialIndex=clamp(index,0,tutorialPages.l
 function renderTutorial(){const i=state.tutorialIndex,[title,text]=tutorialPages[i];$('#tutorialStep').textContent=`TUTORIAL ${i+1} / ${tutorialPages.length}`;$('#tutorialTitle').textContent=title;$('#tutorialText').textContent=text;$('#tutorialPrev').disabled=i===0;$('#tutorialNext').textContent=i===tutorialPages.length-1?'ゲーム開始':'次へ';$('#tutorialDots').innerHTML=tutorialPages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}
 function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV30','1');$('#tutorialModal').classList.add('hidden')}
 
-function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV38',JSON.stringify(copy))}catch(e){}}
-function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV38')||localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
-async function hardReset(){['tenseiGoddessSaveV38','tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));await clearCustomPortraitDB();location.reload()}
+function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV40',JSON.stringify(copy))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV40')||localStorage.getItem('tenseiGoddessSaveV39')||localStorage.getItem('tenseiGoddessSaveV38')||localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
+async function hardReset(){['tenseiGoddessSaveV40','tenseiGoddessSaveV39','tenseiGoddessSaveV38','tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));await clearCustomPortraitDB();location.reload()}
 
 
 // Custom portrait editor
+$('#progressNoticeNext').onclick=closeProgressNotice;
+$('#progressNoticeModal').onclick=e=>{if(e.target.id==='progressNoticeModal')closeProgressNotice()};
 $('#portraitEditorClose').onclick=closePortraitEditor;
 $('#portraitEditorModal').onclick=e=>{if(e.target.id==='portraitEditorModal')closePortraitEditor()};
 $('#portraitChooseBtn').onclick=()=>$('#portraitFileInput').click();
@@ -2099,7 +2369,7 @@ const resetGameFromButton=()=>{if(confirm('保存データを消して最初か�
 (async function init(){
  await loadCustomPortraitCache();
  const loaded=loadGame();
- if(!loaded){state.lastRank=getRank(state.faith).name;ensureGodArtState();ensureDemonState();normalizePantheon();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderArrival();saveGame()}else{
+ if(!loaded){state.lastRank=getRank(state.faith).name;ensureProgressionState();ensureGodArtState();ensureDemonState();normalizePantheon();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderArrival();saveGame()}else{
    // 保存時点の画面へ復帰
    if(state.phase==='prepareScreen')renderPrepare();else if(state.phase==='yearPlayScreen')renderYearPlay('観測を再開しました。',0);else if(state.phase==='summaryScreen'){finishYear()}else renderArrival();
  }
