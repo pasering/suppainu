@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v40</title>
+<title>転生の女神 - プロトタイプ v42</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -923,7 +923,6 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
       <div class="scene">
         <div class="stars"></div><div class="templeFloor"></div>
         <div class="sceneTitle"><div class="eyebrow">HALL OF REINCARNATION</div><h1>転生の間</h1><p id="arrivalSub">今年、あなたが送り出す転生者たちが到着した。</p></div>
-        <div class="arrivalGoalBanner" id="arrivalGoalBanner"></div>
         <div class="cast">
           <div class="goddessWrap"><div class="goddess goddessPortrait" id="arrivalGoddessPortrait" role="button" tabindex="0" title="女神の成長と解放を見る"><img class="goddessArt" src="assets/goddess-player.png" alt="転生の女神のビジュアル"><div class="goddessFrame"></div><div class="gName">転生の女神（あなた）</div></div></div>
           <div class="people" id="arrivalPeople"></div>
@@ -1281,7 +1280,7 @@ function showNextProgressNotice(){
    <div class="rankChangeBox"><div><div class="sub">これまで</div><div class="rankName">${d.oldRank.name}</div></div><div class="arrow">→</div><div><div class="sub">NEW</div><div class="rankName">${d.newRank.name}</div></div></div>
    <div class="progressUnlockGrid"><div class="progressUnlockCard"><div class="k">年間転生枠</div><div class="v">${d.oldRank.slots}人 → ${d.newRank.slots}人${d.newRank.slots>d.oldRank.slots?' に増加':'（変化なし）'}</div></div><div class="progressUnlockCard"><div class="k">現在の女神信仰度</div><div class="v">${state.faith.toLocaleString()}</div></div></div>
    <div class="progressUnlockList"><b>新たに解放されたスキル</b><br>${skillText}${d.arts.length?`<br><br><b>新たに解放された神業</b><br>${artText}`:''}</div>`;
-   btn.textContent='新しい力を確認';
+   btn.textContent='女神の成長と解放を見る';
  }else{
    const {goal:g,result:r}=item.data,next=nextGoalAfter(g);
    const beforeText=g.type==='rank1'
@@ -1295,12 +1294,20 @@ function showNextProgressNotice(){
  $('#progressNoticeModal').classList.remove('hidden');
  if(typeof playAchievementChime==='function')playAchievementChime();
 }
-function closeProgressNotice(){
+function closeProgressNotice(openGrowth=false){
  $('#progressNoticeModal').classList.add('hidden');
  if(progressNoticeQueue.length)progressNoticeQueue.shift();
  progressNoticeOpen=false;
  saveGame();
- setTimeout(showNextProgressNotice,80);
+ if(openGrowth){
+   setTimeout(()=>openGoddessGrowth(),90);
+ }else{
+   setTimeout(showNextProgressNotice,80);
+ }
+}
+function handleProgressNoticeNext(){
+ const current=progressNoticeQueue[0];
+ closeProgressNotice(current?.type==='rank');
 }
 function maybeQueueRankUp(oldFaith,newFaith){
  ensureProgressionState();
@@ -1925,7 +1932,6 @@ function renderArrival(){
  showOnly('arrivalScreen');const batch=orderedCandidates().map(x=>x.c);
  $('#arrivalPeople').innerHTML=batch.map((c,i)=>`<div class="person arrivalReveal ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)}</div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`).join('');
  $('#arrivalSub').textContent=`${state.year}年目。${state.candidates.length}名の新たな転生者が到着した。総合ステータス順に表示中。`;
- renderArrivalFaithGoal();
  $('#arrivalSpeaker').textContent=state.year===1?'案内役':'転生管理局';
  const yearLines=[`「${state.year}年目の転生者、${state.candidates.length}名が揃いました。今年も全員を送り出してください」`,`「今年の転生枠は${state.candidates.length}名です。どの者もすでに手続き済み。あとは女神さまの加護を待つだけです」`,`「新しい転生者をお連れしました。生き残るか、名を残すか、それとも……今年も観測をお願いします」`,`「${state.candidates.length}名とも転生準備は完了しています。加護の配分が済み次第、門を開きます」`,`「また一年が始まりますね。今回の${state.candidates.length}名がどんな人生を歩むのか、記録局も注目しています」`];
  const message=state.year===1?`「女神さま。今年の転生者はこの${state.candidates.length}名です。まずは<b>5年目の年末までに信仰度50</b>を目指しましょう。全員に必要な加護を与え、異世界へ送り出してください」`:`${stablePick(yearLines,'arrival-year-'+state.year)}`;
@@ -2252,7 +2258,7 @@ function goddessMilestones(){
  return levels.map(level=>({level,rank:ranks.find(r=>r.min===level)||null,skills:skillDefs.filter(s=>s.unlock===level),arts:godArtDefs.filter(a=>a.unlock===level)}));
 }
 function openGoddessGrowth(){renderGoddessGrowth();$('#goddessGrowthModal').classList.remove('hidden')}
-function closeGoddessGrowth(){$('#goddessGrowthModal').classList.add('hidden')}
+function closeGoddessGrowth(){$('#goddessGrowthModal').classList.add('hidden');setTimeout(showNextProgressNotice,80)}
 function renderGoddessGrowth(){
  const faith=state.faith,currentRank=getRank(faith),milestones=goddessMilestones(),next=milestones.find(m=>m.level>faith);
  const unlockedSkills=skillDefs.filter(s=>s.unlock<=faith).length;
@@ -2300,13 +2306,13 @@ function openTutorial(index=0){state.tutorialIndex=clamp(index,0,tutorialPages.l
 function renderTutorial(){const i=state.tutorialIndex,[title,text]=tutorialPages[i];$('#tutorialStep').textContent=`TUTORIAL ${i+1} / ${tutorialPages.length}`;$('#tutorialTitle').textContent=title;$('#tutorialText').textContent=text;$('#tutorialPrev').disabled=i===0;$('#tutorialNext').textContent=i===tutorialPages.length-1?'ゲーム開始':'次へ';$('#tutorialDots').innerHTML=tutorialPages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}
 function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV30','1');$('#tutorialModal').classList.add('hidden')}
 
-function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV40',JSON.stringify(copy))}catch(e){}}
-function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV40')||localStorage.getItem('tenseiGoddessSaveV39')||localStorage.getItem('tenseiGoddessSaveV38')||localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
-async function hardReset(){['tenseiGoddessSaveV40','tenseiGoddessSaveV39','tenseiGoddessSaveV38','tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));await clearCustomPortraitDB();location.reload()}
+function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV42',JSON.stringify(copy))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV42')||localStorage.getItem('tenseiGoddessSaveV41')||localStorage.getItem('tenseiGoddessSaveV40')||localStorage.getItem('tenseiGoddessSaveV39')||localStorage.getItem('tenseiGoddessSaveV38')||localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
+async function hardReset(){['tenseiGoddessSaveV42','tenseiGoddessSaveV41','tenseiGoddessSaveV40','tenseiGoddessSaveV39','tenseiGoddessSaveV38','tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));await clearCustomPortraitDB();location.reload()}
 
 
 // Custom portrait editor
-$('#progressNoticeNext').onclick=closeProgressNotice;
+$('#progressNoticeNext').onclick=handleProgressNoticeNext;
 $('#progressNoticeModal').onclick=e=>{if(e.target.id==='progressNoticeModal')closeProgressNotice()};
 $('#portraitEditorClose').onclick=closePortraitEditor;
 $('#portraitEditorModal').onclick=e=>{if(e.target.id==='portraitEditorModal')closePortraitEditor()};
