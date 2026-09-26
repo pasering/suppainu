@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v32</title>
+<title>転生の女神 - プロトタイプ v34</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -587,6 +587,55 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   #prepareScreen{scroll-margin-top:150px}
 }
 
+
+/* v33: BGM / achievements */
+.modalBack{z-index:1000!important}
+.bgmBtn.active{border-color:rgba(115,223,176,.38)!important;color:#b8f2d9!important;background:rgba(50,130,96,.12)!important}
+.bgmBtn:not(.active){opacity:.72}
+.achievementsModal{width:min(1080px,100%);max-height:90vh;overflow:auto}
+.achievementSummary{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);padding:10px 12px;margin:8px 0 12px;font-size:11px;color:var(--muted)}
+.achievementSummary b{font-size:18px;color:var(--gold)}
+.achievementGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.achievementCard{position:relative;border:1px solid var(--line);border-radius:14px;padding:11px;background:rgba(255,255,255,.028);min-height:112px;overflow:hidden}
+.achievementCard.unlocked{border-color:rgba(243,200,106,.38);background:linear-gradient(135deg,rgba(243,200,106,.10),rgba(158,124,255,.06))}
+.achievementCard.locked{filter:saturate(.45);opacity:.62}
+.achievementIcon{font-size:23px;line-height:1;margin-bottom:7px}
+.achievementTitle{font-size:11px;font-weight:900;color:#f6f0ff}
+.achievementDesc{font-size:9px;line-height:1.5;color:var(--muted);margin-top:5px}
+.achievementMeta{font-size:8px;color:#cbbfe5;margin-top:7px}
+.achievementCard.unlocked .achievementMeta{color:#ffe09a}
+.achievementCategory{position:absolute;right:8px;top:8px;font-size:7px;letter-spacing:.08em;color:#9f94ba;text-transform:uppercase}
+.achievementToastWrap{position:fixed;right:16px;bottom:16px;z-index:180;display:grid;gap:8px;width:min(340px,calc(100vw - 24px));pointer-events:none}
+.achievementToast{border:1px solid rgba(243,200,106,.48);border-radius:15px;background:linear-gradient(135deg,rgba(35,27,61,.98),rgba(15,12,32,.98));box-shadow:0 18px 55px rgba(0,0,0,.48);padding:11px 13px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px;align-items:center;animation:achievementPop .25s ease-out}
+.achievementToast .ai{font-size:27px}.achievementToast .at{font-size:9px;color:var(--gold);font-weight:900;letter-spacing:.12em}.achievementToast .an{font-size:12px;font-weight:900;margin-top:2px}.achievementToast .ad{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.4}
+@keyframes achievementPop{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(max-width:980px){.achievementGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.mobileHudActions{grid-template-columns:repeat(3,minmax(0,1fr))!important}.achievementGrid{grid-template-columns:1fr}.achievementsModal{max-height:94vh}.achievementToastWrap{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));width:auto}.achievementCard{min-height:96px}}
+
+
+/* v34: achievement tiers / annual sorting / BGM icon */
+.bgmBtn{min-width:44px!important;font-size:18px!important;line-height:1!important;padding-left:10px!important;padding-right:10px!important}
+.bgmBtn.active{border-color:rgba(115,223,176,.48)!important;color:#c9f8e4!important;background:rgba(50,130,96,.16)!important;opacity:1!important}
+.achievementCard{min-height:104px}
+.achievementCard.locked{filter:none;opacity:.56;background:rgba(115,112,126,.055);border-color:rgba(170,166,184,.16)}
+.achievementCard.locked .achievementTitle{color:#aaa5b3}
+.achievementTier{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 7px;font-size:7.5px;font-weight:950;letter-spacing:.08em;margin-bottom:7px}
+.achievementTier.bronze{color:#ffd0ad;background:rgba(177,102,54,.18);border:1px solid rgba(204,128,75,.35)}
+.achievementTier.silver{color:#edf2ff;background:rgba(180,193,215,.12);border:1px solid rgba(190,204,226,.32)}
+.achievementTier.gold{color:#ffe391;background:rgba(218,171,56,.15);border:1px solid rgba(243,200,106,.42)}
+.achievementCard.unlocked.tier-bronze{border-color:rgba(204,128,75,.36);background:linear-gradient(135deg,rgba(160,88,42,.10),rgba(158,124,255,.035))}
+.achievementCard.unlocked.tier-silver{border-color:rgba(190,204,226,.36);background:linear-gradient(135deg,rgba(185,199,222,.09),rgba(158,124,255,.04))}
+.achievementCard.unlocked.tier-gold{border-color:rgba(243,200,106,.48);background:linear-gradient(135deg,rgba(243,200,106,.12),rgba(158,124,255,.06))}
+.achievementCondition{font-size:9px;line-height:1.55;color:#e1d8ef;margin-top:6px}
+.achievementCondition b{color:var(--gold);font-size:8px}
+.achievementLockedOnly{display:flex;flex-direction:column;justify-content:center;min-height:70px}
+.achievementStats{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.achievementStats span{border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.04);font-size:9px;color:var(--muted)}
+.summarySortBar{display:flex;justify-content:flex-end;align-items:center;gap:7px;margin:2px 0 10px;padding:7px 9px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025)}
+.summarySortBar label{font-size:9px;color:var(--muted);font-weight:850}.summarySortSelect{border:1px solid var(--line);background:#17142b;color:var(--ink);border-radius:9px;padding:6px 9px;font:inherit;font-size:10px;outline:none}
+.summaryTotalStat{color:#cbb7ff!important}
+.goddessPortrait{cursor:pointer}.goddessPortrait:hover{filter:drop-shadow(0 18px 30px rgba(0,0,0,.35)) brightness(1.05)}.goddessPortrait:focus-visible{outline:2px solid #c6b2ff;outline-offset:4px}
+@media(max-width:620px){.summarySortBar{justify-content:space-between}.summarySortSelect{max-width:72%;font-size:9px}.bgmBtn{font-size:17px!important}}
+
 </style>
 </head>
 <body>
@@ -600,8 +649,8 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
       <div class="hudPill clickable" id="hudAlivePill" title="活動中の転生者一覧を開く"><div class="k">現世の転生者</div><div class="v" id="hudAlive">0人</div></div>
       <div class="hudPill clickable" id="hudSharePill" title="世界の神々と信仰シェアを見る"><div class="k">世界信仰シェア</div><div class="v" id="hudShare">0.2%</div></div>
     </div>
-    <div class="hudActions"><button class="iconBtn" id="recordsBtn">記録</button><button class="iconBtn" id="skillsBtn">スキル</button><button class="iconBtn" id="tutorialBtn">遊び方</button><button class="iconBtn" id="resetBtn">最初から</button></div>
-    <div class="mobileHudActions" aria-label="スマートフォン用メニュー"><button class="iconBtn" id="mobileRecordsBtn">記録</button><button class="iconBtn" id="mobileSkillsBtn">スキル</button><button class="iconBtn" id="mobileTutorialBtn">遊び方</button><button class="iconBtn dangerAction" id="mobileResetBtn">最初から</button></div>
+    <div class="hudActions"><button class="iconBtn" id="recordsBtn">記録</button><button class="iconBtn" id="skillsBtn">スキル</button><button class="iconBtn" id="achievementsBtn">実績</button><button class="iconBtn bgmBtn" id="bgmBtn" title="BGMをONにする" aria-label="BGM OFF" aria-pressed="false">🔇</button><button class="iconBtn" id="tutorialBtn">遊び方</button><button class="iconBtn" id="resetBtn">最初から</button></div>
+    <div class="mobileHudActions" aria-label="スマートフォン用メニュー"><button class="iconBtn" id="mobileRecordsBtn">記録</button><button class="iconBtn" id="mobileSkillsBtn">スキル</button><button class="iconBtn" id="mobileAchievementsBtn">実績</button><button class="iconBtn bgmBtn" id="mobileBgmBtn" title="BGMをONにする" aria-label="BGM OFF" aria-pressed="false">🔇</button><button class="iconBtn" id="mobileTutorialBtn">遊び方</button><button class="iconBtn dangerAction" id="mobileResetBtn">最初から</button></div>
     <div class="prepareHeaderDock hidden" id="prepareHeaderDock">
       <div class="prepareHeaderNames" id="prepareHeaderCandidates"></div>
       <div class="prepareHeaderPoints"><span>残り</span><b id="prepareHeaderBudget">40</b><em>pt</em><small>/ <span id="prepareHeaderTotal">40</span></small></div>
@@ -615,7 +664,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
         <div class="stars"></div><div class="templeFloor"></div>
         <div class="sceneTitle"><div class="eyebrow">HALL OF REINCARNATION</div><h1>転生の間</h1><p id="arrivalSub">今年、あなたが送り出す転生者たちが到着した。</p></div>
         <div class="cast">
-          <div class="goddessWrap"><div class="goddess goddessPortrait"><img class="goddessArt" src="assets/goddess-player.png" alt="転生の女神のビジュアル"><div class="goddessFrame"></div><div class="gName">転生の女神（あなた）</div></div></div>
+          <div class="goddessWrap"><div class="goddess goddessPortrait" id="arrivalGoddessPortrait" role="button" tabindex="0" title="女神の成長と解放を見る"><img class="goddessArt" src="assets/goddess-player.png" alt="転生の女神のビジュアル"><div class="goddessFrame"></div><div class="gName">転生の女神（あなた）</div></div></div>
           <div class="people" id="arrivalPeople"></div>
         </div>
         <div class="dialogue"><div class="speaker" id="arrivalSpeaker">案内役</div><div class="dialogueText" id="arrivalText"></div><div class="dialogueActions"><button class="btn gold" id="prepareBtn">転生準備へ</button></div></div>
@@ -722,6 +771,8 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   </main>
 </div>
 
+<div class="modalBack hidden" id="achievementsModal"><div class="modal achievementsModal"><button class="closeX" id="achievementsClose">閉じる</button><div class="step">ACHIEVEMENTS</div><h2>実績</h2><div class="achievementSummary" id="achievementSummary"></div><div class="achievementGrid" id="achievementGrid"></div></div></div>
+<div class="achievementToastWrap" id="achievementToastWrap" aria-live="polite"></div>
 <div class="modalBack hidden" id="tutorialModal"><div class="modal"><div class="step" id="tutorialStep">TUTORIAL 1 / 5</div><h2 id="tutorialTitle"></h2><p id="tutorialText"></p><div class="modalActions"><div class="tutorialDots" id="tutorialDots"></div><div style="display:flex;gap:8px"><button class="btn secondary" id="tutorialPrev">戻る</button><button class="btn gold" id="tutorialNext">次へ</button></div></div></div></div>
 <div class="modalBack hidden" id="recordsModal"><div class="modal archiveModal"><button class="closeX" id="recordsClose">閉じる</button><div class="step">GODDESS ARCHIVE</div><h2>転生記録</h2><div class="archiveTabs"><button class="archiveTab active" data-archive="living">生存者</button><button class="archiveTab" data-archive="dead">死亡者</button><button class="archiveTab" data-archive="departed">離脱者</button><button class="archiveTab" data-archive="hall">殿堂入り</button></div><div id="recordsBody"></div></div></div>
 <div class="modalBack hidden" id="skillLibraryModal"><div class="modal skillLibraryModal"><button class="closeX" id="skillLibraryClose">閉じる</button><div class="step">SKILLS / PRESETS</div><div class="skillLibraryHeader"><div><h2>スキル・プリセット一覧</h2><p class="sub">全スキルの解放条件・コスト・効果を確認できます。4つのプリセットは名前も内容もいつでも上書きできます。</p></div></div><div class="sectionLabel">Custom Presets</div><div class="skillLibraryPresetGrid" id="skillLibraryPresetGrid"></div><div class="sectionLabel">Skill Catalog</div><div class="skillLibraryCatalog" id="skillLibraryCatalog"></div></div></div>
@@ -832,10 +883,106 @@ const tutorialPages=[
 const state={
  year:1,faith:40,yearStartFaith:40,yearDelta:0,budget:40,totalSent:0,
  candidates:[],active:[],dead:[],departed:[],hall:[],currentCandidateIndex:0,month:0,phase:'arrival',
- tutorialIndex:0,annualLog:[],newUnlocks:[],lastRank:'新人女神',yearFinalized:false,usedNames:[],summarySelected:'all',archiveMode:'living',archiveSelected:null,pantheon:null,pantheonSelected:'player',lastPantheonReport:null,
- godArtsSpentThisYear:0,godArtTargetId:null,godArtIntroSeen:false,demonIntroIndex:0,prepareMode:'blessing',skillPresets:[[],[],[],[]],skillPresetNames:['プリセット1','プリセット2','プリセット3','プリセット4'],presetEditIndex:0,
+ tutorialIndex:0,annualLog:[],newUnlocks:[],lastRank:'新人女神',yearFinalized:false,usedNames:[],summarySelected:'all',summarySort:'generation_asc',archiveMode:'living',archiveSelected:null,pantheon:null,pantheonSelected:'player',lastPantheonReport:null,
+ godArtsSpentThisYear:0,godArtTargetId:null,godArtIntroSeen:false,demonIntroIndex:0,prepareMode:'blessing',skillPresets:[[],[],[],[]],skillPresetNames:['プリセット1','プリセット2','プリセット3','プリセット4'],presetEditIndex:0,achievements:{},
  demonArmy:{active:false,introSeen:false,activatedYear:null,trigger:null,threat:0,investment:0,recommended:0,planYear:null,yearPlan:null,yearWins:0,yearLosses:0,lastReport:null}
 };
+
+
+function actualSentCount(){return Math.max(0,(state.totalSent||0)-(state.candidates?.length||0))}
+function characterStatTotal(c){return (c?.devotion||0)+(c?.activity||0)+(c?.justice||0)+(c?.strength||0)+(c?.intelligence||0)}
+function allCompletedYearRecords(){const rows=[];for(const c of allCharacters())for(const h of (c.history||[]))rows.push({c,h});return rows}
+function yearRecordGroups(){const map=new Map();for(const row of allCompletedYearRecords()){const y=row.h.year;if(!map.has(y))map.set(y,[]);map.get(y).push(row)}return map}
+function yearFinalDeathCount(rows){return rows.filter(({h})=>!h.aliveEnd&&!h.departedEnd).length}
+function yearMajorCount(rows){return rows.reduce((n,{h})=>n+(h.events||[]).filter(e=>e.majorAchievement||e.legend||e.hallInduction).length,0)}
+function hasZeroDeathYear(minPeople){for(const rows of yearRecordGroups().values())if(rows.length>=minPeople&&yearFinalDeathCount(rows)===0)return true;return false}
+function hasYearDeaths(minDeaths){for(const rows of yearRecordGroups().values())if(yearFinalDeathCount(rows)>=minDeaths)return true;return false}
+function lifespanDeathCharacters(){return allCharacters().filter(c=>[...(c.history||[]).flatMap(h=>h.events||[]),...(c.annualEvents||[])].some(e=>e.naturalDeath))}
+function rescueCountFor(c){return [...(c.history||[]).flatMap(h=>h.events||[]),...(c.annualEvents||[])].filter(e=>e.rescued).length}
+function hasAchievementEvent(fn){for(const c of allCharacters()){for(const e of (c.annualEvents||[]))if(fn(e,c))return true;for(const h of (c.history||[]))for(const e of (h.events||[]))if(fn(e,c))return true}return false}
+function hasAchievementRelation(type){return hasAchievementEvent(e=>[e?.relationChange,...(e?.socialChanges||[])].filter(Boolean).some(x=>x.type===type))}
+function hallCountInOneYear(min){const counts={};for(const h of state.hall||[])counts[h.year]=(counts[h.year]||0)+1;return Object.values(counts).some(n=>n>=min)}
+function hasGoldenYear(){for(const rows of yearRecordGroups().values())if(rows.length>=30&&yearFinalDeathCount(rows)===0&&yearMajorCount(rows)>=8)return true;return false}
+const A=(id,tier,cat,name,condition,test,icon='🏆')=>({id,tier,cat,name,condition,desc:condition,test,icon});
+const achievementDefs=[
+ // 転生人数
+ A('first_send','bronze','管理','はじめまして、異世界','転生者を累計1人以上送り出す。',()=>actualSentCount()>=1,'🪽'),
+ A('send10','bronze','管理','十人十色','転生者を累計10人以上送り出す。',()=>actualSentCount()>=10,'🚪'),
+ A('send50','bronze','管理','五十の第二人生','転生者を累計50人以上送り出す。',()=>actualSentCount()>=50,'🌟'),
+ A('send100','silver','管理','百人の人生','転生者を累計100人以上送り出す。',()=>actualSentCount()>=100,'💯'),
+ A('send500','silver','管理','輪廻の大管理者','転生者を累計500人以上送り出す。',()=>actualSentCount()>=500,'🌌'),
+ A('send1000','gold','管理','千の人生を見届ける者','転生者を累計1,000人以上送り出す。',()=>actualSentCount()>=1000,'♾️'),
+ // 年数
+ A('year5','bronze','年月','見習い卒業はまだ先','5年目に到達する。',()=>state.year>=5,'📖'),
+ A('year10','bronze','年月','十年目の女神','10年目に到達する。',()=>state.year>=10,'📜'),
+ A('year20','bronze','年月','二十年の観測者','20年目に到達する。',()=>state.year>=20,'🕯️'),
+ A('year30','bronze','年月','三十年の積み重ね','30年目に到達する。',()=>state.year>=30,'⏳'),
+ A('year50','silver','年月','半世紀の記録','50年目に到達する。',()=>state.year>=50,'🏛️'),
+ A('year100','silver','年月','百年女神','100年目に到達する。',()=>state.year>=100,'💠'),
+ A('year200','gold','年月','二百年の見届け人','200年目に到達する。',()=>state.year>=200,'♾️'),
+ // 信仰・既存
+ A('faith120','bronze','信仰','小慣れてきた女神','女神信仰度120に到達する。',()=>state.faith>=120,'✨'),
+ A('faith550','silver','信仰','神業の領域','女神信仰度550に到達する。',()=>state.faith>=550,'🔮'),
+ A('faith900','silver','信仰','カリスマ女神','女神信仰度900に到達する。',()=>state.faith>=900,'👑'),
+ A('faith6000','gold','信仰','世界宗教','女神信仰度6,000に到達する。',()=>state.faith>=6000,'⛪'),
+ // シェア
+ ...[[5,'世界に小さな足跡','bronze'],[10,'世界の一角','bronze'],[20,'無視できない新興神','bronze'],[30,'三割の壁を越えて','silver'],[40,'二大神に迫る者','silver'],[50,'世界の半分','silver'],[60,'巨大信仰圏','gold'],[65,'六十五パーセントの壁','gold'],[70,'七割支配','gold'],[80,'世界を覆う祈り','gold'],[90,'ほぼ唯一神','gold']].map(([v,name,tier])=>A(`share${v}`,tier,'世界',name,`世界信仰シェア${v}％以上に到達する。`,()=>playerShare()>=v,'🌍')),
+ A('world_top','silver','世界','信仰率ナンバーワン','三柱の神々の中で信仰シェア1位になる。',()=>{const g=pantheonShares(),p=g.find(x=>x.id==='player');return p&&g.every(x=>x.id==='player'||p.share>=x.share)},'🏆'),
+ // 生存年数
+ ...[[5,'五年の壁','bronze'],[10,'十年選手','bronze'],[20,'異世界の古参','silver'],[30,'三十年の生存者','silver'],[40,'四十年を生き抜いて','gold'],[50,'半世紀の転生者','gold']].map(([v,name,tier])=>A(`survive${v}`,tier,'生存',name,`活動${v}年以上を生き抜いた転生者が現れる。`,()=>allCharacters().some(c=>careerYears(c)>=v),'🌳')),
+ // 殿堂入り
+ ...[[1,'殿堂入り第一号','bronze'],[5,'英雄の列','bronze'],[10,'英雄たちの時代','silver'],[50,'神話名鑑','silver'],[100,'百人の伝説','gold'],[200,'殿堂が足りない','gold']].map(([v,name,tier])=>A(`hall${v}`,tier,'殿堂',name,`殿堂入り人物が累計${v}人以上になる。`,()=>state.hall.length>=v,'🏅')),
+ // 奇跡
+ A('rescue','bronze','奇跡','その死は認めない','はじめて死亡した転生者を女神の救済で助ける。',()=>hasAchievementEvent(e=>e.rescued),'🕊️'),
+ A('revive_skill','silver','奇跡','死さえ覆す加護','「蘇生の奇跡」をはじめて転生者へ付与する。',()=>[...allCharacters(),...(state.candidates||[])].some(c=>(c.skills||[]).includes('s30')),'💫'),
+ A('auto_revive','silver','奇跡','本当に蘇った','「蘇生の奇跡」による自動蘇生が実際に発動する。',()=>hasAchievementEvent(e=>e.autoRevived),'✨'),
+ // 能力
+ ...[[100,'百の腕力','bronze'],[120,'人外の腕力','silver'],[150,'英雄を超える力','gold'],[200,'力こそ神話','gold']].map(([v,name,tier])=>A(`strength${v}`,tier,'能力',name,`強さ${v}以上の転生者が誕生する。`,()=>allCharacters().some(c=>(c.strength||0)>=v),'⚔️')),
+ ...[[100,'百の叡智','bronze'],[120,'人外の叡智','silver'],[150,'賢者を超える頭脳','gold'],[200,'知恵こそ神話','gold']].map(([v,name,tier])=>A(`intelligence${v}`,tier,'能力',name,`賢さ${v}以上の転生者が誕生する。`,()=>allCharacters().some(c=>(c.intelligence||0)>=v),'📘')),
+ A('power100','bronze','能力','人の域を越えて','強さまたは賢さが100以上の転生者が現れる。',()=>allCharacters().some(c=>(c.strength||0)>=100||(c.intelligence||0)>=100),'⚡'),
+ ...[[500,'俺TUEEEEE!!','silver'],[600,'盛りすぎでは？','gold'],[700,'ステータスが壊れている','gold']].map(([v,name,tier])=>A(`stat_total${v}`,tier,'能力',name,`ステータス5項目（帰依心・積極性・正義感・強さ・賢さ）の総合が${v}以上の転生者が誕生する。`,()=>allCharacters().some(c=>characterStatTotal(c)>=v),'🔥')),
+ // 無死亡年
+ ...[[10,'誰も欠けない一年','bronze'],[20,'二十人全員生還','silver'],[30,'三十人の無傷帰還','gold'],[50,'奇跡の五十人生還','gold']].map(([v,name,tier])=>A(`zero_death_${v}`,tier,'年間',name,`その年に活動した転生者が${v}人以上いる状態で、救済後の最終死亡者0人で一年を終える。`,()=>hasZeroDeathYear(v),'🛡️')),
+ // 大量死亡年
+ ...[[5,'嫌な一年だった','bronze'],[10,'死者十名','silver'],[20,'大惨事','gold'],[30,'女神史上最悪の一年','gold']].map(([v,name,tier])=>A(`year_deaths_${v}`,tier,'年間',name,`1年間の最終死亡者数が${v}人以上になる（救済・蘇生された人物は含まない）。`,()=>hasYearDeaths(v),'☠️')),
+ // 寿命死
+ ...[[1,'天寿を全うして','bronze'],[5,'五つの大往生','bronze'],[10,'十人の人生を最後まで','silver'],[20,'二十の天寿','silver'],[30,'老いを見届ける女神','gold'],[50,'五十人の生涯','gold']].map(([v,name,tier])=>A(`lifespan_${v}`,tier,'生涯',name,`寿命による自然死を迎えた転生者を累計${v}人以上見届ける。`,()=>lifespanDeathCharacters().length>=v,'🌅')),
+ // 関係（既存維持）
+ A('friend','bronze','関係','異世界の友','転生者同士に友好関係が生まれる。',()=>hasAchievementRelation('friend'),'🤝'),
+ A('marriage','bronze','関係','異世界で結ばれて','転生者同士が結婚する。',()=>hasAchievementRelation('marriage'),'💍'),
+ A('mentor','bronze','関係','受け継がれるもの','師弟関係が生まれる。',()=>hasAchievementRelation('mentor'),'📘'),
+ A('party','bronze','関係','固定パーティー','転生者同士が固定パーティーを結成する。',()=>hasAchievementRelation('party'),'🛡️'),
+ A('betrayal','silver','関係','昨日の友は今日の敵','転生者同士の裏切りが発生する。',()=>hasAchievementRelation('betrayal'),'🗡️'),
+ A('demon','bronze','魔王軍','魔王軍、動く','魔王軍の活動が本格化する。',()=>ensureDemonState().active,'👿'),
+ // 特殊実績
+ A('special_dual150','gold','特殊','勇者と賢者を一人で','同じ転生者が強さ150以上かつ賢さ150以上に到達する。',()=>allCharacters().some(c=>(c.strength||0)>=150&&(c.intelligence||0)>=150),'🌠'),
+ A('special_rescue3','gold','特殊','死神に嫌われた者','同じ転生者を生涯で3回以上救済する。',()=>allCharacters().some(c=>rescueCountFor(c)>=3),'🪽'),
+ A('special_golden_year','gold','特殊','黄金世代','30人以上が活動する一年を死亡者0人で終え、同じ年に大功績級の出来事を8件以上達成する。',()=>hasGoldenYear(),'🌟'),
+ A('special_hall5year','gold','特殊','神話の一年','同じ年に5人以上が殿堂入りする。',()=>hallCountInOneYear(5),'🏛️'),
+ A('special_unblessed_legend','gold','特殊','加護なき伝説','加護投入20pt以下・神業投入0ptの人物が殿堂入りする。',()=>allCharacters().some(c=>c.hallOfFame&&(c.blessingSpent||0)<=20&&(c.godArtSpent||0)===0),'🎲'),
+ A('special_hero_lifespan','gold','特殊','英雄の大往生','殿堂入り人物が活動40年以上を生き、寿命による自然死を迎える。',()=>lifespanDeathCharacters().some(c=>c.hallOfFame&&careerYears(c)>=40),'🌄')
+];
+let achievementToastQueue=[],achievementToastBusy=false;
+function ensureAchievements(){if(!state.achievements||typeof state.achievements!=='object'||Array.isArray(state.achievements))state.achievements={}}
+function achievementUnlocked(id){ensureAchievements();return !!state.achievements[id]}
+function unlockAchievement(def,silent=false){ensureAchievements();if(state.achievements[def.id])return false;state.achievements[def.id]={year:state.year,at:Date.now()};if(!silent){achievementToastQueue.push(def);showNextAchievementToast();playAchievementChime()}return true}
+function checkAchievements(silent=false){ensureAchievements();let changed=false;for(const def of achievementDefs){if(state.achievements[def.id])continue;let ok=false;try{ok=!!def.test()}catch(e){}if(ok)changed=unlockAchievement(def,silent)||changed}if(changed)saveGame();if(!$('#achievementsModal')?.classList.contains('hidden'))renderAchievements();return changed}
+function tierLabel(t){return t==='gold'?'金':t==='silver'?'銀':'銅'}
+function showNextAchievementToast(){if(achievementToastBusy||!achievementToastQueue.length)return;achievementToastBusy=true;const def=achievementToastQueue.shift(),wrap=$('#achievementToastWrap');if(!wrap){achievementToastBusy=false;return}const el=document.createElement('div');el.className='achievementToast';el.innerHTML=`<div class="ai">${def.icon}</div><div><div class="at">${tierLabel(def.tier)}実績 解除</div><div class="an">${def.name}</div><div class="ad">${def.condition}</div></div>`;wrap.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(10px)';el.style.transition='.22s';setTimeout(()=>{el.remove();achievementToastBusy=false;showNextAchievementToast()},230)},2800)}
+function renderAchievements(){ensureAchievements();const unlocked=achievementDefs.filter(d=>achievementUnlocked(d.id)),counts=t=>achievementDefs.filter(d=>d.tier===t&&achievementUnlocked(d.id)).length,totals=t=>achievementDefs.filter(d=>d.tier===t).length;$('#achievementSummary').innerHTML=`<div><span>解除済み <b>${unlocked.length}</b> / ${achievementDefs.length}</span></div><div class="achievementStats"><span>銅 ${counts('bronze')}/${totals('bronze')}</span><span>銀 ${counts('silver')}/${totals('silver')}</span><span>金 ${counts('gold')}/${totals('gold')}</span></div>`;$('#achievementGrid').innerHTML=achievementDefs.map(d=>{const u=state.achievements[d.id],tier=tierLabel(d.tier);if(!u)return `<div class="achievementCard locked tier-${d.tier}"><div class="achievementLockedOnly"><div class="achievementTier ${d.tier}">${tier}実績</div><div class="achievementTitle">${d.name}</div></div></div>`;return `<div class="achievementCard unlocked tier-${d.tier}"><div class="achievementCategory">${d.cat}</div><div class="achievementTier ${d.tier}">${tier}実績</div><div class="achievementTitle">${d.name}</div><div class="achievementCondition"><b>達成条件</b><br>${d.condition}</div><div class="achievementMeta">${u.year}年目に解除</div></div>`}).join('')}
+function openAchievements(){checkAchievements(true);renderAchievements();$('#achievementsModal').classList.remove('hidden')}
+function closeAchievements(){$('#achievementsModal').classList.add('hidden')}
+
+let bgmEnabled=(()=>{try{return localStorage.getItem('tenseiGoddessBgm')==='on'}catch(e){return false}})(),bgmCtx=null,bgmTimer=null,bgmStep=0;
+const bgmChords=[[220,261.63,329.63],[196,246.94,293.66],[174.61,220,261.63],[196,233.08,293.66],[220,277.18,329.63],[196,246.94,311.13]];
+function updateBgmButtons(){for(const id of ['#bgmBtn','#mobileBgmBtn']){const b=$(id);if(!b)continue;b.textContent=bgmEnabled?'🔊':'🔇';b.classList.toggle('active',bgmEnabled);b.setAttribute('aria-pressed',bgmEnabled?'true':'false');b.setAttribute('aria-label',bgmEnabled?'BGM ON':'BGM OFF');b.title=bgmEnabled?'BGMをOFFにする':'BGMをONにする'}}
+function createBgmContext(){if(bgmCtx)return bgmCtx;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;bgmCtx=new AC();return bgmCtx}
+function scheduleBgmBar(){if(!bgmEnabled||!bgmCtx)return;const ctx=bgmCtx,now=ctx.currentTime+.04,chord=bgmChords[bgmStep%bgmChords.length];bgmStep++;for(let i=0;i<chord.length;i++){const o=ctx.createOscillator(),g=ctx.createGain();o.type=i===0?'sine':'triangle';o.frequency.value=chord[i]*(i===0?.5:1);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(i===0?.020:.012,now+1.0);g.gain.exponentialRampToValueAtTime(.0001,now+5.2);o.connect(g);g.connect(ctx.destination);o.start(now);o.stop(now+5.35)}if(bgmStep%2===0){const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=chord[1]*2;g.gain.setValueAtTime(.0001,now+1.1);g.gain.exponentialRampToValueAtTime(.007,now+1.16);g.gain.exponentialRampToValueAtTime(.0001,now+2.3);o.connect(g);g.connect(ctx.destination);o.start(now+1.1);o.stop(now+2.4)}}
+async function startBgm(){if(!bgmEnabled)return;const ctx=createBgmContext();if(!ctx)return;try{if(ctx.state==='suspended')await ctx.resume()}catch(e){}if(bgmTimer)return;scheduleBgmBar();bgmTimer=setInterval(scheduleBgmBar,5000)}
+function stopBgm(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}if(bgmCtx){const old=bgmCtx;bgmCtx=null;try{old.close()}catch(e){}}}
+function toggleBgm(){bgmEnabled=!bgmEnabled;try{localStorage.setItem('tenseiGoddessBgm',bgmEnabled?'on':'off')}catch(e){}updateBgmButtons();if(bgmEnabled)startBgm();else stopBgm()}
+function playAchievementChime(){if(!bgmEnabled)return;const ctx=createBgmContext();if(!ctx)return;try{if(ctx.state==='suspended')ctx.resume()}catch(e){}const now=ctx.currentTime+.02;[659.25,783.99,987.77].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;const t=now+i*.12;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.018,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.75);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.8)})}
+function armBgm(){updateBgmButtons();if(!bgmEnabled)return;const kick=()=>{startBgm();document.removeEventListener('pointerdown',kick,true);document.removeEventListener('keydown',kick,true)};document.addEventListener('pointerdown',kick,true);document.addEventListener('keydown',kick,true)}
 
 function initialAge(){return rand(16,28)}
 function genCap(current){return clamp(current+rand(18,55)+(Math.random()<.12?rand(12,28):0),55,130)}
@@ -1448,10 +1595,14 @@ function annualReview(c,h){
  if(h.departedEnd)text+=` 年内に離脱：${h.departureCause}`;else if(!h.aliveEnd)text+=` 年内に死亡：${h.deathCause}`;else if(h.growth?.length)text+=` 能力面では ${h.growth.slice(-3).join(' / ')}。`;
  return text;
 }
+function annualStatTotal(h){const s=h?.statsEnd||{};return (s.devotion||0)+(s.activity||0)+(s.justice||0)+(s.strength||0)+(s.intelligence||0)}
+function sortAnnualCharacters(chars){const mode=state.summarySort||'generation_asc';return [...chars].sort((a,b)=>{const ha=historyForYear(a)||makeYearHistory(a),hb=historyForYear(b)||makeYearHistory(b);if(mode==='generation_desc')return (b.reincarnatedYear||0)-(a.reincarnatedYear||0)||a.name.localeCompare(b.name,'ja');if(mode==='stats_desc')return annualStatTotal(hb)-annualStatTotal(ha)||Math.abs(hb.faith||0)-Math.abs(ha.faith||0);if(mode==='stats_asc')return annualStatTotal(ha)-annualStatTotal(hb);if(mode==='faith_desc')return (hb.faith||0)-(ha.faith||0);if(mode==='fame_desc')return (hb.statsEnd?.fame||0)-(ha.statsEnd?.fame||0);if(mode==='name')return a.name.localeCompare(b.name,'ja');return (a.reincarnatedYear||0)-(b.reincarnatedYear||0)||a.name.localeCompare(b.name,'ja')})}
 function renderAllYearResults(chars){
- const ordered=[...chars].sort((a,b)=>{const ha=historyForYear(a),hb=historyForYear(b);const oa=ha&&!ha.aliveEnd&&!ha.departedEnd?2:ha?.departedEnd?1:0,ob=hb&&!hb.aliveEnd&&!hb.departedEnd?2:hb?.departedEnd?1:0;return oa-ob||Math.abs((hb?.faith||0))-Math.abs((ha?.faith||0))});
- $('#yearSummary').innerHTML=ordered.map((c,i)=>{const h=historyForYear(c)||makeYearHistory(c),dead=!h.aliveEnd&&!h.departedEnd,nameClass=dead?'deadName':h.departedEnd?'departedName':'';return `<div class="summaryChar summaryReveal ${dead?'deadSummary':h.departedEnd?'departedSummary':''}" style="--reveal-i:${i}"><div class="summaryTop"><b class="summaryName ${nameClass}">${displayName(c)}　${generationLabel(c)}・${historyStatus(h)}</b><button class="miniBtn" data-open-summary="${c.id}">詳細</button></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div></div><div class="annualReview">${annualReview(c,h)}</div>${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:dead,awakening:!!h.awakenings?.length})}</div></div>`}).join('')||'<div class="sub">記録なし</div>';
- $$('[data-open-summary]').forEach(b=>b.onclick=()=>{state.summarySelected=b.dataset.openSummary;renderSummaryTabs(ordered)});
+ const ordered=sortAnnualCharacters(chars);
+ const controls=`<div class="summarySortBar"><label for="annualSortSelect">全員一覧の並び順</label><select class="summarySortSelect" id="annualSortSelect"><option value="generation_asc" ${state.summarySort==='generation_asc'?'selected':''}>期生順（古い→新しい）</option><option value="generation_desc" ${state.summarySort==='generation_desc'?'selected':''}>期生順（新しい→古い）</option><option value="stats_desc" ${state.summarySort==='stats_desc'?'selected':''}>ステータス総合 高い順</option><option value="stats_asc" ${state.summarySort==='stats_asc'?'selected':''}>ステータス総合 低い順</option><option value="faith_desc" ${state.summarySort==='faith_desc'?'selected':''}>年間信仰 高い順</option><option value="fame_desc" ${state.summarySort==='fame_desc'?'selected':''}>知名度 高い順</option><option value="name" ${state.summarySort==='name'?'selected':''}>名前順</option></select></div>`;
+ $('#yearSummary').innerHTML=controls+(ordered.map((c,i)=>{const h=historyForYear(c)||makeYearHistory(c),dead=!h.aliveEnd&&!h.departedEnd,nameClass=dead?'deadName':h.departedEnd?'departedName':'',total=annualStatTotal(h);return `<div class="summaryChar summaryReveal ${dead?'deadSummary':h.departedEnd?'departedSummary':''}" style="--reveal-i:${i}"><div class="summaryTop"><b class="summaryName ${nameClass}">${displayName(c)}　${generationLabel(c)}・${historyStatus(h)}</b><button class="miniBtn" data-open-summary="${c.id}">詳細</button></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">総合ステータス</div><div class="v summaryTotalStat">${total}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div></div><div class="annualReview">${annualReview(c,h)}</div>${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:dead,awakening:!!h.awakenings?.length})}</div></div>`}).join('')||'<div class="sub">記録なし</div>');
+ const sel=$('#annualSortSelect');if(sel)sel.onchange=()=>{state.summarySort=sel.value;saveGame();renderAllYearResults(chars)};
+ $$('[data-open-summary]').forEach(b=>b.onclick=()=>{state.summarySelected=b.dataset.openSummary;renderSummaryTabs(chars)});
 }
 function renderOneYearResult(c){
  if(!c)return;const h=historyForYear(c)||makeYearHistory(c);$('#yearSummary').innerHTML=`<div class="summaryChar ${h.departedEnd?'departedSummary':''}"><div class="summaryTop"><b>${displayName(c)}　${h.ageStart}歳 / ${generationLabel(c)}</b><span class="badge ${historyBadgeClass(h)}">${historyStatus(h)}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${h.statsEnd.justice}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">累計功績</div><div class="v">${h.achievement}</div></div></div>${h.growth.length?`<div class="sub" style="margin:8px 0 0">年間成長：${h.growth.join(' / ')}</div>`:''}${eventTimelineHTML(h.events)}${historyExitText(h)?`<div class="sub" style="margin:7px 0 0;color:${h.departedEnd?'#ffd27d':'#ff9bad'}">${historyExitText(h)}</div>`:''}${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:!h.aliveEnd&&!h.departedEnd,awakening:!!h.awakenings?.length})}</div></div>`;
@@ -1479,7 +1630,7 @@ function renderGoddessGrowth(){
    return `<div class="growthMilestone ${unlocked?'unlocked':''} ${cur?'current':''}"><div class="growthThreshold"><b>${m.level}</b>信仰度${unlocked?'<br>解放済み':''}</div><div><div class="growthUnlockTitle">${m.rank?m.rank.name:(m.arts.length?'神業解放':'スキル・機能解放')}</div><div class="growthUnlockText">${items.join('')||'<span>到達項目なし</span>'}</div></div></div>`;
  }).join('');
 }
-function updateHUD(){normalizePantheon();const r=getRank(state.faith);$('#hudRank').textContent=r.name;$('#hudFaith').textContent=state.faith;$('#hudYear').textContent=state.year;$('#hudAlive').textContent=state.active.filter(c=>c.alive&&!c.departed).length+'人';if($('#hudShare'))$('#hudShare').textContent=playerShare().toFixed(1)+'%';renderPantheonMini()}
+function updateHUD(){normalizePantheon();const r=getRank(state.faith);$('#hudRank').textContent=r.name;$('#hudFaith').textContent=state.faith;$('#hudYear').textContent=state.year;$('#hudAlive').textContent=state.active.filter(c=>c.alive&&!c.departed).length+'人';if($('#hudShare'))$('#hudShare').textContent=playerShare().toFixed(1)+'%';renderPantheonMini();checkAchievements(false)}
 
 function allLiving(){return state.active.filter(c=>c.alive&&!c.departed).sort((a,b)=>a.reincarnatedYear-b.reincarnatedYear||a.name.localeCompare(b.name,'ja'))}
 function openRecords(mode='living',id=null){state.archiveMode=mode;state.archiveSelected=id||state.archiveSelected;$('#recordsModal').classList.remove('hidden');renderRecords()}
@@ -1512,9 +1663,9 @@ function openTutorial(index=0){state.tutorialIndex=clamp(index,0,tutorialPages.l
 function renderTutorial(){const i=state.tutorialIndex,[title,text]=tutorialPages[i];$('#tutorialStep').textContent=`TUTORIAL ${i+1} / ${tutorialPages.length}`;$('#tutorialTitle').textContent=title;$('#tutorialText').textContent=text;$('#tutorialPrev').disabled=i===0;$('#tutorialNext').textContent=i===tutorialPages.length-1?'ゲーム開始':'次へ';$('#tutorialDots').innerHTML=tutorialPages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}
 function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV30','1');$('#tutorialModal').classList.add('hidden')}
 
-function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV30',JSON.stringify(copy))}catch(e){}}
-function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
-function hardReset(){['tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));location.reload()}
+function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV34',JSON.stringify(copy))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
+function hardReset(){['tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));location.reload()}
 
 $('#prepareBtn').onclick=()=>renderPrepare();
 $('#sendAllBtn').onclick=()=>beginYear();$('#sendAllTopBtn').onclick=()=>beginYear();
@@ -1525,10 +1676,10 @@ $('#nextYearBtn').onclick=()=>nextYear();
 $('#nextYearTopBtn').onclick=()=>nextYear();
 $('#recordsBtn').onclick=()=>openRecords('living');
 $('#mobileRecordsBtn').onclick=()=>openRecords('living');
-$('#skillsBtn').onclick=openSkillLibrary;$('#mobileSkillsBtn').onclick=openSkillLibrary;
-$('#hudRankPill').onclick=()=>openGoddessGrowth();$('#hudFaithPill').onclick=()=>openGoddessGrowth();
+$('#skillsBtn').onclick=openSkillLibrary;$('#mobileSkillsBtn').onclick=openSkillLibrary;$('#achievementsBtn').onclick=openAchievements;$('#mobileAchievementsBtn').onclick=openAchievements;$('#bgmBtn').onclick=toggleBgm;$('#mobileBgmBtn').onclick=toggleBgm;
+$('#hudRankPill').onclick=()=>openGoddessGrowth();$('#hudFaithPill').onclick=()=>openGoddessGrowth();const arrivalGoddess=$('#arrivalGoddessPortrait');if(arrivalGoddess){arrivalGoddess.onclick=()=>openGoddessGrowth();arrivalGoddess.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGoddessGrowth()}}}
 $('#hudAlivePill').onclick=()=>openRecords('living');$('#hudSharePill').onclick=()=>openPantheon('player');
-$('#recordsClose').onclick=()=>closeRecords();$('#skillLibraryClose').onclick=closeSkillLibrary;$('#skillLibraryModal').onclick=e=>{if(e.target.id==='skillLibraryModal')closeSkillLibrary()};
+$('#recordsClose').onclick=()=>closeRecords();$('#skillLibraryClose').onclick=closeSkillLibrary;$('#skillLibraryModal').onclick=e=>{if(e.target.id==='skillLibraryModal')closeSkillLibrary()};$('#achievementsClose').onclick=closeAchievements;$('#achievementsModal').onclick=e=>{if(e.target.id==='achievementsModal')closeAchievements()};
 $$('.archiveTab').forEach(b=>b.onclick=()=>{state.archiveMode=b.dataset.archive;renderRecords()});
 $('#recordsModal').onclick=e=>{if(e.target.id==='recordsModal')closeRecords()};$('#pantheonClose').onclick=()=>closePantheon();$('#pantheonModal').onclick=e=>{if(e.target.id==='pantheonModal')closePantheon()};$('#pantheonMiniBtn').onclick=()=>openPantheon();$('#pantheonSummaryBtn').onclick=()=>openPantheon();$('#goddessGrowthClose').onclick=()=>closeGoddessGrowth();$('#goddessGrowthModal').onclick=e=>{if(e.target.id==='goddessGrowthModal')closeGoddessGrowth()};
 $('#godArtIntroClose').onclick=closeGodArtIntro;$('#demonIntroNext').onclick=nextDemonIntro;$('#skillPresetClose').onclick=closeSkillPresetEditor;$('#skillPresetSave').onclick=saveSkillPreset;$('#skillPresetModal').onclick=e=>{if(e.target.id==='skillPresetModal')closeSkillPresetEditor()};window.addEventListener('resize',updateHudHeightVar);
@@ -1543,7 +1694,7 @@ const resetGameFromButton=()=>{if(confirm('保存データを消して最初か�
    // 保存時点の画面へ復帰
    if(state.phase==='prepareScreen')renderPrepare();else if(state.phase==='yearPlayScreen')renderYearPlay('観測を再開しました。',0);else if(state.phase==='summaryScreen'){finishYear()}else renderArrival();
  }
- updateHudHeightVar();updateHUD();renderHall();renderUnlocks();renderPantheonMini();renderDemonSummary();
+ ensureAchievements();checkAchievements(true);armBgm();updateHudHeightVar();updateHUD();renderHall();renderUnlocks();renderPantheonMini();renderDemonSummary();
  if(!localStorage.getItem('tenseiGoddessTutorialSeenV30')&&!localStorage.getItem('tenseiGoddessTutorialSeenV27')&&!localStorage.getItem('tenseiGoddessTutorialSeenV25')&&!localStorage.getItem('tenseiGoddessTutorialSeenV24')&&!localStorage.getItem('tenseiGoddessTutorialSeenV23')&&!localStorage.getItem('tenseiGoddessTutorialSeenV22')&&!localStorage.getItem('tenseiGoddessTutorialSeenV21')&&!localStorage.getItem('tenseiGoddessTutorialSeenV20')&&!localStorage.getItem('tenseiGoddessTutorialSeenV19')&&!localStorage.getItem('tenseiGoddessTutorialSeenV13')&&!localStorage.getItem('tenseiGoddessTutorialSeenV12'))openTutorial(0);else maybeShowDemonIntro();
 })();
 </script>
