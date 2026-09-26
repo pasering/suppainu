@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v36</title>
+<title>転生の女神 - プロトタイプ v37</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -716,6 +716,78 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .summaryTotalStat{font-size:15px!important}
 }
 
+
+/* v37: user custom portraits + AI notice */
+.customPortrait{background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important}
+.pAvatar.portraitEditable{cursor:pointer}
+.portraitEditBadge{
+  position:absolute;right:4px;bottom:4px;z-index:3;
+  width:22px;height:22px;border-radius:999px;
+  display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.32);
+  background:rgba(10,8,24,.82);
+  color:#fff;font-size:12px;font-style:normal;
+  box-shadow:0 3px 10px rgba(0,0,0,.35);
+  backdrop-filter:blur(6px)
+}
+.portraitEditBadge:hover{background:rgba(88,67,142,.92)}
+.portraitActions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.portraitActionBtn{
+  border:1px solid rgba(207,193,255,.28);
+  background:rgba(20,16,43,.72);
+  color:#eee7ff;border-radius:9px;padding:6px 9px;
+  font-size:10px;font-weight:800;cursor:pointer
+}
+.portraitActionBtn:hover{background:rgba(83,65,132,.42)}
+.portraitActionBtn.reset{border-color:rgba(255,192,128,.28);color:#ffd9ac}
+.portraitActionBtn.hidden{display:none!important}
+
+.portraitEditorModal{width:min(640px,100%);max-height:min(94vh,860px);overflow:auto}
+.cropWorkspace{display:grid;grid-template-columns:minmax(0,360px) minmax(180px,1fr);gap:16px;align-items:start;margin-top:12px}
+.cropStage{
+  position:relative;width:min(100%,360px);aspect-ratio:3/4;margin:0 auto;
+  border:1px solid rgba(226,214,255,.28);border-radius:18px;overflow:hidden;
+  background:
+    linear-gradient(45deg,rgba(255,255,255,.035) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.035) 75%),
+    linear-gradient(45deg,rgba(255,255,255,.035) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.035) 75%),
+    #0e0c20;
+  background-size:22px 22px;background-position:0 0,11px 11px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)
+}
+#portraitCropCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#portraitCropCanvas.dragging{cursor:grabbing}
+.cropEmpty{
+  position:absolute;inset:0;display:grid;place-items:center;text-align:center;
+  padding:24px;color:#bfb4d5;font-size:12px;line-height:1.7;pointer-events:none
+}
+.cropGuide{
+  position:absolute;inset:8px;border:1px solid rgba(255,255,255,.42);
+  border-radius:12px;pointer-events:none;box-shadow:0 0 0 999px rgba(0,0,0,.06)
+}
+.cropControls{display:grid;gap:12px}
+.cropControlLabel{font-size:11px;color:#cfc4e3;font-weight:800}
+.cropZoomRow{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+#portraitZoom{width:100%}
+.cropHint{
+  border:1px solid rgba(207,193,255,.18);border-radius:12px;
+  padding:10px 11px;background:rgba(255,255,255,.035);
+  color:#cfc6df;font-size:10.5px;line-height:1.7
+}
+.cropFileName{font-size:10px;color:#9f94b6;word-break:break-all}
+.archivePortraitActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+.aiNotice{
+  width:min(1180px,calc(100% - 20px));margin:2px auto 18px;
+  text-align:center;color:rgba(223,215,239,.46);
+  font-size:9px;line-height:1.6;letter-spacing:.02em
+}
+@media(max-width:620px){
+  .cropWorkspace{grid-template-columns:1fr}
+  .cropStage{width:min(100%,300px)}
+  .portraitEditorModal{padding:13px!important}
+  .aiNotice{font-size:8px;margin-bottom:12px}
+}
+
 </style>
 </head>
 <body>
@@ -779,7 +851,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
           <div class="sectionLabel">Blessing Setup</div><h2>転生前の加護</h2>
           <p class="sub">候補者はトータルステータスの高い順に並びます。上の名前を押すと、画面をスクロールしていても対象をすぐ切り替えられます。</p>
           <div class="charSheet">
-            <div class="charPortrait"><div class="portraitCircle" id="portraitInitial">?</div><div class="name" id="prepName"></div><div class="markerControls" id="prepMarkerControls"></div><div class="bio" id="prepBio"></div></div>
+            <div class="charPortrait"><div class="portraitCircle" id="portraitInitial">?</div><div class="name" id="prepName"></div><div class="markerControls" id="prepMarkerControls"></div><div class="portraitActions"><button class="portraitActionBtn" id="prepImageBtn">画像変更</button><button class="portraitActionBtn reset hidden" id="prepImageResetBtn">初期画像に戻す</button></div><div class="bio" id="prepBio"></div></div>
             <div>
               <div class="statList" id="prepStats"></div>
               <div style="margin-top:10px"><div class="sectionLabel">Granted Skills</div><div class="sub" id="ownedSkillsText" style="margin-top:4px">まだスキルはありません。</div></div>
@@ -849,6 +921,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
       </div>
     </section>
   </main>
+<footer class="aiNotice">※このゲームは、システム制作および画像生成にAIを使用しています。</footer>
 </div>
 
 <div class="modalBack hidden" id="achievementsModal"><div class="modal achievementsModal"><button class="closeX" id="achievementsClose">閉じる</button><div class="step">ACHIEVEMENTS</div><h2>実績</h2><div class="achievementSummary" id="achievementSummary"></div><div class="achievementGrid" id="achievementGrid"></div></div></div>
@@ -865,6 +938,35 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 同じ人物へ何度でも神業を重ねられます。ただし、どれほど力を注いでも寿命だけは越えられません。</p><div class="modalActions" style="justify-content:flex-end"><button class="btn gold" id="godArtIntroClose">神業を確認する</button></div></div></div>
 <div class="modalBack hidden" id="skillPresetModal"><div class="modal skillPresetModal"><button class="closeX" id="skillPresetClose">閉じる</button><div class="step">SKILL PRESET EDITOR</div><h2 id="skillPresetTitle">プリセット1を編集</h2><p class="sub">プリセット名と、現在解放済みのスキルを自由に設定できます。保存すると同じ枠を上書きします。</p><input class="presetNameInput" id="presetNameInput" maxlength="24" value="プリセット1" aria-label="プリセット名"><div class="presetEditorList" id="presetEditorList" style="margin-top:10px"></div><div class="modalActions"><div class="sub" id="presetEditorCost" style="margin:0"></div><button class="btn gold" id="skillPresetSave">この内容で上書き保存</button></div></div></div>
 <div class="modalBack hidden" id="demonIntroModal"><div class="modal demonStory"><div class="step" id="demonIntroStep">URGENT REPORT</div><h2 id="demonIntroTitle">魔王軍、活動活発化</h2><div class="speakerLine">案内役</div><p id="demonIntroText"></p><div class="modalActions"><div></div><button class="btn gold" id="demonIntroNext">次へ</button></div></div></div>
+
+<div class="modalBack hidden" id="portraitEditorModal">
+  <div class="modal portraitEditorModal">
+    <button class="closeX" id="portraitEditorClose">閉じる</button>
+    <div class="step">CUSTOM PORTRAIT</div>
+    <h2 id="portraitEditorTitle">キャラクター画像を変更</h2>
+    <p class="sub">画像サイズは自由です。画像をドラッグして位置を調整し、拡大率を決めてください。保存後はこのブラウザに記憶されます。</p>
+    <input type="file" id="portraitFileInput" accept="image/*" hidden>
+    <div class="cropWorkspace">
+      <div class="cropStage">
+        <canvas id="portraitCropCanvas" width="384" height="512"></canvas>
+        <div class="cropEmpty" id="portraitCropEmpty">「画像を選ぶ」から<br>好きな画像を読み込んでください。</div>
+        <div class="cropGuide"></div>
+      </div>
+      <div class="cropControls">
+        <button class="btn secondary" id="portraitChooseBtn">画像を選ぶ</button>
+        <div>
+          <div class="cropControlLabel">拡大・縮小</div>
+          <div class="cropZoomRow"><span>－</span><input type="range" id="portraitZoom" min="1" max="3.5" value="1" step="0.01" disabled><span>＋</span></div>
+        </div>
+        <div class="cropHint">画像をドラッグして位置を調整できます。保存時にゲーム用サイズへ自動変換するので、元画像の縦横比や解像度は気にしなくて大丈夫です。</div>
+        <div class="cropFileName" id="portraitFileName">画像未選択</div>
+        <button class="btn gold" id="portraitSaveBtn" disabled>この画像にする</button>
+        <button class="portraitActionBtn reset hidden" id="portraitEditorResetBtn">初期画像に戻す</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1346,10 +1448,172 @@ function rankColorTag(c){const m=Math.max(c.strength,c.intelligence,c.activity,c
 function statPercent(v,cap=100){return clamp(v/cap*100,0,100)}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2300)}
 
+
+const PORTRAIT_DB_NAME='TenseiGoddessPortraitsV1';
+const PORTRAIT_STORE='portraits';
+const customPortraitCache=new Map();
+let portraitDbPromise=null;
+let portraitEditorCharacterId=null;
+let portraitCropImage=null;
+let portraitCropZoom=1;
+let portraitCropOffsetX=0;
+let portraitCropOffsetY=0;
+let portraitDragState=null;
+
+function openPortraitDB(){
+ if(!('indexedDB' in window))return Promise.reject(new Error('IndexedDB unsupported'));
+ if(portraitDbPromise)return portraitDbPromise;
+ portraitDbPromise=new Promise((resolve,reject)=>{
+   const req=indexedDB.open(PORTRAIT_DB_NAME,1);
+   req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(PORTRAIT_STORE))db.createObjectStore(PORTRAIT_STORE,{keyPath:'id'})};
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
+ });
+ return portraitDbPromise;
+}
+async function loadCustomPortraitCache(){
+ customPortraitCache.clear();
+ try{
+   const db=await openPortraitDB();
+   const rows=await new Promise((resolve,reject)=>{
+     const tx=db.transaction(PORTRAIT_STORE,'readonly'),req=tx.objectStore(PORTRAIT_STORE).getAll();
+     req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);
+   });
+   rows.forEach(r=>{if(r?.id&&r?.dataUrl)customPortraitCache.set(r.id,r.dataUrl)});
+ }catch(e){console.warn('Custom portrait cache unavailable',e)}
+}
+function hasCustomPortrait(id){return customPortraitCache.has(id)}
+async function persistCustomPortrait(id,dataUrl){
+ const db=await openPortraitDB();
+ await new Promise((resolve,reject)=>{
+   const tx=db.transaction(PORTRAIT_STORE,'readwrite');
+   tx.objectStore(PORTRAIT_STORE).put({id,dataUrl,updatedAt:Date.now()});
+   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+ });
+ customPortraitCache.set(id,dataUrl);
+}
+async function removeCustomPortrait(id){
+ customPortraitCache.delete(id);
+ try{
+   const db=await openPortraitDB();
+   await new Promise((resolve,reject)=>{
+     const tx=db.transaction(PORTRAIT_STORE,'readwrite');
+     tx.objectStore(PORTRAIT_STORE).delete(id);
+     tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+   });
+ }catch(e){console.warn(e)}
+}
+async function clearCustomPortraitDB(){
+ customPortraitCache.clear();
+ try{
+   const db=await openPortraitDB();
+   await new Promise((resolve,reject)=>{
+     const tx=db.transaction(PORTRAIT_STORE,'readwrite');
+     tx.objectStore(PORTRAIT_STORE).clear();
+     tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+   });
+ }catch(e){console.warn(e)}
+}
+function portraitBackground(c){
+ const custom=customPortraitCache.get(c?.id);
+ if(custom)return {custom:true,image:`url(${custom})`,size:'cover',position:'center'};
+ const file=portraitSheetFile(c),pos=portraitSpritePosition(c.portraitIndex);
+ return {custom:false,image:`url('${file}'),linear-gradient(135deg,#735eac,#292744)`,size:'1000% 1000%,cover',position:`${pos},center`};
+}
+function updatePortraitElements(id){
+ const c=findCharacter(id);if(!c)return;
+ const bg=portraitBackground(c);
+ document.querySelectorAll(`[data-character-avatar="${CSS.escape(String(id))}"]`).forEach(el=>{
+   el.classList.toggle('customPortrait',bg.custom);
+   el.style.backgroundImage=bg.image;
+   el.style.backgroundSize=bg.size;
+   el.style.backgroundPosition=bg.position;
+   el.style.backgroundRepeat=bg.custom?'no-repeat':'';
+ });
+ document.querySelectorAll(`[data-image-reset="${CSS.escape(String(id))}"]`).forEach(el=>el.classList.toggle('hidden',!bg.custom));
+ if(portraitEditorCharacterId===id)$('#portraitEditorResetBtn')?.classList.toggle('hidden',!bg.custom);
+}
+function bindPortraitActionState(id){
+ const custom=hasCustomPortrait(id);
+ const prepReset=$('#prepImageResetBtn');if(prepReset)prepReset.classList.toggle('hidden',!custom);
+}
+function cropBaseScale(){
+ if(!portraitCropImage)return 1;
+ const canvas=$('#portraitCropCanvas');
+ return Math.max(canvas.width/portraitCropImage.naturalWidth,canvas.height/portraitCropImage.naturalHeight);
+}
+function clampCropOffsets(){
+ if(!portraitCropImage)return;
+ const canvas=$('#portraitCropCanvas'),scale=cropBaseScale()*portraitCropZoom;
+ const w=portraitCropImage.naturalWidth*scale,h=portraitCropImage.naturalHeight*scale;
+ const maxX=Math.max(0,(w-canvas.width)/2),maxY=Math.max(0,(h-canvas.height)/2);
+ portraitCropOffsetX=clamp(portraitCropOffsetX,-maxX,maxX);
+ portraitCropOffsetY=clamp(portraitCropOffsetY,-maxY,maxY);
+}
+function drawPortraitCrop(){
+ const canvas=$('#portraitCropCanvas'),ctx=canvas?.getContext('2d');if(!ctx)return;
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ if(!portraitCropImage){$('#portraitCropEmpty')?.classList.remove('hidden');return}
+ $('#portraitCropEmpty')?.classList.add('hidden');
+ clampCropOffsets();
+ const scale=cropBaseScale()*portraitCropZoom,w=portraitCropImage.naturalWidth*scale,h=portraitCropImage.naturalHeight*scale;
+ const x=(canvas.width-w)/2+portraitCropOffsetX,y=(canvas.height-h)/2+portraitCropOffsetY;
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(portraitCropImage,x,y,w,h);
+}
+function loadPortraitEditorImage(src,label='現在のカスタム画像'){
+ return new Promise((resolve,reject)=>{
+   const img=new Image();
+   img.onload=()=>{portraitCropImage=img;portraitCropZoom=1;portraitCropOffsetX=0;portraitCropOffsetY=0;$('#portraitZoom').value='1';$('#portraitZoom').disabled=false;$('#portraitSaveBtn').disabled=false;$('#portraitFileName').textContent=label;drawPortraitCrop();resolve()};
+   img.onerror=reject;img.src=src;
+ });
+}
+function openPortraitEditor(id){
+ const c=findCharacter(id);if(!c)return;
+ portraitEditorCharacterId=id;portraitCropImage=null;portraitCropZoom=1;portraitCropOffsetX=0;portraitCropOffsetY=0;
+ $('#portraitEditorTitle').textContent=`${displayName(c)} の画像を変更`;
+ $('#portraitZoom').value='1';$('#portraitZoom').disabled=true;$('#portraitSaveBtn').disabled=true;$('#portraitFileName').textContent='画像未選択';
+ $('#portraitEditorResetBtn').classList.toggle('hidden',!hasCustomPortrait(id));
+ $('#portraitEditorModal').classList.remove('hidden');drawPortraitCrop();
+ const existing=customPortraitCache.get(id);if(existing)loadPortraitEditorImage(existing,'現在のカスタム画像').catch(()=>{});
+}
+function closePortraitEditor(){
+ portraitEditorCharacterId=null;portraitCropImage=null;portraitDragState=null;
+ $('#portraitEditorModal').classList.add('hidden');
+ const input=$('#portraitFileInput');if(input)input.value='';
+}
+async function choosePortraitFile(file){
+ if(!file)return;
+ if(!file.type?.startsWith('image/'))return toast('画像ファイルを選んでください。');
+ const url=URL.createObjectURL(file);
+ try{await loadPortraitEditorImage(url,file.name||'選択した画像')}
+ catch(e){toast('この画像は読み込めませんでした。別の画像をお試しください。')}
+ finally{setTimeout(()=>URL.revokeObjectURL(url),1000)}
+}
+async function savePortraitCrop(){
+ if(!portraitEditorCharacterId||!portraitCropImage)return;
+ const canvas=$('#portraitCropCanvas');
+ let dataUrl;
+ try{dataUrl=canvas.toDataURL('image/webp',0.86);if(!dataUrl.startsWith('data:image/'))throw new Error()}
+ catch(e){dataUrl=canvas.toDataURL('image/png')}
+ try{
+   await persistCustomPortrait(portraitEditorCharacterId,dataUrl);
+   const id=portraitEditorCharacterId;updatePortraitElements(id);bindPortraitActionState(id);
+   closePortraitEditor();toast('キャラクター画像を保存しました。');
+ }catch(e){console.error(e);toast('画像の保存に失敗しました。ブラウザの保存領域をご確認ください。')}
+}
+async function resetCharacterPortrait(id,ask=true){
+ const c=findCharacter(id);if(!c)return;
+ if(ask&&!confirm(`${displayName(c)}の画像を初期画像に戻しますか？`))return;
+ await removeCustomPortrait(id);updatePortraitElements(id);bindPortraitActionState(id);
+ if(portraitEditorCharacterId===id)closePortraitEditor();
+ toast('初期画像に戻しました。');
+}
+
 function portraitSheetFile(c){normalizeCharacter(c);return c.gender==='male'?'man1.png':'woman1.png'}
 function portraitSpritePosition(index){const i=clamp(Number(index)||0,0,99),col=i%10,row=Math.floor(i/10),x=col*(100/9),y=row*(100/9);return `${x.toFixed(4)}% ${y.toFixed(4)}%`}
-function avatarImg(c,cls='avatarImage'){normalizeCharacter(c);const file=portraitSheetFile(c),pos=portraitSpritePosition(c.portraitIndex),label=`${c.name}のポートレート`;return `<div class="${cls} avatarSprite" role="img" aria-label="${label}" title="${label}" style="background-image:url('${file}'),linear-gradient(135deg,#735eac,#292744);background-size:1000% 1000%,cover;background-position:${pos},center"></div>`}
-function portraitHTML(c){return `<div class="pAvatar">${avatarImg(c)}</div>`}
+function avatarImg(c,cls='avatarImage'){normalizeCharacter(c);const bg=portraitBackground(c),label=`${c.name}のポートレート`;return `<div class="${cls} avatarSprite ${bg.custom?'customPortrait':''}" data-character-avatar="${c.id}" role="img" aria-label="${label}" title="${label}" style="background-image:${bg.image};background-size:${bg.size};background-position:${bg.position}"></div>`}
+function portraitHTML(c){return `<div class="pAvatar portraitEditable" data-image-edit="${c.id}" title="画像を変更">${avatarImg(c)}<span class="portraitEditBadge" aria-hidden="true">✎</span></div>`}
 function candidateTotal(c){return (c.devotion||0)+(c.activity||0)+(c.justice||0)+(c.strength||0)+(c.intelligence||0)}
 function orderedCandidates(){return state.candidates.map((c,i)=>({c,i,total:candidateTotal(c)})).sort((a,b)=>b.total-a.total||a.i-b.i)}
 function displayName(c){if(!c)return '';normalizeCharacter(c);return `${c.marker||''}${c.name}`}
@@ -1427,7 +1691,7 @@ function renderPrepare(preserveScroll=false){
  const paneMap={blessing:'#prepareBlessingPane',arts:'#prepareGodArtsPane',demon:'#prepareDemonPane'};Object.entries(paneMap).forEach(([k,sel])=>$(sel)?.classList.toggle('hidden',k!==state.prepareMode));
  const ordered=orderedCandidates();$('#candidateTabs').innerHTML=ordered.map(({c:x,i})=>`<button class="tab ${i===state.currentCandidateIndex?'active':''}" data-i="${i}"><div class="tn">${displayName(x)}</div></button>`).join('');
  $$('#candidateTabs .tab').forEach(el=>el.onclick=()=>{state.currentCandidateIndex=+el.dataset.i;renderPrepare(true)});renderPrepareHeaderDock();
- $('#portraitInitial').innerHTML=avatarImg(c,'avatarThumb');$('#prepName').textContent=`${displayName(c)}　${c.age}歳・${c.gender==='male'?'男性':'女性'}`;$('#prepMarkerControls').innerHTML=markerControlsHTML(c);bindMarkerControls($('#prepMarkerControls'),()=>renderPrepare(true));
+ $('#portraitInitial').innerHTML=avatarImg(c,'avatarThumb');$('#prepName').textContent=`${displayName(c)}　${c.age}歳・${c.gender==='male'?'男性':'女性'}`;$('#prepMarkerControls').innerHTML=markerControlsHTML(c);bindMarkerControls($('#prepMarkerControls'),()=>renderPrepare(true));$('#prepImageBtn').onclick=()=>openPortraitEditor(c.id);$('#prepImageResetBtn').dataset.imageReset=c.id;$('#prepImageResetBtn').onclick=()=>resetCharacterPortrait(c.id);bindPortraitActionState(c.id);
  $('#prepBio').innerHTML=`${generationLabel(c)} / ${c.background}<div class="charQuote">${characterQuote(c,'prepare')}</div><div class="renameRow"><input id="renameInput" class="renameInput" maxlength="24" value="${c.name.replace(/&/g,'&amp;').replace(/\"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" aria-label="転生者の名前"><button class="miniBtn" id="renameBtn">名前変更</button></div><div class="riskNote"><b>転生直後の危険度：${riskLabel(c)}</b><br>賢さが高いほど生存しやすく、積極性が高いほど功績と危険の両方が増えます。<br><b>現在の加護 ${(c.blessingSpent||0)}pt → 転生時の帰依心 +${blessingDevotionGain(c.blessingSpent||0)}</b></div>`;$('#renameBtn').onclick=renameCurrentCandidate;$('#renameInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();renameCurrentCandidate()}};
  const fixed=[['帰依心',c.devotion,100,'行動が女神信仰へ反映される強さ'],['積極性',c.activity,100,'成長しやすいが危険にも飛び込みやすい'],['正義感',c.justice,100,'高いほど善行、低いほど悪事に寄りやすい'],['知名度',c.fame,100,'功績でも悪行でも上昇。高いほど女神信仰度への影響が大きい']];
  const grow=[['強さ','strength'],['賢さ','intelligence']];
@@ -1760,7 +2024,7 @@ function renderRecords(){
 function renderArchiveCharacter(c){
  const histories=[...(c.history||[])];let current=null;if(c.alive&&!c.departed&&!state.yearFinalized&&(c.annualEvents||[]).length){current={year:state.year,reincarnatedYear:c.reincarnatedYear,ageStart:c.ageAtYearStart??c.age,ageEnd:c.age,faith:c.lastYearFaith,growth:[...c.lastYearGrowth],events:(c.annualEvents||[]).map(e=>({...e})),statsEnd:{devotion:c.devotion,activity:c.activity,justice:c.justice,strength:c.strength,intelligence:c.intelligence,fame:c.fame,strengthCap:c.caps.strength,intelligenceCap:c.caps.intelligence},awakenings:[...(c.annualAwakenings||[])],aliveEnd:c.alive&&!c.departed,departedEnd:!!c.departed,deathCause:c.deathCause||'',departureCause:c.departureCause||'',achievement:c.lifetimeAchievement,current:true}}
  const all=current?[...histories,current]:histories,status=c.departed?'離脱':c.alive?'活動中':'死亡',badge=c.departed?'departed':c.alive?'alive':'dead',ageLabel=c.alive?`${c.age}歳`:`享年 ${c.age}歳`,career=careerYears(c);
- $('#archiveDetail').innerHTML=`<div class="summaryChar"><div class="archiveIdentity"><div class="archiveAvatar">${avatarImg(c,'avatarThumb')}</div><div><div class="summaryTop"><b>${displayName(c)}</b><span class="badge ${badge}">${ageLabel}・${status}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">帰依心</div><div class="v">${c.devotion}</div></div><div class="sumCell"><div class="k">積極性</div><div class="v">${c.activity}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${c.justice}</div></div><div class="sumCell"><div class="k">強さ</div><div class="v">${c.strength}/${c.caps.strength}</div></div><div class="sumCell"><div class="k">賢さ</div><div class="v">${c.intelligence}/${c.caps.intelligence}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${c.fame}</div></div></div><div class="sub" style="margin:8px 0 0">${generationLabel(c)}・活動${career}年 / ${c.gender==='male'?'男性':'女性'}<br>${c.background}<br>${c.skills.length?'付与スキル：'+c.skills.map(id=>skillById(id)?.name).filter(Boolean).join('、'):'付与スキルなし'} / 累計信仰 ${c.lifetimeFaith>=0?'+':''}${c.lifetimeFaith}<br>生涯功績 ${Math.round(c.lifetimeAchievement||0)} / 大功績 ${(c.majorAchievements||[]).length}件${c.hallOfFame?' / ★殿堂入り':''}</div><div class="archiveMarkerRow"><span class="sub" style="margin:0">お気に入り目印</span><div class="markerControls">${markerControlsHTML(c)}</div></div><div class="charQuote">${characterQuote(c,'list',{departure:c.departed,death:!c.alive})}</div>${!c.alive&&c.deathCause?`<div class="archiveDeadItem" style="margin-top:8px"><b>最期</b><div class="deathCause">${c.deathCause}</div></div>`:''}${c.departed&&c.departureCause?`<div class="archiveDeadItem" style="margin-top:8px;border-color:rgba(255,206,92,.30);background:rgba(155,108,24,.10)"><b>離脱</b><div class="deathCause">${c.departureCause}</div></div>`:''}${(!c.alive||c.departed)?`<div style="margin-top:10px;text-align:right"><button class="deleteLogBtn" data-delete-log="${c.id}">この記録を削除</button></div>`:''}</div></div>${relationBoxHTML(c)}</div>`+(all.length?all.slice().reverse().map(h=>`<div class="yearBlock"><div class="yearBlockHead"><b>${h.year}年目 ${h.current?'（進行中）':''}</b><span class="yearBlockMeta">${h.ageStart}歳 / 年間信仰 ${h.faith>=0?'+':''}${h.faith}</span></div>${eventTimelineHTML(h.events)}</div>`).join(''):'<div class="archiveEmpty">まだ年間記録がありません。</div>');bindMarkerControls($('#archiveDetail'),()=>renderArchiveCharacter(c));const del=$('[data-delete-log]');if(del)del.onclick=()=>deleteArchivedLog(del.dataset.deleteLog)
+ $('#archiveDetail').innerHTML=`<div class="summaryChar"><div class="archiveIdentity"><div><div class="archiveAvatar">${avatarImg(c,'avatarThumb')}</div><div class="archivePortraitActions"><button class="portraitActionBtn" data-image-edit="${c.id}">画像変更</button><button class="portraitActionBtn reset ${hasCustomPortrait(c.id)?'':'hidden'}" data-image-reset="${c.id}">初期画像に戻す</button></div></div><div><div class="summaryTop"><b>${displayName(c)}</b><span class="badge ${badge}">${ageLabel}・${status}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">帰依心</div><div class="v">${c.devotion}</div></div><div class="sumCell"><div class="k">積極性</div><div class="v">${c.activity}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${c.justice}</div></div><div class="sumCell"><div class="k">強さ</div><div class="v">${c.strength}/${c.caps.strength}</div></div><div class="sumCell"><div class="k">賢さ</div><div class="v">${c.intelligence}/${c.caps.intelligence}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${c.fame}</div></div></div><div class="sub" style="margin:8px 0 0">${generationLabel(c)}・活動${career}年 / ${c.gender==='male'?'男性':'女性'}<br>${c.background}<br>${c.skills.length?'付与スキル：'+c.skills.map(id=>skillById(id)?.name).filter(Boolean).join('、'):'付与スキルなし'} / 累計信仰 ${c.lifetimeFaith>=0?'+':''}${c.lifetimeFaith}<br>生涯功績 ${Math.round(c.lifetimeAchievement||0)} / 大功績 ${(c.majorAchievements||[]).length}件${c.hallOfFame?' / ★殿堂入り':''}</div><div class="archiveMarkerRow"><span class="sub" style="margin:0">お気に入り目印</span><div class="markerControls">${markerControlsHTML(c)}</div></div><div class="charQuote">${characterQuote(c,'list',{departure:c.departed,death:!c.alive})}</div>${!c.alive&&c.deathCause?`<div class="archiveDeadItem" style="margin-top:8px"><b>最期</b><div class="deathCause">${c.deathCause}</div></div>`:''}${c.departed&&c.departureCause?`<div class="archiveDeadItem" style="margin-top:8px;border-color:rgba(255,206,92,.30);background:rgba(155,108,24,.10)"><b>離脱</b><div class="deathCause">${c.departureCause}</div></div>`:''}${(!c.alive||c.departed)?`<div style="margin-top:10px;text-align:right"><button class="deleteLogBtn" data-delete-log="${c.id}">この記録を削除</button></div>`:''}</div></div>${relationBoxHTML(c)}</div>`+(all.length?all.slice().reverse().map(h=>`<div class="yearBlock"><div class="yearBlockHead"><b>${h.year}年目 ${h.current?'（進行中）':''}</b><span class="yearBlockMeta">${h.ageStart}歳 / 年間信仰 ${h.faith>=0?'+':''}${h.faith}</span></div>${eventTimelineHTML(h.events)}</div>`).join(''):'<div class="archiveEmpty">まだ年間記録がありません。</div>');bindMarkerControls($('#archiveDetail'),()=>renderArchiveCharacter(c));const del=$('[data-delete-log]');if(del)del.onclick=()=>deleteArchivedLog(del.dataset.deleteLog)
 }
 function deleteArchivedLog(id){const c=findCharacter(id);if(!c||(!c.departed&&c.alive))return;if(!confirm(`${displayName(c)}の${c.departed?'離脱':'死亡'}記録を削除しますか？\nこの操作は元に戻せません。`))return;state.dead=(state.dead||[]).filter(x=>x.id!==id);state.departed=(state.departed||[]).filter(x=>x.id!==id);state.active=(state.active||[]).filter(x=>x.id!==id);allCharacters().forEach(x=>{normalizeCharacter(x);x.relations.friends=x.relations.friends.filter(v=>v!==id);x.relations.enemies=x.relations.enemies.filter(v=>v!==id);x.bonds.party=x.bonds.party.filter(v=>v!==id);x.bonds.apprentices=x.bonds.apprentices.filter(v=>v!==id);if(x.bonds.spouse===id)x.bonds.spouse=null;if(x.bonds.mentor===id)x.bonds.mentor=null});state.archiveSelected=null;saveGame();renderRecords();toast('記録を削除しました。')}
 
@@ -1768,9 +2032,48 @@ function openTutorial(index=0){state.tutorialIndex=clamp(index,0,tutorialPages.l
 function renderTutorial(){const i=state.tutorialIndex,[title,text]=tutorialPages[i];$('#tutorialStep').textContent=`TUTORIAL ${i+1} / ${tutorialPages.length}`;$('#tutorialTitle').textContent=title;$('#tutorialText').textContent=text;$('#tutorialPrev').disabled=i===0;$('#tutorialNext').textContent=i===tutorialPages.length-1?'ゲーム開始':'次へ';$('#tutorialDots').innerHTML=tutorialPages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}
 function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV30','1');$('#tutorialModal').classList.add('hidden')}
 
-function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV36',JSON.stringify(copy))}catch(e){}}
-function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
-function hardReset(){['tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));location.reload()}
+function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV37',JSON.stringify(copy))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
+async function hardReset(){['tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));await clearCustomPortraitDB();location.reload()}
+
+
+// Custom portrait editor
+$('#portraitEditorClose').onclick=closePortraitEditor;
+$('#portraitEditorModal').onclick=e=>{if(e.target.id==='portraitEditorModal')closePortraitEditor()};
+$('#portraitChooseBtn').onclick=()=>$('#portraitFileInput').click();
+$('#portraitFileInput').onchange=e=>choosePortraitFile(e.target.files?.[0]);
+$('#portraitSaveBtn').onclick=savePortraitCrop;
+$('#portraitEditorResetBtn').onclick=()=>portraitEditorCharacterId&&resetCharacterPortrait(portraitEditorCharacterId);
+$('#portraitZoom').oninput=e=>{portraitCropZoom=Number(e.target.value)||1;clampCropOffsets();drawPortraitCrop()};
+const cropCanvas=$('#portraitCropCanvas');
+cropCanvas.addEventListener('pointerdown',e=>{
+ if(!portraitCropImage)return;
+ cropCanvas.setPointerCapture?.(e.pointerId);
+ portraitDragState={x:e.clientX,y:e.clientY,ox:portraitCropOffsetX,oy:portraitCropOffsetY};
+ cropCanvas.classList.add('dragging');e.preventDefault();
+});
+cropCanvas.addEventListener('pointermove',e=>{
+ if(!portraitDragState||!portraitCropImage)return;
+ const rect=cropCanvas.getBoundingClientRect(),sx=cropCanvas.width/rect.width,sy=cropCanvas.height/rect.height;
+ portraitCropOffsetX=portraitDragState.ox+(e.clientX-portraitDragState.x)*sx;
+ portraitCropOffsetY=portraitDragState.oy+(e.clientY-portraitDragState.y)*sy;
+ clampCropOffsets();drawPortraitCrop();e.preventDefault();
+});
+const endCropDrag=()=>{portraitDragState=null;cropCanvas.classList.remove('dragging')};
+cropCanvas.addEventListener('pointerup',endCropDrag);
+cropCanvas.addEventListener('pointercancel',endCropDrag);
+cropCanvas.addEventListener('wheel',e=>{
+ if(!portraitCropImage)return;
+ e.preventDefault();
+ portraitCropZoom=clamp(portraitCropZoom+(e.deltaY<0?.08:-.08),1,3.5);
+ $('#portraitZoom').value=portraitCropZoom.toFixed(2);clampCropOffsets();drawPortraitCrop();
+},{passive:false});
+document.addEventListener('click',e=>{
+ const edit=e.target.closest?.('[data-image-edit]');
+ if(edit){e.preventDefault();e.stopPropagation();openPortraitEditor(edit.dataset.imageEdit);return}
+ const reset=e.target.closest?.('[data-image-reset]');
+ if(reset){e.preventDefault();e.stopPropagation();resetCharacterPortrait(reset.dataset.imageReset)}
+});
 
 $('#prepareBtn').onclick=()=>renderPrepare();
 $('#sendAllBtn').onclick=()=>beginYear();$('#sendAllTopBtn').onclick=()=>beginYear();
@@ -1793,7 +2096,8 @@ $('#tutorialPrev').onclick=()=>{state.tutorialIndex--;renderTutorial()};
 $('#tutorialNext').onclick=()=>{if(state.tutorialIndex>=tutorialPages.length-1)closeTutorial();else{state.tutorialIndex++;renderTutorial()}};
 const resetGameFromButton=()=>{if(confirm('保存データを消して最初から始めますか？'))hardReset()};$('#resetBtn').onclick=resetGameFromButton;$('#mobileResetBtn').onclick=resetGameFromButton;
 
-(function init(){
+(async function init(){
+ await loadCustomPortraitCache();
  const loaded=loadGame();
  if(!loaded){state.lastRank=getRank(state.faith).name;ensureGodArtState();ensureDemonState();normalizePantheon();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderArrival();saveGame()}else{
    // 保存時点の画面へ復帰
