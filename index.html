@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 - プロトタイプ v44</title>
+<title>転生の女神 - プロトタイプ v46</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -997,6 +997,81 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .pAvatar{width:74px;height:auto!important}
   .cropStage{width:min(100%,320px)}
   .portraitGallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+
+/* v45: Safari-safe square portrait rendering */
+.portraitGallery{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(72px,1fr))!important;
+  gap:7px!important;
+  align-items:start!important;
+  grid-auto-flow:row!important;
+}
+.defaultPortraitCard,.portraitLibraryCard{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  height:0!important;
+  min-height:0!important;
+  padding:0 0 100% 0!important;
+  margin:0!important;
+  aspect-ratio:auto!important;
+  overflow:hidden!important;
+  border-radius:10px!important;
+  box-sizing:border-box!important;
+}
+.defaultPortraitCard > img,
+.portraitLibraryCard > img{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  border:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+.portraitLibraryCard .libName{
+  z-index:2;
+}
+.portraitLibraryDelete{
+  z-index:3;
+}
+
+/* Normal character portraits also use actual square images, not sprite backgrounds */
+.avatarSprite{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  background:none!important;
+}
+.pAvatar,.rosterAvatar,.archiveAvatar,.portraitCircle{
+  position:relative;
+  overflow:hidden!important;
+}
+.pAvatar{
+  width:116px!important;
+  height:116px!important;
+  aspect-ratio:auto!important;
+}
+.rosterAvatar,.archiveAvatar{
+  height:auto!important;
+  aspect-ratio:1/1!important;
+}
+@media(max-width:950px){
+  .pAvatar{width:96px!important;height:96px!important}
+}
+@media(max-width:620px){
+  .portraitGallery{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+  .pAvatar{width:74px!important;height:74px!important}
 }
 
 </style>
@@ -2015,17 +2090,14 @@ function isPortraitCustomized(c){
 }
 function portraitBackground(c){
  const custom=customPortraitCache.get(c?.id);
- if(custom)return {custom:true,image:`url(${custom})`,size:'cover',position:'center center'};
- const file=portraitSheetFile(c),pos=portraitSpritePosition(c.portraitIndex);
- return {custom:false,image:`url('${file}'),linear-gradient(135deg,#735eac,#292744)`,size:'1000% 1000%,cover',position:`${pos},center`};
+ return custom?{custom:true,src:custom}:{custom:false,src:portraitTileFile(c)};
 }
 function updatePortraitElements(id){
  const c=findCharacter(id);if(!c)return;
  const bg=portraitBackground(c);
  document.querySelectorAll(`[data-character-avatar="${CSS.escape(String(id))}"]`).forEach(el=>{
    el.classList.toggle('customPortrait',bg.custom);
-   el.style.backgroundImage=bg.image;el.style.backgroundSize=bg.size;el.style.backgroundPosition=bg.position;
-   el.style.backgroundRepeat=bg.custom?'no-repeat':'';
+   if(el.tagName==='IMG')el.src=bg.src;
  });
  document.querySelectorAll(`[data-image-reset="${CSS.escape(String(id))}"]`).forEach(el=>el.classList.toggle('hidden',!isPortraitCustomized(c)));
  if(portraitEditorCharacterId===id)$('#portraitEditorResetBtn')?.classList.toggle('hidden',!isPortraitCustomized(c));
@@ -2078,7 +2150,7 @@ function renderPortraitLibrary(){
  $('#portraitLibraryCount').textContent=`男性 ${male} / 女性 ${female} / 合計 ${total} / ${MAX_PORTRAIT_LIBRARY}`;
  $('#portraitLibraryAddBtn').disabled=total>=MAX_PORTRAIT_LIBRARY;
  const grid=$('#portraitLibraryGrid');
- grid.innerHTML=items.length?items.map(item=>`<div class="portraitLibraryCard" data-library-portrait="${item.id}" title="${safePortraitText(item.name)}" style="background-image:url(${item.dataUrl});background-size:cover;background-position:center"><div class="libName">${safePortraitText(item.name)}</div><button class="portraitLibraryDelete" data-library-delete="${item.id}" title="ライブラリから削除">×</button></div>`).join(''):`<div class="portraitLibraryEmpty">${c.gender==='male'?'男性':'女性'}用のユーザー画像はまだありません。<br>「画像をまとめて追加」または「追加・調整」から登録できます。</div>`;
+ grid.innerHTML=items.length?items.map(item=>`<div class="portraitLibraryCard" data-library-portrait="${item.id}" title="${safePortraitText(item.name)}"><img src="${item.dataUrl}" alt=""><div class="libName">${safePortraitText(item.name)}</div><button class="portraitLibraryDelete" data-library-delete="${item.id}" title="ライブラリから削除">×</button></div>`).join(''):`<div class="portraitLibraryEmpty">${c.gender==='male'?'男性':'女性'}用のユーザー画像はまだありません。<br>「画像をまとめて追加」または「追加・調整」から登録できます。</div>`;
  $$('[data-library-portrait]').forEach(card=>card.onclick=async e=>{
    if(e.target.closest('[data-library-delete]'))return;
    const item=customPortraitLibraryCache.get(card.dataset.libraryPortrait);if(!item)return;
@@ -2093,9 +2165,8 @@ function renderPortraitLibrary(){
 }
 function renderDefaultPortraitGrid(){
  const c=findCharacter(portraitEditorCharacterId);if(!c)return;
- const file=c.gender==='male'?'man2.png':'woman2.png';
  $('#portraitDefaultGenderLabel').textContent=`${c.gender==='male'?'男性':'女性'}デフォルト100`;
- $('#portraitDefaultGrid').innerHTML=Array.from({length:100},(_,i)=>`<button class="defaultPortraitCard ${!hasCustomPortrait(c.id)&&c.portraitIndex===i?'selected':''}" data-default-portrait="${i}" title="デフォルト画像 ${i+1}" style="background-image:url('${file}');background-size:1000% 1000%;background-position:${portraitSpritePosition(i)};background-repeat:no-repeat"></button>`).join('');
+ $('#portraitDefaultGrid').innerHTML=Array.from({length:100},(_,i)=>`<button class="defaultPortraitCard ${!hasCustomPortrait(c.id)&&c.portraitIndex===i?'selected':''}" data-default-portrait="${i}" title="デフォルト画像 ${i+1}"><img src="${portraitTileFile(c,i)}" alt="デフォルト画像 ${i+1}" loading="lazy" decoding="async"></button>`).join('');
  $$('[data-default-portrait]').forEach(b=>b.onclick=()=>applyDefaultPortrait(+b.dataset.defaultPortrait));
 }
 async function applyDefaultPortrait(index){
@@ -2164,9 +2235,9 @@ async function resetCharacterPortrait(id,ask=true){
  toast('最初のデフォルト画像に戻しました。');
 }
 
-function portraitSheetFile(c){normalizeCharacter(c);return c.gender==='male'?'man2.png':'woman2.png'}
-function portraitSpritePosition(index){const i=clamp(Number(index)||0,0,99),col=i%10,row=Math.floor(i/10),x=col*(100/9),y=row*(100/9);return `${x.toFixed(4)}% ${y.toFixed(4)}%`}
-function avatarImg(c,cls='avatarImage'){normalizeCharacter(c);const bg=portraitBackground(c),label=`${c.name}のポートレート`;return `<div class="${cls} avatarSprite ${bg.custom?'customPortrait':''}" data-character-avatar="${c.id}" role="img" aria-label="${label}" title="${label}" style="background-image:${bg.image};background-size:${bg.size};background-position:${bg.position}"></div>`}
+function portraitTileFile(c,index=c?.portraitIndex){normalizeCharacter(c);const i=clamp(Number(index)||0,0,99);return `portraits/${c.gender==='male'?'male':'female'}/${String(i).padStart(3,'0')}.webp`}
+function portraitImageSrc(c){normalizeCharacter(c);return customPortraitCache.get(c.id)||portraitTileFile(c)}
+function avatarImg(c,cls='avatarImage'){normalizeCharacter(c);const src=portraitImageSrc(c),label=`${c.name}のポートレート`,custom=hasCustomPortrait(c.id);return `<img class="${cls} avatarSprite ${custom?'customPortrait':''}" data-character-avatar="${c.id}" src="${src}" alt="${label}" title="${label}" loading="eager" decoding="async">`}
 function portraitHTML(c){return `<div class="pAvatar portraitEditable" data-image-edit="${c.id}" title="画像を変更">${avatarImg(c)}<span class="portraitEditBadge" aria-hidden="true">✎</span></div>`}
 function candidateTotal(c){return (c.devotion||0)+(c.activity||0)+(c.justice||0)+(c.strength||0)+(c.intelligence||0)}
 function orderedCandidates(){return state.candidates.map((c,i)=>({c,i,total:candidateTotal(c)})).sort((a,b)=>b.total-a.total||a.i-b.i)}
@@ -2593,9 +2664,9 @@ function closeTutorial(){localStorage.setItem('tenseiGoddessTutorialSeenV30','1'
 function finishTutorial(){const wasInitial=tutorialLaunchMode==='initial';closeTutorial();tutorialLaunchMode='manual';if(wasInitial)showFirstGoalIntro()}
 function showFirstGoalIntro(){if(localStorage.getItem('tenseiGoddessFirstGoalIntroSeenV43'))return;localStorage.setItem('tenseiGoddessFirstGoalIntroSeenV43','1');enqueueProgressNotice({type:'firstGoal',data:{goal:faithGoalDefs[0]}})}
 
-function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV44',JSON.stringify(copy))}catch(e){}}
-function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV44')||localStorage.getItem('tenseiGoddessSaveV43')||localStorage.getItem('tenseiGoddessSaveV42')||localStorage.getItem('tenseiGoddessSaveV41')||localStorage.getItem('tenseiGoddessSaveV40')||localStorage.getItem('tenseiGoddessSaveV39')||localStorage.getItem('tenseiGoddessSaveV38')||localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
-async function hardReset(){['tenseiGoddessSaveV44','tenseiGoddessSaveV43','tenseiGoddessSaveV42','tenseiGoddessSaveV41','tenseiGoddessSaveV40','tenseiGoddessSaveV39','tenseiGoddessSaveV38','tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));localStorage.removeItem('tenseiGoddessFirstGoalIntroSeenV43');localStorage.removeItem('tenseiPortraitLibraryMigratedV43');await clearCustomPortraitDB();location.reload()}
+function saveGame(){try{const copy=JSON.parse(JSON.stringify(state));localStorage.setItem('tenseiGoddessSaveV46',JSON.stringify(copy))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('tenseiGoddessSaveV46')||localStorage.getItem('tenseiGoddessSaveV45')||localStorage.getItem('tenseiGoddessSaveV44')||localStorage.getItem('tenseiGoddessSaveV43')||localStorage.getItem('tenseiGoddessSaveV42')||localStorage.getItem('tenseiGoddessSaveV41')||localStorage.getItem('tenseiGoddessSaveV40')||localStorage.getItem('tenseiGoddessSaveV39')||localStorage.getItem('tenseiGoddessSaveV38')||localStorage.getItem('tenseiGoddessSaveV37')||localStorage.getItem('tenseiGoddessSaveV36')||localStorage.getItem('tenseiGoddessSaveV35')||localStorage.getItem('tenseiGoddessSaveV34')||localStorage.getItem('tenseiGoddessSaveV33')||localStorage.getItem('tenseiGoddessSaveV30')||localStorage.getItem('tenseiGoddessSaveV27')||localStorage.getItem('tenseiGoddessSaveV25')||localStorage.getItem('tenseiGoddessSaveV24')||localStorage.getItem('tenseiGoddessSaveV23')||localStorage.getItem('tenseiGoddessSaveV22')||localStorage.getItem('tenseiGoddessSaveV21')||localStorage.getItem('tenseiGoddessSaveV20')||localStorage.getItem('tenseiGoddessSaveV19')||localStorage.getItem('tenseiGoddessSaveV13')||localStorage.getItem('tenseiGoddessSaveV12')||localStorage.getItem('tenseiGoddessSaveV11')||localStorage.getItem('tenseiGoddessSaveV10')||localStorage.getItem('tenseiGoddessSaveV9')||localStorage.getItem('tenseiGoddessSaveV8')||localStorage.getItem('tenseiGoddessSaveV7');if(!raw)return false;const saved=JSON.parse(raw);Object.assign(state,saved);if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();return true}catch(e){return false}}
+async function hardReset(){['tenseiGoddessSaveV46','tenseiGoddessSaveV45','tenseiGoddessSaveV44','tenseiGoddessSaveV43','tenseiGoddessSaveV42','tenseiGoddessSaveV41','tenseiGoddessSaveV40','tenseiGoddessSaveV39','tenseiGoddessSaveV38','tenseiGoddessSaveV37','tenseiGoddessSaveV36','tenseiGoddessSaveV35','tenseiGoddessSaveV34','tenseiGoddessSaveV33','tenseiGoddessSaveV30','tenseiGoddessSaveV27','tenseiGoddessSaveV25','tenseiGoddessSaveV24','tenseiGoddessSaveV23','tenseiGoddessSaveV22','tenseiGoddessSaveV21','tenseiGoddessSaveV20','tenseiGoddessSaveV19','tenseiGoddessSaveV13','tenseiGoddessSaveV12','tenseiGoddessSaveV11','tenseiGoddessSaveV10','tenseiGoddessSaveV9','tenseiGoddessSaveV8','tenseiGoddessSaveV7','tenseiGoddessTutorialSeenV30','tenseiGoddessTutorialSeenV27','tenseiGoddessTutorialSeenV25','tenseiGoddessTutorialSeenV24','tenseiGoddessTutorialSeenV23','tenseiGoddessTutorialSeenV22','tenseiGoddessTutorialSeenV21','tenseiGoddessTutorialSeenV20','tenseiGoddessTutorialSeenV19','tenseiGoddessTutorialSeenV13','tenseiGoddessTutorialSeenV12','tenseiGoddessTutorialSeenV11','tenseiGoddessTutorialSeenV10','tenseiGoddessTutorialSeenV9','tenseiGoddessTutorialSeenV8','tenseiGoddessTutorialSeenV7'].forEach(k=>localStorage.removeItem(k));localStorage.removeItem('tenseiGoddessFirstGoalIntroSeenV43');localStorage.removeItem('tenseiPortraitLibraryMigratedV43');await clearCustomPortraitDB();location.reload()}
 
 
 // Custom portrait editor
