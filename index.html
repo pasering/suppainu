@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v56</title>
+<title>転生の女神 v57</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1577,6 +1577,121 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   }
 }
 
+
+/* v57: yearly reincarnator gacha reveal */
+.gachaScreen{width:100%;max-width:1180px;margin:0 auto}
+.gachaStage{
+  position:relative;overflow:hidden;min-height:650px;border:1px solid var(--line);
+  border-radius:26px;padding:26px 24px 22px;box-shadow:var(--shadow);
+  isolation:isolate;background:
+    linear-gradient(180deg,rgba(15,13,32,.72),rgba(8,7,20,.94)),
+    url("assets/bg-arrival-hall.png") center/cover no-repeat;
+}
+.gachaStage::before{
+  content:"";position:absolute;inset:0;z-index:-2;opacity:.72;pointer-events:none;
+  background:radial-gradient(circle at 50% 34%,var(--gacha-aura,rgba(180,180,200,.18)),transparent 42%);
+  transition:background .35s ease;
+}
+.gachaStage::after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 28%,rgba(7,6,18,.58) 100%);
+}
+.gachaStage.rarity-1{--gacha-aura:rgba(170,178,196,.18)}
+.gachaStage.rarity-2{--gacha-aura:rgba(86,159,230,.25)}
+.gachaStage.rarity-3{--gacha-aura:rgba(151,105,242,.30)}
+.gachaStage.rarity-4{--gacha-aura:rgba(243,190,75,.36)}
+.gachaStage.rarity-5{--gacha-aura:rgba(255,218,126,.48)}
+.gachaGlow{
+  position:absolute;width:420px;height:420px;left:50%;top:40%;transform:translate(-50%,-50%);
+  border-radius:50%;filter:blur(46px);opacity:.38;pointer-events:none;
+  background:var(--gacha-aura,rgba(190,180,255,.22));
+}
+.gachaHead{text-align:center;position:relative;z-index:2;margin:8px 0 24px}
+.gachaEyebrow{font-size:8px;letter-spacing:.28em;font-weight:900;color:#d7ccff}
+.gachaHead h1{margin:5px 0 4px;font-size:34px;letter-spacing:.05em;color:#fff7e7}
+.gachaHead p{margin:0;font-size:10px;color:#b9afc8}
+.gachaCards{
+  position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;max-width:900px;margin:0 auto;
+}
+.gachaCard{
+  --rarity-border:rgba(200,200,215,.28);--rarity-bg:rgba(40,40,52,.72);--rarity-glow:rgba(210,210,225,.10);
+  position:relative;min-width:0;border:1px solid var(--rarity-border);border-radius:18px;
+  padding:12px 12px 13px;text-align:center;overflow:hidden;
+  background:linear-gradient(145deg,var(--rarity-bg),rgba(8,7,19,.92));
+  box-shadow:0 12px 28px rgba(0,0,0,.28),0 0 26px var(--rarity-glow);
+  opacity:0;transform:translateY(22px) scale(.94) rotateX(8deg);
+}
+.gachaCard::before{
+  content:"";position:absolute;inset:-35%;pointer-events:none;opacity:.24;
+  background:radial-gradient(circle,var(--rarity-glow),transparent 58%);
+}
+.gachaCard.revealed{animation:gachaReveal .50s cubic-bezier(.18,.84,.28,1.08) forwards}
+.gachaCard.rarity-1{--rarity-border:rgba(190,198,214,.30);--rarity-bg:rgba(58,61,72,.76);--rarity-glow:rgba(205,210,224,.16)}
+.gachaCard.rarity-2{--rarity-border:rgba(89,170,239,.52);--rarity-bg:rgba(23,67,110,.76);--rarity-glow:rgba(70,168,245,.28)}
+.gachaCard.rarity-3{--rarity-border:rgba(167,116,255,.62);--rarity-bg:rgba(74,39,126,.77);--rarity-glow:rgba(155,99,255,.33)}
+.gachaCard.rarity-4{--rarity-border:rgba(244,196,87,.72);--rarity-bg:rgba(111,73,18,.78);--rarity-glow:rgba(248,193,68,.38)}
+.gachaCard.rarity-5{
+  --rarity-border:rgba(255,226,146,.92);--rarity-bg:rgba(117,70,34,.80);--rarity-glow:rgba(255,221,119,.55);
+  box-shadow:0 12px 30px rgba(0,0,0,.30),0 0 34px rgba(255,220,120,.34);
+}
+.gachaPortrait{
+  position:relative;width:min(132px,72%);aspect-ratio:1/1;margin:0 auto 9px;
+  border-radius:18px;overflow:hidden;border:1px solid var(--rarity-border);
+  background:#1b1830;
+}
+.gachaPortrait .avatarSprite{width:100%!important;height:100%!important}
+.gachaRarity{font-size:17px;letter-spacing:.08em;color:#fff3c8;text-shadow:0 2px 12px var(--rarity-glow);min-height:22px}
+.gachaRarityLabel{font-size:8px;font-weight:900;letter-spacing:.13em;color:#d6ccdf;margin-top:1px}
+.gachaName{font-size:13px;font-weight:950;margin-top:8px;color:#fff}
+.gachaTotal{font-size:18px;font-weight:950;color:#fff1bc;margin-top:5px}
+.gachaMeta{font-size:8px;line-height:1.5;color:#c9bfd5;margin-top:5px}
+.gachaBottom{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:12px;
+  min-height:58px;margin-top:20px;
+}
+.gachaGuide{font-size:9px;color:#bdb3cc}
+@keyframes gachaReveal{
+  0%{opacity:0;transform:translateY(22px) scale(.94) rotateX(8deg);filter:brightness(2)}
+  55%{opacity:1;transform:translateY(-3px) scale(1.025) rotateX(0);filter:brightness(1.35)}
+  100%{opacity:1;transform:translateY(0) scale(1) rotateX(0);filter:brightness(1)}
+}
+
+/* Rarity tint only in the Hall of Reincarnation after the reveal */
+#arrivalPeople .person{
+  --rarity-border:var(--line);--rarity-bg:rgba(20,17,39,.64);--rarity-glow:transparent;
+  border-color:var(--rarity-border)!important;
+  background:linear-gradient(145deg,var(--rarity-bg),rgba(11,9,25,.84))!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.20),0 0 20px var(--rarity-glow)!important;
+}
+#arrivalPeople .person.rarity-1{--rarity-border:rgba(190,198,214,.25);--rarity-bg:rgba(54,56,66,.58);--rarity-glow:rgba(205,210,224,.08)}
+#arrivalPeople .person.rarity-2{--rarity-border:rgba(89,170,239,.40);--rarity-bg:rgba(22,61,99,.58);--rarity-glow:rgba(70,168,245,.13)}
+#arrivalPeople .person.rarity-3{--rarity-border:rgba(167,116,255,.48);--rarity-bg:rgba(66,34,113,.59);--rarity-glow:rgba(155,99,255,.18)}
+#arrivalPeople .person.rarity-4{--rarity-border:rgba(244,196,87,.56);--rarity-bg:rgba(92,62,19,.60);--rarity-glow:rgba(248,193,68,.20)}
+#arrivalPeople .person.rarity-5{--rarity-border:rgba(255,226,146,.76);--rarity-bg:rgba(105,64,28,.62);--rarity-glow:rgba(255,221,119,.27)}
+.arrivalRarityStars{display:inline-block;margin-left:5px;font-size:10px;color:#ffe69a;letter-spacing:.03em}
+
+@media(max-width:760px){
+  .gachaStage{min-height:590px;padding:18px 12px 16px;border-radius:20px}
+  .gachaHead{margin:4px 0 16px}
+  .gachaHead h1{font-size:28px}
+  .gachaCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .gachaCard{padding:9px 8px 10px;border-radius:15px}
+  .gachaPortrait{width:min(104px,72%);border-radius:15px}
+  .gachaName{font-size:11px}
+  .gachaTotal{font-size:15px}
+  .gachaRarity{font-size:14px}
+}
+@media(max-width:390px){
+  .gachaCards{gap:7px}
+  .gachaCard{padding:8px 6px}
+  .gachaPortrait{width:min(88px,70%)}
+}
+@media(prefers-reduced-motion:reduce){
+  .gachaCard{opacity:1;transform:none}
+  .gachaCard.revealed{animation:none}
+}
+
 </style>
 </head>
 <body>
@@ -1634,7 +1749,25 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 
   <main class="main">
     <!-- 転生の間 -->
-    <section id="arrivalScreen" class="sceneShell">
+    
+    <!-- 年間転生者・召喚演出 -->
+    <section id="gachaScreen" class="hidden gachaScreen">
+      <div class="gachaStage rarity-1" id="gachaStage">
+        <div class="gachaGlow"></div>
+        <div class="gachaHead">
+          <div class="gachaEyebrow">REINCARNATOR SUMMON</div>
+          <h1><span id="gachaYear">1</span>年目 転生者</h1>
+          <p>今年、女神のもとへ導かれた魂たち。</p>
+        </div>
+        <div class="gachaCards" id="gachaCards"></div>
+        <div class="gachaBottom">
+          <div class="gachaGuide" id="gachaGuide">転生者を確認しています……</div>
+          <button class="btn gold hidden" id="gachaContinueBtn">転生の間へ</button>
+        </div>
+      </div>
+    </section>
+
+<section id="arrivalScreen" class="sceneShell">
       <div class="scene">
         <div class="stars"></div><div class="templeFloor"></div>
         <div class="sceneTitle"><div class="eyebrow">HALL OF REINCARNATION</div><h1>転生の間</h1><p id="arrivalSub">今年、あなたが送り出す転生者たちが到着した。</p></div>
@@ -2874,6 +3007,17 @@ function portraitImageSrc(c){normalizeCharacter(c);return customPortraitCache.ge
 function avatarImg(c,cls='avatarImage'){normalizeCharacter(c);const src=portraitImageSrc(c),label=`${c.name}のポートレート`,custom=hasCustomPortrait(c.id);return `<img class="${cls} avatarSprite ${custom?'customPortrait':''}" data-character-avatar="${c.id}" src="${src}" alt="${label}" title="${label}" loading="eager" decoding="async">`}
 function portraitHTML(c){return `<div class="pAvatar portraitEditable" data-image-edit="${c.id}" title="画像を変更">${avatarImg(c)}<span class="portraitEditBadge" aria-hidden="true">✎</span></div>`}
 function candidateTotal(c){return (c.devotion||0)+(c.activity||0)+(c.justice||0)+(c.strength||0)+(c.intelligence||0)}
+function candidateRarity(c){
+ const total=candidateTotal(c);
+ if(total>=301)return 5;
+ if(total>=261)return 4;
+ if(total>=221)return 3;
+ if(total>=181)return 2;
+ return 1;
+}
+function rarityStars(c){const r=candidateRarity(c);return '★'.repeat(r)}
+function rarityLabel(c){return `★${candidateRarity(c)}`}
+
 function orderedCandidates(){return state.candidates.map((c,i)=>({c,i,total:candidateTotal(c)})).sort((a,b)=>b.total-a.total||a.i-b.i)}
 function displayName(c){if(!c)return '';normalizeCharacter(c);return `${c.marker||''}${c.name}`}
 function markerControlsHTML(c){normalizeCharacter(c);return `<span class="markerHint">目印</span>${['★','▲','●'].map(m=>`<button class="markerBtn ${c.marker===m?'active':''}" data-marker-char="${c.id}" data-marker-symbol="${m}" title="${m}を付ける／外す">${m}</button>`).join('')}`}
@@ -2917,16 +3061,60 @@ function animateArrivalMessage(finalHtml){
  };
  requestAnimationFrame(tick);
 }
+
+let gachaRevealToken=0;
+function renderGacha(){
+ showOnly('gachaScreen');
+ const token=++gachaRevealToken;
+ const batch=state.candidates.map((c,i)=>({c,i,total:candidateTotal(c),rarity:candidateRarity(c)}));
+ const maxRarity=Math.max(1,...batch.map(x=>x.rarity));
+ $('#gachaStage').className=`gachaStage rarity-${maxRarity}`;
+ $('#gachaYear').textContent=state.year;
+ $('#gachaGuide').textContent=`${batch.length}名の転生者を召喚中……`;
+ $('#gachaContinueBtn').classList.add('hidden');
+ $('#gachaCards').innerHTML=batch.map(({c,i,total,rarity})=>`<div class="gachaCard rarity-${rarity}" data-gacha-index="${i}">
+   <div class="gachaPortrait">${avatarImg(c,'avatarImage')}</div>
+   <div class="gachaRarity">${'★'.repeat(rarity)}</div>
+   <div class="gachaRarityLabel">RARITY ${rarity}</div>
+   <div class="gachaName">${displayName(c)}</div>
+   <div class="gachaTotal">総合 ${total}</div>
+   <div class="gachaMeta">${c.age}歳 / ${c.gender==='male'?'男性':'女性'}<br>帰依 ${c.devotion}・積極 ${c.activity}・正義 ${c.justice}<br>強 ${c.strength}・賢 ${c.intelligence}</div>
+ </div>`).join('');
+ const cards=$$('#gachaCards .gachaCard');
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ if(reduced){
+   cards.forEach(c=>c.classList.add('revealed'));
+   finishGachaReveal(token,maxRarity);
+   return;
+ }
+ cards.forEach((card,i)=>setTimeout(()=>{
+   if(token!==gachaRevealToken||state.phase!=='gachaScreen')return;
+   card.classList.add('revealed');
+ },180+i*360));
+ setTimeout(()=>finishGachaReveal(token,maxRarity),Math.max(650,220+cards.length*360));
+}
+function finishGachaReveal(token,maxRarity){
+ if(token!==gachaRevealToken||state.phase!=='gachaScreen')return;
+ $$('#gachaCards .gachaCard').forEach(c=>c.classList.add('revealed'));
+ $('#gachaGuide').textContent=maxRarity>=5?'★★★★★　特別な輝きを持つ転生者が現れました。':'今年の転生者が揃いました。';
+ $('#gachaContinueBtn').classList.remove('hidden');
+}
+function enterArrivalFromGacha(){
+ gachaRevealToken++;
+ renderArrival();
+ maybeShowDemonIntro();
+}
+
 function renderArrival(){
  showOnly('arrivalScreen');const batch=orderedCandidates().map(x=>x.c);
- $('#arrivalPeople').innerHTML=batch.map((c,i)=>`<div class="person arrivalReveal ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)}</div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`).join('');
+ $('#arrivalPeople').innerHTML=batch.map((c,i)=>{const rarity=candidateRarity(c);return `<div class="person arrivalReveal rarity-${rarity} ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)} <span class="arrivalRarityStars">${'★'.repeat(rarity)}</span></div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)} / ★${rarity}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`}).join('');
  $('#arrivalSub').textContent=`${state.year}年目。${state.candidates.length}名の新たな転生者が到着した。総合ステータス順に表示中。`;
  $('#arrivalSpeaker').textContent=state.year===1?'案内役':'転生管理局';
  const yearLines=[`「${state.year}年目の転生者、${state.candidates.length}名が揃いました。今年も全員を送り出してください」`,`「今年の転生枠は${state.candidates.length}名です。どの者もすでに手続き済み。あとは女神さまの加護を待つだけです」`,`「新しい転生者をお連れしました。生き残るか、名を残すか、それとも……今年も観測をお願いします」`,`「${state.candidates.length}名とも転生準備は完了しています。加護の配分が済み次第、門を開きます」`,`「また一年が始まりますね。今回の${state.candidates.length}名がどんな人生を歩むのか、記録局も注目しています」`];
  const message=state.year===1?`「女神さま。今年の転生者はこの${state.candidates.length}名です。まずは<b>信仰度50</b>を目指しましょう。期限はありません。全員に必要な加護を与え、異世界へ送り出してください」`:`${stablePick(yearLines,'arrival-year-'+state.year)}`;
  animateArrivalMessage(message);
 }
-function showOnly(id){['arrivalScreen','prepareScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
+function showOnly(id){['gachaScreen','arrivalScreen','prepareScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
 
 function upgradeCost(v,cap){if(v>=cap)return 999;return 1+Math.floor(v/25)+(v>=80?1:0)}
 function buyUpgrade(key,amount){const c=state.candidates[state.currentCandidateIndex];for(let i=0;i<amount;i++){if(c[key]>=c.caps[key])break;const cost=upgradeCost(c[key],c.caps[key]);if(state.budget<cost)break;state.budget-=cost;c.blessingSpent=(c.blessingSpent||0)+cost;c[key]++}renderPrepare(true);updateHUD()}
@@ -3261,7 +3449,7 @@ function renderAllYearResults(chars){
 function renderOneYearResult(c){
  if(!c)return;const h=historyForYear(c)||makeYearHistory(c);$('#yearSummary').innerHTML=`<div class="summaryChar ${h.departedEnd?'departedSummary':''}"><div class="summaryTop"><button class="summaryNameLink" data-open-record="${c.id}" title="キャラ記録を開く">${displayName(c)}　${h.ageStart}歳 / ${generationLabel(c)}</button><span class="badge ${historyBadgeClass(h)}">${historyStatus(h)}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${h.statsEnd.justice}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">累計功績</div><div class="v">${h.achievement}</div></div></div>${h.growth.length?`<div class="sub" style="margin:8px 0 0">年間成長：${h.growth.join(' / ')}</div>`:''}${eventTimelineHTML(h.events)}${historyExitText(h)?`<div class="sub" style="margin:7px 0 0;color:${h.departedEnd?'#ffd27d':'#ff9bad'}">${historyExitText(h)}</div>`:''}${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:!h.aliveEnd&&!h.departedEnd,awakening:!!h.awakenings?.length})}</div></div>`;$$('[data-open-record]').forEach(b=>b.onclick=()=>openCharacterRecord(b.dataset.openRecord));
 }
-function nextYear(){state.year++;state.yearStartFaith=state.faith;state.yearDelta=0;state.yearFinalized=false;state.summarySelected='all';state.godArtsSpentThisYear=0;state.active.forEach(c=>{c.lastYearFaith=0;c.lastYearGrowth=[];c.annualEvents=[];c.annualAwakenings=[];c.ageAtYearStart=c.age});const d=ensureDemonState();if(!d.active&&shouldActivateDemon())activateDemonArmy(state.year>=25?'year':'faith');if(d.active)prepareDemonYear();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderArrival();saveGame();maybeShowDemonIntro()}
+function nextYear(){state.year++;state.yearStartFaith=state.faith;state.yearDelta=0;state.yearFinalized=false;state.summarySelected='all';state.godArtsSpentThisYear=0;state.active.forEach(c=>{c.lastYearFaith=0;c.lastYearGrowth=[];c.annualEvents=[];c.annualAwakenings=[];c.ageAtYearStart=c.age});const d=ensureDemonState();if(!d.active&&shouldActivateDemon())activateDemonArmy(state.year>=25?'year':'faith');if(d.active)prepareDemonYear();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderGacha();saveGame()}
 function renderHall(){const box=$('#hallOfFame');if(!box)return;box.innerHTML=state.hall.length?state.hall.slice().reverse().map(h=>`<div class="hallItem"><div class="hallTitle">${findCharacter(h.id)?displayName(findCharacter(h.id)):h.name} ― ${h.title}</div><div class="hallMeta">${h.year}年目・${h.age}歳${h.majorCount!=null?` / 大功績 ${h.majorCount}件 / 生涯功績 ${h.achievement}${h.statTotal!=null?` / 総合 ${h.statTotal}`:''}${h.lifetimeFaith!=null?` / 累計信仰 ${h.lifetimeFaith>=0?'+':''}${h.lifetimeFaith}`:''}${h.completion!=null?` / 100％ライン到達度 ${h.completion}%`:''}${h.chance!=null?` / 判定率 ${h.chance}%`:''}`:''}<br>${h.text}</div></div>`).join(''):'<div class="sub">まだ殿堂入りした転生者はいません。殿堂入りは一度の行為ではなく、生涯を通じて複数の大功績を残した人物に対して判定されます。</div>'}
 function renderUnlocks(){$('#unlockRoadmap').innerHTML=[0,80,160,260,400,500,550,720,900,1150,1500].map(v=>{const n=skillDefs.filter(s=>s.unlock===v).length,g=godArtDefs.filter(a=>a.unlock===v).length,extra=v===500?' / 魔王軍早期警戒条件':'';return `<div class="unlock"><span>${v===0?'初期':`信仰度 ${v}`}</span><span class="req">${state.faith>=v?'到達':'未到達'}${n?` / スキル${n}種`:''}${g?` / 神業${g}種`:''}${extra}</span></div>`}).join('')}
 function goddessMilestones(){
@@ -3552,11 +3740,12 @@ async function startGameForSelectedSlot(forceNew=false){
  await migrateExistingCustomPortraitsToLibrary();
  if(!loaded){
    state.lastRank=getRank(state.faith).name;ensureProgressionState();ensureGodArtState();ensureDemonState();normalizePantheon();generateYearCandidates();
-   state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderArrival();saveGame();
+   state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderGacha();saveGame();
  }else{
    if(state.phase==='prepareScreen')renderPrepare();
    else if(state.phase==='yearPlayScreen')renderYearPlay('観測を再開しました。',0);
    else if(state.phase==='summaryScreen'){finishYear()}
+   else if(state.phase==='gachaScreen')renderGacha();
    else renderArrival();
  }
  ensureAchievements();checkAchievements(true);armBgm();updateHudHeightVar();updateHUD();renderHall();renderUnlocks();renderPantheonMini();renderDemonSummary();
@@ -3677,6 +3866,7 @@ document.addEventListener('click',e=>{
  if(reset){e.preventDefault();e.stopPropagation();resetCharacterPortrait(reset.dataset.imageReset)}
 });
 
+$('#gachaContinueBtn').onclick=enterArrivalFromGacha;
 $('#prepareBtn').onclick=()=>renderPrepare();
 $('#sendAllBtn').onclick=()=>beginYear();$('#sendAllTopBtn').onclick=()=>beginYear();
 $('#resetBlessingsBtn').onclick=()=>resetBlessings();
