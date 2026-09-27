@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v57</title>
+<title>転生の女神 v58</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1692,6 +1692,35 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .gachaCard.revealed{animation:none}
 }
 
+
+/* v58: user-triggered gacha pull */
+.gachaPullBtn{
+  min-width:180px;
+  font-size:12px!important;
+  padding:11px 20px!important;
+  box-shadow:0 8px 24px rgba(243,200,106,.18)
+}
+.gachaStage.waiting .gachaCards{
+  filter:brightness(.70) saturate(.75);
+}
+.gachaStage.waiting .gachaCard{
+  opacity:.34!important;
+  transform:none!important;
+  filter:grayscale(.45) blur(.2px);
+}
+.gachaStage.waiting .gachaCard .gachaPortrait,
+.gachaStage.waiting .gachaCard .gachaName,
+.gachaStage.waiting .gachaCard .gachaTotal,
+.gachaStage.waiting .gachaCard .gachaMeta,
+.gachaStage.waiting .gachaCard .gachaRarity,
+.gachaStage.waiting .gachaCard .gachaRarityLabel{
+  visibility:hidden;
+}
+@media(max-width:620px){
+  .gachaPullBtn{width:min(100%,260px)}
+  .gachaBottom{flex-direction:column}
+}
+
 </style>
 </head>
 <body>
@@ -1761,7 +1790,8 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
         </div>
         <div class="gachaCards" id="gachaCards"></div>
         <div class="gachaBottom">
-          <div class="gachaGuide" id="gachaGuide">転生者を確認しています……</div>
+          <div class="gachaGuide" id="gachaGuide">今年の転生者を召喚します。</div>
+          <button class="btn gold gachaPullBtn" id="gachaPullBtn">転生者を召喚する</button>
           <button class="btn gold hidden" id="gachaContinueBtn">転生の間へ</button>
         </div>
       </div>
@@ -3009,10 +3039,10 @@ function portraitHTML(c){return `<div class="pAvatar portraitEditable" data-imag
 function candidateTotal(c){return (c.devotion||0)+(c.activity||0)+(c.justice||0)+(c.strength||0)+(c.intelligence||0)}
 function candidateRarity(c){
  const total=candidateTotal(c);
- if(total>=301)return 5;
+ if(total>=311)return 5;
  if(total>=261)return 4;
- if(total>=221)return 3;
- if(total>=181)return 2;
+ if(total>=201)return 3;
+ if(total>=141)return 2;
  return 1;
 }
 function rarityStars(c){const r=candidateRarity(c);return '★'.repeat(r)}
@@ -3065,12 +3095,13 @@ function animateArrivalMessage(finalHtml){
 let gachaRevealToken=0;
 function renderGacha(){
  showOnly('gachaScreen');
- const token=++gachaRevealToken;
+ gachaRevealToken++;
  const batch=state.candidates.map((c,i)=>({c,i,total:candidateTotal(c),rarity:candidateRarity(c)}));
  const maxRarity=Math.max(1,...batch.map(x=>x.rarity));
- $('#gachaStage').className=`gachaStage rarity-${maxRarity}`;
+ $('#gachaStage').className=`gachaStage waiting rarity-${maxRarity}`;
  $('#gachaYear').textContent=state.year;
- $('#gachaGuide').textContent=`${batch.length}名の転生者を召喚中……`;
+ $('#gachaGuide').textContent='今年の転生者を召喚します。';
+ $('#gachaPullBtn').classList.remove('hidden');
  $('#gachaContinueBtn').classList.add('hidden');
  $('#gachaCards').innerHTML=batch.map(({c,i,total,rarity})=>`<div class="gachaCard rarity-${rarity}" data-gacha-index="${i}">
    <div class="gachaPortrait">${avatarImg(c,'avatarImage')}</div>
@@ -3080,7 +3111,15 @@ function renderGacha(){
    <div class="gachaTotal">総合 ${total}</div>
    <div class="gachaMeta">${c.age}歳 / ${c.gender==='male'?'男性':'女性'}<br>帰依 ${c.devotion}・積極 ${c.activity}・正義 ${c.justice}<br>強 ${c.strength}・賢 ${c.intelligence}</div>
  </div>`).join('');
+}
+function startGachaReveal(){
+ if(state.phase!=='gachaScreen')return;
+ const token=++gachaRevealToken;
  const cards=$$('#gachaCards .gachaCard');
+ const maxRarity=Math.max(1,...state.candidates.map(candidateRarity));
+ $('#gachaStage').classList.remove('waiting');
+ $('#gachaPullBtn').classList.add('hidden');
+ $('#gachaGuide').textContent=`${cards.length}名の転生者を召喚中……`;
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  if(reduced){
    cards.forEach(c=>c.classList.add('revealed'));
@@ -3866,6 +3905,7 @@ document.addEventListener('click',e=>{
  if(reset){e.preventDefault();e.stopPropagation();resetCharacterPortrait(reset.dataset.imageReset)}
 });
 
+$('#gachaPullBtn').onclick=startGachaReveal;
 $('#gachaContinueBtn').onclick=enterArrivalFromGacha;
 $('#prepareBtn').onclick=()=>renderPrepare();
 $('#sendAllBtn').onclick=()=>beginYear();$('#sendAllTopBtn').onclick=()=>beginYear();
