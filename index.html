@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v59</title>
+<title>転生の女神 v60</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1745,6 +1745,55 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .gachaHead .gachaPullBtn{width:min(100%,260px)}
 }
 
+
+/* v60: clickable Hall-of-Fame and relationship names */
+.recordNameLink{
+  appearance:none;border:0;background:none;padding:0;margin:0;
+  color:#fff1bd;font:inherit;font-weight:900;cursor:pointer;text-align:left;
+  text-decoration:underline;text-decoration-color:rgba(255,225,145,.35);
+  text-underline-offset:3px;
+}
+.recordNameLink:hover{color:#fff7dc;text-decoration-color:rgba(255,225,145,.75)}
+.relationChip.relationLink{
+  cursor:pointer;font:inherit;
+  transition:border-color .15s ease,background .15s ease,transform .15s ease;
+}
+.relationChip.relationLink:hover{
+  transform:translateY(-1px);border-color:rgba(210,193,255,.58)!important;
+  background:rgba(158,124,255,.13)!important;
+}
+
+
+/* v60: Transmigration Bureau dialogue on gacha screen */
+.gachaBottom{
+  display:block!important;
+  max-width:900px;margin:20px auto 0!important;
+}
+.gachaDialogue{
+  position:relative;
+  border:1px solid rgba(210,193,255,.24);
+  border-radius:16px;
+  padding:12px 14px 11px;
+  background:linear-gradient(180deg,rgba(10,8,28,.91),rgba(20,15,43,.95));
+  box-shadow:0 14px 34px rgba(0,0,0,.28);
+  backdrop-filter:blur(10px);
+}
+.gachaDialogueSpeaker{
+  display:inline-block;margin-bottom:6px;
+  color:#ffe5a6;font-size:9px;font-weight:950;letter-spacing:.08em;
+}
+.gachaDialogue .gachaGuide{
+  color:#f0eaf7;font-size:11px;line-height:1.7;min-height:1.7em;
+}
+.gachaDialogueActions{
+  display:flex;justify-content:flex-end;margin-top:9px;
+}
+@media(max-width:620px){
+  .gachaBottom{margin-top:14px!important}
+  .gachaDialogue{padding:10px 11px}
+  .gachaDialogue .gachaGuide{font-size:10px}
+}
+
 </style>
 </head>
 <body>
@@ -1815,8 +1864,11 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
         </div>
         <div class="gachaCards" id="gachaCards"></div>
         <div class="gachaBottom">
-          <div class="gachaGuide" id="gachaGuide">今年の転生者を召喚します。</div>
-          <button class="btn gold hidden" id="gachaContinueBtn">転生の間へ</button>
+          <div class="gachaDialogue">
+            <div class="gachaDialogueSpeaker">転生管理局</div>
+            <div class="gachaGuide" id="gachaGuide">「それではボタンを押して、今年の転生者を召喚しましょう。」</div>
+            <div class="gachaDialogueActions"><button class="btn gold hidden" id="gachaContinueBtn">転生の間へ</button></div>
+          </div>
         </div>
       </div>
     </section>
@@ -2525,15 +2577,34 @@ function releaseDeadRelations(c){
 function generationLabel(c){return `第${c.reincarnatedYear}期生`}
 function activeYears(c){return Math.max(1,state.year-c.reincarnatedYear+1)}
 function careerYears(c){const end=c.deathYear||c.departedYear||state.year;return Math.max(1,end-c.reincarnatedYear+1)}
+function relationRef(id,prefix=''){
+ const x=findCharacter(id);
+ if(!x)return {id:null,label:`${prefix}記録不明`};
+ return {id:x.id,label:`${prefix}${displayName(x)}${x.departed?'↗':x.alive?'':'†'}`};
+}
 function relationNames(c,type){
  normalizeCharacter(c);const ids=c.relations[type==='friend'?'friends':'enemies'];
- return ids.map(id=>{const x=findCharacter(id);return x?`${displayName(x)}${x.departed?'↗':x.alive?'':'†'}`:'記録不明'}).filter(Boolean)
+ return ids.map(id=>relationRef(id)).filter(Boolean)
 }
-function bondName(id){const x=findCharacter(id);return x?`${displayName(x)}${x.departed?'↗':x.alive?'':'†'}`:'記録不明'}
+function bondName(id,prefix=''){return relationRef(id,prefix)}
 function relationBoxHTML(c){
- normalizeCharacter(c);const fs=relationNames(c,'friend'),es=relationNames(c,'enemy'),sp=c.bonds.spouse?[bondName(c.bonds.spouse)]:[],mentor=c.bonds.mentor?[`師：${bondName(c.bonds.mentor)}`]:[],apps=c.bonds.apprentices.map(id=>`弟子：${bondName(id)}`),party=c.bonds.party.map(bondName);
- const chips=(arr,cls)=>arr.length?arr.map(n=>`<span class="relationChip ${cls}">${n}</span>`).join(''):'<span class="relationNone">なし</span>';
+ normalizeCharacter(c);
+ const fs=relationNames(c,'friend'),es=relationNames(c,'enemy'),
+ sp=c.bonds.spouse?[bondName(c.bonds.spouse)]:[],
+ mentor=c.bonds.mentor?[bondName(c.bonds.mentor,'師：')]:[],
+ apps=c.bonds.apprentices.map(id=>bondName(id,'弟子：')),
+ party=c.bonds.party.map(id=>bondName(id));
+ const chips=(arr,cls)=>arr.length?arr.map(r=>r.id?`<button class="relationChip relationLink ${cls}" data-open-related="${r.id}" title="キャラ詳細を開く">${r.label}</button>`:`<span class="relationChip ${cls}">${r.label}</span>`).join(''):'<span class="relationNone">なし</span>';
  return `<div class="relationBox"><div class="relationRow"><div class="relationLabel">友好関係</div><div class="relationChips">${chips(fs,'friend')}</div></div><div class="relationRow"><div class="relationLabel">敵対関係</div><div class="relationChips">${chips(es,'enemy')}</div></div><div class="relationRow"><div class="relationLabel special">婚姻</div><div class="relationChips">${chips(sp,'friend')}</div></div><div class="relationRow"><div class="relationLabel special">師弟</div><div class="relationChips">${chips([...mentor,...apps],'friend')}</div></div><div class="relationRow"><div class="relationLabel special">パーティー</div><div class="relationChips">${chips(party,'friend')}</div></div></div>`
+}
+function openRelatedCharacter(id){
+ const x=findCharacter(id);if(!x)return toast('この人物の記録は残っていません。');
+ state.archiveMode=x.departed?'departed':x.alive?'living':'dead';
+ state.archiveSelected=x.id;
+ renderRecords();
+}
+function bindRelatedCharacterLinks(root=document){
+ root.querySelectorAll?.('[data-open-related]').forEach(b=>b.onclick=e=>{e.stopPropagation();openRelatedCharacter(b.dataset.openRelated)});
 }
 
 const WORLD_FAITH_TOTAL=20000;
@@ -3124,7 +3195,7 @@ function renderGacha(){
  const maxRarity=Math.max(1,...batch.map(x=>x.rarity));
  $('#gachaStage').className=`gachaStage waiting rarity-${maxRarity}`;
  $('#gachaYear').textContent=state.year;
- $('#gachaGuide').textContent='今年の転生者を召喚します。';
+ $('#gachaGuide').textContent='「それではボタンを押して、今年の転生者を召喚しましょう。」';
  $('#gachaPullBtn').classList.remove('hidden');
  $('#gachaContinueBtn').classList.add('hidden');
  $('#gachaCards').innerHTML=batch.map(({c,i,total,rarity})=>`<div class="gachaCard rarity-${rarity}" data-gacha-index="${i}">
@@ -3143,7 +3214,7 @@ function startGachaReveal(){
  const maxRarity=Math.max(1,...state.candidates.map(candidateRarity));
  $('#gachaStage').classList.remove('waiting');
  $('#gachaPullBtn').classList.add('hidden');
- $('#gachaGuide').textContent=`${cards.length}名の転生者を召喚中……`;
+ $('#gachaGuide').textContent=`「召喚を開始します。……今年は${cards.length}名ですね。」`;
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  if(reduced){
    cards.forEach(c=>c.classList.add('revealed'));
@@ -3159,7 +3230,7 @@ function startGachaReveal(){
 function finishGachaReveal(token,maxRarity){
  if(token!==gachaRevealToken||state.phase!=='gachaScreen')return;
  $$('#gachaCards .gachaCard').forEach(c=>c.classList.add('revealed'));
- $('#gachaGuide').textContent=maxRarity>=5?'★★★★★　特別な輝きを持つ転生者が現れました。':'今年の転生者が揃いました。';
+ $('#gachaGuide').textContent=maxRarity>=5?'「……これは。特別な輝きを持つ転生者がいますね。全員揃いました。」':'「今年の転生者が揃いました。転生の間へご案内します。」';
  $('#gachaContinueBtn').classList.remove('hidden');
 }
 function enterArrivalFromGacha(){
@@ -3168,15 +3239,15 @@ function enterArrivalFromGacha(){
  maybeShowDemonIntro();
 }
 
-function renderArrival(){
+function renderArrival(instant=false){
  showOnly('arrivalScreen');const batch=orderedCandidates().map(x=>x.c);
- $('#arrivalPeople').innerHTML=batch.map((c,i)=>{const rarity=candidateRarity(c);return `<div class="person arrivalReveal rarity-${rarity} ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)} <span class="arrivalRarityStars">${'★'.repeat(rarity)}</span></div><div class="arrivalMarkerControls markerControls">${markerControlsHTML(c)}</div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)} / ★${rarity}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`}).join('');
- bindMarkerControls($('#arrivalPeople'),()=>renderArrival());
+ $('#arrivalPeople').innerHTML=batch.map((c,i)=>{const rarity=candidateRarity(c);return `<div class="person ${instant?'':'arrivalReveal'} rarity-${rarity} ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)} <span class="arrivalRarityStars">${'★'.repeat(rarity)}</span></div><div class="arrivalMarkerControls markerControls">${markerControlsHTML(c)}</div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)} / ★${rarity}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`}).join('');
+ bindMarkerControls($('#arrivalPeople'),()=>renderArrival(true));
  $('#arrivalSub').textContent=`${state.year}年目。${state.candidates.length}名の新たな転生者が到着した。総合ステータス順に表示中。`;
  $('#arrivalSpeaker').textContent=state.year===1?'案内役':'転生管理局';
  const yearLines=[`「${state.year}年目の転生者、${state.candidates.length}名が揃いました。今年も全員を送り出してください」`,`「今年の転生枠は${state.candidates.length}名です。どの者もすでに手続き済み。あとは女神さまの加護を待つだけです」`,`「新しい転生者をお連れしました。生き残るか、名を残すか、それとも……今年も観測をお願いします」`,`「${state.candidates.length}名とも転生準備は完了しています。加護の配分が済み次第、門を開きます」`,`「また一年が始まりますね。今回の${state.candidates.length}名がどんな人生を歩むのか、記録局も注目しています」`];
  const message=state.year===1?`「女神さま。今年の転生者はこの${state.candidates.length}名です。まずは<b>信仰度50</b>を目指しましょう。期限はありません。全員に必要な加護を与え、異世界へ送り出してください」`:`${stablePick(yearLines,'arrival-year-'+state.year)}`;
- animateArrivalMessage(message);
+ if(instant){const el=$('#arrivalText');if(el){arrivalAnimToken++;el.classList.remove('typingArrival');el.innerHTML=message}}else animateArrivalMessage(message);
 }
 function showOnly(id){['gachaScreen','arrivalScreen','prepareScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
 
@@ -3260,7 +3331,7 @@ function hallCompletionRatio(c){
  const fame=Math.max(0,Number(c.fame)||0);
  const total=characterStatTotal(c);
  const faith=Math.max(0,Number(c.lifetimeFaith)||0);
- return clamp(Math.min(deeds/50,ach/2000,fame/95,total/550,faith/200),0,1);
+ return clamp(Math.min(deeds/65,ach/2600,fame/124,total/715,faith/260),0,1);
 }
 function hallInductionChance(c){
  const r=hallCompletionRatio(c);
@@ -3545,7 +3616,7 @@ function closeRecords(){$('#recordsModal').classList.add('hidden')}
 function renderRecords(){
  $$('.archiveTab').forEach(b=>b.classList.toggle('active',b.dataset.archive===state.archiveMode));const body=$('#recordsBody');
  if(state.archiveMode==='departed'){const departed=(state.departed||[]).slice().sort((a,b)=>(b.departedYear||0)-(a.departedYear||0));if(!departed.length){body.innerHTML='<div class="archiveEmpty">まだ離脱した転生者はいません。</div>';return}if(!departed.some(c=>c.id===state.archiveSelected))state.archiveSelected=departed[0].id;const c=departed.find(x=>x.id===state.archiveSelected);body.innerHTML=`<div class="archiveLayout"><div class="archiveList">${departed.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}</b><span>${generationLabel(x)}・活動${careerYears(x)}年<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>${x.departedYear||'?'}年目に離脱</span><div class="charQuote">${characterQuote(x,'list',{departure:true})}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;$$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c);return}
- if(state.archiveMode==='hall'){body.innerHTML=`<div class="sub" style="margin:4px 0 10px">殿堂入りは生涯終了時に判定します。大功績50件・生涯功績2000・知名度95・総合ステータス550・累計信仰+200が100％ラインです。5条件のうち最も低い到達率を基準に判定率が決まります。</div><div class="hall" style="margin-top:12px">${state.hall.length?state.hall.slice().reverse().map(h=>`<div class="hallItem"><div class="hallTitle">${findCharacter(h.id)?displayName(findCharacter(h.id)):h.name} ― ${h.title}</div><div class="hallMeta">${h.year}年目・${h.age}歳${h.majorCount!=null?` / 大功績 ${h.majorCount}件 / 生涯功績 ${h.achievement}`:''}<br>${h.text}</div></div>`).join(''):'<div class="archiveEmpty">まだ殿堂入りした転生者はいません。</div>'}</div>`;return}
+ if(state.archiveMode==='hall'){body.innerHTML=`<div class="sub" style="margin:4px 0 10px">殿堂入りは生涯終了時に判定します。大功績65件・生涯功績2600・知名度124・総合ステータス715・累計信仰+260が100％ラインです。5条件のうち最も低い到達率を基準に判定率が決まります。</div><div class="hall" style="margin-top:12px">${state.hall.length?state.hall.slice().reverse().map(h=>{const hc=findCharacter(h.id);return `<div class="hallItem"><div class="hallTitle">${hc?`<button class="recordNameLink hallRecordLink" data-open-related="${h.id}" title="キャラ詳細を開く">${displayName(hc)}</button>`:h.name} ― ${h.title}</div><div class="hallMeta">${h.year}年目・${h.age}歳${h.majorCount!=null?` / 大功績 ${h.majorCount}件 / 生涯功績 ${h.achievement}${h.statTotal!=null?` / 総合 ${h.statTotal}`:''}${h.lifetimeFaith!=null?` / 累計信仰 ${h.lifetimeFaith>=0?'+':''}${h.lifetimeFaith}`:''}${h.completion!=null?` / 100％ライン到達度 ${h.completion}%`:''}${h.chance!=null?` / 判定率 ${h.chance}%`:''}`:''}<br>${h.text}</div></div>`}).join(''):'<div class="archiveEmpty">まだ殿堂入りした転生者はいません。</div>'}</div>`;bindRelatedCharacterLinks(body);return}
  if(state.archiveMode==='dead'){
    const dead=[...(state.dead||[]),...(state.active||[]).filter(c=>!c.alive)].filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i).sort((a,b)=>(b.deathYear||0)-(a.deathYear||0));
    if(!dead.length){body.innerHTML='<div class="archiveEmpty">まだ死亡した転生者はいません。</div>';return}
@@ -3561,7 +3632,7 @@ function renderRecords(){
 function renderArchiveCharacter(c){
  const histories=[...(c.history||[])];let current=null;if(c.alive&&!c.departed&&!state.yearFinalized&&(c.annualEvents||[]).length){current={year:state.year,reincarnatedYear:c.reincarnatedYear,ageStart:c.ageAtYearStart??c.age,ageEnd:c.age,faith:c.lastYearFaith,growth:[...c.lastYearGrowth],events:(c.annualEvents||[]).map(e=>({...e})),statsEnd:{devotion:c.devotion,activity:c.activity,justice:c.justice,strength:c.strength,intelligence:c.intelligence,fame:c.fame,strengthCap:c.caps.strength,intelligenceCap:c.caps.intelligence},awakenings:[...(c.annualAwakenings||[])],aliveEnd:c.alive&&!c.departed,departedEnd:!!c.departed,deathCause:c.deathCause||'',departureCause:c.departureCause||'',achievement:c.lifetimeAchievement,current:true}}
  const all=current?[...histories,current]:histories,status=c.departed?'離脱':c.alive?'活動中':'死亡',badge=c.departed?'departed':c.alive?'alive':'dead',ageLabel=c.alive?`${c.age}歳`:`享年 ${c.age}歳`,career=careerYears(c);
- $('#archiveDetail').innerHTML=`<div class="summaryChar"><div class="archiveIdentity"><div><div class="archiveAvatar">${avatarImg(c,'avatarThumb')}</div><div class="archivePortraitActions"><button class="portraitActionBtn" data-image-edit="${c.id}">画像変更</button><button class="portraitActionBtn reset ${hasCustomPortrait(c.id)?'':'hidden'}" data-image-reset="${c.id}">初期画像に戻す</button></div></div><div><div class="summaryTop"><b>${displayName(c)}</b><span class="badge ${badge}">${ageLabel}・${status}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">総合ステータス</div><div class="v summaryTotalStat">${characterStatTotal(c)}</div></div><div class="sumCell"><div class="k">帰依心</div><div class="v">${c.devotion}</div></div><div class="sumCell"><div class="k">積極性</div><div class="v">${c.activity}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${c.justice}</div></div><div class="sumCell"><div class="k">強さ</div><div class="v">${c.strength}/${c.caps.strength}</div></div><div class="sumCell"><div class="k">賢さ</div><div class="v">${c.intelligence}/${c.caps.intelligence}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${c.fame}</div></div></div><div class="sub" style="margin:8px 0 0">${generationLabel(c)}・活動${career}年 / ${c.gender==='male'?'男性':'女性'}<br>${c.background}<br>${c.skills.length?'付与スキル：'+c.skills.map(id=>skillById(id)?.name).filter(Boolean).join('、'):'付与スキルなし'} / 累計信仰 ${c.lifetimeFaith>=0?'+':''}${c.lifetimeFaith}<br>生涯功績 ${Math.round(c.lifetimeAchievement||0)} / 大功績 ${(c.majorAchievements||[]).length}件 / 殿堂入り確率 ${Math.round(hallInductionChance(c)*100)}%${c.hallOfFame?' / ★殿堂入り':''}</div><div class="archiveMarkerRow"><span class="sub" style="margin:0">お気に入り目印</span><div class="markerControls">${markerControlsHTML(c)}</div></div><div class="charQuote">${characterQuote(c,'list',{departure:c.departed,death:!c.alive})}</div>${!c.alive&&c.deathCause?`<div class="archiveDeadItem" style="margin-top:8px"><b>最期</b><div class="deathCause">${c.deathCause}</div></div>`:''}${c.departed&&c.departureCause?`<div class="archiveDeadItem" style="margin-top:8px;border-color:rgba(255,206,92,.30);background:rgba(155,108,24,.10)"><b>離脱</b><div class="deathCause">${c.departureCause}</div></div>`:''}${(!c.alive||c.departed)?`<div style="margin-top:10px;text-align:right"><button class="deleteLogBtn" data-delete-log="${c.id}">この記録を削除</button></div>`:''}</div></div>${relationBoxHTML(c)}</div>`+(all.length?all.slice().reverse().map(h=>`<div class="yearBlock"><div class="yearBlockHead"><b>${h.year}年目 ${h.current?'（進行中）':''}</b><span class="yearBlockMeta">${h.ageStart}歳 / 年間信仰 ${h.faith>=0?'+':''}${h.faith}</span></div>${eventTimelineHTML(h.events)}</div>`).join(''):'<div class="archiveEmpty">まだ年間記録がありません。</div>');bindMarkerControls($('#archiveDetail'),()=>renderArchiveCharacter(c));const del=$('[data-delete-log]');if(del)del.onclick=()=>deleteArchivedLog(del.dataset.deleteLog)
+ $('#archiveDetail').innerHTML=`<div class="summaryChar"><div class="archiveIdentity"><div><div class="archiveAvatar">${avatarImg(c,'avatarThumb')}</div><div class="archivePortraitActions"><button class="portraitActionBtn" data-image-edit="${c.id}">画像変更</button><button class="portraitActionBtn reset ${hasCustomPortrait(c.id)?'':'hidden'}" data-image-reset="${c.id}">初期画像に戻す</button></div></div><div><div class="summaryTop"><b>${displayName(c)}</b><span class="badge ${badge}">${ageLabel}・${status}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">総合ステータス</div><div class="v summaryTotalStat">${characterStatTotal(c)}</div></div><div class="sumCell"><div class="k">帰依心</div><div class="v">${c.devotion}</div></div><div class="sumCell"><div class="k">積極性</div><div class="v">${c.activity}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${c.justice}</div></div><div class="sumCell"><div class="k">強さ</div><div class="v">${c.strength}/${c.caps.strength}</div></div><div class="sumCell"><div class="k">賢さ</div><div class="v">${c.intelligence}/${c.caps.intelligence}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${c.fame}</div></div></div><div class="sub" style="margin:8px 0 0">${generationLabel(c)}・活動${career}年 / ${c.gender==='male'?'男性':'女性'}<br>${c.background}<br>${c.skills.length?'付与スキル：'+c.skills.map(id=>skillById(id)?.name).filter(Boolean).join('、'):'付与スキルなし'} / 累計信仰 ${c.lifetimeFaith>=0?'+':''}${c.lifetimeFaith}<br>生涯功績 ${Math.round(c.lifetimeAchievement||0)} / 大功績 ${(c.majorAchievements||[]).length}件 / 殿堂入り確率 ${Math.round(hallInductionChance(c)*100)}%${c.hallOfFame?' / ★殿堂入り':''}</div><div class="archiveMarkerRow"><span class="sub" style="margin:0">お気に入り目印</span><div class="markerControls">${markerControlsHTML(c)}</div></div><div class="charQuote">${characterQuote(c,'list',{departure:c.departed,death:!c.alive})}</div>${!c.alive&&c.deathCause?`<div class="archiveDeadItem" style="margin-top:8px"><b>最期</b><div class="deathCause">${c.deathCause}</div></div>`:''}${c.departed&&c.departureCause?`<div class="archiveDeadItem" style="margin-top:8px;border-color:rgba(255,206,92,.30);background:rgba(155,108,24,.10)"><b>離脱</b><div class="deathCause">${c.departureCause}</div></div>`:''}${(!c.alive||c.departed)?`<div style="margin-top:10px;text-align:right"><button class="deleteLogBtn" data-delete-log="${c.id}">この記録を削除</button></div>`:''}</div></div>${relationBoxHTML(c)}</div>`+(all.length?all.slice().reverse().map(h=>`<div class="yearBlock"><div class="yearBlockHead"><b>${h.year}年目 ${h.current?'（進行中）':''}</b><span class="yearBlockMeta">${h.ageStart}歳 / 年間信仰 ${h.faith>=0?'+':''}${h.faith}</span></div>${eventTimelineHTML(h.events)}</div>`).join(''):'<div class="archiveEmpty">まだ年間記録がありません。</div>');bindMarkerControls($('#archiveDetail'),()=>renderArchiveCharacter(c));bindRelatedCharacterLinks($('#archiveDetail'));const del=$('[data-delete-log]');if(del)del.onclick=()=>deleteArchivedLog(del.dataset.deleteLog)
 }
 function deleteArchivedLog(id){const c=findCharacter(id);if(!c||(!c.departed&&c.alive))return;if(!confirm(`${displayName(c)}の${c.departed?'離脱':'死亡'}記録を削除しますか？\nこの操作は元に戻せません。`))return;state.dead=(state.dead||[]).filter(x=>x.id!==id);state.departed=(state.departed||[]).filter(x=>x.id!==id);state.active=(state.active||[]).filter(x=>x.id!==id);allCharacters().forEach(x=>{normalizeCharacter(x);x.relations.friends=x.relations.friends.filter(v=>v!==id);x.relations.enemies=x.relations.enemies.filter(v=>v!==id);x.bonds.party=x.bonds.party.filter(v=>v!==id);x.bonds.apprentices=x.bonds.apprentices.filter(v=>v!==id);if(x.bonds.spouse===id)x.bonds.spouse=null;if(x.bonds.mentor===id)x.bonds.mentor=null});state.archiveSelected=null;saveGame();renderRecords();toast('記録を削除しました。')}
 
