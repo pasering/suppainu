@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v55</title>
+<title>転生の女神 v56</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1529,6 +1529,51 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .titleFoot{
     margin-top:12px!important;
     padding:0 20px 14px!important;
+  }
+}
+
+
+/* v56: make desktop right panel a single clean card, no layered overlap */
+@media(min-width:901px){
+  .titleContinue{
+    padding:20px !important;
+    gap:0 !important;
+    overflow:hidden !important;
+  }
+  .titleCopyDesktop{
+    background:none !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    padding:6px 6px 16px !important;
+    margin:0 !important;
+  }
+  .titleCopyDesktop .titleEyebrow{
+    font-size:8px !important;
+    letter-spacing:.22em !important;
+  }
+  .titleCopyDesktop h1{
+    font-size:clamp(30px,2.8vw,46px) !important;
+    margin:7px 0 7px !important;
+    line-height:1.04 !important;
+  }
+  .titleCopyDesktop p{
+    font-size:9px !important;
+    line-height:1.55 !important;
+    opacity:.95 !important;
+  }
+  .titleContinueHead{
+    padding:14px 0 12px !important;
+    margin:0 0 10px !important;
+    border-top:1px solid rgba(255,255,255,.08) !important;
+  }
+  .titleSlotGrid{
+    padding:0 !important;
+  }
+  .titleFoot{
+    margin-top:12px !important;
+    padding:0 0 2px !important;
   }
 }
 
