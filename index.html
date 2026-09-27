@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v58</title>
+<title>転生の女神 v59</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1721,6 +1721,30 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .gachaBottom{flex-direction:column}
 }
 
+
+/* v59: markers directly in Hall of Reincarnation */
+.arrivalMarkerControls{
+  display:flex;justify-content:center;align-items:center;gap:4px;
+  margin:5px 0 3px;
+}
+.arrivalMarkerControls .markerHint{font-size:7px}
+.arrivalMarkerControls .markerBtn{
+  width:25px;height:23px;padding:0;font-size:10px;
+}
+
+
+/* v59: summon button lives at the top */
+.gachaHead .gachaPullBtn{
+  display:inline-flex;
+  margin-top:14px;
+  min-width:190px;
+  justify-content:center;
+}
+.gachaHead .gachaPullBtn.hidden{display:none!important}
+@media(max-width:620px){
+  .gachaHead .gachaPullBtn{width:min(100%,260px)}
+}
+
 </style>
 </head>
 <body>
@@ -1787,11 +1811,11 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
           <div class="gachaEyebrow">REINCARNATOR SUMMON</div>
           <h1><span id="gachaYear">1</span>年目 転生者</h1>
           <p>今年、女神のもとへ導かれた魂たち。</p>
+          <button class="btn gold gachaPullBtn" id="gachaPullBtn">転生者を召喚する</button>
         </div>
         <div class="gachaCards" id="gachaCards"></div>
         <div class="gachaBottom">
           <div class="gachaGuide" id="gachaGuide">今年の転生者を召喚します。</div>
-          <button class="btn gold gachaPullBtn" id="gachaPullBtn">転生者を召喚する</button>
           <button class="btn gold hidden" id="gachaContinueBtn">転生の間へ</button>
         </div>
       </div>
@@ -3146,7 +3170,8 @@ function enterArrivalFromGacha(){
 
 function renderArrival(){
  showOnly('arrivalScreen');const batch=orderedCandidates().map(x=>x.c);
- $('#arrivalPeople').innerHTML=batch.map((c,i)=>{const rarity=candidateRarity(c);return `<div class="person arrivalReveal rarity-${rarity} ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)} <span class="arrivalRarityStars">${'★'.repeat(rarity)}</span></div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)} / ★${rarity}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`}).join('');
+ $('#arrivalPeople').innerHTML=batch.map((c,i)=>{const rarity=candidateRarity(c);return `<div class="person arrivalReveal rarity-${rarity} ${i===0?'active':''}" style="--arrival-i:${i}">${portraitHTML(c)}<div class="pName">${displayName(c)} <span class="arrivalRarityStars">${'★'.repeat(rarity)}</span></div><div class="arrivalMarkerControls markerControls">${markerControlsHTML(c)}</div><div class="pMeta">${c.age}歳・${rankColorTag(c)} / ${generationLabel(c)} <span class="genderTag">${c.gender==='male'?'男性':'女性'}</span></div><div class="pStatus"><span class="arrivalTotalStat">総合 ${candidateTotal(c)} / ★${rarity}</span><br>帰依心 ${c.devotion} / 積極性 ${c.activity}<br>正義感 ${c.justice} / 強さ ${c.strength} / 賢さ ${c.intelligence}</div><div class="charQuote">${characterQuote(c,'arrival')}</div></div>`}).join('');
+ bindMarkerControls($('#arrivalPeople'),()=>renderArrival());
  $('#arrivalSub').textContent=`${state.year}年目。${state.candidates.length}名の新たな転生者が到着した。総合ステータス順に表示中。`;
  $('#arrivalSpeaker').textContent=state.year===1?'案内役':'転生管理局';
  const yearLines=[`「${state.year}年目の転生者、${state.candidates.length}名が揃いました。今年も全員を送り出してください」`,`「今年の転生枠は${state.candidates.length}名です。どの者もすでに手続き済み。あとは女神さまの加護を待つだけです」`,`「新しい転生者をお連れしました。生き残るか、名を残すか、それとも……今年も観測をお願いします」`,`「${state.candidates.length}名とも転生準備は完了しています。加護の配分が済み次第、門を開きます」`,`「また一年が始まりますね。今回の${state.candidates.length}名がどんな人生を歩むのか、記録局も注目しています」`];
@@ -3536,7 +3561,7 @@ function renderRecords(){
 function renderArchiveCharacter(c){
  const histories=[...(c.history||[])];let current=null;if(c.alive&&!c.departed&&!state.yearFinalized&&(c.annualEvents||[]).length){current={year:state.year,reincarnatedYear:c.reincarnatedYear,ageStart:c.ageAtYearStart??c.age,ageEnd:c.age,faith:c.lastYearFaith,growth:[...c.lastYearGrowth],events:(c.annualEvents||[]).map(e=>({...e})),statsEnd:{devotion:c.devotion,activity:c.activity,justice:c.justice,strength:c.strength,intelligence:c.intelligence,fame:c.fame,strengthCap:c.caps.strength,intelligenceCap:c.caps.intelligence},awakenings:[...(c.annualAwakenings||[])],aliveEnd:c.alive&&!c.departed,departedEnd:!!c.departed,deathCause:c.deathCause||'',departureCause:c.departureCause||'',achievement:c.lifetimeAchievement,current:true}}
  const all=current?[...histories,current]:histories,status=c.departed?'離脱':c.alive?'活動中':'死亡',badge=c.departed?'departed':c.alive?'alive':'dead',ageLabel=c.alive?`${c.age}歳`:`享年 ${c.age}歳`,career=careerYears(c);
- $('#archiveDetail').innerHTML=`<div class="summaryChar"><div class="archiveIdentity"><div><div class="archiveAvatar">${avatarImg(c,'avatarThumb')}</div><div class="archivePortraitActions"><button class="portraitActionBtn" data-image-edit="${c.id}">画像変更</button><button class="portraitActionBtn reset ${hasCustomPortrait(c.id)?'':'hidden'}" data-image-reset="${c.id}">初期画像に戻す</button></div></div><div><div class="summaryTop"><b>${displayName(c)}</b><span class="badge ${badge}">${ageLabel}・${status}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">総合ステータス</div><div class="v summaryTotalStat">${characterStatTotal(c)}</div></div><div class="sumCell"><div class="k">帰依心</div><div class="v">${c.devotion}</div></div><div class="sumCell"><div class="k">積極性</div><div class="v">${c.activity}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${c.justice}</div></div><div class="sumCell"><div class="k">強さ</div><div class="v">${c.strength}/${c.caps.strength}</div></div><div class="sumCell"><div class="k">賢さ</div><div class="v">${c.intelligence}/${c.caps.intelligence}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${c.fame}</div></div></div><div class="sub" style="margin:8px 0 0">${generationLabel(c)}・活動${career}年 / ${c.gender==='male'?'男性':'女性'}<br>${c.background}<br>${c.skills.length?'付与スキル：'+c.skills.map(id=>skillById(id)?.name).filter(Boolean).join('、'):'付与スキルなし'} / 累計信仰 ${c.lifetimeFaith>=0?'+':''}${c.lifetimeFaith}<br>生涯功績 ${Math.round(c.lifetimeAchievement||0)} / 大功績 ${(c.majorAchievements||[]).length}件 / 殿堂100％ライン到達度 ${Math.round(hallCompletionRatio(c)*100)}%${c.hallOfFame?' / ★殿堂入り':''}</div><div class="archiveMarkerRow"><span class="sub" style="margin:0">お気に入り目印</span><div class="markerControls">${markerControlsHTML(c)}</div></div><div class="charQuote">${characterQuote(c,'list',{departure:c.departed,death:!c.alive})}</div>${!c.alive&&c.deathCause?`<div class="archiveDeadItem" style="margin-top:8px"><b>最期</b><div class="deathCause">${c.deathCause}</div></div>`:''}${c.departed&&c.departureCause?`<div class="archiveDeadItem" style="margin-top:8px;border-color:rgba(255,206,92,.30);background:rgba(155,108,24,.10)"><b>離脱</b><div class="deathCause">${c.departureCause}</div></div>`:''}${(!c.alive||c.departed)?`<div style="margin-top:10px;text-align:right"><button class="deleteLogBtn" data-delete-log="${c.id}">この記録を削除</button></div>`:''}</div></div>${relationBoxHTML(c)}</div>`+(all.length?all.slice().reverse().map(h=>`<div class="yearBlock"><div class="yearBlockHead"><b>${h.year}年目 ${h.current?'（進行中）':''}</b><span class="yearBlockMeta">${h.ageStart}歳 / 年間信仰 ${h.faith>=0?'+':''}${h.faith}</span></div>${eventTimelineHTML(h.events)}</div>`).join(''):'<div class="archiveEmpty">まだ年間記録がありません。</div>');bindMarkerControls($('#archiveDetail'),()=>renderArchiveCharacter(c));const del=$('[data-delete-log]');if(del)del.onclick=()=>deleteArchivedLog(del.dataset.deleteLog)
+ $('#archiveDetail').innerHTML=`<div class="summaryChar"><div class="archiveIdentity"><div><div class="archiveAvatar">${avatarImg(c,'avatarThumb')}</div><div class="archivePortraitActions"><button class="portraitActionBtn" data-image-edit="${c.id}">画像変更</button><button class="portraitActionBtn reset ${hasCustomPortrait(c.id)?'':'hidden'}" data-image-reset="${c.id}">初期画像に戻す</button></div></div><div><div class="summaryTop"><b>${displayName(c)}</b><span class="badge ${badge}">${ageLabel}・${status}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">総合ステータス</div><div class="v summaryTotalStat">${characterStatTotal(c)}</div></div><div class="sumCell"><div class="k">帰依心</div><div class="v">${c.devotion}</div></div><div class="sumCell"><div class="k">積極性</div><div class="v">${c.activity}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${c.justice}</div></div><div class="sumCell"><div class="k">強さ</div><div class="v">${c.strength}/${c.caps.strength}</div></div><div class="sumCell"><div class="k">賢さ</div><div class="v">${c.intelligence}/${c.caps.intelligence}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${c.fame}</div></div></div><div class="sub" style="margin:8px 0 0">${generationLabel(c)}・活動${career}年 / ${c.gender==='male'?'男性':'女性'}<br>${c.background}<br>${c.skills.length?'付与スキル：'+c.skills.map(id=>skillById(id)?.name).filter(Boolean).join('、'):'付与スキルなし'} / 累計信仰 ${c.lifetimeFaith>=0?'+':''}${c.lifetimeFaith}<br>生涯功績 ${Math.round(c.lifetimeAchievement||0)} / 大功績 ${(c.majorAchievements||[]).length}件 / 殿堂入り確率 ${Math.round(hallInductionChance(c)*100)}%${c.hallOfFame?' / ★殿堂入り':''}</div><div class="archiveMarkerRow"><span class="sub" style="margin:0">お気に入り目印</span><div class="markerControls">${markerControlsHTML(c)}</div></div><div class="charQuote">${characterQuote(c,'list',{departure:c.departed,death:!c.alive})}</div>${!c.alive&&c.deathCause?`<div class="archiveDeadItem" style="margin-top:8px"><b>最期</b><div class="deathCause">${c.deathCause}</div></div>`:''}${c.departed&&c.departureCause?`<div class="archiveDeadItem" style="margin-top:8px;border-color:rgba(255,206,92,.30);background:rgba(155,108,24,.10)"><b>離脱</b><div class="deathCause">${c.departureCause}</div></div>`:''}${(!c.alive||c.departed)?`<div style="margin-top:10px;text-align:right"><button class="deleteLogBtn" data-delete-log="${c.id}">この記録を削除</button></div>`:''}</div></div>${relationBoxHTML(c)}</div>`+(all.length?all.slice().reverse().map(h=>`<div class="yearBlock"><div class="yearBlockHead"><b>${h.year}年目 ${h.current?'（進行中）':''}</b><span class="yearBlockMeta">${h.ageStart}歳 / 年間信仰 ${h.faith>=0?'+':''}${h.faith}</span></div>${eventTimelineHTML(h.events)}</div>`).join(''):'<div class="archiveEmpty">まだ年間記録がありません。</div>');bindMarkerControls($('#archiveDetail'),()=>renderArchiveCharacter(c));const del=$('[data-delete-log]');if(del)del.onclick=()=>deleteArchivedLog(del.dataset.deleteLog)
 }
 function deleteArchivedLog(id){const c=findCharacter(id);if(!c||(!c.departed&&c.alive))return;if(!confirm(`${displayName(c)}の${c.departed?'離脱':'死亡'}記録を削除しますか？\nこの操作は元に戻せません。`))return;state.dead=(state.dead||[]).filter(x=>x.id!==id);state.departed=(state.departed||[]).filter(x=>x.id!==id);state.active=(state.active||[]).filter(x=>x.id!==id);allCharacters().forEach(x=>{normalizeCharacter(x);x.relations.friends=x.relations.friends.filter(v=>v!==id);x.relations.enemies=x.relations.enemies.filter(v=>v!==id);x.bonds.party=x.bonds.party.filter(v=>v!==id);x.bonds.apprentices=x.bonds.apprentices.filter(v=>v!==id);if(x.bonds.spouse===id)x.bonds.spouse=null;if(x.bonds.mentor===id)x.bonds.mentor=null});state.archiveSelected=null;saveGame();renderRecords();toast('記録を削除しました。')}
 
@@ -3907,7 +3932,14 @@ document.addEventListener('click',e=>{
 
 $('#gachaPullBtn').onclick=startGachaReveal;
 $('#gachaContinueBtn').onclick=enterArrivalFromGacha;
-$('#prepareBtn').onclick=()=>renderPrepare();
+function enterPrepareFromArrival(){
+ const first=orderedCandidates()[0];
+ state.currentCandidateIndex=first?first.i:0;
+ state.prepareMode='blessing';
+ renderPrepare();
+}
+
+$('#prepareBtn').onclick=enterPrepareFromArrival;
 $('#sendAllBtn').onclick=()=>beginYear();$('#sendAllTopBtn').onclick=()=>beginYear();
 $('#resetBlessingsBtn').onclick=()=>resetBlessings();
 const goNextMonth=()=>state.month>=12?finishYear():advanceMonth();$('#nextMonthBtn').onclick=goNextMonth;$('#nextMonthTopBtn').onclick=goNextMonth;
