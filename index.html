@@ -2031,29 +2031,70 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 }
 
 
-/* v77: monthly report pixel adventure scene */
-.resultCast.adventureScene{position:relative;display:block;height:372px;padding:0 14px 12px;overflow:visible;background:none!important}
-.resultCast.adventureScene::after{content:'';position:absolute;left:14px;right:14px;top:34px;bottom:12px;border-radius:20px;border:1px solid rgba(223,217,255,.18);box-shadow:0 12px 28px rgba(2,3,12,.28),inset 0 0 0 1px rgba(255,255,255,.03);pointer-events:none;z-index:4}
+/* v82: monthly report pixel adventure scene */
+.resultCast.adventureScene{
+  position:relative;display:block;height:372px;padding:0 14px 12px;
+  overflow:visible;background:none!important
+}
+.resultCast.adventureScene::after{
+  content:'';position:absolute;left:14px;right:14px;top:34px;bottom:12px;
+  border-radius:20px;border:1px solid rgba(223,217,255,.18);
+  box-shadow:0 12px 28px rgba(2,3,12,.28),inset 0 0 0 1px rgba(255,255,255,.03);
+  pointer-events:none;z-index:4
+}
 .adventureBackdrop,.adventureBackdropFx,.adventureTrack,.partySpriteWrap,.partySpriteNote{position:absolute}
-.adventureBackdrop{left:14px;right:14px;top:34px;bottom:12px;border-radius:20px;overflow:hidden;background:#0f1627 center var(--scene-bg-y,74%)/cover no-repeat;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
-.adventureBackdrop::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,20,.12),transparent 24%,transparent 78%,rgba(5,7,16,.25)),linear-gradient(90deg,rgba(10,10,24,.14),transparent 18%,transparent 82%,rgba(10,10,24,.14))}
-.adventureBackdropFx{left:14px;right:14px;top:34px;bottom:12px;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.06),transparent 22%,transparent 80%,rgba(255,255,255,.03));mix-blend-mode:screen;opacity:.38;pointer-events:none;z-index:1}
+.adventureBackdrop{
+  left:14px;right:14px;top:34px;bottom:12px;border-radius:20px;overflow:hidden;
+  background:#0f1627 center 76%/cover no-repeat;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)
+}
+.adventureBackdrop::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(7,9,20,.12),transparent 24%,transparent 78%,rgba(5,7,16,.25)),
+             linear-gradient(90deg,rgba(10,10,24,.14),transparent 18%,transparent 82%,rgba(10,10,24,.14))
+}
+.adventureBackdropFx{
+  left:14px;right:14px;top:34px;bottom:12px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),transparent 22%,transparent 80%,rgba(255,255,255,.03));
+  mix-blend-mode:screen;opacity:.38;pointer-events:none;z-index:1
+}
 .adventureTrack{display:none}
-.partySpriteWrap{left:var(--party-left,60%);right:auto;bottom:var(--party-bottom,12px);width:var(--party-width,240px);transform:none!important;z-index:3;filter:drop-shadow(0 10px 14px rgba(7,9,20,.42));animation:partyBob 2.15s steps(2,end) infinite;pointer-events:none;max-width:none}
-.partySprite{display:block;width:100%;height:auto;max-width:none;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;transform:none!important}
-.partySpriteNote{left:30px;right:30px;bottom:24px;z-index:3;padding:7px 11px;border-radius:999px;background:rgba(8,10,24,.60);border:1px solid rgba(223,217,255,.16);backdrop-filter:blur(6px);font-size:9.5px;line-height:1.4;color:#f7f0ff;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;box-shadow:0 8px 18px rgba(4,5,12,.18)}
+.partySpriteWrap{
+  left:0;right:auto;bottom:16px;width:120px;transform:none!important;
+  z-index:3;filter:drop-shadow(0 10px 14px rgba(7,9,20,.42));
+  animation:partyBob 2.15s steps(2,end) infinite;pointer-events:none;max-width:none
+}
+.partySprite{
+  display:block;width:100%;height:auto;max-width:none;object-fit:contain;
+  image-rendering:pixelated;image-rendering:crisp-edges;transform:none!important
+}
+.partySpriteNote{
+  left:30px;right:30px;bottom:24px;z-index:3;padding:7px 11px;border-radius:999px;
+  background:rgba(8,10,24,.60);border:1px solid rgba(223,217,255,.16);
+  backdrop-filter:blur(6px);font-size:9.5px;line-height:1.4;color:#f7f0ff;
+  display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;
+  box-shadow:0 8px 18px rgba(4,5,12,.18)
+}
 .partySpriteNote b{color:#ffe7a4}
 .partySpriteNote.hidden,.partySpriteWrap.hidden{display:none}
-@keyframes partyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes partyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
 @media(max-width:620px){
   .resultCast.adventureScene{height:258px;padding:0 8px 8px}
-  .resultCast.adventureScene::after,.adventureBackdrop,.adventureBackdropFx{left:8px;right:8px;top:24px;bottom:8px;border-radius:16px}
-  .partySpriteWrap{left:var(--party-left-mobile,56%);bottom:var(--party-bottom-mobile,10px);width:var(--party-width-mobile,186px)}
-  .partySpriteNote{left:18px;right:18px;bottom:12px;padding:6px 8px;font-size:8.5px;line-height:1.3;border-radius:14px}
+  .resultCast.adventureScene::after,.adventureBackdrop,.adventureBackdropFx{
+    left:8px;right:8px;top:24px;bottom:8px;border-radius:16px
+  }
+  .adventureBackdrop{background-position:center 78%}
+  .partySpriteWrap{left:0;bottom:10px;width:100px}
+  .partySpriteNote{
+    left:18px;right:18px;bottom:12px;padding:6px 8px;font-size:8.5px;
+    line-height:1.3;border-radius:14px
+  }
 }
 @media(max-width:355px){
   .resultCast.adventureScene{height:238px}
-  .partySpriteWrap{left:var(--party-left-small,54%);bottom:var(--party-bottom-small,8px);width:var(--party-width-small,168px)}
+  .partySpriteWrap{bottom:8px;width:92px}
   .partySpriteNote{left:14px;right:14px;bottom:9px;font-size:7.9px}
 }
 
@@ -4580,39 +4621,55 @@ function updateMonthlyAdventureScene(living){
  const party=monthlyScenePartyConfig(livingCount);
  const monthIndex=Math.max(1,state.month||1);
  const mobile=window.innerWidth<=620;
- const leftMap=mobile?{'1':[78,8],'3':[66,6],'5':[56,4],'10':[40,2]}:{'1':[84,10],'3':[72,8],'5':[58,6],'10':[40,4]};
- const widthMap=mobile?{'1':['68px','60px'],'3':['108px','96px'],'5':['176px','160px'],'10':['320px','280px']}:{'1':['82px','72px'],'3':['134px','120px'],'5':['220px','196px'],'10':['398px','350px']};
- const bgYMap=mobile?{field:'76%',forest:'78%',ruins:'88%',cave:'90%'}:{field:'74%',forest:'76%',ruins:'86%',cave:'88%'};
- const bottomMap=mobile?{field:'10px',forest:'10px',ruins:'10px',cave:'10px'}:{field:'14px',forest:'14px',ruins:'12px',cave:'12px'};
- const range=leftMap[party.size]||[56,4];
- const t=(monthIndex-1)/11;
- const left=range[0]+(range[1]-range[0])*t;
- const widths=widthMap[party.size]||['176px','160px'];
+ const tiny=window.innerWidth<=355;
+
  bg.style.backgroundImage=`url(${scene.src})`;
- bg.style.setProperty('--scene-bg-y', bgYMap[scene.key]||'76%');
+ bg.style.backgroundPosition=`center ${mobile?'78%':'76%'}`;
  bg.setAttribute('aria-label',scene.label);
- stage.style.setProperty('--party-left',`${left}%`);
- stage.style.setProperty('--party-left-mobile',`${left}%`);
- stage.style.setProperty('--party-left-small',`${Math.max(1,left-2)}%`);
- stage.style.setProperty('--party-width', widths[0]);
- stage.style.setProperty('--party-width-mobile', widths[0]);
- stage.style.setProperty('--party-width-small', widths[1]);
- stage.style.setProperty('--party-bottom',bottomMap[scene.key]||'12px');
- stage.style.setProperty('--party-bottom-mobile',bottomMap[scene.key]||'10px');
- stage.style.setProperty('--party-bottom-small',bottomMap[scene.key]||'8px');
+
  if(party.size==='0'){
    wrap.classList.add('hidden');
    note.classList.remove('hidden');
    note.innerHTML='今月は <b>活動中の転生者がいません</b>。観測のみが静かに進んでいます。';
    return;
  }
+
+ // Fixed sprite width per population bracket. It never changes with month.
+ const widthByParty=mobile
+   ? {'1':100,'3':96,'5':160,'10':Math.min(290,Math.max(205,stage.clientWidth-28))}
+   : {'1':112,'3':134,'5':220,'10':398};
+ const spriteWidth=widthByParty[party.size]||176;
+
+ // Direct pixel positioning: right edge in January, left edge in December.
+ // This avoids Safari percent/transform behavior and prevents size illusions from clipping.
+ const sideMargin=mobile?8:12;
+ const usable=Math.max(0,stage.clientWidth-spriteWidth-sideMargin*2);
+ const t=(monthIndex-1)/11;
+ const x=Math.round(sideMargin+usable*(1-t));
+ const bottomByParty=mobile
+   ? {'1':18,'3':10,'5':10,'10':10}
+   : {'1':16,'3':16,'5':16,'10':16};
+ const spriteBottom=bottomByParty[party.size]|| (mobile?10:16);
+
  wrap.classList.remove('hidden');
  note.classList.remove('hidden');
  wrap.dataset.partySize=party.size;
  wrap.dataset.scene=scene.key||'field';
- img.style.removeProperty('width');img.style.removeProperty('height');img.style.removeProperty('transform');
+
+ // Reset every frame so old mobile/desktop rules cannot accumulate.
+ wrap.style.left=x+'px';
+ wrap.style.right='auto';
+ wrap.style.width=spriteWidth+'px';
+ wrap.style.bottom=(tiny?Math.max(6,spriteBottom-2):spriteBottom)+'px';
+ wrap.style.transform='none';
+
+ img.style.width='100%';
+ img.style.height='auto';
+ img.style.maxWidth='none';
+ img.style.transform='none';
  img.src=party.src;
  img.alt=`${party.label}のドット絵`;
+
  note.innerHTML=`<b>${party.label}</b> が異世界を探索中　/　背景：${scene.label.replace('観測月','')}`;
 }
 
