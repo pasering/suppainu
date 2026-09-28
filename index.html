@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v70</title>
+<title>転生の女神 v71</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -4255,7 +4255,7 @@ function chooseInteractionPair(living){
  const a=pick(living),others=living.filter(x=>x.id!==a.id);return [a,pick(others)]
 }
 function interactionFaith(c,base){return faithImpact(c,base,fxOf(c),Math.abs(base)>=8)}
-function recordInteraction(c,data){const growth=[...(data.growth||[])],fx=fxOf(c),achievement=Math.max(0,Math.round(data.achievement||0)),majorAchievement=data.type==='good'&&achievement>=10;let baseFame;if(data.fame!=null)baseFame=data.fame;else if(data.death)baseFame=2;else if(majorAchievement)baseFame=2;else if(data.type==='good'||data.type==='bad')baseFame=Math.random()<.42?1:0;else baseFame=0;const fame=Math.round(baseFame*(1+(fx.fame||0)*.20));addFame(c,fame,growth);if(achievement){c.lifetimeAchievement+=achievement;if(majorAchievement)recordMajorAchievement(c,data.text,achievement,'interaction')}c.lastYearGrowth.push(...growth);const relationChange=data.relationChange?{...data.relationChange}:null,socialChanges=(data.socialChanges||[]).map(x=>({...x})),autoRevived=!!data.autoRevived;c.annualEvents.push({month:state.month,type:data.type,text:data.text,faith:data.faith,growth:[...growth],fameGain:fame,death:!!data.death,autoRevived,interaction:true,dungeonEvent:!!data.dungeonEvent,relationChange,socialChanges,achievement,majorAchievement});applyFaith(c,data.faith);return {id:c.id,name:c.name,type:data.type,text:data.text,faith:data.faith,growth,death:!!data.death,autoRevived,interaction:true,dungeonEvent:!!data.dungeonEvent,relationChange,socialChanges,achievement,majorAchievement}}
+function recordInteraction(c,data){const growth=[...(data.growth||[])],fx=fxOf(c),achievement=Math.max(0,Math.round(data.achievement||0)),majorAchievement=data.type==='good'&&achievement>=10;let baseFame;if(data.fame!=null)baseFame=data.fame;else if(data.death)baseFame=2;else if(majorAchievement)baseFame=2;else if(data.type==='good'||data.type==='bad')baseFame=Math.random()<.42?1:0;else baseFame=0;const fame=Math.round(baseFame*(1+(fx.fame||0)*.20));addFame(c,fame,growth);if(achievement){c.lifetimeAchievement+=achievement;if(majorAchievement)recordMajorAchievement(c,data.text,achievement,'interaction')}c.lastYearGrowth.push(...growth);const relationChange=data.relationChange?{...data.relationChange}:null,socialChanges=(data.socialChanges||[]).map(x=>({...x})),autoRevived=!!data.autoRevived,intrinsicDeathCheck=!!data.intrinsicDeathCheck;c.annualEvents.push({month:state.month,type:data.type,text:data.text,faith:data.faith,growth:[...growth],fameGain:fame,death:!!data.death,autoRevived,interaction:true,dungeonEvent:!!data.dungeonEvent,intrinsicDeathCheck,relationChange,socialChanges,achievement,majorAchievement});applyFaith(c,data.faith);return {id:c.id,name:c.name,type:data.type,text:data.text,faith:data.faith,growth,death:!!data.death,autoRevived,interaction:true,dungeonEvent:!!data.dungeonEvent,intrinsicDeathCheck,relationChange,socialChanges,achievement,majorAchievement}}
 function relationChange(type,other,extra={}){return {type,otherId:other?.id||null,otherName:other?.name||'相手不明',...extra}}
 function relationshipDecay(living){
  const notices=new Map(),seen=new Set();
@@ -4281,6 +4281,7 @@ function maybeSpecialRelationshipEvent(a,b,mode,newRelation){
  if(party&&Math.random()<.58){const tpl=pick(ensureDemonState().active&&Math.random()<.68?demonPartyEvents:partyCoopEvents),ga=growCharacter(a,fxOf(a)),gb=growCharacter(b,fxOf(b));return [recordInteraction(a,{type:'good',text:`${b.name}と${tpl}`,faith:interactionFaith(a,5),growth:ga}),recordInteraction(b,{type:'good',text:`${a.name}と${tpl}`,faith:interactionFaith(b,5),growth:gb})]}
  return null
 }
+// 関係イベントは「その月の出来事」を置き換えるだけで、月間の改宗・寿命・死亡判定は免除しない。
 function simulateRelationshipMonth(living){
  const interactionChance=isDungeonMode()?clamp(45+dungeonLivingChallengers().length*2.2,50,78):clamp(28+living.length*1.6,30,58);
  if(living.length<2||Math.random()*100>interactionChance)return [];
@@ -4315,35 +4316,35 @@ function simulateRelationshipMonth(living){
        if(!winnerAuto){winner.alive=false;winner.deathYear=state.year;winner.naturalDeath=false;winner.deathCause=`${loser.name}との死闘で致命傷を負い、相討ちとなった。`}
        if(!loserAuto){loser.alive=false;loser.deathYear=state.year;loser.naturalDeath=false;loser.deathCause=`${winner.name}との死闘に敗れ、命を落とした。`}
        if(loserAuto&&winnerAuto)return [
-         recordInteraction(winner,{type:'bad',text:`${loser.name}と${tpl} 相討ち寸前まで追い込まれたが、《蘇生の奇跡》が発動し生還した。`,faith:interactionFaith(winner,-3),growth:[],death:false,autoRevived:true,relationChange:relationFor(winner,loser)}),
-         recordInteraction(loser,{type:'bad',text:`${winner.name}と${tpl} 相討ち寸前まで追い込まれたが、《蘇生の奇跡》が発動し生還した。`,faith:interactionFaith(loser,-3),growth:[],death:false,autoRevived:true,relationChange:relationFor(loser,winner)})
+         recordInteraction(winner,{type:'bad',text:`${loser.name}と${tpl} 相討ち寸前まで追い込まれたが、《蘇生の奇跡》が発動し生還した。`,faith:interactionFaith(winner,-3),growth:[],death:false,autoRevived:true,intrinsicDeathCheck:true,relationChange:relationFor(winner,loser)}),
+         recordInteraction(loser,{type:'bad',text:`${winner.name}と${tpl} 相討ち寸前まで追い込まれたが、《蘇生の奇跡》が発動し生還した。`,faith:interactionFaith(loser,-3),growth:[],death:false,autoRevived:true,intrinsicDeathCheck:true,relationChange:relationFor(loser,winner)})
        ];
        if(loserAuto&&!winnerAuto)return [
-         recordInteraction(loser,{type:'bad',text:`${winner.name}と${tpl} 致命傷を負ったが、《蘇生の奇跡》で蘇り、相手だけが命を落とした。`,faith:interactionFaith(loser,-4),growth:[],death:false,autoRevived:true,relationChange:relationFor(loser,winner)}),
-         recordInteraction(winner,{type:'bad',text:winner.deathCause,faith:interactionFaith(winner,-4),growth:[],death:true,relationChange:relationFor(winner,loser)})
+         recordInteraction(loser,{type:'bad',text:`${winner.name}と${tpl} 致命傷を負ったが、《蘇生の奇跡》で蘇り、相手だけが命を落とした。`,faith:interactionFaith(loser,-4),growth:[],death:false,autoRevived:true,intrinsicDeathCheck:true,relationChange:relationFor(loser,winner)}),
+         recordInteraction(winner,{type:'bad',text:winner.deathCause,faith:interactionFaith(winner,-4),growth:[],death:true,intrinsicDeathCheck:true,relationChange:relationFor(winner,loser)})
        ];
        if(winnerAuto&&!loserAuto)return [
-         recordInteraction(winner,{type:killerBase>0?'good':'bad',text:`${loser.name}と${tpl} 自身も致命傷を負ったが、《蘇生の奇跡》で蘇り、${loser.name}は命を落とした。`,faith:interactionFaith(winner,killerBase),growth:[],death:false,autoRevived:true,relationChange:relationFor(winner,loser)}),
-         recordInteraction(loser,{type:'bad',text:loser.deathCause,faith:lf,growth:[],death:true,relationChange:relationFor(loser,winner)})
+         recordInteraction(winner,{type:killerBase>0?'good':'bad',text:`${loser.name}と${tpl} 自身も致命傷を負ったが、《蘇生の奇跡》で蘇り、${loser.name}は命を落とした。`,faith:interactionFaith(winner,killerBase),growth:[],death:false,autoRevived:true,intrinsicDeathCheck:true,relationChange:relationFor(winner,loser)}),
+         recordInteraction(loser,{type:'bad',text:loser.deathCause,faith:lf,growth:[],death:true,intrinsicDeathCheck:true,relationChange:relationFor(loser,winner)})
        ];
        return [
-         recordInteraction(winner,{type:'bad',text:`${loser.name}と${tpl} 最後は相討ちとなり、二人とも命を落とした。`,faith:interactionFaith(winner,-4),growth:[],death:true,relationChange:relationFor(winner,loser)}),
-         recordInteraction(loser,{type:'bad',text:`${winner.name}と${tpl} 最後は相討ちとなり、二人とも命を落とした。`,faith:lf,growth:[],death:true,relationChange:relationFor(loser,winner)})
+         recordInteraction(winner,{type:'bad',text:`${loser.name}と${tpl} 最後は相討ちとなり、二人とも命を落とした。`,faith:interactionFaith(winner,-4),growth:[],death:true,intrinsicDeathCheck:true,relationChange:relationFor(winner,loser)}),
+         recordInteraction(loser,{type:'bad',text:`${winner.name}と${tpl} 最後は相討ちとなり、二人とも命を落とした。`,faith:lf,growth:[],death:true,intrinsicDeathCheck:true,relationChange:relationFor(loser,winner)})
        ]
      }
      if(loserAuto)return [
-       recordInteraction(winner,{type:killerBase>0?'good':'bad',text:`${loser.name}と${tpl} 死闘の末に致命傷を与えたが、${loser.name}は《蘇生の奇跡》で生還した。`,faith:interactionFaith(winner,killerBase),growth:[],death:false,relationChange:relationFor(winner,loser)}),
-       recordInteraction(loser,{type:'bad',text:`${winner.name}との死闘で一度命を落としたが、《蘇生の奇跡》が自動発動して生還した。`,faith:lf,growth:[],death:false,autoRevived:true,relationChange:relationFor(loser,winner)})
+       recordInteraction(winner,{type:killerBase>0?'good':'bad',text:`${loser.name}と${tpl} 死闘の末に致命傷を与えたが、${loser.name}は《蘇生の奇跡》で生還した。`,faith:interactionFaith(winner,killerBase),growth:[],death:false,intrinsicDeathCheck:true,relationChange:relationFor(winner,loser)}),
+       recordInteraction(loser,{type:'bad',text:`${winner.name}との死闘で一度命を落としたが、《蘇生の奇跡》が自動発動して生還した。`,faith:lf,growth:[],death:false,autoRevived:true,intrinsicDeathCheck:true,relationChange:relationFor(loser,winner)})
      ];
      loser.alive=false;loser.deathYear=state.year;loser.naturalDeath=false;loser.deathCause=`${winner.name}との死闘に敗れ、命を落とした。`;
      return [
-       recordInteraction(winner,{type:killerBase>0?'good':'bad',text:`${loser.name}と${tpl} 死闘の末、${loser.name}を殺害した。`,faith:interactionFaith(winner,killerBase),growth:[],death:false,relationChange:relationFor(winner,loser)}),
-       recordInteraction(loser,{type:'bad',text:loser.deathCause,faith:lf,growth:[],death:true,relationChange:relationFor(loser,winner)})
+       recordInteraction(winner,{type:killerBase>0?'good':'bad',text:`${loser.name}と${tpl} 死闘の末、${loser.name}を殺害した。`,faith:interactionFaith(winner,killerBase),growth:[],death:false,intrinsicDeathCheck:true,relationChange:relationFor(winner,loser)}),
+       recordInteraction(loser,{type:'bad',text:loser.deathCause,faith:lf,growth:[],death:true,intrinsicDeathCheck:true,relationChange:relationFor(loser,winner)})
      ]
    }
    return [
-     recordInteraction(a,{type:'bad',text:`${b.name}と${tpl} 双方とも生還したが、敵対はさらに深まった。`,faith:interactionFaith(a,-2),growth:[],death:false,relationChange:relationFor(a,b)}),
-     recordInteraction(b,{type:'bad',text:`${a.name}と${tpl} 双方とも生還したが、敵対はさらに深まった。`,faith:interactionFaith(b,-2),growth:[],death:false,relationChange:relationFor(b,a)})
+     recordInteraction(a,{type:'bad',text:`${b.name}と${tpl} 双方とも生還したが、敵対はさらに深まった。`,faith:interactionFaith(a,-2),growth:[],death:false,intrinsicDeathCheck:true,relationChange:relationFor(a,b)}),
+     recordInteraction(b,{type:'bad',text:`${a.name}と${tpl} 双方とも生還したが、敵対はさらに深まった。`,faith:interactionFaith(b,-2),growth:[],death:false,intrinsicDeathCheck:true,relationChange:relationFor(b,a)})
    ]
  }
  const formed=mode==='friend';if(formed)linkRelation(a,b,'friend');
@@ -4389,10 +4390,86 @@ function simulateOneMonth(c){
  applyFaith(c,faith);c.lifetimeAchievement+=type==='good'?Math.max(0,base):0;const finalText=death?cause:eventText;c.annualEvents.push({month:state.month,type,text:finalText,faith,growth:[...growth],fameGain,death,deathFaithBonus,autoRevived,demonEvent,dungeonEvent,majorAchievement});return {id:c.id,name:c.name,type,text:finalText,faith,growth,fameGain,death,deathFaithBonus,autoRevived,demonEvent,dungeonEvent,majorAchievement};
 }
 function finalizeUnrescuedDeaths(){state.active.filter(c=>!c.alive&&!c.departed).forEach(c=>{handleArtifactsOnDeath(c);maybeInductHallOfFame(c);releaseDeadRelations(c)})}
+
+function interactionAnnualEventFor(c){
+ for(let i=(c.annualEvents||[]).length-1;i>=0;i--){
+   const e=c.annualEvents[i];
+   if(e.month===state.month&&e.interaction)return e
+ }
+ return null
+}
+function applyInteractionMonthlyHazard(c,result){
+ if(!c||!result||result.death||result.departure||!c.alive||c.departed)return result;
+
+ // 改宗判定は通常月と同じ。関係イベントがあっても免除しない。
+ const apostasy=maybeApostasy(c);
+ if(apostasy){
+   return {
+     ...result,
+     type:'bad',
+     text:`${result.text} その後、${apostasy.text}`,
+     faith:(Number(result.faith)||0)+(Number(apostasy.faith)||0),
+     departure:true
+   }
+ }
+
+ // 寿命判定も通常月と同じ。これは救済不能。
+ const naturalChance=lifespanDeathChance(c.age);
+ if(naturalChance>0&&Math.random()*100<naturalChance){
+   const cause=naturalDeathNarrative(c);
+   c.alive=false;c.deathYear=state.year;c.naturalDeath=true;c.deathCause=cause;
+   const ev=interactionAnnualEventFor(c);
+   if(ev){ev.text=`${ev.text} ${cause}`;ev.death=true;ev.naturalDeath=true}
+   c.annualEvents.push({month:state.month,type:'neutral',text:cause,faith:0,growth:[],fameGain:0,death:true,naturalDeath:true,deathFaithBonus:0,autoRevived:false,interactionAftermath:true});
+   releaseDeadRelations(c);
+   return {...result,text:`${result.text} ${cause}`,death:true,naturalDeath:true,deathFaithBonus:0}
+ }
+
+ // 敵対者同士の死闘など、そのイベント自体ですでに死亡抽選を行った場合は
+ // ここで通常事故死を重ねない。ただし上の改宗・寿命判定は行う。
+ if(result.intrinsicDeathCheck)return result;
+
+ const fx=fxOf(c);
+ const assumedSuccess=result.type!=='bad';
+ let fatal=monthlyDeathRisk(c,fx,result.type||'neutral',['','activity',0],assumedSuccess);
+ fatal=clamp(fatal,.15,55);
+
+ if(Math.random()*100>=fatal)return result;
+
+ const ev=interactionAnnualEventFor(c);
+ if(consumeAutoRevive(c)){
+   const suffix=' その活動中に一度命を落としかけたが、《蘇生の奇跡》が自動発動し生還した。';
+   result.text+=suffix;result.autoRevived=true;
+   if(ev){ev.text=result.text;ev.autoRevived=true}
+   return result
+ }
+
+ c.alive=false;c.deathYear=state.year;c.naturalDeath=false;
+ let deathFaithBonus=0;
+ if(result.type==='good'){
+   deathFaithBonus=Math.max(1,faithImpact(c,5,fx,true));
+   applyFaith(c,deathFaithBonus);
+   result.faith=(Number(result.faith)||0)+deathFaithBonus;
+ }
+ const cause=deathNarrative(c,result.text,result.type||'neutral',false);
+ c.deathCause=cause;
+ result.text=cause;result.death=true;result.deathFaithBonus=deathFaithBonus;
+
+ if(ev){
+   ev.text=cause;ev.death=true;ev.naturalDeath=false;
+   ev.deathFaithBonus=deathFaithBonus;
+   ev.faith=(Number(ev.faith)||0)+deathFaithBonus;
+ }
+ return result
+}
+
 function advanceMonth(){
  finalizeUnrescuedDeaths();if(state.month>=12)return finishYear();state.month++;
  const aliveAtStart=state.active.filter(c=>c.alive&&!c.departed),decayNotices=relationshipDecay(aliveAtStart),interactionResults=simulateRelationshipMonth(aliveAtStart),interactionMap=new Map(interactionResults.map(r=>[r.id,r]));
- let results=aliveAtStart.map(c=>interactionMap.get(c.id)||simulateOneMonth(c)).filter(Boolean);attachSocialNotices(results,decayNotices);const artifactExtras=processArtifactMonth(results,aliveAtStart);if(artifactExtras.length)results.push(...artifactExtras);
+ let results=aliveAtStart.map(c=>{
+   const interaction=interactionMap.get(c.id);
+   return interaction?applyInteractionMonthlyHazard(c,interaction):simulateOneMonth(c)
+ }).filter(Boolean);attachSocialNotices(results,decayNotices);const artifactExtras=processArtifactMonth(results,aliveAtStart);if(artifactExtras.length)results.push(...artifactExtras);
  const newlyDeparted=state.active.filter(c=>c.departed);newlyDeparted.forEach(c=>{if(!state.departed.some(d=>d.id===c.id))state.departed.push(c)});state.active=state.active.filter(c=>!c.departed);
  const dungeonReport=resolveDungeonMonth();if(isDungeonMode())syncDungeonProgress();const dungeonGoalOutcomes=evaluateDungeonGoals();
  const significant=sortEventsByImportance(results)[0],sc=significant?findCharacter(significant.id):null;
