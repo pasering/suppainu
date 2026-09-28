@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v71</title>
+<title>転生の女神 v72</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -2483,7 +2483,7 @@ const dungeonTutorialPages=[
  ['加護ポイントと実効能力','年初の女神信仰度と同じだけ加護ポイントを得ます。新人の強さ・賢さ、スキルへ配分してください。迷宮攻略値には本人の強さ＋賢さだけでなく、スキルや神器による実効補正もすべて加算されます。'],
  ['毎年、攻略隊を編成する','新人への加護を終えた後、活動中の転生者から「迷宮へ挑戦する者」と「待機する者」を選びます。挑戦者は翌月以降の迷宮判定へ参加し、待機者は通常の異世界生活・功績・人間関係を続けます。'],
  ['階層攻略の判定','各月、現在の次階層から順番に攻略判定します。挑戦者全員の実効強さ＋実効賢さの合計が攻略隊総合値です。基準値の半分で約1％、基準値ちょうどで約50％、3倍で100％。最初に失敗した階層でその月の攻略は終了します。'],
- ['挑戦には危険が伴う','迷宮挑戦者は通常より能力成長が起こりやすく、迷宮専用イベントや仲間との連携イベントも増えます。その代わり死亡危険も上昇し、深い階層ほど危険です。残した加護ポイントによる死亡救済や蘇生系スキルも重要になります。'],
+ ['挑戦には危険が伴う','迷宮挑戦者は通常より能力成長が起こりやすく、迷宮専用イベントや仲間との連携イベントも増えます。迷宮内でも階層主討伐や大規模救助などは大功績として記録され、通常活動と大きく変わらない頻度で大功績を狙えます。その代わり死亡危険も上昇し、深い階層ほど危険です。残した加護ポイントによる死亡救済や蘇生系スキルも重要になります。'],
  ['階層目標と信仰ボーナス','10・25・50・75・100階層が主要目標です。到達するたびに信仰度ボーナスを獲得し、75階では+500、100階完全踏破では+1000を獲得します。信仰度が増えれば転生枠・スキル・神業も通常通り解放されます。'],
  ['世界信仰シェアも生きている','迷宮攻略モードでも三柱の神々と世界信仰シェアは存在します。善行・悪行・改宗による信仰変動も通常通りです。HUDの「世界信仰シェア」からいつでも確認できます。最終目標は100階踏破ですが、神器・人間関係・殿堂入り・世界シェアも同時に育てられます。']
 ]
@@ -4139,6 +4139,20 @@ const dungeonSoloEvents=[
  {key:'activity',good:'安全地帯を拠点化し、挑戦者たちが休息できる臨時キャンプを整備した。',bad:'休息場所の選定を誤り、夜襲を警戒して眠れない一夜を過ごした。',base:2,danger:.6},
  {key:'intelligence',good:'宝箱の多重罠を解除し、内部の古代装備を回収した。',bad:'宝箱の偽底を見抜けず、警報を作動させて魔物を呼び寄せた。',base:3,danger:1.6}
 ];
+
+const dungeonMajorSoloEvents=[
+ {key:'strength',good:'巨大な階層主を単独で打ち倒し、長く攻略不能だった区画を完全に開放した。',bad:'巨大な階層主へ挑んだが圧倒され、重傷を負って撤退した。',base:12,danger:3.8},
+ {key:'intelligence',good:'古代の迷宮中枢を解析し、広大な罠区画そのものを停止させた。',bad:'迷宮中枢の解析に失敗し、防衛機構の集中攻撃を受けた。',base:11,danger:3.0},
+ {key:'strength',good:'崩落区域に取り残された多数の探索者を救出しながら、魔物の群れを退けた。',bad:'崩落区域で救助を試みたが、魔物の襲撃を受けて撤退を余儀なくされた。',base:10,danger:3.2},
+ {key:'intelligence',good:'誰も解けなかった多重封印を解き、複数階層を結ぶ古代転移路を再起動した。',bad:'多重封印の解除に失敗し、強烈な魔力反動を受けた。',base:12,danger:2.8},
+ {key:'strength',good:'暴走した守護巨像を撃破し、後続の攻略者数十人を壊滅の危機から救った。',bad:'守護巨像を止めきれず、仲間を逃がしながら自身も深手を負った。',base:11,danger:3.7},
+ {key:'intelligence',good:'迷宮全体を侵食する呪詛の発生源を特定し、封印して攻略拠点を守り抜いた。',bad:'呪詛の発生源へ踏み込んだが、精神汚染を受けて退却した。',base:10,danger:3.1},
+ {key:'activity',good:'未知の大空洞を踏破して詳細な地図を完成させ、後世の標準攻略路を確立した。',bad:'未知の大空洞を強行探索したが、帰路を失い危うく遭難しかけた。',base:10,danger:2.9},
+ {key:'strength',good:'複数の高位魔物が支配する魔窟を制圧し、安全な前線拠点を築いた。',bad:'高位魔物の群れに包囲され、前線拠点の構築を断念した。',base:12,danger:4.0},
+ {key:'intelligence',good:'階層を丸ごと覆う幻術構造を看破し、多数の行方不明者を現実の通路へ導いた。',bad:'巨大幻術へ巻き込まれ、自身も長時間帰還不能になった。',base:11,danger:2.7},
+ {key:'strength',good:'封印から解き放たれた古代魔獣を討伐し、迷宮外への流出を未然に防いだ。',bad:'古代魔獣との死闘に敗れ、封印区画から命からがら撤退した。',base:13,danger:4.2}
+];
+
 const dungeonPartyEvents=[
  '前衛・後衛・索敵の役割を入れ替えながら、狭い連続戦闘区画を無駄なく突破した。',
  '無言の合図だけで挟撃を完成させ、階層主の取り巻きを一気に崩した。',
@@ -4193,6 +4207,35 @@ const dungeonFriendEvents=[
  '強敵を前に一度撤退し、二人だけで反省会をして再挑戦した。',
  '迷宮の異様な景色を見つけ、攻略そっちのけでしばらく眺めていた。'
 ];
+const dungeonRelationMajorEvents={
+ party:[
+  '巨大階層主との長期戦で完璧な役割分担を維持し、攻略不能とされた守護者を撃破した。',
+  '崩壊する大区画から多数の探索者を護衛し、全員を生還させながら突破した。',
+  '複数階層にまたがる魔物の大群を連携して掃討し、安全な恒久攻略路を作った。',
+  '迷宮中枢の暴走を全員同時の操作で停止させ、大規模崩落を防いだ。',
+  '分断された攻略隊を各所から救出し、最深部手前の前線を再建した。'
+ ],
+ mentor:[
+  '師弟で高位階層主を攻略し、その戦法が後続の標準攻略法として広く伝わった。',
+  '弟子が師から受け継いだ技を完成させ、二人で難攻不落の封印区画を突破した。',
+  '古代迷宮の難解な機構を師弟で解明し、長年閉ざされていた大通路を開放した。',
+  '絶体絶命の戦いで弟子が師を救い、そのまま二人で階層主を討ち取った。',
+  '師と弟子が互いの弱点を補う新戦術を確立し、強敵の連続する区画を制覇した。'
+ ],
+ spouse:[
+  '互いを守りながら巨大階層主を撃破し、壊滅寸前だった攻略隊を救った。',
+  '崩壊する迷宮区画で取り残された探索者を二人で救出し、最後まで共に脱出した。',
+  '二人だけで長年突破不能だった危険区画を踏破し、新しい攻略路を確立した。',
+  '片方が致命的な罠を見抜き、もう片方が階層主を抑える連携で大区画を攻略した。'
+ ],
+ friend:[
+  '競い合うように強敵を次々と突破し、最終的には二人で巨大階層主を討伐した。',
+  '多数の探索者が閉じ込められた区画へ飛び込み、二人で救出作戦を成功させた。',
+  '互いの発見を組み合わせ、誰も見つけられなかった大規模な隠し経路を開通させた。',
+  '劣勢の攻略隊へ二人で加勢し、崩壊寸前の前線を立て直した。'
+ ]
+};
+
 const dungeonEnemyEvents=[
  'どちらが先に階層主へ到達するか競い、互いに無茶な進軍を続けた。',
  '同じ獲物を狙って別々の作戦をぶつけ合い、攻略隊の空気を険悪にした。',
@@ -4215,11 +4258,15 @@ function maybeDungeonRelationshipEvent(a,b){
  if(!isDungeonMode()||!isDungeonChallenger(a)||!isDungeonChallenger(b))return null;
  const kind=dungeonRelationKind(a,b);if(!kind)return null;
  const pool=kind==='party'?dungeonPartyEvents:kind==='mentor'?dungeonMentorEvents:kind==='spouse'?dungeonSpouseEvents:kind==='enemy'?dungeonEnemyEvents:dungeonFriendEvents;
- const tpl=pick(pool),fa=fxOf(a),fb=fxOf(b),combined=(dungeonEffectivePower(a)+dungeonEffectivePower(b))/2;
+ let tpl=pick(pool),fa=fxOf(a),fb=fxOf(b),combined=(dungeonEffectivePower(a)+dungeonEffectivePower(b))/2;
  const nextReq=dungeonFloorRequirement(Math.min(100,ensureDungeonState().clearedFloor+1));
  const successChance=clamp(58+(combined/Math.max(1,nextReq))*24+(fa.luck+fb.luck)*2,48,96),success=Math.random()*100<successChance;
  const ga=growCharacter(a,fa),gb=growCharacter(b,fb);
  let base=kind==='party'?5:kind==='mentor'?4:kind==='spouse'?3:kind==='friend'?3:-1;
+ if(success&&kind!=='enemy'&&dungeonRelationMajorEvents[kind]&&Math.random()<.08){
+   tpl=pick(dungeonRelationMajorEvents[kind]);
+   base=rand(10,12);
+ }
  if(kind==='mentor'){
    const mp=mentorPair(a,b),ap=mp?.apprentice;
    if(ap&&Math.random()<.55){
@@ -4370,7 +4417,7 @@ function simulateOneMonth(c){
  const legend=maybeLegend(c,fx);if(legend){let fd=Math.max(1,faithImpact(c,legend.faith,fx,true)),growth=[];const fg=addFame(c,legend.fame||22,growth);c.lastYearGrowth.push(...growth);applyFaith(c,fd);c.annualEvents.push({month:state.month,type:'good',text:legend.text,faith:fd,growth:[...growth],fameGain:fg,legend:true});return {id:c.id,name:c.name,type:'good',text:legend.text,faith:fd,growth,legend:true}}
  let type='neutral',tpl=null,eventText='',base=0,success=true,isEvil=false,isDanger=false,demonEvent=false,demonDanger=0,dungeonEvent=false,dungeonDanger=0;
  if(isDungeonChallenger(c)&&Math.random()<.52){
-   dungeonEvent=true;const de=pick(dungeonSoloEvents),score=statValue(c,de.key,fx),req=dungeonFloorRequirement(Math.min(100,ensureDungeonState().clearedFloor+1));
+   dungeonEvent=true;const dungeonMajorRoll=Math.random()<.08,de=pick(dungeonMajorRoll?dungeonMajorSoloEvents:dungeonSoloEvents),score=statValue(c,de.key,fx),req=dungeonFloorRequirement(Math.min(100,ensureDungeonState().clearedFloor+1));
    success=Math.random()*100<clamp(45+score*.48+(dungeonEffectivePower(c)/Math.max(1,req))*18+fx.luck*3,22,96);
    type=success?'good':'bad';eventText=success?de.good:de.bad;base=success?de.base:-1;isDanger=!success&&de.danger>1;dungeonDanger=de.danger||0;tpl=[eventText,de.key,base];
  }else if(ensureDemonState().active&&ensureDemonState().yearPlan&&Math.random()*100<demonEventChance()){
@@ -4380,7 +4427,7 @@ function simulateOneMonth(c){
    if(Math.random()*100<dangerChance){type='bad';tpl=pick(dangerEvents)}else{const moral=rand(1,100),goodLine=c.justice*.56+c.activity*.18+fx.achievement*5+fx.peace*3;if(moral<goodLine){type='good';tpl=pick(goodEvents)}else if(moral>100-(100-c.justice)*.40-fx.shadow*3-(fx.evilBias||0)){type='bad';tpl=pick(evilEvents)}else{tpl=pick(neutralEvents)}}
    const score=statValue(c,tpl[1],fx);success=Math.random()*100<clamp(34+score*.56+fx.luck*3+fx.stability*4,24,95);base=tpl[2];if(type==='good'&&!success)base=Math.max(0,Math.round(base*.25));if(type==='bad'&&!dangerEvents.includes(tpl)&&!success)base=Math.round(base*.55);eventText=tpl[0];isEvil=evilEvents.includes(tpl);isDanger=dangerEvents.includes(tpl);
  }
- const majorAchievement=type==='good'&&success&&base>=10;let faith=faithImpact(c,base,fx,false);if(majorAchievement)recordMajorAchievement(c,eventText,base,demonEvent?'demon':'great');const growth=growCharacter(c,fx),fameGain=eventFameGain(type,base,{success,evil:isEvil,danger:isDanger},fx);addFame(c,fameGain,growth);c.lastYearGrowth.push(...growth);
+ const majorAchievement=type==='good'&&success&&base>=10;let faith=faithImpact(c,base,fx,false);if(majorAchievement)recordMajorAchievement(c,eventText,base,demonEvent?'demon':dungeonEvent?'dungeon':'great');const growth=growCharacter(c,fx),fameGain=eventFameGain(type,base,{success,evil:isEvil,danger:isDanger},fx);addFame(c,fameGain,growth);c.lastYearGrowth.push(...growth);
  let death=false,cause='',deathFaithBonus=0,autoRevived=false;let fatal=monthlyDeathRisk(c,fx,type,tpl||['',demonEvent?'strength':'activity',base],success)+(demonEvent?demonFatalBonus(demonDanger):0)+(dungeonEvent&&!success?dungeonDanger:0);fatal=clamp(fatal,.15,55);
  if(Math.random()*100<fatal){if(consumeAutoRevive(c)){autoRevived=true;faith+=2;eventText=eventText+' 一度命を落としたが、《蘇生の奇跡》が自動発動し、その場で生還した。'}else{death=true;c.alive=false;c.deathYear=state.year;
    c.naturalDeath=false;
