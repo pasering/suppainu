@@ -2052,7 +2052,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 @media(max-width:620px){
   .resultCast.adventureScene{height:258px;padding:0 8px 8px}
   .resultCast.adventureScene::after,.adventureBackdrop,.adventureBackdropFx{left:8px;right:8px;top:24px;bottom:8px;border-radius:16px}
-  .partySpriteWrap{bottom:48px;max-width:min(100%,620px)}
+  .partySpriteWrap{bottom:var(--party-bottom-mobile,12px);max-width:min(100%,620px)}
   .partySpriteWrap[data-party-size="1"] .partySprite{height:212px}
   .partySpriteWrap[data-party-size="3"] .partySprite{height:224px}
   .partySpriteWrap[data-party-size="5"] .partySprite{height:236px}
@@ -2061,7 +2061,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 }
 @media(max-width:355px){
   .resultCast.adventureScene{height:238px}
-  .partySpriteWrap{bottom:44px}
+  .partySpriteWrap{bottom:var(--party-bottom-small,10px)}
   .partySpriteWrap[data-party-size="1"] .partySprite{height:190px}
   .partySpriteWrap[data-party-size="3"] .partySprite{height:198px}
   .partySpriteWrap[data-party-size="5"] .partySprite{height:206px}
@@ -4592,13 +4592,19 @@ function updateMonthlyAdventureScene(living){
  const party=monthlyScenePartyConfig(livingCount);
  const monthIndex=Math.max(1,state.month||1);
  const mobile=window.innerWidth<=620;
- const rangeMap=mobile?{'1':[70,30],'3':[62,38],'5':[57,43],'10':[53,47]}:{'1':[82,18],'3':[76,24],'5':[70,30],'10':[64,36]};
- const range=rangeMap[party.size]||[70,30];
+ const rightMap=mobile?{'1':[6,38],'3':[5,34],'5':[4,30],'10':[3,26]}:{'1':[8,42],'3':[7,38],'5':[6,34],'10':[4,30]};
+ const bgYMap=mobile?{field:'70%',forest:'72%',ruins:'78%',cave:'80%'}:{field:'68%',forest:'70%',ruins:'76%',cave:'78%'};
+ const bottomMap=mobile?{field:'12px',forest:'12px',ruins:'6px',cave:'4px'}:{field:'20px',forest:'18px',ruins:'12px',cave:'10px'};
+ const range=rightMap[party.size]||[6,30];
  const t=(monthIndex-1)/11;
  const progress=range[0]+(range[1]-range[0])*t;
  bg.style.backgroundImage=`url(${scene.src})`;
+ bg.style.setProperty('--scene-bg-y', bgYMap[scene.key]||'70%');
  bg.setAttribute('aria-label',scene.label);
- stage.style.setProperty('--party-x',`${progress}%`);
+ stage.style.setProperty('--party-right',`${progress}%`);
+ stage.style.setProperty('--party-bottom',bottomMap[scene.key]||'16px');
+ stage.style.setProperty('--party-bottom-mobile',bottomMap[scene.key]||'12px');
+ stage.style.setProperty('--party-bottom-small',bottomMap[scene.key]||'10px');
  if(party.size==='0'){
    wrap.classList.add('hidden');
    note.classList.remove('hidden');
@@ -4608,6 +4614,7 @@ function updateMonthlyAdventureScene(living){
  wrap.classList.remove('hidden');
  note.classList.remove('hidden');
  wrap.dataset.partySize=party.size;
+ wrap.dataset.scene=scene.key||'field';
  img.style.removeProperty('width');img.style.removeProperty('height');img.style.removeProperty('transform');
  img.src=party.src;
  img.alt=`${party.label}のドット絵`;
