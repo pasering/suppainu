@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v64</title>
+<title>転生の女神 v65</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1966,6 +1966,21 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 .dungeonGoalRow em{font-style:normal;color:#ffe0a0;font-weight:900}
 .dungeonGoalRow.done{border-color:rgba(111,219,170,.28);background:rgba(54,129,96,.09)}
 .dungeonGoalRow.done b{color:#aee7c8}
+
+
+/* v65: title save-loader recovery */
+.titleLoadError{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;
+  padding:15px;border:1px solid rgba(243,200,106,.24);border-radius:15px;
+  background:rgba(243,200,106,.055);
+}
+.titleLoadErrorIcon{font-size:22px;color:#ffe1a0}
+.titleLoadErrorTitle{font-size:11px;font-weight:950;color:#fff0c2}
+.titleLoadErrorText{font-size:8px;line-height:1.6;color:#aaa0b8;margin-top:3px}
+@media(max-width:520px){
+  .titleLoadError{grid-template-columns:auto 1fr}
+  .titleLoadError .btn{grid-column:1/-1;width:100%}
+}
 
 </style>
 </head>
@@ -4591,9 +4606,34 @@ async function renderSaveSlots(){
  $$('[data-slot-delete]').forEach(b=>b.onclick=()=>deleteSaveSlot(Number(b.dataset.slotDelete)));
 }
 
+function startupTimeout(promise,ms=4500,label='処理'){
+ return Promise.race([
+   Promise.resolve(promise),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label}がタイムアウトしました`)),ms))
+ ])
+}
+function renderTitleLoadError(err){
+ const grid=$('#titleSlotGrid');if(!grid)return;
+ console.warn('Title save loading failed',err);
+ grid.innerHTML=`<div class="titleLoadError">
+   <div class="titleLoadErrorIcon">↻</div>
+   <div>
+     <div class="titleLoadErrorTitle">セーブデータの確認に時間がかかっています</div>
+     <div class="titleLoadErrorText">データは削除されていません。もう一度読み込みを試してください。</div>
+   </div>
+   <button class="btn gold" id="titleSaveRetryBtn">再読み込み</button>
+ </div>`;
+ $('#titleSaveRetryBtn').onclick=()=>renderTitleScreen();
+}
 async function renderTitleScreen(){
  const grid=$('#titleSlotGrid');if(!grid)return;
- const records=await getSaveSlotRecords();
+ grid.innerHTML='<div class="titleLoading">セーブデータを確認中……</div>';
+ let records;
+ try{
+   records=await startupTimeout(getSaveSlotRecords(),5000,'セーブデータ確認');
+ }catch(e){
+   renderTitleLoadError(e);return;
+ }
  grid.innerHTML=records.map((rec,i)=>{
    const slot=i+1,s=rec?.state;
    if(!s)return `<div class="titleSlotCard"><div><div class="titleSlotName">スロット ${slot}</div><div class="titleSlotEmptyText">空きスロット<br>新しい女神の物語を始めます。</div></div><div class="titleSlotAction"><button class="btn gold" data-title-new="${slot}">初めから始める</button></div></div>`;
@@ -4790,12 +4830,18 @@ $('#tutorialSkip').onclick=()=>closeTutorial();
 $('#tutorialNext').onclick=()=>{if(state.tutorialIndex>=tutorialPages.length-1)finishTutorial();else{state.tutorialIndex++;renderTutorial()}};
 
 (async function init(){
- await loadCustomPortraitCache();
- await migrateMainSaveToSlot1();
- await migrateAchievementsFromSaveSlots();
  $('#activeSaveSlotLabel').textContent=String(activeSaveSlot);
  updateBgmButtons();armBgm();
+
+ // タイトル表示を補助データの読み込み待ちで止めない。
+ try{await startupTimeout(migrateMainSaveToSlot1(),1800,'旧セーブ移行')}catch(e){console.warn(e)}
  await renderTitleScreen();
+
+ // ポートレートキャッシュと実績移行はタイトル表示後に行う。
+ Promise.allSettled([
+   startupTimeout(loadCustomPortraitCache(),5000,'画像キャッシュ読込'),
+   startupTimeout(migrateAchievementsFromSaveSlots(),5000,'実績移行')
+ ]).then(()=>renderTitleScreen()).catch(()=>{});
 })();
 </script>
 </body>
