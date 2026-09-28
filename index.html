@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v68</title>
+<title>転生の女神 v69</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -2022,6 +2022,12 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .dungeonAnnualStats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dungeonHistoryRow{grid-template-columns:auto 1fr auto}
   .dungeonHistoryRow small{grid-column:2/-1}
+}
+
+
+/* v69: never show dungeon depth HUD outside Dungeon mode */
+.hud:not(.dungeonModeHud) #hudDungeonPill{
+  display:none!important;
 }
 
 </style>
@@ -4479,7 +4485,10 @@ function updateHUD(){
  $('#hudShare').textContent=playerShare().toFixed(1)+'%';
  $('#hudSharePill').title='世界の神々と信仰シェアを見る';
  if($('#hudDungeonPill')){
-   $('#hudDungeonPill').classList.toggle('hidden',!isDungeonMode());
+   const dungeonHudOn=isDungeonMode();
+   $('#hudDungeonPill').classList.toggle('hidden',!dungeonHudOn);
+   $('#hudDungeonPill').style.setProperty('display',dungeonHudOn?'':'none',dungeonHudOn?'':'important');
+   if(dungeonHudOn)$('#hudDungeonPill').style.removeProperty('display');
    $('#hudDungeonFloor').textContent=`${state.dungeon.clearedFloor}階`;
  }
  renderPantheonMini();checkAchievements(false)
