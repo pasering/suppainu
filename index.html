@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v66</title>
+<title>転生の女神 v67</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -1980,6 +1980,16 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 @media(max-width:520px){
   .titleLoadError{grid-template-columns:auto 1fr}
   .titleLoadError .btn{grid-column:1/-1;width:100%}
+}
+
+
+/* v67: new-game mode selector above title screen */
+#gameModeModal{
+  z-index:12050!important;
+}
+#gameModeModal .modal{
+  position:relative;
+  z-index:1;
 }
 
 </style>
@@ -4686,7 +4696,7 @@ async function renderTitleScreen(){
    const rank=getRank(Number(s.faith)||0)?.name||'見習い女神';
    return `<div class="titleSlotCard hasSave"><div><div class="titleSlotName">スロット ${slot}</div><div class="titleSlotMeta"><span><b>${Number(s.year)||1}年目</b></span><span>信仰 <b>${Math.round(Number(s.faith)||0).toLocaleString()}</b></span><span>${rank}</span><span class="modeBadge ${s.gameMode==='dungeon'?'dungeon':''}">${gameModeName(s.gameMode)}</span><span>${slotStateLabel(s)}</span></div><div class="titleSlotSaved">最終保存：${formatSaveTime(rec.updatedAt)}</div></div><div class="titleSlotAction"><button class="btn gold" data-title-continue="${slot}">続きから始める</button></div></div>`;
  }).join('');
- $$('[data-title-continue]').forEach(b=>b.onclick=()=>enterTitleSlot(Number(b.dataset.titleContinue),false));
+ $$('[data-title-continue]').forEach(b=>b.onclick=()=>{closeGameModeModal();enterTitleSlot(Number(b.dataset.titleContinue),false)});
  $$('[data-title-new]').forEach(b=>b.onclick=()=>requestNewGameMode(Number(b.dataset.titleNew)));
 }
 let pendingNewGameSlot=null;
@@ -4694,6 +4704,7 @@ function requestNewGameMode(slot){pendingNewGameSlot=clamp(Number(slot)||1,1,SAV
 function closeGameModeModal(){pendingNewGameSlot=null;$('#gameModeModal').classList.add('hidden')}
 async function chooseNewGameMode(mode){const slot=pendingNewGameSlot;if(!slot)return;$('#gameModeModal').classList.add('hidden');pendingNewGameSlot=null;await enterTitleSlot(slot,true,mode)}
 async function enterTitleSlot(slot,isNew,newMode=null){
+ $('#gameModeModal')?.classList.add('hidden');pendingNewGameSlot=null;
  slot=clamp(Number(slot)||1,1,SAVE_SLOT_COUNT);
  localStorage.setItem(ACTIVE_SAVE_SLOT_KEY,String(slot));activeSaveSlot=slot;
  $('#titleScreen').classList.add('hidden');$('#game').classList.remove('titleLocked');
