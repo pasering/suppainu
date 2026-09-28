@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v69</title>
+<title>転生の女神 v70</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -2205,7 +2205,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
           <div><span>次階層基準値</span><b id="dungeonDeployReq">50</b></div>
           <div><span>次階層クリア率</span><b id="dungeonDeployChance">0%</b></div>
         </div>
-        <div class="dungeonRuleNote">攻略隊総合値＝挑戦者全員の「実効強さ＋実効賢さ」。スキル・神器補正も含みます。挑戦者は能力が成長しやすくなりますが、迷宮探索分の死亡危険も上乗せされます。</div>
+        <div class="dungeonRuleNote">攻略隊総合値＝挑戦者全員の「実効強さ＋実効賢さ」。スキル・神器補正も含みます。挑戦者は能力が成長しやすくなりますが、<b>通常活動より死亡危険が明確に高く、深い階層ほど危険が増します。</b></div>
       </div>
       <div class="dungeonDeployToolbar">
         <button class="btn secondary" id="dungeonSelectAllBtn">全員を挑戦させる</button>
@@ -2515,6 +2515,31 @@ function ensureDungeonState(){
  return state.dungeon
 }
 function gameModeName(mode=state.gameMode){return mode==='dungeon'?'迷宮攻略モード':'信仰モード'}
+
+function syncDungeonProgress(){
+ if(!isDungeonMode())return ensureDungeonState();
+ const d=ensureDungeonState();
+ let deepest=clamp(Number(d.clearedFloor)||0,0,100);
+
+ // Current-month result is the strongest source while the year is in progress.
+ if(d.lastMonth)deepest=Math.max(deepest,clamp(Number(d.lastMonth.endFloor)||0,0,100));
+
+ // Recover from the current year's monthly logs if a prior version left
+ // clearedFloor stale while the per-month report itself was correct.
+ for(const m of state.annualLog||[]){
+   if(m?.dungeon)deepest=Math.max(deepest,clamp(Number(m.dungeon.endFloor)||0,0,100));
+ }
+
+ // Completed annual records are persistent across years.
+ for(const h of d.history||[]){
+   deepest=Math.max(deepest,clamp(Number(h?.endFloor)||0,0,100));
+ }
+
+ if(deepest!==d.clearedFloor)d.clearedFloor=deepest;
+ if(d.clearedFloor>=100)d.cleared=true;
+ return d
+}
+
 function applyNewGameMode(mode){
  state.gameMode=mode==='dungeon'?'dungeon':'faith';
  const startFaith=state.gameMode==='dungeon'?100:40;
@@ -2550,15 +2575,17 @@ function dungeonLivingChallengers(){
 function dungeonTeamScore(){return dungeonLivingChallengers().reduce((n,c)=>n+dungeonEffectivePower(c),0)}
 function dungeonDeathRiskBonus(c){
  if(!isDungeonChallenger(c))return 0;
- const floor=Math.max(1,ensureDungeonState().clearedFloor+1);
- return clamp(.55+floor*.021,0.55,2.75);
+ const floor=Math.max(1,syncDungeonProgress().clearedFloor+1);
+ // 迷宮攻略は通常活動より明確に危険。
+ // 低層でも月間+1.25pt以上、深層では最大+4.50ptを死亡判定へ追加。
+ return clamp(1.25+floor*.032,1.25,4.50);
 }
 function dungeonGrowthChanceBonus(c){
  if(!isDungeonChallenger(c))return 0;
  return 18+Math.min(12,ensureDungeonState().clearedFloor*.12);
 }
 function prepareDungeonChallengeSelection(){
- const d=ensureDungeonState(),living=state.active.filter(c=>c.alive&&!c.departed),prev=new Set(d.lastChallengers||[]);
+ const d=syncDungeonProgress(),living=state.active.filter(c=>c.alive&&!c.departed),prev=new Set(d.lastChallengers||[]);
  d.yearStartFloor=d.clearedFloor;
  d.lastMonth=null;d.justCleared=false;
  d.challengers=living.filter(c=>state.year===1||c.reincarnatedYear===state.year||prev.has(c.id)).map(c=>c.id);
@@ -2567,7 +2594,7 @@ function prepareDungeonChallengeSelection(){
 function renderDungeonDeployment(){
  if(!isDungeonMode())return beginMonthlyObservation();
  showOnly('dungeonDeployScreen');
- const d=ensureDungeonState(),living=state.active.filter(c=>c.alive&&!c.departed),selected=new Set(d.challengers);
+ const d=syncDungeonProgress(),living=state.active.filter(c=>c.alive&&!c.departed),selected=new Set(d.challengers);
  $('#dungeonDeployList').innerHTML=living.map(c=>{
    const on=selected.has(c.id),fx=fxOf(c),power=dungeonEffectivePower(c);
    return `<button class="dungeonDeployCard ${on?'selected':''}" data-dungeon-toggle="${c.id}">
@@ -2584,7 +2611,7 @@ function renderDungeonDeployment(){
  renderDungeonDeploymentStats();
 }
 function renderDungeonDeploymentStats(){
- const d=ensureDungeonState(),count=dungeonLivingChallengers().length,score=dungeonTeamScore(),next=Math.min(100,d.clearedFloor+1),req=d.clearedFloor>=100?50000:dungeonFloorRequirement(next),chance=d.clearedFloor>=100?100:dungeonClearChance(score,req);
+ const d=syncDungeonProgress(),count=dungeonLivingChallengers().length,score=dungeonTeamScore(),next=Math.min(100,d.clearedFloor+1),req=d.clearedFloor>=100?50000:dungeonFloorRequirement(next),chance=d.clearedFloor>=100?100:dungeonClearChance(score,req);
  $('#dungeonDeployFloor').textContent=d.clearedFloor;
  $('#dungeonDeployCount').textContent=`${count}人`;
  $('#dungeonDeployPower').textContent=Math.round(score).toLocaleString();
@@ -2622,7 +2649,9 @@ function resolveDungeonMonth(){
    d.cleared=true;d.clearYear=state.year;d.clearMonth=state.month;d.justCleared=true;
  }
  const rep={month:state.month,startFloor,endFloor:d.clearedFloor,clearedCount:cleared,score,challengerCount:team.length,failedFloor,requirement:lastReq,chance:lastChance,roll:lastRoll,completed:d.clearedFloor>=100};
- d.lastMonth=rep;return rep;
+ d.lastMonth=rep;
+ syncDungeonProgress();
+ return rep;
 }
 
 function dungeonYearRecord(year=state.year){
@@ -2631,8 +2660,11 @@ function dungeonYearRecord(year=state.year){
 }
 function buildDungeonYearRecord(){
  if(!isDungeonMode())return null;
- const d=ensureDungeonState(),logs=(state.annualLog||[]).map(m=>m.dungeon).filter(Boolean);
- const attempts=logs.filter(r=>!r.noAttempt),start=clamp(Number(d.yearStartFloor)||0,0,100),end=clamp(Number(d.clearedFloor)||0,0,100);
+ const d=syncDungeonProgress(),logs=(state.annualLog||[]).map(m=>m.dungeon).filter(Boolean);
+ const attempts=logs.filter(r=>!r.noAttempt),start=clamp(Number(d.yearStartFloor)||0,0,100);
+ const observedEnd=logs.reduce((mx,r)=>Math.max(mx,clamp(Number(r?.endFloor)||0,0,100)),0);
+ const end=Math.max(clamp(Number(d.clearedFloor)||0,0,100),observedEnd);
+ if(end>d.clearedFloor)d.clearedFloor=end;
  const cleared=Math.max(0,end-start);
  const maxScore=logs.reduce((n,r)=>Math.max(n,Number(r.score)||0),0);
  const maxChallengers=logs.reduce((n,r)=>Math.max(n,Number(r.challengerCount)||0),0);
@@ -2684,7 +2716,7 @@ function dungeonReportHTML(rep){
 function renderDungeonYearStatus(){
  const panel=$('#dungeonYearStatus');if(!panel)return;
  panel.classList.toggle('hidden',!isDungeonMode());if(!isDungeonMode())return;
- const d=ensureDungeonState(),score=dungeonTeamScore(),next=Math.min(100,d.clearedFloor+1),req=d.clearedFloor>=100?50000:dungeonFloorRequirement(next),chance=d.clearedFloor>=100?100:dungeonClearChance(score,req);
+ const d=syncDungeonProgress(),score=dungeonTeamScore(),next=Math.min(100,d.clearedFloor+1),req=d.clearedFloor>=100?50000:dungeonFloorRequirement(next),chance=d.clearedFloor>=100?100:dungeonClearChance(score,req);
  $('#dungeonSideFloor').textContent=d.clearedFloor;
  $('#dungeonSideBar').style.width=`${d.clearedFloor}%`;
  $('#dungeonSideMeta').innerHTML=d.clearedFloor>=100?`完全踏破済み<br>${d.clearYear}年目 ${d.clearMonth}月に到達`:`挑戦者 ${dungeonLivingChallengers().length}人 / 総合値 ${Math.round(score).toLocaleString()}<br>次：第${next}階層 / 基準 ${req.toLocaleString()} / 推定 ${chance.toFixed(1)}%`;
@@ -4362,7 +4394,7 @@ function advanceMonth(){
  const aliveAtStart=state.active.filter(c=>c.alive&&!c.departed),decayNotices=relationshipDecay(aliveAtStart),interactionResults=simulateRelationshipMonth(aliveAtStart),interactionMap=new Map(interactionResults.map(r=>[r.id,r]));
  let results=aliveAtStart.map(c=>interactionMap.get(c.id)||simulateOneMonth(c)).filter(Boolean);attachSocialNotices(results,decayNotices);const artifactExtras=processArtifactMonth(results,aliveAtStart);if(artifactExtras.length)results.push(...artifactExtras);
  const newlyDeparted=state.active.filter(c=>c.departed);newlyDeparted.forEach(c=>{if(!state.departed.some(d=>d.id===c.id))state.departed.push(c)});state.active=state.active.filter(c=>!c.departed);
- const dungeonReport=resolveDungeonMonth(),dungeonGoalOutcomes=evaluateDungeonGoals();
+ const dungeonReport=resolveDungeonMonth();if(isDungeonMode())syncDungeonProgress();const dungeonGoalOutcomes=evaluateDungeonGoals();
  const significant=sortEventsByImportance(results)[0],sc=significant?findCharacter(significant.id):null;
  const text=dungeonReport?.clearedCount?`地下迷宮：第${dungeonReport.endFloor}階層まで到達。今月は${dungeonReport.clearedCount}階層を突破した。`:significant?`${sc?displayName(sc):significant.name}：${significant.text}`:'穏やかな一か月が過ぎた。';
  const delta=results.reduce((t,r)=>t+r.faith,0);state.annualLog.push({month:state.month,results,delta,dungeon:dungeonReport});const goalOutcomes=evaluateFaithGoals();renderYearPlay(text,delta);saveGame();goalOutcomes.forEach(x=>enqueueProgressNotice({type:'goal',data:x}));dungeonGoalOutcomes.forEach(x=>enqueueProgressNotice({type:'dungeonGoal',data:x}));if(isDungeonMode()&&ensureDungeonState().justCleared){ensureDungeonState().victorySeen=true;ensureDungeonState().justCleared=false}
@@ -4390,6 +4422,7 @@ function currentYearCharacters(){
  const ids=new Set((state.annualLog||[]).flatMap(m=>m.results.map(r=>r.id).filter(Boolean)));return [...state.active,...state.dead,...state.departed].filter(c=>ids.has(c.id)||c.reincarnatedYear===state.year).filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i);
 }
 function finishYear(){
+ if(isDungeonMode())syncDungeonProgress();
  finalizeUnrescuedDeaths();
  if(!state.yearFinalized){
    state.summarySelected='all';
@@ -4443,7 +4476,7 @@ function renderAllYearResults(chars){
 function renderOneYearResult(c){
  if(!c)return;const h=historyForYear(c)||makeYearHistory(c);$('#yearSummary').innerHTML=`<div class="summaryChar ${h.departedEnd?'departedSummary':''}"><div class="summaryTop"><button class="summaryNameLink" data-open-record="${c.id}" title="キャラ記録を開く">${displayName(c)}　${h.ageStart}歳 / ${generationLabel(c)}</button><span class="badge ${historyBadgeClass(h)}">${historyStatus(h)}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${h.statsEnd.justice}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">累計功績</div><div class="v">${h.achievement}</div></div>${isDungeonMode()?`<div class="sumCell"><div class="k">迷宮参加</div><div class="v">${h.dungeonChallenger?'挑戦':'待機'}</div></div><div class="sumCell"><div class="k">年末迷宮戦力</div><div class="v">${h.dungeonChallenger?Math.round(h.dungeonPowerEnd||0):'-'}</div></div>`:''}</div>${h.growth.length?`<div class="sub" style="margin:8px 0 0">年間成長：${h.growth.join(' / ')}</div>`:''}${eventTimelineHTML(h.events)}${historyExitText(h)?`<div class="sub" style="margin:7px 0 0;color:${h.departedEnd?'#ffd27d':'#ff9bad'}">${historyExitText(h)}</div>`:''}${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:!h.aliveEnd&&!h.departedEnd,awakening:!!h.awakenings?.length})}</div></div>`;$$('[data-open-record]').forEach(b=>b.onclick=()=>openCharacterRecord(b.dataset.openRecord));
 }
-function nextYear(){state.year++;processApostateArtifacts();ensureDungeonState();state.yearStartFaith=state.faith;state.yearDelta=0;state.yearFinalized=false;state.summarySelected='all';state.godArtsSpentThisYear=0;state.active.forEach(c=>{c.lastYearFaith=0;c.lastYearGrowth=[];c.annualEvents=[];c.annualAwakenings=[];c.ageAtYearStart=c.age});const d=ensureDemonState();if(!d.active&&shouldActivateDemon())activateDemonArmy(state.year>=25?'year':'faith');if(d.active)prepareDemonYear();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderGacha();saveGame()}
+function nextYear(){if(isDungeonMode())syncDungeonProgress();state.year++;processApostateArtifacts();ensureDungeonState();state.yearStartFaith=state.faith;state.yearDelta=0;state.yearFinalized=false;state.summarySelected='all';state.godArtsSpentThisYear=0;state.active.forEach(c=>{c.lastYearFaith=0;c.lastYearGrowth=[];c.annualEvents=[];c.annualAwakenings=[];c.ageAtYearStart=c.age});const d=ensureDemonState();if(!d.active&&shouldActivateDemon())activateDemonArmy(state.year>=25?'year':'faith');if(d.active)prepareDemonYear();generateYearCandidates();state.candidates.forEach(c=>c._base=JSON.parse(JSON.stringify(c)));renderGacha();saveGame()}
 function renderHall(){const box=$('#hallOfFame');if(!box)return;box.innerHTML=state.hall.length?state.hall.slice().reverse().map(h=>`<div class="hallItem"><div class="hallTitle">${findCharacter(h.id)?displayName(findCharacter(h.id)):h.name} ― ${h.title}</div><div class="hallMeta">${h.year}年目・${h.age}歳${h.majorCount!=null?` / 大功績 ${h.majorCount}件 / 生涯功績 ${h.achievement}${h.statTotal!=null?` / 総合 ${h.statTotal}`:''}${h.lifetimeFaith!=null?` / 累計信仰 ${h.lifetimeFaith>=0?'+':''}${h.lifetimeFaith}`:''}${h.completion!=null?` / 100％ライン到達度 ${h.completion}%`:''}${h.chance!=null?` / 判定率 ${h.chance}%`:''}`:''}<br>${h.text}</div></div>`).join(''):'<div class="sub">まだ殿堂入りした転生者はいません。殿堂入りは一度の行為ではなく、生涯を通じて複数の大功績を残した人物に対して判定されます。</div>'}
 function renderUnlocks(){$('#unlockRoadmap').innerHTML=[0,80,160,260,400,500,550,720,900,1150,1500].map(v=>{const n=skillDefs.filter(s=>s.unlock===v).length,g=godArtDefs.filter(a=>a.unlock===v).length,extra=v===500?' / 魔王軍早期警戒条件':'';return `<div class="unlock"><span>${v===0?'初期':`信仰度 ${v}`}</span><span class="req">${state.faith>=v?'到達':'未到達'}${n?` / スキル${n}種`:''}${g?` / 神業${g}種`:''}${extra}</span></div>`}).join('')}
 function goddessMilestones(){
@@ -4468,7 +4501,7 @@ function renderGoddessGrowth(){
 }
 
 function openDungeonInfo(){
- const d=ensureDungeonState(),next=Math.min(100,d.clearedFloor+1),score=dungeonTeamScore(),req=d.clearedFloor>=100?50000:dungeonFloorRequirement(next),chance=d.clearedFloor>=100?100:dungeonClearChance(score,req);
+ const d=syncDungeonProgress(),next=Math.min(100,d.clearedFloor+1),score=dungeonTeamScore(),req=d.clearedFloor>=100?50000:dungeonFloorRequirement(next),chance=d.clearedFloor>=100?100:dungeonClearChance(score,req);
  const goals=dungeonGoalDefs.map(g=>`<div class="dungeonGoalRow ${d.clearedFloor>=g.floor?'done':''}"><span>第${g.floor}階層</span><b>${d.clearedFloor>=g.floor?'達成済み':`あと${Math.max(0,g.floor-d.clearedFloor)}階`}</b><em>信仰度 +${g.gift}</em></div>`).join('');
  $('#dungeonInfoBody').innerHTML=`<div class="growthCurrent"><div class="growthCurrentCell"><div class="k">現在到達</div><div class="v">第${d.clearedFloor}階層</div></div><div class="growthCurrentCell"><div class="k">現在の挑戦者</div><div class="v">${dungeonLivingChallengers().length}人</div></div><div class="growthCurrentCell"><div class="k">攻略隊総合値</div><div class="v">${Math.round(score).toLocaleString()}</div></div><div class="growthCurrentCell"><div class="k">世界信仰シェア</div><div class="v">${playerShare().toFixed(2)}%</div></div></div><div class="goalBar" style="margin:12px 0"><i style="width:${d.clearedFloor}%"></i></div><div class="sub">${d.clearedFloor>=100?`100階層完全踏破済み。${d.clearYear}年目 ${d.clearMonth}月に達成。`:`次は第${next}階層。基準値 <b>${req.toLocaleString()}</b>、現在編成の推定クリア率 <b>${chance.toFixed(1)}%</b>。`}<br><br>基準値の50％未満では突破不可、50％で約1％、基準値ちょうどで50％、3倍で100％。各月は低い階層から順番に判定し、最初に失敗した階層でその月の攻略を終了します。</div><div class="dungeonGoalList"><div class="sectionLabel">DUNGEON MILESTONES</div>${goals}</div>${d.history.length?`<div class="dungeonHistoryList"><div class="sectionLabel">ANNUAL HISTORY</div>${d.history.slice().reverse().slice(0,10).map(h=>`<div class="dungeonHistoryRow"><b>${h.year}年目</b><span>第${h.startFloor}階 → 第${h.endFloor}階</span><em>+${h.clearedCount}階</em><small>最大戦力 ${Math.round(h.maxScore||0).toLocaleString()}</small></div>`).join('')}</div>`:''}`;
  $('#dungeonInfoModal').classList.remove('hidden');
@@ -4476,7 +4509,7 @@ function openDungeonInfo(){
 function closeDungeonInfo(){$('#dungeonInfoModal').classList.add('hidden')}
 
 function updateHUD(){
- normalizePantheon();ensureDungeonState();
+ normalizePantheon();ensureDungeonState();if(isDungeonMode())syncDungeonProgress();
  const r=getRank(state.faith),hud=$('.hud');
  hud?.classList.toggle('dungeonModeHud',isDungeonMode());
  $('#hudRank').textContent=r.name;$('#hudFaith').textContent=state.faith;$('#hudYear').textContent=state.year;
@@ -4878,7 +4911,7 @@ async function loadGame(){
      migratedLegacy=!!saved;
    }
    if(!saved)return false;
-   Object.assign(state,saved);state.gameMode=saved.gameMode==='dungeon'?'dungeon':'faith';ensureDungeonState();ensureArtifactState();if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();
+   Object.assign(state,saved);state.gameMode=saved.gameMode==='dungeon'?'dungeon':'faith';ensureDungeonState();if(isDungeonMode())syncDungeonProgress();ensureArtifactState();if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen')prepareDemonYear();
    if(migratedLegacy){
      try{
        await writeIndexedGameSave(cloneGameState(),activeSaveSlot);
