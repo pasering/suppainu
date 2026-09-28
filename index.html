@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v65</title>
+<title>転生の女神 v66</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -4426,6 +4426,52 @@ function renderTutorial(){
  $('#tutorialPrev').disabled=i===0;$('#tutorialNext').textContent=i===pages.length-1?(tutorialLaunchMode==='initial'?'ゲーム開始':'閉じる'):'次へ';
  $('#tutorialSkip').classList.toggle('hidden',tutorialLaunchMode!=='manual');$('#tutorialDots').innerHTML=pages.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')
 }
+function closeTutorial(){$('#tutorialModal').classList.add('hidden')}
+function finishTutorial(){
+ const wasInitial=tutorialLaunchMode==='initial';
+ closeTutorial();tutorialLaunchMode='manual';
+ if(wasInitial){
+   localStorage.setItem(tutorialSeenKey(activeSaveSlot),'1');
+   showFirstGoalIntro()
+ }
+}
+function showFirstGoalIntro(){
+ const key=firstGoalSeenKey(activeSaveSlot);
+ if(localStorage.getItem(key))return;
+ localStorage.setItem(key,'1');
+ if(isDungeonMode())enqueueProgressNotice({type:'dungeonIntro'});
+ else enqueueProgressNotice({type:'firstGoal',data:{goal:faithGoalDefs[0]}})
+}
+
+const GAME_SAVE_DB_NAME='TenseiGoddessGameSaveV1';
+const GAME_SAVE_STORE='saves';
+const SAVE_SLOT_COUNT=3;
+const ACTIVE_SAVE_SLOT_KEY='tenseiGoddessActiveSlotV48';
+let activeSaveSlot=clamp(Number(localStorage.getItem(ACTIVE_SAVE_SLOT_KEY))||1,1,SAVE_SLOT_COUNT);
+let gameSaveDbPromise=null;
+const pendingGameSaves=new Map();
+let gameSaveLoopPromise=null;
+let saveWarningShown=false;
+
+function saveSlotId(slot=activeSaveSlot){return `slot${clamp(Number(slot)||1,1,SAVE_SLOT_COUNT)}`}
+function firstGoalSeenKey(slot=activeSaveSlot){return `tenseiGoddessFirstGoalIntroSeenV43_slot${slot}`}
+function tutorialSeenKey(slot=activeSaveSlot){return `tenseiGoddessTutorialSeen_slot${slot}`}
+
+function openGameSaveDB(){
+ if(!('indexedDB' in window))return Promise.reject(new Error('IndexedDB unsupported'));
+ if(gameSaveDbPromise)return gameSaveDbPromise;
+ gameSaveDbPromise=new Promise((resolve,reject)=>{
+   const req=indexedDB.open(GAME_SAVE_DB_NAME,1);
+   req.onupgradeneeded=()=>{
+     const db=req.result;
+     if(!db.objectStoreNames.contains(GAME_SAVE_STORE))db.createObjectStore(GAME_SAVE_STORE,{keyPath:'id'});
+   };
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error||new Error('Game save DB open failed'));
+   req.onblocked=()=>reject(new Error('Game save DB open blocked'));
+ });
+ return gameSaveDbPromise;
+}
 async function readIndexedGameRecord(id){
  const db=await openGameSaveDB();
  return await new Promise((resolve,reject)=>{
@@ -4827,18 +4873,17 @@ $('#saveSlotsClose').onclick=closeSaveSlots;$('#saveSlotsModal').onclick=e=>{if(
 $('#tutorialBtn').onclick=()=>openTutorial(0,'manual');$('#mobileTutorialBtn').onclick=()=>openTutorial(0,'manual');
 $('#tutorialPrev').onclick=()=>{state.tutorialIndex--;renderTutorial()};
 $('#tutorialSkip').onclick=()=>closeTutorial();
-$('#tutorialNext').onclick=()=>{if(state.tutorialIndex>=tutorialPages.length-1)finishTutorial();else{state.tutorialIndex++;renderTutorial()}};
+$('#tutorialNext').onclick=()=>{const pages=isDungeonMode()?dungeonTutorialPages:tutorialPages;if(state.tutorialIndex>=pages.length-1)finishTutorial();else{state.tutorialIndex++;renderTutorial()}};
 
 (async function init(){
  $('#activeSaveSlotLabel').textContent=String(activeSaveSlot);
  updateBgmButtons();armBgm();
 
- // タイトル表示を補助データの読み込み待ちで止めない。
- try{await startupTimeout(migrateMainSaveToSlot1(),1800,'旧セーブ移行')}catch(e){console.warn(e)}
+ // まず現在の3スロットを表示。旧データ移行はその後に行う。
  await renderTitleScreen();
 
- // ポートレートキャッシュと実績移行はタイトル表示後に行う。
  Promise.allSettled([
+   startupTimeout(migrateMainSaveToSlot1(),3000,'旧セーブ移行'),
    startupTimeout(loadCustomPortraitCache(),5000,'画像キャッシュ読込'),
    startupTimeout(migrateAchievementsFromSaveSlots(),5000,'実績移行')
  ]).then(()=>renderTitleScreen()).catch(()=>{});
