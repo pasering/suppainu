@@ -4711,7 +4711,7 @@ function updateMonthlyAdventureScene(living){
 
  // Fixed sprite width per population bracket. It never changes with month.
  const widthByParty=mobile
-   ? {'1':100,'3':96,'5':160,'10':Math.min(290,Math.max(205,stage.clientWidth-28))}
+   ? {'1':100,'3':96,'5':160,'10':Math.min(150,Math.max(120,Math.floor(stage.clientWidth*0.42)))}
    : {'1':112,'3':134,'5':220,'10':398};
  const spriteWidth=widthByParty[party.size]||176;
 
@@ -4722,7 +4722,7 @@ function updateMonthlyAdventureScene(living){
  const t=(monthIndex-1)/11;
  const x=Math.round(sideMargin+usable*(1-t));
  const bottomByParty=mobile
-   ? {'1':18,'3':10,'5':10,'10':10}
+   ? {'1':18,'3':10,'5':10,'10':4}
    : {'1':16,'3':16,'5':16,'10':16};
  const spriteBottom=bottomByParty[party.size]|| (mobile?10:16);
 
@@ -4735,7 +4735,7 @@ function updateMonthlyAdventureScene(living){
  wrap.style.left=x+'px';
  wrap.style.right='auto';
  wrap.style.width=spriteWidth+'px';
- wrap.style.bottom=(tiny?Math.max(6,spriteBottom-2):spriteBottom)+'px';
+ wrap.style.bottom=((tiny && party.size!=='10')?Math.max(6,spriteBottom-2):spriteBottom)+'px';
  wrap.style.transform='none';
 
  img.style.width='100%';
