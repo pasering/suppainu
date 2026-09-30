@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v105</title>
+<title>転生の女神 v106</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -3755,12 +3755,22 @@ function ensureSummaryPickupFilters(){const d={deathRescue:true,major:true,awake
 function ensureAutoRescueSettings(){const markers={none:true,'★':true,'▲':true,'●':true};const src=state.autoRescue&&typeof state.autoRescue==='object'?state.autoRescue:{};state.autoRescue={enabled:!!src.enabled,markers:Object.assign(markers,src.markers||{})};for(const k of Object.keys(markers))state.autoRescue.markers[k]=state.autoRescue.markers[k]!==false;return state.autoRescue}
 function pickupCategories(e){
  const cats=[],rel=eventRelationTypes(e);
- if(e?.death||e?.rescued||e?.autoRevived||e?.artifactRevived)cats.push('deathRescue');
- if(e?.majorAchievement||e?.legend||e?.hallInduction)cats.push('major');
- if(e?.awakening)cats.push('awakening');
- // 人間関係の成立・変化は、それが大功績や覚醒と同時発生しても「その他」にも属する。
- // これにより大功績を非表示にしても、友好・結婚・師弟・パーティー・敵対などは消えない。
- if(rel.length||e?.departure||e?.artifact||e?.demonEvent)cats.push('other');
+ const isDeathRescue=!!(e?.death||e?.rescued||e?.autoRevived||e?.artifactRevived);
+ const isMajor=!!(e?.majorAchievement||e?.legend||e?.hallInduction);
+ const isAwakening=!!e?.awakening;
+ if(isDeathRescue)cats.push('deathRescue');
+ if(isMajor)cats.push('major');
+ if(isAwakening)cats.push('awakening');
+
+ // 「その他」は独立した別情報がある時だけ付ける。
+ // 大功績と同時に友好・結婚などが成立した場合は relationChange/socialChanges があるため
+ // 大功績OFFでも関係成立だけは残る。一方、単なる大功績は「その他」には入れない。
+ if(rel.length||e?.departure||e?.artifact)cats.push('other');
+
+ // 魔王軍イベントそのものは、他カテゴリに該当しない場合だけ「その他」。
+ // これを無条件で入れると「魔王軍での大功績」が大功績OFFでも残ってしまう。
+ if(e?.demonEvent&&!isDeathRescue&&!isMajor&&!isAwakening&&!rel.length&&!e?.departure&&!e?.artifact)cats.push('other');
+
  if(!cats.length)cats.push('other');
  return [...new Set(cats)]
 }
