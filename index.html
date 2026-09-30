@@ -2344,6 +2344,32 @@ body.prepareHudFixed .main{
   }
 }
 
+
+/* v98: dungeon top start + archive sorting */
+.dungeonDeployTopStart{display:flex;justify-content:flex-end;margin-top:12px}
+.dungeonDeployTopStart .btn{min-width:250px}
+.archiveSortBar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin:8px 0 10px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:11px;background:rgba(255,255,255,.025)
+}
+.archiveSortBar label{font-size:9px;color:var(--muted);font-weight:800}
+.archiveSortBar select{
+  min-width:180px;border:1px solid var(--line);border-radius:9px;
+  background:#17132b;color:var(--ink);padding:7px 9px;font-size:10px
+}
+.lifeEndMark{
+  display:inline-flex;align-items:center;gap:3px;margin-left:5px;padding:2px 6px;
+  border-radius:999px;border:1px solid rgba(255,222,147,.34);
+  background:rgba(255,214,120,.09);color:#ffe2a2;font-size:8px;font-weight:900;
+  vertical-align:1px;white-space:nowrap
+}
+@media(max-width:620px){
+  .dungeonDeployTopStart .btn{width:100%;min-width:0}
+  .archiveSortBar{align-items:stretch}
+  .archiveSortBar select{min-width:0;flex:1}
+}
+
 </style>
 </head>
 <body>
@@ -2521,6 +2547,7 @@ body.prepareHudFixed .main{
           <div><span>次階層クリア率</span><b id="dungeonDeployChance">0%</b></div>
         </div>
         <div class="dungeonRuleNote">攻略隊総合値＝挑戦者全員の「実効強さ＋実効賢さ」。スキル・神器補正も含みます。挑戦者は能力が成長しやすくなりますが、<b>通常活動より死亡危険が明確に高く、深い階層ほど危険が増します。</b></div>
+        <div class="dungeonDeployTopStart"><button class="btn gold" id="dungeonStartYearTopBtn">この編成で月次観測を開始</button></div>
       </div>
       <div class="dungeonDeployToolbar">
         <button class="btn secondary" id="dungeonSelectAllBtn">全員を挑戦させる</button>
@@ -3756,7 +3783,7 @@ function linkRelation(a,b,type){
  if(!a||!b||a.id===b.id)return false;normalizeCharacter(a);normalizeCharacter(b);
  const own=type==='friend'?'friends':'enemies',other=type==='friend'?'enemies':'friends';
  if(a.relations[own].includes(b.id))return true;
- if(relationCount(a)>=3||relationCount(b)>=3)return false;
+ if(relationCount(a)>=5||relationCount(b)>=5)return false;
  a.relations[other]=a.relations[other].filter(id=>id!==b.id);b.relations[other]=b.relations[other].filter(id=>id!==a.id);
  a.relations[own].push(b.id);b.relations[own].push(a.id);return true
 }
@@ -4827,16 +4854,16 @@ function chooseInteractionPair(living){
      const a=challengers[i],b=challengers[j];
      if(dungeonRelationKind(a,b))dungeonExisting.push([a,b])
    }
-   if(dungeonExisting.length&&Math.random()<.60)return pick(dungeonExisting);
-   if(challengers.length>=2&&Math.random()<.82){const degree=c=>(c.relations?.friends?.length||0)+(c.relations?.enemies?.length||0)+(c.bonds?.spouse?1:0)+(c.bonds?.mentor?1:0)+(c.bonds?.apprentices?.length||0)+(c.bonds?.party?.length||0),low=challengers.filter(c=>degree(c)<=1),a=low.length&&Math.random()<.72?pick(low):pick(challengers),others=challengers.filter(x=>x.id!==a.id);return [a,pick(others)]}
+   if(dungeonExisting.length&&Math.random()<.40)return pick(dungeonExisting);
+   if(challengers.length>=2&&Math.random()<.82){const degree=c=>(c.relations?.friends?.length||0)+(c.relations?.enemies?.length||0)+(c.bonds?.spouse?1:0)+(c.bonds?.mentor?1:0)+(c.bonds?.apprentices?.length||0)+(c.bonds?.party?.length||0),low=challengers.filter(c=>degree(c)<=2),a=low.length&&Math.random()<.86?pick(low):pick(challengers),others=challengers.filter(x=>x.id!==a.id);return [a,pick(others)]}
  }
  const existing=[];
  for(let i=0;i<living.length;i++)for(let j=i+1;j<living.length;j++){
    const a=living[i],b=living[j];
    if(hasRelation(a,b,'friend')||hasRelation(a,b,'enemy')||areSpouses(a,b)||arePartyMates(a,b)||mentorPair(a,b))existing.push([a,b]);
  }
- if(existing.length&&Math.random()<.55)return pick(existing);
- const degree=c=>(c.relations?.friends?.length||0)+(c.relations?.enemies?.length||0)+(c.bonds?.spouse?1:0)+(c.bonds?.mentor?1:0)+(c.bonds?.apprentices?.length||0)+(c.bonds?.party?.length||0),low=living.filter(c=>degree(c)<=1),a=low.length&&Math.random()<.72?pick(low):pick(living),others=living.filter(x=>x.id!==a.id);return [a,pick(others)]
+ if(existing.length&&Math.random()<.36)return pick(existing);
+ const degree=c=>(c.relations?.friends?.length||0)+(c.relations?.enemies?.length||0)+(c.bonds?.spouse?1:0)+(c.bonds?.mentor?1:0)+(c.bonds?.apprentices?.length||0)+(c.bonds?.party?.length||0),low=living.filter(c=>degree(c)<=2),a=low.length&&Math.random()<.86?pick(low):pick(living),others=living.filter(x=>x.id!==a.id);return [a,pick(others)]
 }
 function interactionFaith(c,base){return faithImpact(c,base,fxOf(c),Math.abs(base)>=8)}
 function recordInteraction(c,data){const growth=[...(data.growth||[])],fx=fxOf(c),achievement=Math.max(0,Math.round(data.achievement||0)),majorAchievement=data.type==='good'&&achievement>=10;let baseFame;if(data.fame!=null)baseFame=data.fame;else if(data.death)baseFame=2;else if(majorAchievement)baseFame=2;else if(data.type==='good'||data.type==='bad')baseFame=Math.random()<.42?1:0;else baseFame=0;const fame=Math.round(baseFame*(1+(fx.fame||0)*.20));addFame(c,fame,growth);if(achievement){c.lifetimeAchievement+=achievement;if(majorAchievement)recordMajorAchievement(c,data.text,achievement,'interaction')}c.lastYearGrowth.push(...growth);const relationChange=data.relationChange?{...data.relationChange}:null,socialChanges=(data.socialChanges||[]).map(x=>({...x})),autoRevived=!!data.autoRevived,intrinsicDeathCheck=!!data.intrinsicDeathCheck;c.annualEvents.push({month:state.month,type:data.type,text:data.text,faith:data.faith,growth:[...growth],fameGain:fame,death:!!data.death,autoRevived,interaction:true,dungeonEvent:!!data.dungeonEvent,intrinsicDeathCheck,relationChange,socialChanges,achievement,majorAchievement});applyFaith(c,data.faith);return {id:c.id,name:c.name,type:data.type,text:data.text,faith:data.faith,growth,death:!!data.death,autoRevived,interaction:true,dungeonEvent:!!data.dungeonEvent,intrinsicDeathCheck,relationChange,socialChanges,achievement,majorAchievement}}
@@ -4851,9 +4878,9 @@ function maybeSpecialRelationshipEvent(a,b,mode,newRelation){
  if((friend||spouse||party)&&!newRelation){const lower=a.justice<=b.justice?a:b,higher=lower.id===a.id?b:a;const chance=clamp(1.2+(100-lower.justice)*.045+justiceGap*.025+(party?1.2:0)+(spouse?0.8:0),1.2,9.5);if(Math.random()*100<chance){unlinkRelation(a,b,'friend');breakBondBetween(a,b);linkRelation(a,b,'enemy');const tpl=pick(ensureDemonState().active&&Math.random()<.45?[...betrayalEvents,'魔王軍との内通を隠していたことが発覚し、信頼関係は完全に崩壊した。','魔族から得た利益のため仲間を危険な戦場へ誘導し、決定的な裏切りとなった。']:betrayalEvents),faithLow=interactionFaith(lower,-5),faithHigh=interactionFaith(higher,0);return [recordInteraction(lower,{type:'bad',text:`${higher.name}との間で、${tpl}`,faith:faithLow,growth:[],relationChange:relationChange('betrayal',higher)}),recordInteraction(higher,{type:'neutral',text:`${lower.name}に裏切られた。${tpl}`,faith:faithHigh,growth:[],relationChange:relationChange('betrayal',lower)})]}}
  if(mode!=='friend')return null;
  // 新しく友好になったその月にいきなり結婚・師弟化はしない。
- if(!newRelation&&friend&&!a.bonds.spouse&&!b.bonds.spouse&&a.age>=18&&b.age>=18&&activeYears(a)>=2&&activeYears(b)>=2&&Math.random()*100<5.5){if(setSpouse(a,b)){const tpl=pick(marriageEvents),chA=relationChange('marriage',b),chB=relationChange('marriage',a);return [recordInteraction(a,{type:'neutral',text:`${b.name}と${tpl}`,faith:interactionFaith(a,1),growth:[],relationChange:chA}),recordInteraction(b,{type:'neutral',text:`${a.name}と${tpl}`,faith:interactionFaith(b,1),growth:[],relationChange:chB})]}}
- if(!newRelation&&friend&&!party&&Math.random()*100<14){if(linkParty(a,b)){const tpl=pick(partyEvents),chA=relationChange('party',b),chB=relationChange('party',a);return [recordInteraction(a,{type:'neutral',text:`${b.name}と${tpl}`,faith:0,growth:[],relationChange:chA}),recordInteraction(b,{type:'neutral',text:`${a.name}と${tpl}`,faith:0,growth:[],relationChange:chB})]}}
- if(!newRelation&&friend&&!mp){const scoreA=a.strength+a.intelligence+activeYears(a)*5,scoreB=b.strength+b.intelligence+activeYears(b)*5,diff=Math.abs(scoreA-scoreB);if((Math.abs(a.age-b.age)>=4||diff>=18)&&Math.random()*100<11){const mentor=scoreA>=scoreB?a:b,apprentice=mentor.id===a.id?b:a;if(linkMentor(mentor,apprentice)){const tpl=pick(mentorEvents),mg=growCharacter(apprentice,fxOf(apprentice)),chM=relationChange('mentor',apprentice,{role:'mentor'}),chA=relationChange('mentor',mentor,{role:'apprentice'});return [recordInteraction(mentor,{type:'neutral',text:`${apprentice.name}に対して、${tpl}`,faith:0,growth:[],relationChange:chM}),recordInteraction(apprentice,{type:'neutral',text:`${mentor.name}から学ぶことになった。${tpl}`,faith:0,growth:mg,relationChange:chA})]}}}
+ if(!newRelation&&friend&&!a.bonds.spouse&&!b.bonds.spouse&&a.age>=18&&b.age>=18&&activeYears(a)>=2&&activeYears(b)>=2&&Math.random()*100<7.5){if(setSpouse(a,b)){const tpl=pick(marriageEvents),chA=relationChange('marriage',b),chB=relationChange('marriage',a);return [recordInteraction(a,{type:'neutral',text:`${b.name}と${tpl}`,faith:interactionFaith(a,1),growth:[],relationChange:chA}),recordInteraction(b,{type:'neutral',text:`${a.name}と${tpl}`,faith:interactionFaith(b,1),growth:[],relationChange:chB})]}}
+ if(!newRelation&&friend&&!party&&Math.random()*100<18){if(linkParty(a,b)){const tpl=pick(partyEvents),chA=relationChange('party',b),chB=relationChange('party',a);return [recordInteraction(a,{type:'neutral',text:`${b.name}と${tpl}`,faith:0,growth:[],relationChange:chA}),recordInteraction(b,{type:'neutral',text:`${a.name}と${tpl}`,faith:0,growth:[],relationChange:chB})]}}
+ if(!newRelation&&friend&&!mp){const scoreA=a.strength+a.intelligence+activeYears(a)*5,scoreB=b.strength+b.intelligence+activeYears(b)*5,diff=Math.abs(scoreA-scoreB);if((Math.abs(a.age-b.age)>=4||diff>=18)&&Math.random()*100<15){const mentor=scoreA>=scoreB?a:b,apprentice=mentor.id===a.id?b:a;if(linkMentor(mentor,apprentice)){const tpl=pick(mentorEvents),mg=growCharacter(apprentice,fxOf(apprentice)),chM=relationChange('mentor',apprentice,{role:'mentor'}),chA=relationChange('mentor',mentor,{role:'apprentice'});return [recordInteraction(mentor,{type:'neutral',text:`${apprentice.name}に対して、${tpl}`,faith:0,growth:[],relationChange:chM}),recordInteraction(apprentice,{type:'neutral',text:`${mentor.name}から学ぶことになった。${tpl}`,faith:0,growth:mg,relationChange:chA})]}}}
  // 成立済みの特殊関係は、専用イベントを優先して人生感を出す。
  if(spouse&&Math.random()<.46){const tpl=pick(ensureDemonState().active&&Math.random()<.62?demonSpouseEvents:spouseEvents),ga=growCharacter(a,fxOf(a)),gb=growCharacter(b,fxOf(b));return [recordInteraction(a,{type:'good',text:`${b.name}と${tpl}`,faith:interactionFaith(a,3),growth:ga}),recordInteraction(b,{type:'good',text:`${a.name}と${tpl}`,faith:interactionFaith(b,3),growth:gb})]}
  if(mp&&Math.random()<.52){const tpl=pick(ensureDemonState().active&&Math.random()<.62?demonMentorEvents:mentorCoopEvents),mentor=mp.mentor,apprentice=mp.apprentice,gm=growCharacter(mentor,fxOf(mentor)),ga=[...growCharacter(apprentice,fxOf(apprentice))];if(Math.random()<.45&&apprentice.strength<apprentice.caps.strength){apprentice.strength++;ga.push('強さ +1（師弟修練）')}return [recordInteraction(mentor,{type:'good',text:`${apprentice.name}と${tpl}`,faith:interactionFaith(mentor,3),growth:gm}),recordInteraction(apprentice,{type:'good',text:`${mentor.name}と${tpl}`,faith:interactionFaith(apprentice,3),growth:ga})]}
@@ -4861,16 +4888,16 @@ function maybeSpecialRelationshipEvent(a,b,mode,newRelation){
  return null
 }
 // 関係イベントは「その月の出来事」を置き換えるだけで、月間の改宗・寿命・死亡判定は免除しない。
-function simulateRelationshipMonth(living){
- const interactionChance=isDungeonMode()?clamp(58+dungeonLivingChallengers().length*2.5,62,90):clamp(38+living.length*2.0,42,74);
+function simulateRelationshipPair(living){
+ const interactionChance=isDungeonMode()?clamp(68+dungeonLivingChallengers().length*2.2,72,95):clamp(50+living.length*1.8,56,86);
  if(living.length<2||Math.random()*100>interactionChance)return [];
  const pair=chooseInteractionPair(living);if(!pair)return [];const [a,b]=pair;
  const dungeonSpecial=maybeDungeonRelationshipEvent(a,b);if(dungeonSpecial)return dungeonSpecial;
  const friend=hasRelation(a,b,'friend'),enemy=hasRelation(a,b,'enemy'),justiceGap=Math.abs(a.justice-b.justice),sameBatch=a.reincarnatedYear===b.reincarnatedYear;
  let mode=friend?'friend':enemy?'enemy':'neutral',newRelation=null;
  if(mode==='neutral'){
-   const friendChance=clamp(30-justiceGap*.14+(sameBatch?7:0)+(a.justice+b.justice-100)*.04,10,52);
-   const enemyChance=clamp(14+justiceGap*.18+(200-a.justice-b.justice)*.035,7,40);
+   const friendChance=clamp(38-justiceGap*.12+(sameBatch?9:0)+(a.justice+b.justice-100)*.045,16,65);
+   const enemyChance=clamp(18+justiceGap*.18+(200-a.justice-b.justice)*.04,10,45);
    const roll=Math.random()*100;
    if(roll<friendChance){if(linkRelation(a,b,'friend')){mode='friend';newRelation='friend'}}
    else if(roll<friendChance+enemyChance){if(linkRelation(a,b,'enemy')){mode='enemy';newRelation='enemy'}}
@@ -4937,6 +4964,24 @@ function simulateRelationshipMonth(living){
    recordInteraction(a,{type:'good',text:ta,faith:interactionFaith(a,base),growth:ga,death:false,achievement:base,relationChange:relationFor(a,b)}),
    recordInteraction(b,{type:'good',text:tb,faith:interactionFaith(b,base),growth:gb,death:false,achievement:base,relationChange:relationFor(b,a)})
  ]
+}
+
+
+// 人数が増えても交友欄が空白になりにくいよう、1か月に複数組が交流できる。
+// 同じ人物は同じ月に1回まで。
+function simulateRelationshipMonth(living){
+ if(living.length<2)return [];
+ const results=[],used=new Set();
+ const slots=clamp(Math.ceil(living.length/10),1,5);
+ for(let i=0;i<slots;i++){
+   const available=living.filter(c=>c.alive&&!c.departed&&!used.has(c.id));
+   if(available.length<2)break;
+   const pairResults=simulateRelationshipPair(available);
+   if(!pairResults?.length)continue;
+   results.push(...pairResults);
+   pairResults.forEach(r=>used.add(r.id));
+ }
+ return results
 }
 
 function otherGods(){normalizePantheon();return state.pantheon.gods.filter(g=>g.id!=='player').map(g=>g.name)}
@@ -5280,25 +5325,91 @@ function updateHUD(){
  renderPantheonMini();checkAchievements(false)
 }
 
-function allLiving(){return state.active.filter(c=>c.alive&&!c.departed).sort((a,b)=>a.reincarnatedYear-b.reincarnatedYear||a.name.localeCompare(b.name,'ja'))}
-function openRecords(mode='living',id=null){state.archiveMode=mode;state.archiveSelected=id||state.archiveSelected;$('#recordsModal').classList.remove('hidden');renderRecords()}
+function allLiving(){return state.active.filter(c=>c.alive&&!c.departed)}
+function ensureArchiveSorts(){
+ const defaults={living:'generation_asc',dead:'death_desc',departed:'departure_desc',hall:'hall_desc'};
+ state.archiveSorts={...defaults,...(state.archiveSorts||{})};
+ return state.archiveSorts
+}
+function archiveSortOptions(mode){
+ const common=`<option value="generation_asc">期生：古い順</option><option value="generation_desc">期生：新しい順</option><option value="career_desc">活動年数：長い順</option><option value="career_asc">活動年数：短い順</option><option value="stats_desc">総合ステータス：高い順</option><option value="stats_asc">総合ステータス：低い順</option>`;
+ if(mode==='dead')return `<option value="death_desc">死亡年：新しい順</option><option value="death_asc">死亡年：古い順</option>${common}`;
+ if(mode==='departed')return `<option value="departure_desc">離脱年：新しい順</option><option value="departure_asc">離脱年：古い順</option>${common}`;
+ if(mode==='hall')return `<option value="hall_desc">殿堂入り：新しい順</option><option value="hall_asc">殿堂入り：古い順</option>${common}`;
+ return common
+}
+function archiveSortBarHTML(mode){
+ ensureArchiveSorts();
+ return `<div class="archiveSortBar"><label>一覧の並び順</label><select id="archiveSortSelect">${archiveSortOptions(mode)}</select></div>`
+}
+function archiveCharSortValue(c,key){
+ if(!c)return 0;
+ if(key.startsWith('generation'))return Number(c.reincarnatedYear)||0;
+ if(key.startsWith('career'))return careerYears(c);
+ if(key.startsWith('stats'))return characterStatTotal(c);
+ if(key.startsWith('death'))return Number(c.deathYear)||0;
+ if(key.startsWith('departure'))return Number(c.departedYear)||0;
+ return 0
+}
+function sortArchiveCharacters(chars,mode){
+ ensureArchiveSorts();const key=state.archiveSorts[mode]||'generation_asc',desc=key.endsWith('_desc');
+ return chars.slice().sort((a,b)=>{
+   const av=archiveCharSortValue(a,key),bv=archiveCharSortValue(b,key),diff=desc?bv-av:av-bv;
+   return diff||((a.reincarnatedYear||0)-(b.reincarnatedYear||0))||displayName(a).localeCompare(displayName(b),'ja')
+ })
+}
+function sortHallEntries(entries){
+ ensureArchiveSorts();const key=state.archiveSorts.hall||'hall_desc',desc=key.endsWith('_desc');
+ return entries.slice().sort((a,b)=>{
+   if(key.startsWith('hall'))return (desc?(b.year||0)-(a.year||0):(a.year||0)-(b.year||0))||((b.majorCount||0)-(a.majorCount||0));
+   const ac=findCharacter(a.id),bc=findCharacter(b.id);
+   let av=0,bv=0;
+   if(key.startsWith('generation')){av=ac?.reincarnatedYear||a.year||0;bv=bc?.reincarnatedYear||b.year||0}
+   else if(key.startsWith('career')){av=ac?careerYears(ac):Math.max(1,(a.year||1)-(ac?.reincarnatedYear||a.year||1)+1);bv=bc?careerYears(bc):Math.max(1,(b.year||1)-(bc?.reincarnatedYear||b.year||1)+1)}
+   else if(key.startsWith('stats')){av=ac?characterStatTotal(ac):(a.statTotal||0);bv=bc?characterStatTotal(bc):(b.statTotal||0)}
+   const diff=desc?bv-av:av-bv;return diff||((b.year||0)-(a.year||0))
+ })
+}
+function naturalDeathMark(c){return (c?.naturalDeath||/寿命|老衰|天寿/.test(c?.deathCause||''))?'<span class="lifeEndMark">⌛ 寿命</span>':''}
+function bindArchiveSort(){
+ const s=$('#archiveSortSelect');if(!s)return;ensureArchiveSorts();s.value=state.archiveSorts[state.archiveMode]||s.options[0]?.value||'generation_asc';
+ s.onchange=()=>{state.archiveSorts[state.archiveMode]=s.value;renderRecords();saveGame()}
+}
+function openRecords(mode='living',id=null){state.archiveMode=mode;state.archiveSelected=id||state.archiveSelected;ensureArchiveSorts();$('#recordsModal').classList.remove('hidden');renderRecords()}
 function selectArchivePerson(id){const list=$('#recordsBody .archiveList'),modal=$('#recordsModal .archiveModal'),left=list?.scrollLeft||0,top=list?.scrollTop||0,modalTop=modal?.scrollTop||0;state.archiveSelected=id;renderRecords();requestAnimationFrame(()=>{const next=$('#recordsBody .archiveList'),nextModal=$('#recordsModal .archiveModal');if(next){next.scrollLeft=left;next.scrollTop=top}if(nextModal)nextModal.scrollTop=modalTop})}
 function closeRecords(){$('#recordsModal').classList.add('hidden')}
 function renderRecords(){
+ ensureArchiveSorts();
  $$('.archiveTab').forEach(b=>b.classList.toggle('active',b.dataset.archive===state.archiveMode));const body=$('#recordsBody');
- if(state.archiveMode==='departed'){const departed=(state.departed||[]).slice().sort((a,b)=>(b.departedYear||0)-(a.departedYear||0));if(!departed.length){body.innerHTML='<div class="archiveEmpty">まだ離脱した転生者はいません。</div>';return}if(!departed.some(c=>c.id===state.archiveSelected))state.archiveSelected=departed[0].id;const c=departed.find(x=>x.id===state.archiveSelected);body.innerHTML=`<div class="archiveLayout"><div class="archiveList">${departed.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}</b><span>${generationLabel(x)}・活動${careerYears(x)}年<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>${x.departedYear||'?'}年目に離脱</span><div class="charQuote">${characterQuote(x,'list',{departure:true})}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;$$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c);return}
- if(state.archiveMode==='hall'){body.innerHTML=`<div class="sub" style="margin:4px 0 10px">殿堂入りは生涯終了時に判定します。大功績65件・生涯功績2600・知名度124・総合ステータス715・累計信仰+260が100％ラインです。5条件のうち最も低い到達率を基準に判定率が決まります。</div><div class="hall" style="margin-top:12px">${state.hall.length?state.hall.slice().reverse().map(h=>{const hc=findCharacter(h.id);return `<div class="hallItem"><div class="hallTitle">${hc?`<button class="recordNameLink hallRecordLink" data-open-related="${h.id}" title="キャラ詳細を開く">${displayName(hc)}</button>`:h.name} ― ${h.title}</div><div class="hallMeta">${h.year}年目・${h.age}歳${h.majorCount!=null?` / 大功績 ${h.majorCount}件 / 生涯功績 ${h.achievement}${h.statTotal!=null?` / 総合 ${h.statTotal}`:''}${h.lifetimeFaith!=null?` / 累計信仰 ${h.lifetimeFaith>=0?'+':''}${h.lifetimeFaith}`:''}${h.completion!=null?` / 100％ライン到達度 ${h.completion}%`:''}${h.chance!=null?` / 判定率 ${h.chance}%`:''}`:''}<br>${h.text}</div></div>`}).join(''):'<div class="archiveEmpty">まだ殿堂入りした転生者はいません。</div>'}</div>`;bindRelatedCharacterLinks(body);return}
- if(state.archiveMode==='dead'){
-   const dead=[...(state.dead||[]),...(state.active||[]).filter(c=>!c.alive)].filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i).sort((a,b)=>(b.deathYear||0)-(a.deathYear||0));
-   if(!dead.length){body.innerHTML='<div class="archiveEmpty">まだ死亡した転生者はいません。</div>';return}
-   if(!dead.some(c=>c.id===state.archiveSelected))state.archiveSelected=dead[0].id;const c=dead.find(x=>x.id===state.archiveSelected);
-   body.innerHTML=`<div class="archiveLayout"><div class="archiveList">${dead.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}</b><span>${generationLabel(x)}・活動${careerYears(x)}年<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>享年 ${x.age}歳<br>${x.deathCause||'死因不明'}</span><div class="charQuote">${characterQuote(x,'list',{death:true})}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;
-   $$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c);return
+
+ if(state.archiveMode==='departed'){
+   const departed=sortArchiveCharacters((state.departed||[]).slice(),'departed');
+   if(!departed.length){body.innerHTML=archiveSortBarHTML('departed')+'<div class="archiveEmpty">まだ離脱した転生者はいません。</div>';bindArchiveSort();return}
+   if(!departed.some(c=>c.id===state.archiveSelected))state.archiveSelected=departed[0].id;const c=departed.find(x=>x.id===state.archiveSelected);
+   body.innerHTML=archiveSortBarHTML('departed')+`<div class="archiveLayout"><div class="archiveList">${departed.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}</b><span>${generationLabel(x)}・活動${careerYears(x)}年<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>${x.departedYear||'?'}年目に離脱</span><div class="charQuote">${characterQuote(x,'list',{departure:true})}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;
+   bindArchiveSort();$$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c);return
  }
- const living=allLiving();if(!living.length){body.innerHTML='<div class="archiveEmpty">現在活動中の転生者はいません。</div>';return}
+
+ if(state.archiveMode==='hall'){
+   const hall=sortHallEntries(state.hall||[]);
+   body.innerHTML=archiveSortBarHTML('hall')+`<div class="sub" style="margin:4px 0 10px">殿堂入りは生涯終了時に判定します。大功績65件・生涯功績2600・知名度124・総合ステータス715・累計信仰+260が100％ラインです。5条件のうち最も低い到達率を基準に判定率が決まります。</div><div class="hall" style="margin-top:12px">${hall.length?hall.map(h=>{const hc=findCharacter(h.id);return `<div class="hallItem"><div class="hallTitle">${hc?`<button class="recordNameLink hallRecordLink" data-open-related="${h.id}" title="キャラ詳細を開く">${displayName(hc)}</button>`:h.name} ― ${h.title}</div><div class="hallMeta">${h.year}年目・${h.age}歳${h.majorCount!=null?` / 大功績 ${h.majorCount}件 / 生涯功績 ${h.achievement}${h.statTotal!=null?` / 総合 ${h.statTotal}`:''}${h.lifetimeFaith!=null?` / 累計信仰 ${h.lifetimeFaith>=0?'+':''}${h.lifetimeFaith}`:''}${h.completion!=null?` / 100％ライン到達度 ${h.completion}%`:''}${h.chance!=null?` / 判定率 ${h.chance}%`:''}`:''}<br>${h.text}</div></div>`}).join(''):'<div class="archiveEmpty">まだ殿堂入りした転生者はいません。</div>'}</div>`;
+   bindArchiveSort();bindRelatedCharacterLinks(body);return
+ }
+
+ if(state.archiveMode==='dead'){
+   const raw=[...(state.dead||[]),...(state.active||[]).filter(c=>!c.alive)].filter((c,i,a)=>a.findIndex(x=>x.id===c.id)===i);
+   const dead=sortArchiveCharacters(raw,'dead');
+   if(!dead.length){body.innerHTML=archiveSortBarHTML('dead')+'<div class="archiveEmpty">まだ死亡した転生者はいません。</div>';bindArchiveSort();return}
+   if(!dead.some(c=>c.id===state.archiveSelected))state.archiveSelected=dead[0].id;const c=dead.find(x=>x.id===state.archiveSelected);
+   body.innerHTML=archiveSortBarHTML('dead')+`<div class="archiveLayout"><div class="archiveList">${dead.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}${naturalDeathMark(x)}</b><span>${generationLabel(x)}・活動${careerYears(x)}年<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>享年 ${x.age}歳<br>${x.deathCause||'死因不明'}</span><div class="charQuote">${characterQuote(x,'list',{death:true})}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;
+   bindArchiveSort();$$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c);return
+ }
+
+ const living=sortArchiveCharacters(allLiving(),'living');
+ if(!living.length){body.innerHTML=archiveSortBarHTML('living')+'<div class="archiveEmpty">現在活動中の転生者はいません。</div>';bindArchiveSort();return}
  if(!living.some(c=>c.id===state.archiveSelected))state.archiveSelected=living[0].id;const c=living.find(x=>x.id===state.archiveSelected);
- body.innerHTML=`<div class="archiveLayout"><div class="archiveList">${living.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}</b><span>${x.age}歳・${generationLabel(x)}・活動${activeYears(x)}年目<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>強 ${x.strength}・賢 ${x.intelligence}</span><div class="charQuote">${characterQuote(x,'list')}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;
- $$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c)
+ body.innerHTML=archiveSortBarHTML('living')+`<div class="archiveLayout"><div class="archiveList">${living.map(x=>`<button class="archivePerson ${x.id===c.id?'active':''}" data-archive-person="${x.id}"><div style="display:flex;gap:8px;align-items:center"><div class="rosterAvatar">${avatarImg(x,'avatarThumb')}</div><div><b>${displayName(x)}</b><span>${x.age}歳・${generationLabel(x)}・活動${activeYears(x)}年目<br>総合 ${characterStatTotal(x)}・知名度 ${x.fame}<br>強 ${x.strength}・賢 ${x.intelligence}</span><div class="charQuote">${characterQuote(x,'list')}</div></div></div></button>`).join('')}</div><div class="archiveDetail" id="archiveDetail"></div></div>`;
+ bindArchiveSort();$$('[data-archive-person]').forEach(b=>b.onclick=()=>selectArchivePerson(b.dataset.archivePerson));renderArchiveCharacter(c)
 }
 function renderArchiveCharacter(c){
  const histories=[...(c.history||[])];let current=null;if(c.alive&&!c.departed&&!state.yearFinalized&&(c.annualEvents||[]).length){current={year:state.year,reincarnatedYear:c.reincarnatedYear,ageStart:c.ageAtYearStart??c.age,ageEnd:c.age,faith:c.lastYearFaith,growth:[...c.lastYearGrowth],events:(c.annualEvents||[]).map(e=>({...e})),statsEnd:{devotion:c.devotion,activity:c.activity,justice:c.justice,strength:c.strength,intelligence:c.intelligence,fame:c.fame,strengthCap:c.caps.strength,intelligenceCap:c.caps.intelligence},awakenings:[...(c.annualAwakenings||[])],aliveEnd:c.alive&&!c.departed,departedEnd:!!c.departed,deathCause:c.deathCause||'',departureCause:c.departureCause||'',achievement:c.lifetimeAchievement,current:true}}
@@ -5664,7 +5775,7 @@ async function loadGame(){
      migratedLegacy=!!saved;
    }
    if(!saved)return false;
-   Object.assign(state,saved);state.gameMode=saved.gameMode==='dungeon'?'dungeon':'faith';ensureDungeonState();if(isDungeonMode())syncDungeonProgress();ensureArtifactState();ensureSummaryPickupFilters();ensureAutoRescueSettings();if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];if(!Object.prototype.hasOwnProperty.call(saved,'totalDeaths'))state.totalDeaths=visibleFinalDeathCount();ensureLifetimeStats();state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen'){prepareDemonYear();const dd=ensureDemonState();if((dd.investment||0)===0&&state.budget===state.yearStartFaith&&!(state.godArtsSpentThisYear||0)){dd.defaultAppliedYear=null;applyDemonDefaultInvestment()}}
+   Object.assign(state,saved);state.gameMode=saved.gameMode==='dungeon'?'dungeon':'faith';ensureDungeonState();if(isDungeonMode())syncDungeonProgress();ensureArtifactState();ensureSummaryPickupFilters();ensureAutoRescueSettings();if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';ensureArchiveSorts();state.departed=state.departed||[];state.dead=state.dead||[];if(!Object.prototype.hasOwnProperty.call(saved,'totalDeaths'))state.totalDeaths=visibleFinalDeathCount();ensureLifetimeStats();state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen'){prepareDemonYear();const dd=ensureDemonState();if((dd.investment||0)===0&&state.budget===state.yearStartFaith&&!(state.godArtsSpentThisYear||0)){dd.defaultAppliedYear=null;applyDemonDefaultInvestment()}}
    if(migratedLegacy){
      try{
        await writeIndexedGameSave(cloneGameState(),activeSaveSlot);
@@ -5734,6 +5845,7 @@ $$('[data-new-game-mode]').forEach(b=>b.onclick=()=>chooseNewGameMode(b.dataset.
 $('#dungeonSelectAllBtn').onclick=()=>setAllDungeonChallengers(true);
 $('#dungeonSelectNoneBtn').onclick=()=>setAllDungeonChallengers(false);
 $('#dungeonStartYearBtn').onclick=startDungeonYear;
+$('#dungeonStartYearTopBtn').onclick=startDungeonYear;
 $('#dungeonInfoClose').onclick=closeDungeonInfo;
 $('#dungeonInfoModal').onclick=e=>{if(e.target.id==='dungeonInfoModal')closeDungeonInfo()};
 $('#gachaPullBtn').onclick=startGachaReveal;
