@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v104</title>
+<title>転生の女神 v105</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -3753,7 +3753,18 @@ function switchSkillLibraryTab(tab,focusId=null){
 function openArtifactLibrary(id=null){renderSkillLibrary();$('#skillLibraryModal').classList.remove('hidden');switchSkillLibraryTab('artifacts',id)}
 function ensureSummaryPickupFilters(){const d={deathRescue:true,major:true,awakening:true,other:true};state.summaryPickupFilters=Object.assign(d,state.summaryPickupFilters||{});for(const k of Object.keys(d))state.summaryPickupFilters[k]=state.summaryPickupFilters[k]!==false;return state.summaryPickupFilters}
 function ensureAutoRescueSettings(){const markers={none:true,'★':true,'▲':true,'●':true};const src=state.autoRescue&&typeof state.autoRescue==='object'?state.autoRescue:{};state.autoRescue={enabled:!!src.enabled,markers:Object.assign(markers,src.markers||{})};for(const k of Object.keys(markers))state.autoRescue.markers[k]=state.autoRescue.markers[k]!==false;return state.autoRescue}
-function pickupCategory(e){if(e?.death||e?.rescued||e?.autoRevived||e?.artifactRevived)return 'deathRescue';if(e?.majorAchievement||e?.legend||e?.hallInduction)return 'major';if(e?.awakening)return 'awakening';return 'other'}
+function pickupCategories(e){
+ const cats=[],rel=eventRelationTypes(e);
+ if(e?.death||e?.rescued||e?.autoRevived||e?.artifactRevived)cats.push('deathRescue');
+ if(e?.majorAchievement||e?.legend||e?.hallInduction)cats.push('major');
+ if(e?.awakening)cats.push('awakening');
+ // 人間関係の成立・変化は、それが大功績や覚醒と同時発生しても「その他」にも属する。
+ // これにより大功績を非表示にしても、友好・結婚・師弟・パーティー・敵対などは消えない。
+ if(rel.length||e?.departure||e?.artifact||e?.demonEvent)cats.push('other');
+ if(!cats.length)cats.push('other');
+ return [...new Set(cats)]
+}
+function pickupCategory(e){return pickupCategories(e)[0]}
 function artifactEventKind(e){if(e?.artifactDiscovery)return '入手';if(e?.artifactUse)return /還|野へ/.test(e.text||'')?'使用・世界へ還る':'使用';if(e?.artifactTransfer)return /姿を消|世界|野へ|戻った/.test(e.text||'')?'世界へ還る':'継承・譲渡';return '神器'}
 function renderAnnualArtifactHighlights(chars){
  const rows=[],seen=new Set();
@@ -5295,9 +5306,9 @@ function socialNoticesHTML(item){const changes=[item?.relationChange,...(item?.s
 function eventTimelineHTML(events=[]){return `<div class="eventTimeline">${events.map(e=>{const rarity=eventRarity(e);return `<div class="eventLine ${e.awakening?'awakeningLine':''}"><div class="mo">${e.month||'?'}月${e.awakening?' ★':''}</div><div class="tx rarity-${rarity}">${artifactLinkedText(e.text)}${e.growth?.length?`<span class="gr">成長：${e.growth.join(' / ')}</span>`:''}${socialNoticesHTML(e)}</div><div class="fd ${e.faith>=0?'pos':'neg'}">${e.faith>=0?'+':''}${e.faith}</div></div>`}).join('')||'<div class="sub">出来事の記録はありません。</div>'}</div>`}
 function renderYearPickups(chars){
  const filters=ensureSummaryPickupFilters(),picks=[];
- for(const c of chars){const h=historyForYear(c);if(!h)continue;for(const e of (h.events||[])){const rel=eventRelationTypes(e),important=e.death||e.rescued||e.departure||e.hallInduction||e.legend||e.majorAchievement||e.awakening||e.artifact||rel.length;if(important&&filters[pickupCategory(e)])picks.push({c,e,priority:eventImportance(e)})}}
+ for(const c of chars){const h=historyForYear(c);if(!h)continue;for(const e of (h.events||[])){const rel=eventRelationTypes(e),important=e.death||e.rescued||e.departure||e.hallInduction||e.legend||e.majorAchievement||e.awakening||e.artifact||rel.length;if(important&&pickupCategories(e).some(k=>filters[k]))picks.push({c,e,priority:eventImportance(e)})}}
  picks.sort((a,b)=>b.priority-a.priority||(a.e.month||0)-(b.e.month||0));
- const bar=`<div class="pickupFilterBar"><span class="filterTitle">表示する項目</span>${[['deathRescue','死亡・救済'],['major','大功績'],['awakening','覚醒'],['other','その他']].map(([k,l])=>`<label class="pickupFilterCheck"><input type="checkbox" data-pick-filter="${k}" ${filters[k]?'checked':''}>${l}</label>`).join('')}</div>`;
+ const bar=`<div class="pickupFilterBar"><span class="filterTitle">表示する項目</span>${[['deathRescue','死亡・救済'],['major','大功績'],['awakening','覚醒'],['other','その他（関係など）']].map(([k,l])=>`<label class="pickupFilterCheck"><input type="checkbox" data-pick-filter="${k}" ${filters[k]?'checked':''}>${l}</label>`).join('')}</div>`;
  $('#yearSummary').innerHTML=bar+(picks.length?`<div class="pickupList">${picks.map(({c,e})=>{const rarity=eventRarity(e);return `<div class="pickupItem"><div class="pickupMonth">${e.month||'?'}月</div><div class="pickupWho"><button class="monthNameBtn" data-pick-char="${c.id}">${displayName(c)}</button>${e.death?' <span class="badge dead">死亡</span>':e.rescued?' <span class="badge awaken">救済</span>':e.majorAchievement||e.legend?' <span class="badge awaken">大功績</span>':e.awakening?' <span class="badge awaken">覚醒</span>':''}</div><div class="pickupText rarity-${rarity}">${artifactLinkedText(e.text)}${socialNoticesHTML(e)}</div></div>`}).join('')}</div>`:'<div class="pickupEmpty">現在のチェック条件に該当するピックアップはありません。</div>');
  $$('[data-pick-filter]').forEach(x=>x.onchange=()=>{state.summaryPickupFilters[x.dataset.pickFilter]=x.checked;saveGame();renderYearPickups(chars)});$$('[data-pick-char]').forEach(b=>b.onclick=()=>{state.summarySelected=b.dataset.pickChar;renderSummaryTabs(chars)})
 }
