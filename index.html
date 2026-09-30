@@ -2126,6 +2126,48 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 
 #partySpriteNote{display:none!important}
 
+
+
+/* v90: shareable goal-complete cards */
+.goalAchievementCard{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:20px 18px 17px;margin:4px 0 12px;text-align:center;background:rgba(13,11,29,.82);box-shadow:0 18px 48px rgba(0,0,0,.28)}
+.goalAchievementCard::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.82}
+.goalAchievementCard>*{position:relative;z-index:1}
+.goalAchievementCard.faith{border-color:rgba(244,211,118,.38);background:linear-gradient(145deg,rgba(43,31,75,.96),rgba(17,13,37,.96))}
+.goalAchievementCard.faith::before{background:radial-gradient(circle at 50% 0%,rgba(255,221,128,.20),transparent 43%),radial-gradient(circle at 92% 60%,rgba(161,125,255,.18),transparent 38%)}
+.goalAchievementCard.dungeon{border-color:rgba(116,224,219,.38);background:linear-gradient(145deg,rgba(11,42,52,.97),rgba(11,17,35,.97))}
+.goalAchievementCard.dungeon::before{background:radial-gradient(circle at 50% 0%,rgba(110,232,217,.18),transparent 46%),linear-gradient(135deg,transparent 0 46%,rgba(255,255,255,.035) 47% 49%,transparent 50% 100%)}
+.goalAchievementMode{font-size:8px;letter-spacing:.22em;font-weight:950;color:#cbbff0}
+.goalAchievementCard.dungeon .goalAchievementMode{color:#a7eee6}
+.goalAchievementTarget{font-size:clamp(28px,6vw,44px);font-weight:1000;line-height:1.06;letter-spacing:-.045em;margin-top:9px;color:#fff2b8;text-shadow:0 4px 22px rgba(255,222,125,.14)}
+.goalAchievementCard.dungeon .goalAchievementTarget{color:#c4fff5;text-shadow:0 4px 22px rgba(99,224,212,.14)}
+.goalAchievementTitle{font-size:14px;font-weight:950;margin-top:8px;color:#fff}
+.goalAchievementSub{font-size:9.5px;line-height:1.6;color:#cfc5db;margin-top:5px}
+.goalAchievementStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:15px;text-align:left}
+.goalAchievementStat{padding:9px 8px;border:1px solid rgba(255,255,255,.10);border-radius:11px;background:rgba(255,255,255,.035)}
+.goalAchievementStat span{display:block;font-size:7px;color:#aFA6bb}
+.goalAchievementStat b{display:block;font-size:12px;margin-top:3px;color:#f6f1fb;white-space:nowrap}
+.goalAchievementStat.deaths b{color:#ffb8b5}
+.goalShareBtn{min-width:118px}
+.sharedGoalModal{width:min(760px,100%);overflow:hidden;padding:0!important;background:#0b0918!important}
+.sharedGoalHero{padding:28px 26px 22px;text-align:center;position:relative;overflow:hidden}
+.sharedGoalHero.faith{background:radial-gradient(circle at 50% -10%,rgba(255,223,123,.23),transparent 47%),linear-gradient(145deg,#312254,#130e2b)}
+.sharedGoalHero.dungeon{background:radial-gradient(circle at 50% -10%,rgba(105,229,218,.22),transparent 47%),linear-gradient(145deg,#123c48,#0b1126)}
+.sharedGoalEyebrow{font-size:9px;font-weight:950;letter-spacing:.24em;color:#d5c8f5}
+.sharedGoalHero.dungeon .sharedGoalEyebrow{color:#a8eee8}
+.sharedGoalTarget{font-size:clamp(34px,7vw,58px);line-height:1.02;font-weight:1000;letter-spacing:-.055em;margin-top:10px;color:#fff0b0}
+.sharedGoalHero.dungeon .sharedGoalTarget{color:#c6fff5}
+.sharedGoalName{font-size:15px;font-weight:950;margin-top:8px}
+.sharedGoalBody{padding:18px 20px 20px}
+.sharedGoalStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sharedGoalStat{padding:11px 10px;border-radius:13px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.035)}
+.sharedGoalStat span{display:block;font-size:8px;color:#aaa1b8}.sharedGoalStat b{display:block;font-size:16px;margin-top:4px}.sharedGoalStat.deaths b{color:#ffb6b3}
+.sharedGoalMessage{margin-top:13px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);font-size:9.5px;line-height:1.65;color:#cfc6da;text-align:center}
+.sharedGoalFooter{display:flex;gap:8px;justify-content:flex-end;padding:0 20px 20px}
+@media(max-width:620px){
+ .goalAchievementCard{padding:17px 12px 14px;border-radius:17px}.goalAchievementTarget{font-size:32px}.goalAchievementStats{grid-template-columns:repeat(2,minmax(0,1fr))}.goalAchievementStat b{font-size:11px}
+ .sharedGoalHero{padding:24px 14px 18px}.sharedGoalTarget{font-size:38px}.sharedGoalBody{padding:14px}.sharedGoalStats{grid-template-columns:repeat(2,minmax(0,1fr))}.sharedGoalFooter{padding:0 14px 16px;display:grid;grid-template-columns:1fr 1fr}
+}
+
 </style>
 </head>
 <body>
@@ -2424,7 +2466,18 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   <div class="modal progressNoticeModal">
     <div id="progressNoticeBody"></div>
     <div class="modalActions" style="justify-content:flex-end">
+      <button class="btn secondary goalShareBtn hidden" id="progressNoticeShare">SNSに投稿</button>
       <button class="btn gold" id="progressNoticeNext">確認</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBack hidden" id="sharedGoalModal">
+  <div class="modal sharedGoalModal">
+    <div id="sharedGoalBody"></div>
+    <div class="sharedGoalFooter">
+      <button class="btn secondary" id="sharedGoalReshare">この結果を共有</button>
+      <button class="btn gold" id="sharedGoalPlay">転生の女神を遊ぶ</button>
     </div>
   </div>
 </div>
@@ -2591,7 +2644,7 @@ const dungeonTutorialPages=[
 
 const state={
  gameMode:'faith',
- year:1,faith:40,yearStartFaith:40,yearDelta:0,budget:40,totalSent:0,
+ year:1,faith:40,yearStartFaith:40,yearDelta:0,budget:40,totalSent:0,totalDeaths:0,
  candidates:[],active:[],dead:[],departed:[],hall:[],currentCandidateIndex:0,month:0,phase:'arrival',
  tutorialIndex:0,annualLog:[],newUnlocks:[],lastRank:'新人女神',yearFinalized:false,usedNames:[],summarySelected:'all',summarySort:'generation_asc',summaryPickupFilters:{deathRescue:true,major:true,awakening:true,other:true},autoRescue:{enabled:false,markers:{none:true,'★':true,'▲':true,'●':true}},archiveMode:'living',archiveSelected:null,pantheon:null,pantheonSelected:'player',lastPantheonReport:null,
  godArtsSpentThisYear:0,godArtTargetId:null,godArtIntroSeen:false,demonIntroIndex:0,prepareMode:'blessing',skillPresets:[[],[],[],[]],skillPresetNames:['プリセット1','プリセット2','プリセット3','プリセット4'],presetEditIndex:0,achievements:{},
@@ -2605,6 +2658,8 @@ ensureSummaryPickupFilters();
 ensureAutoRescueSettings();
 
 function isDungeonMode(){return state.gameMode==='dungeon'}
+function visibleFinalDeathCount(){return [...(state.dead||[]),...(state.active||[]).filter(c=>!c.alive&&!c.departed)].filter((c,i,a)=>c?.id&&a.findIndex(x=>x.id===c.id)===i).length}
+function ensureLifetimeStats(){state.totalDeaths=Math.max(0,Math.round(Number(state.totalDeaths)||0));return state.totalDeaths}
 function ensureDungeonState(){
  state.gameMode=state.gameMode==='dungeon'?'dungeon':'faith';
  const base={maxFloor:100,clearedFloor:0,challengers:[],lastChallengers:[],yearStartFloor:0,lastMonth:null,history:[],cleared:false,clearYear:null,clearMonth:null,victorySeen:false,justCleared:false};
@@ -2646,7 +2701,7 @@ function syncDungeonProgress(){
 function applyNewGameMode(mode){
  state.gameMode=mode==='dungeon'?'dungeon':'faith';
  const startFaith=state.gameMode==='dungeon'?100:40;
- state.faith=startFaith;state.yearStartFaith=startFaith;state.budget=startFaith;state.yearDelta=0;
+ state.faith=startFaith;state.yearStartFaith=startFaith;state.budget=startFaith;state.yearDelta=0;state.totalDeaths=0;
  state.pantheon=null;state.faithGoalResults={};state.dungeonGoalResults={};state.rankNoticeSeen={};state.progressionVersion=4;
  state.dungeon={maxFloor:100,clearedFloor:0,challengers:[],lastChallengers:[],yearStartFloor:0,lastMonth:null,history:[],cleared:false,clearYear:null,clearMonth:null,victorySeen:false,justCleared:false};
 }
@@ -2929,6 +2984,54 @@ function evaluateFaithGoals(){
  return outcomes;
 }
 
+function goalShareEsc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function goalShareHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+const GOAL_SHARE_KEY='TenseiGoddess_Result_v90';
+function encodeGoalSharePayload(payload){
+ const raw=JSON.stringify(payload),packed=goalShareHash(raw)+'|'+raw,bytes=new TextEncoder().encode(packed),key=new TextEncoder().encode(GOAL_SHARE_KEY);let bin='';
+ for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]^key[i%key.length]);
+ return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
+}
+function decodeGoalSharePayload(code){
+ try{let s=String(code||'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s),key=new TextEncoder().encode(GOAL_SHARE_KEY),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i)^key[i%key.length];const packed=new TextDecoder().decode(bytes),cut=packed.indexOf('|');if(cut<1)return null;const sig=packed.slice(0,cut),raw=packed.slice(cut+1);if(goalShareHash(raw)!==sig)return null;const p=JSON.parse(raw);return p&&p.v===1?p:null}catch(e){return null}
+}
+function goalShareTarget(goal,mode){
+ if(mode==='dungeon')return goal.floor>=100?'地下迷宮100階層 完全踏破！':`第${goal.floor}階層 踏破！`;
+ if(goal.type==='rank1')return '世界信仰シェア 1位 達成！';
+ if(goal.type==='share')return `世界信仰シェア ${goal.target}% 達成！`;
+ return `女神信仰度 ${Number(goal.target||0).toLocaleString()} 達成！`
+}
+function buildGoalSharePayload(item){
+ if(!item||!['goal','dungeonGoal'].includes(item.type))return null;
+ const dungeon=item.type==='dungeonGoal',g=item.data.goal,r=item.data.result;
+ ensureLifetimeStats();
+ return {v:1,m:dungeon?'d':'f',id:g.id||'',t:g.title||'',target:goalShareTarget(g,dungeon?'dungeon':'faith'),y:Number(r.year||state.year)||1,mo:dungeon?Number(r.month||state.month)||0:0,share:Number(playerShare().toFixed(2)),faith:Math.round(state.faith||0),sent:actualSentCount(),alive:state.active.filter(c=>c.alive&&!c.departed).length,dead:state.totalDeaths||0,hall:(state.hall||[]).length,rank:getRank(state.faith)?.name||'',floor:dungeon?Number(g.floor||ensureDungeonState().clearedFloor)||0:0}
+}
+function goalShareBaseURL(){const u=new URL(location.href);u.hash='';u.search='';return u.toString()}
+function goalShareURL(payload){return goalShareBaseURL()+'#result='+encodeGoalSharePayload(payload)}
+function goalShareText(p){
+ const when=p.m==='d'&&p.mo?`${p.y}年目 ${p.mo}月`:`${p.y}年目`;
+ return `『転生の女神』 ${p.target}\n${when} / 総転生者 ${p.sent}人 / 活動中 ${p.alive}人 / 累計死亡 ${p.dead}人 / 世界信仰シェア ${Number(p.share).toFixed(2)}%\n#転生の女神`
+}
+async function shareGoalPayload(payload){
+ if(!payload)return;
+ const url=goalShareURL(payload),text=goalShareText(payload);
+ try{if(navigator.share){await navigator.share({title:'転生の女神｜目標達成',text,url});return}}catch(e){if(e?.name==='AbortError')return}
+ const intent='https://twitter.com/intent/tweet?text='+encodeURIComponent(text)+'&url='+encodeURIComponent(url);const w=window.open(intent,'_blank','noopener,noreferrer');
+ if(!w){try{await navigator.clipboard.writeText(text+'\n'+url);toast('投稿文と共有URLをコピーしました。')}catch(e){prompt('このURLを共有してください',url)}}
+}
+function goalAchievementStatsHTML(p){return `<div class="goalAchievementStats"><div class="goalAchievementStat"><span>達成年</span><b>${p.y}年目${p.mo?` ${p.mo}月`:''}</b></div><div class="goalAchievementStat"><span>総転生者</span><b>${p.sent}人</b></div><div class="goalAchievementStat"><span>活動中</span><b>${p.alive}人</b></div><div class="goalAchievementStat deaths"><span>累計死亡</span><b>${p.dead}人</b></div><div class="goalAchievementStat"><span>世界信仰シェア</span><b>${Number(p.share).toFixed(2)}%</b></div><div class="goalAchievementStat"><span>殿堂入り</span><b>${p.hall}人</b></div><div class="goalAchievementStat"><span>女神信仰度</span><b>${Number(p.faith).toLocaleString()}</b></div><div class="goalAchievementStat"><span>${p.m==='d'?'迷宮最深到達':'現在の称号'}</span><b>${p.m==='d'?`第${p.floor}階層`:goalShareEsc(p.rank)}</b></div></div>`}
+function renderGoalAchievementCard(item){const p=buildGoalSharePayload(item);if(!p)return '';const mode=p.m==='d'?'dungeon':'faith',eyebrow=p.m==='d'?'DUNGEON OBJECTIVE COMPLETE':'FAITH OBJECTIVE COMPLETE';return `<div class="goalAchievementCard ${mode}"><div class="goalAchievementMode">${eyebrow}</div><div class="goalAchievementTarget">${goalShareEsc(p.target)}</div><div class="goalAchievementTitle">${goalShareEsc(p.t)}</div><div class="goalAchievementSub">${p.m==='d'?`${p.y}年目 ${p.mo}月、攻略隊が新たな節目へ到達した。`:`${p.y}年目、世界における女神の信仰が新たな節目へ到達した。`}</div>${goalAchievementStatsHTML(p)}</div>`}
+function renderSharedGoalPayload(p){
+ const box=$('#sharedGoalBody');if(!box||!p)return;const dungeon=p.m==='d',mode=dungeon?'dungeon':'faith';
+ box.innerHTML=`<div class="sharedGoalHero ${mode}"><div class="sharedGoalEyebrow">${dungeon?'DUNGEON OBJECTIVE COMPLETE':'FAITH OBJECTIVE COMPLETE'}</div><div class="sharedGoalTarget">${goalShareEsc(p.target)}</div><div class="sharedGoalName">${goalShareEsc(p.t)}</div></div><div class="sharedGoalBody"><div class="sharedGoalStats"><div class="sharedGoalStat"><span>達成年</span><b>${p.y}年目${p.mo?` ${p.mo}月`:''}</b></div><div class="sharedGoalStat"><span>総転生者</span><b>${p.sent}人</b></div><div class="sharedGoalStat"><span>活動中</span><b>${p.alive}人</b></div><div class="sharedGoalStat deaths"><span>累計死亡</span><b>${p.dead}人</b></div><div class="sharedGoalStat"><span>世界信仰シェア</span><b>${Number(p.share).toFixed(2)}%</b></div><div class="sharedGoalStat"><span>${dungeon?'迷宮最深到達':'殿堂入り'}</span><b>${dungeon?`第${p.floor}階層`:`${p.hall}人`}</b></div></div><div class="sharedGoalMessage">『転生の女神』の目標達成記録です。<br>${dungeon?'100階層の巨大迷宮へ挑む管理型モード。':'三柱の神々が奪い合う世界信仰の中で、自分の神格を育てる管理型モード。'}</div></div>`;
+ $('#sharedGoalModal').classList.remove('hidden');
+ $('#sharedGoalModal').dataset.payload=encodeGoalSharePayload(p)
+}
+function maybeOpenSharedGoalFromURL(){const m=location.hash.match(/^#result=([^&]+)/);if(!m)return false;const p=decodeGoalSharePayload(m[1]);if(!p)return false;renderSharedGoalPayload(p);return true}
+function closeSharedGoalAndPlay(){history.replaceState(null,'',goalShareBaseURL());$('#sharedGoalModal').classList.add('hidden')}
+function sharedGoalCurrentPayload(){return decodeGoalSharePayload($('#sharedGoalModal')?.dataset.payload||'')}
+
 function enqueueProgressNotice(item){
  if(!item)return;
  progressNoticeQueue.push(item);
@@ -2945,9 +3048,7 @@ function showNextProgressNotice(){
    btn.textContent='迷宮攻略を開始';
  }else if(item.type==='dungeonGoal'){
    const {goal:g,result:r}=item.data,next=nextDungeonGoalAfter(g),complete=g.floor>=100;
-   body.innerHTML=`<div class="progressNoticeHero"><div class="progressNoticeIcon">${complete?'🏆':'🜃'}</div><div class="step">${complete?'DUNGEON COMPLETE':'DUNGEON MILESTONE'}</div><h2>${complete?'地下迷宮100階層・完全踏破！':'迷宮目標達成！'}</h2><div class="progressNoticeLead">${g.title}</div></div>
-   <div class="goalResult success"><div class="goalResultTitle">第${g.floor}階層を踏破</div><div class="goalResultBody">${state.year}年目 ${state.month}月に到達。達成報酬として <b>信仰度 +${r.gift}</b> を獲得しました。現在 ${r.faithAfter.toLocaleString()}。</div></div>
-   ${next?`<div class="nextGoalBox"><div class="ngLabel">NEXT GOAL</div><div class="ngTitle">第${next.floor}階層を踏破する</div><div class="ngText">達成報酬：信仰度 +${next.gift}<br>現在 第${ensureDungeonState().clearedFloor}階層まで踏破。</div></div>`:`<div class="nextGoalBox"><div class="ngLabel">DUNGEON COMPLETE</div><div class="ngTitle">主要目標をすべて達成しました。</div><div class="ngText">ゲームはこのまま続行できます。神器収集・殿堂入り・実績・世界信仰シェアなどを自由に伸ばせます。</div></div>`}`;
+   body.innerHTML=`${renderGoalAchievementCard(item)}<div class="goalResult success"><div class="goalResultTitle">達成報酬</div><div class="goalResultBody">信仰度 <b>+${r.gift}</b> を獲得。現在の女神信仰度は <b>${r.faithAfter.toLocaleString()}</b>。</div></div>${next?`<div class="nextGoalBox"><div class="ngLabel">NEXT GOAL</div><div class="ngTitle">第${next.floor}階層を踏破する</div><div class="ngText">達成報酬：信仰度 +${next.gift}<br>現在 第${ensureDungeonState().clearedFloor}階層まで踏破。</div></div>`:`<div class="nextGoalBox"><div class="ngLabel">DUNGEON COMPLETE</div><div class="ngTitle">主要目標をすべて達成しました。</div><div class="ngText">ゲームはこのまま続行できます。神器収集・殿堂入り・実績・世界信仰シェアなどを自由に伸ばせます。</div></div>`}`;
    btn.textContent=next?'次の階層目標へ':'完全踏破';
  }else if(item.type==='dungeonClear'){
    body.innerHTML=`<div class="progressNoticeHero"><div class="progressNoticeIcon">🏆</div><div class="step">DUNGEON COMPLETE</div><h2>地下迷宮100階層・完全踏破！</h2><div class="progressNoticeLead">${state.year}年目 ${state.month}月。ついに最深部へ到達しました。</div></div>`;
@@ -2973,11 +3074,10 @@ function showNextProgressNotice(){
      : g.type==='share'
        ? `達成時：世界シェア ${r.share.toFixed(2)}%`
        : `達成時：信仰度 ${r.faithBeforeGift.toLocaleString()}`;
-   body.innerHTML=`<div class="progressNoticeHero"><div class="progressNoticeIcon">🏆</div><div class="step">FAITH MILESTONE</div><h2>目標達成！</h2><div class="progressNoticeLead">${g.title}</div></div>
-   <div class="goalResult success"><div class="goalResultTitle">おめでとうございます！</div><div class="goalResultBody">${goalConditionText(g)}<br>${reachedText}<br><br>達成報酬として <b>信仰度 +${r.gift}</b> を獲得しました。現在 ${r.faithAfter.toLocaleString()}。</div></div>
-   ${next?`<div class="nextGoalBox"><div class="ngLabel">NEXT GOAL</div><div class="ngTitle">${next.title}</div><div class="ngText">${goalConditionText(next)}<br>${goalProgressText(next)}</div></div>`:`<div class="nextGoalBox"><div class="ngLabel">MAIN GOALS COMPLETE</div><div class="ngTitle">主要目標をすべて達成しました。</div><div class="ngText">ここから先は、世界シェアや実績、殿堂入りを好きなだけ伸ばしていきましょう。</div></div>`}`;
+   body.innerHTML=`${renderGoalAchievementCard(item)}<div class="goalResult success"><div class="goalResultTitle">達成報酬</div><div class="goalResultBody">${reachedText}<br>信仰度 <b>+${r.gift}</b> を獲得。現在 <b>${r.faithAfter.toLocaleString()}</b>。</div></div>${next?`<div class="nextGoalBox"><div class="ngLabel">NEXT GOAL</div><div class="ngTitle">${next.title}</div><div class="ngText">${goalConditionText(next)}<br>${goalProgressText(next)}</div></div>`:`<div class="nextGoalBox"><div class="ngLabel">MAIN GOALS COMPLETE</div><div class="ngTitle">主要目標をすべて達成しました。</div><div class="ngText">ここから先は、世界シェアや実績、殿堂入りを好きなだけ伸ばしていきましょう。</div></div>`}`;
    btn.textContent=next?'次の目標へ':'確認';
  }
+ const shareBtn=$('#progressNoticeShare');if(shareBtn){const canShare=['goal','dungeonGoal'].includes(item.type);shareBtn.classList.toggle('hidden',!canShare);shareBtn.dataset.shareReady=canShare?'1':'0'}
  $('#progressNoticeModal').classList.remove('hidden');
  if(typeof playAchievementChime==='function')playAchievementChime();
 }
@@ -4805,7 +4905,7 @@ function finishYear(){
    const survivors=state.active.filter(c=>c.alive&&!c.departed);survivors.forEach(c=>maybeAwaken(c));
    const chars=currentYearCharacters();chars.forEach(c=>{c.history=c.history||[];if(!c.history.some(h=>h.year===state.year))c.history.push(makeYearHistory(c))});
    state.active.forEach(c=>{if(c.alive&&!c.departed)c.age++});
-   const newlyDead=state.active.filter(c=>!c.alive);newlyDead.forEach(c=>{if(!state.dead.some(d=>d.id===c.id))state.dead.push(c)});state.active=state.active.filter(c=>c.alive);finalizeDemonYear();finalizeDungeonYearRecord();updatePantheonYear();state.yearFinalized=true;
+   const newlyDead=state.active.filter(c=>!c.alive),newlyCountedDead=newlyDead.filter(c=>!state.dead.some(d=>d.id===c.id));ensureLifetimeStats();state.totalDeaths+=newlyCountedDead.length;newlyCountedDead.forEach(c=>state.dead.push(c));state.active=state.active.filter(c=>c.alive);finalizeDemonYear();finalizeDungeonYearRecord();updatePantheonYear();state.yearFinalized=true;
  }
  ensureProgressionState();
  const goalOutcomes=evaluateFaithGoals();
@@ -5294,7 +5394,7 @@ async function loadGame(){
      migratedLegacy=!!saved;
    }
    if(!saved)return false;
-   Object.assign(state,saved);state.gameMode=saved.gameMode==='dungeon'?'dungeon':'faith';ensureDungeonState();if(isDungeonMode())syncDungeonProgress();ensureArtifactState();ensureSummaryPickupFilters();ensureAutoRescueSettings();if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen'){prepareDemonYear();const dd=ensureDemonState();if((dd.investment||0)===0&&state.budget===state.yearStartFaith&&!(state.godArtsSpentThisYear||0)){dd.defaultAppliedYear=null;applyDemonDefaultInvestment()}}
+   Object.assign(state,saved);state.gameMode=saved.gameMode==='dungeon'?'dungeon':'faith';ensureDungeonState();if(isDungeonMode())syncDungeonProgress();ensureArtifactState();ensureSummaryPickupFilters();ensureAutoRescueSettings();if(!Object.prototype.hasOwnProperty.call(saved,'prepareMode'))state.summarySelected='all';state.usedNames=state.usedNames||[];state.summarySelected=state.summarySelected||'all';state.summarySort=state.summarySort||'generation_asc';state.prepareMode=state.prepareMode||'blessing';ensureSkillPresets();state.archiveMode=state.archiveMode||'living';state.departed=state.departed||[];state.dead=state.dead||[];if(!Object.prototype.hasOwnProperty.call(saved,'totalDeaths'))state.totalDeaths=visibleFinalDeathCount();ensureLifetimeStats();state.pantheonSelected=state.pantheonSelected||'player';ensureAchievements();if(!Object.prototype.hasOwnProperty.call(saved,'progressionVersion'))state.progressionVersion=0;ensureProgressionState();state.faith=clamp(Math.round(Number(state.faith)||0),0,WORLD_FAITH_TOTAL-2);state.yearStartFaith=clamp(Math.round(Number(state.yearStartFaith)||state.faith),0,WORLD_FAITH_TOTAL-2);state.budget=Math.max(0,Math.min(Number(state.budget)||0,state.yearStartFaith));ensureGodArtState();ensureDemonState();[...(state.candidates||[]),...(state.active||[]),...(state.dead||[]),...(state.departed||[])].forEach(c=>{normalizeCharacter(c);if(c.name&&!state.usedNames.includes(c.name))state.usedNames.push(c.name)});normalizePantheon();state.hall=Array.isArray(state.hall)?state.hall.filter((h,i,a)=>h&&h.id&&a.findIndex(x=>x.id===h.id)===i):[];for(const h of state.hall){const hc=findCharacter(h.id);if(hc){hc.hallOfFame=true;hc.hallEvaluated=true}}if(!state.demonArmy.active&&state.year>=25)activateDemonArmy('year');else if(!state.demonArmy.active&&state.phase!=='yearPlayScreen'&&state.faith>500)activateDemonArmy('faith');if(state.demonArmy.active&&state.phase!=='yearPlayScreen'){prepareDemonYear();const dd=ensureDemonState();if((dd.investment||0)===0&&state.budget===state.yearStartFaith&&!(state.godArtsSpentThisYear||0)){dd.defaultAppliedYear=null;applyDemonDefaultInvestment()}}
    if(migratedLegacy){
      try{
        await writeIndexedGameSave(cloneGameState(),activeSaveSlot);
@@ -5316,7 +5416,11 @@ $$('[data-portrait-source]').forEach(b=>b.onclick=()=>setPortraitSourceMode(b.da
 $('#portraitLibraryAddBtn').onclick=()=>$('#portraitLibraryFileInput').click();
 $('#portraitLibraryFileInput').onchange=e=>addPortraitLibraryFiles(e.target.files);
 $('#progressNoticeNext').onclick=handleProgressNoticeNext;
+$('#progressNoticeShare').onclick=()=>shareGoalPayload(buildGoalSharePayload(progressNoticeQueue[0]));
 $('#progressNoticeModal').onclick=e=>{if(e.target.id==='progressNoticeModal')closeProgressNotice()};
+$('#sharedGoalReshare').onclick=()=>shareGoalPayload(sharedGoalCurrentPayload());
+$('#sharedGoalPlay').onclick=closeSharedGoalAndPlay;
+
 $('#portraitEditorClose').onclick=closePortraitEditor;
 $('#portraitEditorModal').onclick=e=>{if(e.target.id==='portraitEditorModal')closePortraitEditor()};
 $('#portraitChooseBtn').onclick=()=>$('#portraitFileInput').click();
@@ -5402,6 +5506,7 @@ $('#tutorialNext').onclick=()=>{const pages=isDungeonMode()?dungeonTutorialPages
 
  // まず現在の3スロットを表示。旧データ移行はその後に行う。
  await renderTitleScreen();
+ maybeOpenSharedGoalFromURL();
 
  Promise.allSettled([
    startupTimeout(migrateMainSaveToSlot1(),3000,'旧セーブ移行'),
