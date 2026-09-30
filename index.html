@@ -2177,6 +2177,50 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
  .sharedGoalHero{padding:24px 14px 18px}.sharedGoalTarget{font-size:38px}.sharedGoalBody{padding:14px}.sharedGoalStats{grid-template-columns:repeat(2,minmax(0,1fr))}.sharedGoalFooter{padding:0 14px 16px;display:grid;grid-template-columns:1fr 1fr}
 }
 
+
+/* v93: preparation HUD / fixed candidate order / artifact links */
+.prepareHeaderDock{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+}
+.prepareHeaderModes{
+  grid-column:1!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  padding-bottom:0!important;border-bottom:0!important;
+}
+.prepareHeaderPoints{
+  grid-column:2!important;grid-row:1!important;
+  border-left:1px solid rgba(243,200,106,.22)!important;
+}
+.prepareHeaderNames{
+  grid-column:1/-1!important;grid-row:2!important;
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-top:5px!important;
+}
+/* Candidate names already live in the fixed HUD; remove the duplicate in-page row. */
+#prepareScreen #candidateSelectorDock{display:none!important}
+.annualArtifactChar{
+  appearance:none;border:0;background:none;color:#fff0bb;font:inherit;font-weight:900;
+  padding:0;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(243,200,106,.38);
+  text-underline-offset:3px
+}
+.annualArtifactChar:hover{color:#fff7d8;text-decoration-color:#f3c86a}
+@media(max-width:620px){
+  body.prepareHudFixed .hud{
+    position:fixed!important;top:0!important;left:0!important;right:0!important;
+    width:100%!important;z-index:220!important;
+    background:rgba(10,8,24,.985)!important;
+    box-shadow:0 10px 30px rgba(0,0,0,.34)!important;
+    overflow:visible!important;
+  }
+  body.prepareHudFixed .main{
+    padding-top:calc(var(--hud-height, 300px) + 8px)!important;
+  }
+  .prepareHeaderDock{gap:5px!important;padding:5px 6px!important}
+  .prepareHeaderModes{gap:4px!important}
+  .prepareHeaderPoints{padding:3px 5px!important}
+  .prepareHeaderNames{padding-top:4px!important}
+}
 </style>
 </head>
 <body>
@@ -2294,7 +2338,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
       <div class="preparePane" id="prepareBlessingPane">
         <div class="panel">
           <div class="sectionLabel">Blessing Setup</div><h2>転生前の加護</h2>
-          <p class="sub">候補者はトータルステータスの高い順に並びます。上の名前を押すと、画面をスクロールしていても対象をすぐ切り替えられます。</p>
+          <p class="sub">候補者は転生時点の初期トータルステータスが高い順で固定表示されます。ポイントを振って能力が変化しても、この画面での並び順は変わりません。上の名前から対象を切り替えられます。</p>
           <div class="charSheet">
             <div class="charPortrait"><div class="portraitCircle" id="portraitInitial">?</div><div class="name" id="prepName"></div><div class="markerControls" id="prepMarkerControls"></div><div class="portraitActions"><button class="portraitActionBtn" id="prepImageBtn">画像変更</button><button class="portraitActionBtn reset hidden" id="prepImageResetBtn">初期画像に戻す</button></div><div class="bio" id="prepBio"></div></div>
             <div>
@@ -3523,7 +3567,7 @@ function renderAnnualArtifactHighlights(chars){
  for(const c of chars){const h=historyForYear(c);if(!h)continue;for(const e of (h.events||[])){if(!e.artifact)continue;const key=`${e.artifactId||''}|${e.month||0}|${e.text||''}`;if(seen.has(key))continue;seen.add(key);rows.push({month:e.month||0,kind:artifactEventKind(e),c,e})}}
  ensureArtifactState();for(const e of state.artifactReturnEvents.filter(x=>x.year===state.year)){const key=`return|${e.artifactId}|${e.month||0}|${e.text}`;if(seen.has(key))continue;seen.add(key);rows.push({month:e.month||0,kind:'世界へ還る',c:e.ownerId?findCharacter(e.ownerId):null,e:{...e,artifact:true}})}
  rows.sort((a,b)=>(a.month||0)-(b.month||0));if(!rows.length)return '';
- return `<div class="annualArtifactHighlights"><div class="annualArtifactHighlightsHead"><b>◆ 今年の神器記録</b><span>${rows.length}件</span></div><div class="annualArtifactHighlightList">${rows.map(x=>`<div class="annualArtifactHighlight"><span class="when">${x.month?`${x.month}月`:'年初'}</span><span class="kind">${x.kind}</span><span class="body">${x.c?`<b>${displayName(x.c)}</b>：`:''}${artifactLinkedText(x.e.text||'')}</span></div>`).join('')}</div></div>`
+ return `<div class="annualArtifactHighlights"><div class="annualArtifactHighlightsHead"><b>◆ 今年の神器記録</b><span>${rows.length}件</span></div><div class="annualArtifactHighlightList">${rows.map(x=>`<div class="annualArtifactHighlight"><span class="when">${x.month?`${x.month}月`:'年初'}</span><span class="kind">${x.kind}</span><span class="body">${x.c?`<button class="annualArtifactChar" data-annual-artifact-char="${x.c.id}">${displayName(x.c)}</button>：`:''}${artifactLinkedText(x.e.text||'')}</span></div>`).join('')}</div></div>`
 }
 
 function skillById(id){return skillDefs.find(s=>s.id===id)}
@@ -4185,7 +4229,7 @@ function candidateRarity(c){
 function rarityStars(c){const r=candidateRarity(c);return '★'.repeat(r)}
 function rarityLabel(c){return `★${candidateRarity(c)}`}
 
-function orderedCandidates(){return state.candidates.map((c,i)=>({c,i,total:candidateTotal(c)})).sort((a,b)=>b.total-a.total||a.i-b.i)}
+function orderedCandidates(){return state.candidates.map((c,i)=>({c,i,total:candidateTotal(c._base||c)})).sort((a,b)=>b.total-a.total||a.i-b.i)}
 function displayName(c){if(!c)return '';normalizeCharacter(c);return `${c.marker||''}${c.name}`}
 function markerControlsHTML(c){normalizeCharacter(c);return `<span class="markerHint">目印</span>${['★','▲','●'].map(m=>`<button class="markerBtn ${c.marker===m?'active':''}" data-marker-char="${c.id}" data-marker-symbol="${m}" title="${m}を付ける／外す">${m}</button>`).join('')}`}
 function setCharacterMarker(id,symbol){const c=findCharacter(id);if(!c)return;c.marker=c.marker===symbol?'':symbol;if(c._base)c._base.marker=c.marker;saveGame()}
@@ -4292,7 +4336,7 @@ function renderArrival(instant=false,preserveScroll=false){
  if(instant){const el=$('#arrivalText');if(el){arrivalAnimToken++;el.classList.remove('typingArrival');el.innerHTML=message}}else animateArrivalMessage(message);
  if(preserveScroll){const restoreArrivalScroll=()=>{window.scrollTo(window.scrollX,keepY);const se=document.scrollingElement;if(se)se.scrollTop=keepY};restoreArrivalScroll();requestAnimationFrame(()=>{restoreArrivalScroll();requestAnimationFrame(restoreArrivalScroll)})}
 }
-function showOnly(id){['gachaScreen','arrivalScreen','prepareScreen','dungeonDeployScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
+function showOnly(id){['gachaScreen','arrivalScreen','prepareScreen','dungeonDeployScreen','yearPlayScreen','summaryScreen'].forEach(x=>$('#'+x).classList.toggle('hidden',x!==id));state.phase=id;document.body.classList.toggle('prepareHudFixed',id==='prepareScreen');const pd=$('#prepareHeaderDock');if(pd)pd.classList.toggle('hidden',id!=='prepareScreen');if(id==='prepareScreen')renderPrepareHeaderDock();window.scrollTo({top:0,left:0,behavior:'auto'});document.documentElement.scrollTop=0;document.body.scrollTop=0;requestAnimationFrame(()=>{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;updateHudHeightVar()});updateHUD();saveGame()}
 
 function upgradeCost(v,cap){if(v>=cap)return 999;return 1+Math.floor(v/25)+(v>=80?1:0)}
 function buyUpgrade(key,amount){
@@ -5003,7 +5047,7 @@ function renderAllYearResults(chars){
  const controls=renderAnnualArtifactHighlights(chars)+(isDungeonMode()?dungeonAnnualSummaryHTML(dungeonYearRecord(state.year)||buildDungeonYearRecord()):'')+`<div class="summarySortBar"><label for="annualSortSelect">全員一覧の並び順</label><select class="summarySortSelect" id="annualSortSelect"><option value="generation_asc" ${state.summarySort==='generation_asc'?'selected':''}>期生順（古い→新しい）</option><option value="generation_desc" ${state.summarySort==='generation_desc'?'selected':''}>期生順（新しい→古い）</option><option value="stats_desc" ${state.summarySort==='stats_desc'?'selected':''}>ステータス総合 高い順</option><option value="stats_asc" ${state.summarySort==='stats_asc'?'selected':''}>ステータス総合 低い順</option><option value="faith_desc" ${state.summarySort==='faith_desc'?'selected':''}>年間信仰 高い順</option><option value="fame_desc" ${state.summarySort==='fame_desc'?'selected':''}>知名度 高い順</option><option value="name" ${state.summarySort==='name'?'selected':''}>名前順</option></select></div>`;
  $('#yearSummary').innerHTML=controls+(ordered.map((c,i)=>{const h=historyForYear(c)||makeYearHistory(c),dead=!h.aliveEnd&&!h.departedEnd,nameClass=dead?'deadName':h.departedEnd?'departedName':'',total=annualStatTotal(h);return `<div class="summaryChar summaryReveal ${dead?'deadSummary':h.departedEnd?'departedSummary':''}" style="--reveal-i:${i}"><div class="summaryTop"><button class="summaryName summaryNameLink ${nameClass}" data-open-record="${c.id}" title="キャラ記録を開く">${displayName(c)}　${generationLabel(c)}・${historyStatus(h)}${h.dungeonChallenger?' <span class="dungeonAnnualTag">迷宮挑戦</span>':''}</button><button class="miniBtn" data-open-summary="${c.id}">詳細</button></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">総合ステータス</div><div class="v summaryTotalStat">${total}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div></div><div class="annualReview">${annualReview(c,h)}</div>${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:dead,awakening:!!h.awakenings?.length})}</div></div>`}).join('')||'<div class="sub">記録なし</div>');
  const sel=$('#annualSortSelect');if(sel)sel.onchange=()=>{state.summarySort=sel.value;saveGame();renderAllYearResults(chars)};
- $$('[data-open-summary]').forEach(b=>b.onclick=()=>{state.summarySelected=b.dataset.openSummary;renderSummaryTabs(chars)});$$('[data-open-record]').forEach(b=>b.onclick=()=>openCharacterRecord(b.dataset.openRecord));
+ $$('[data-open-summary]').forEach(b=>b.onclick=()=>{state.summarySelected=b.dataset.openSummary;renderSummaryTabs(chars)});$$('[data-open-record]').forEach(b=>b.onclick=()=>openCharacterRecord(b.dataset.openRecord));$$('[data-annual-artifact-char]').forEach(b=>b.onclick=()=>openCharacterRecord(b.dataset.annualArtifactChar));
 }
 function renderOneYearResult(c){
  if(!c)return;const h=historyForYear(c)||makeYearHistory(c);$('#yearSummary').innerHTML=`<div class="summaryChar ${h.departedEnd?'departedSummary':''}"><div class="summaryTop"><button class="summaryNameLink" data-open-record="${c.id}" title="キャラ記録を開く">${displayName(c)}　${h.ageStart}歳 / ${generationLabel(c)}</button><span class="badge ${historyBadgeClass(h)}">${historyStatus(h)}</span></div><div class="summaryGrid"><div class="sumCell"><div class="k">年間信仰</div><div class="v ${h.faith>=0?'pos':'neg'}">${h.faith>=0?'+':''}${h.faith}</div></div><div class="sumCell"><div class="k">強さ / 上限</div><div class="v">${h.statsEnd.strength} / ${h.statsEnd.strengthCap}</div></div><div class="sumCell"><div class="k">賢さ / 上限</div><div class="v">${h.statsEnd.intelligence} / ${h.statsEnd.intelligenceCap}</div></div><div class="sumCell"><div class="k">正義感</div><div class="v">${h.statsEnd.justice}</div></div><div class="sumCell"><div class="k">知名度</div><div class="v">${h.statsEnd.fame??0}</div></div><div class="sumCell"><div class="k">累計功績</div><div class="v">${h.achievement}</div></div>${isDungeonMode()?`<div class="sumCell"><div class="k">迷宮参加</div><div class="v">${h.dungeonChallenger?'挑戦':'待機'}</div></div><div class="sumCell"><div class="k">年末迷宮戦力</div><div class="v">${h.dungeonChallenger?Math.round(h.dungeonPowerEnd||0):'-'}</div></div>`:''}</div>${h.growth.length?`<div class="sub" style="margin:8px 0 0">年間成長：${h.growth.join(' / ')}</div>`:''}${eventTimelineHTML(h.events)}${historyExitText(h)?`<div class="sub" style="margin:7px 0 0;color:${h.departedEnd?'#ffd27d':'#ff9bad'}">${historyExitText(h)}</div>`:''}${awakeningHTML(h)}<div class="charQuote">${characterQuote(c,'annual',{faith:h.faith,departure:h.departedEnd,death:!h.aliveEnd&&!h.departedEnd,awakening:!!h.awakenings?.length})}</div></div>`;$$('[data-open-record]').forEach(b=>b.onclick=()=>openCharacterRecord(b.dataset.openRecord));
