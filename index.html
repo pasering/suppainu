@@ -2297,6 +2297,53 @@ body.prepareHudFixed .main{
   .mobileHudActions .bgmBtn{font-size:13px!important;line-height:1!important}
 }
 
+
+/* v96: smartphone preparation controls — floating bottom fixed dock */
+@media(max-width:620px){
+  body.prepareHudFixed #prepareHeaderDock:not(.hidden){
+    position:fixed!important;
+    top:auto!important;
+    bottom:calc(14px + env(safe-area-inset-bottom, 0px))!important;
+    left:8px!important;
+    right:8px!important;
+    width:auto!important;
+    margin:0!important;
+    padding:6px!important;
+    z-index:500!important;
+    border-radius:13px!important;
+    background:rgba(13,10,31,.985)!important;
+    box-shadow:0 12px 34px rgba(0,0,0,.48)!important;
+    backdrop-filter:blur(16px)!important;
+    -webkit-backdrop-filter:blur(16px)!important;
+  }
+
+  body.prepareHudFixed #prepareHeaderDock .prepareHeaderModes{
+    grid-column:1!important;
+    grid-row:1!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+
+  body.prepareHudFixed #prepareHeaderDock .prepareHeaderPoints{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:flex!important;
+  }
+
+  body.prepareHudFixed #prepareHeaderDock .prepareHeaderNames{
+    grid-column:1/-1!important;
+    grid-row:2!important;
+    display:flex!important;
+    min-height:34px!important;
+  }
+
+  /* leave enough room so the last controls/content can scroll above the floating dock */
+  body.prepareHudFixed .main{
+    padding-top:8px!important;
+    padding-bottom:calc(132px + env(safe-area-inset-bottom, 0px))!important;
+  }
+}
+
 </style>
 </head>
 <body>
