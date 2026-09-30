@@ -2221,6 +2221,82 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
   .prepareHeaderPoints{padding:3px 5px!important}
   .prepareHeaderNames{padding-top:4px!important}
 }
+
+/* v94: keep the COMPLETE preparation controls pinned as one unit.
+   The normal HUD may scroll away; both mode/points and candidate names remain visible. */
+body.prepareHudFixed .hud{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  width:auto!important;
+  z-index:30!important;
+}
+body.prepareHudFixed .main{
+  padding-top:8px!important;
+}
+#prepareHeaderDock{
+  position:sticky!important;
+  top:0!important;
+  z-index:260!important;
+  margin:0 16px 10px!important;
+  width:auto!important;
+  flex:none!important;
+  background:rgba(13,10,31,.985)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.42)!important;
+  backdrop-filter:blur(16px)!important;
+  -webkit-backdrop-filter:blur(16px)!important;
+}
+#prepareHeaderDock.hidden{display:none!important}
+@media(max-width:620px){
+  #prepareHeaderDock{
+    top:0!important;
+    left:auto!important;
+    right:auto!important;
+    margin:0 8px 8px!important;
+    padding:6px!important;
+    border-radius:0 0 12px 12px!important;
+  }
+  #prepareHeaderDock .prepareHeaderModes{
+    grid-column:1!important;
+    grid-row:1!important;
+    display:grid!important;
+  }
+  #prepareHeaderDock .prepareHeaderPoints{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:flex!important;
+  }
+  #prepareHeaderDock .prepareHeaderNames{
+    grid-column:1/-1!important;
+    grid-row:2!important;
+    display:flex!important;
+    min-height:34px!important;
+  }
+}
+
+
+/* v95: compact smartphone top actions into one row */
+@media(max-width:620px){
+  .mobileHudActions{
+    display:grid!important;
+    grid-template-columns:repeat(6,minmax(0,1fr))!important;
+    gap:4px!important;
+    width:100%!important;
+  }
+  .mobileHudActions .iconBtn{
+    min-width:0!important;
+    width:100%!important;
+    padding:7px 2px!important;
+    font-size:8.5px!important;
+    line-height:1.12!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    border-radius:10px!important;
+  }
+  .mobileHudActions .bgmBtn{font-size:13px!important;line-height:1!important}
+}
+
 </style>
 </head>
 <body>
@@ -2271,6 +2347,8 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
     </div>
     <div class="hudActions"><button class="iconBtn" id="recordsBtn">記録</button><button class="iconBtn" id="skillsBtn">スキル／神器</button><button class="iconBtn" id="achievementsBtn">実績</button><button class="iconBtn saveBtn" id="saveBtn">保存</button><button class="iconBtn bgmBtn" id="bgmBtn" title="BGMをONにする" aria-label="BGM OFF" aria-pressed="false">🔇</button><button class="iconBtn" id="tutorialBtn">遊び方</button></div>
     <div class="mobileHudActions" aria-label="スマートフォン用メニュー"><button class="iconBtn" id="mobileRecordsBtn">記録</button><button class="iconBtn" id="mobileSkillsBtn">スキル／神器</button><button class="iconBtn" id="mobileAchievementsBtn">実績</button><button class="iconBtn saveBtn" id="mobileSaveBtn">保存</button><button class="iconBtn bgmBtn" id="mobileBgmBtn" title="BGMをONにする" aria-label="BGM OFF" aria-pressed="false">🔇</button><button class="iconBtn" id="mobileTutorialBtn">遊び方</button></div>
+  </header>
+
     <div class="prepareHeaderDock hidden" id="prepareHeaderDock">
       <div class="prepareHeaderModes" id="prepareModeTabs">
         <button class="prepareHeaderMode active" data-prepare-mode="blessing">転生ポイント</button>
@@ -2280,7 +2358,6 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
       <div class="prepareHeaderNames" id="prepareHeaderCandidates"></div>
       <div class="prepareHeaderPoints"><span>残り</span><b id="prepareHeaderBudget">40</b><em>pt</em><small>/ <span id="prepareHeaderTotal">40</span></small></div>
     </div>
-  </header>
 
   <main class="main">
     <!-- 転生の間 -->
