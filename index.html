@@ -2148,6 +2148,7 @@ html body #prepareScreen #mobileBudgetDock{display:none!important;visibility:hid
 .goalAchievementStat b{display:block;font-size:12px;margin-top:3px;color:#f6f1fb;white-space:nowrap}
 .goalAchievementStat.deaths b{color:#ffb8b5}
 .goalShareBtn{min-width:118px}
+#sharedGoalModal{z-index:13050!important}
 .sharedGoalModal{width:min(760px,100%);overflow:hidden;padding:0!important;background:#0b0918!important}
 .sharedGoalHero{padding:28px 26px 22px;text-align:center;position:relative;overflow:hidden}
 .sharedGoalHero.faith{background:radial-gradient(circle at 50% -10%,rgba(255,223,123,.23),transparent 47%),linear-gradient(145deg,#312254,#130e2b)}
@@ -2986,14 +2987,13 @@ function evaluateFaithGoals(){
 
 function goalShareEsc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
 function goalShareHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
-const GOAL_SHARE_KEY='TenseiGoddess_Result_v90';
-function encodeGoalSharePayload(payload){
- const raw=JSON.stringify(payload),packed=goalShareHash(raw)+'|'+raw,bytes=new TextEncoder().encode(packed),key=new TextEncoder().encode(GOAL_SHARE_KEY);let bin='';
- for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]^key[i%key.length]);
- return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
+const GOAL_SHARE_KEY='TG91';
+function goalShareGoalCode(id){
+ const all=[...faithGoalDefs,...dungeonGoalDefs],i=all.findIndex(g=>g.id===id);return i<0?0:i
 }
-function decodeGoalSharePayload(code){
- try{let s=String(code||'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const bin=atob(s),key=new TextEncoder().encode(GOAL_SHARE_KEY),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i)^key[i%key.length];const packed=new TextDecoder().decode(bytes),cut=packed.indexOf('|');if(cut<1)return null;const sig=packed.slice(0,cut),raw=packed.slice(cut+1);if(goalShareHash(raw)!==sig)return null;const p=JSON.parse(raw);return p&&p.v===1?p:null}catch(e){return null}
+function goalShareGoalFromCode(code){
+ const all=[...faithGoalDefs,...dungeonGoalDefs],i=clamp(Number(code)||0,0,all.length-1),g=all[i]||faithGoalDefs[0],dungeon=i>=faithGoalDefs.length;
+ return {g,dungeon}
 }
 function goalShareTarget(goal,mode){
  if(mode==='dungeon')return goal.floor>=100?'地下迷宮100階層 完全踏破！':`第${goal.floor}階層 踏破！`;
@@ -3001,14 +3001,43 @@ function goalShareTarget(goal,mode){
  if(goal.type==='share')return `世界信仰シェア ${goal.target}% 達成！`;
  return `女神信仰度 ${Number(goal.target||0).toLocaleString()} 達成！`
 }
+function encodeGoalSharePayload(payload){
+ if(!payload)return '';
+ const fields=[
+   2,
+   goalShareGoalCode(payload.id),
+   Math.max(1,Math.round(Number(payload.y)||1)),
+   Math.max(0,Math.round(Number(payload.mo)||0)),
+   Math.max(0,Math.round((Number(payload.share)||0)*100)),
+   Math.max(0,Math.round(Number(payload.sent)||0)),
+   Math.max(0,Math.round(Number(payload.alive)||0)),
+   Math.max(0,Math.round(Number(payload.dead)||0)),
+   Math.max(0,Math.round(Number(payload.hall)||0)),
+   Math.max(0,Math.round(Number(payload.floor)||0))
+ ];
+ const raw=fields.map(n=>Number(n).toString(36)).join('.'),packed=goalShareHash(raw).slice(0,6)+'|'+raw,bytes=new TextEncoder().encode(packed),key=new TextEncoder().encode(GOAL_SHARE_KEY);let bin='';
+ for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]^key[i%key.length]);
+ return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
+}
+function decodeGoalSharePayload(code){
+ try{
+   let s=String(code||'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';
+   const bin=atob(s),key=new TextEncoder().encode(GOAL_SHARE_KEY),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i)^key[i%key.length];
+   const packed=new TextDecoder().decode(bytes),cut=packed.indexOf('|');if(cut<1)return null;
+   const sig=packed.slice(0,cut),raw=packed.slice(cut+1);if(goalShareHash(raw).slice(0,6)!==sig)return null;
+   const a=raw.split('.').map(x=>parseInt(x,36));if(a.length<10||a[0]!==2||a.some(Number.isNaN))return null;
+   const {g,dungeon}=goalShareGoalFromCode(a[1]),mode=dungeon?'dungeon':'faith';
+   return {v:2,m:dungeon?'d':'f',id:g.id,t:g.title,target:goalShareTarget(g,mode),y:a[2],mo:a[3],share:a[4]/100,sent:a[5],alive:a[6],dead:a[7],hall:a[8],floor:a[9],faith:0,rank:''}
+ }catch(e){return null}
+}
 function buildGoalSharePayload(item){
  if(!item||!['goal','dungeonGoal'].includes(item.type))return null;
  const dungeon=item.type==='dungeonGoal',g=item.data.goal,r=item.data.result;
  ensureLifetimeStats();
- return {v:1,m:dungeon?'d':'f',id:g.id||'',t:g.title||'',target:goalShareTarget(g,dungeon?'dungeon':'faith'),y:Number(r.year||state.year)||1,mo:dungeon?Number(r.month||state.month)||0:0,share:Number(playerShare().toFixed(2)),faith:Math.round(state.faith||0),sent:actualSentCount(),alive:state.active.filter(c=>c.alive&&!c.departed).length,dead:state.totalDeaths||0,hall:(state.hall||[]).length,rank:getRank(state.faith)?.name||'',floor:dungeon?Number(g.floor||ensureDungeonState().clearedFloor)||0:0}
+ return {v:2,m:dungeon?'d':'f',id:g.id||'',t:g.title||'',target:goalShareTarget(g,dungeon?'dungeon':'faith'),y:Number(r.year||state.year)||1,mo:dungeon?Number(r.month||state.month)||0:0,share:Number(playerShare().toFixed(2)),faith:Math.round(state.faith||0),sent:actualSentCount(),alive:state.active.filter(c=>c.alive&&!c.departed).length,dead:state.totalDeaths||0,hall:(state.hall||[]).length,rank:getRank(state.faith)?.name||'',floor:dungeon?Number(g.floor||ensureDungeonState().clearedFloor)||0:0}
 }
 function goalShareBaseURL(){const u=new URL(location.href);u.hash='';u.search='';return u.toString()}
-function goalShareURL(payload){return goalShareBaseURL()+'#result='+encodeGoalSharePayload(payload)}
+function goalShareURL(payload){return goalShareBaseURL()+'?r='+encodeURIComponent(encodeGoalSharePayload(payload))}
 function goalShareText(p){
  const when=p.m==='d'&&p.mo?`${p.y}年目 ${p.mo}月`:`${p.y}年目`;
  return `『転生の女神』 ${p.target}\n${when} / 総転生者 ${p.sent}人 / 活動中 ${p.alive}人 / 累計死亡 ${p.dead}人 / 世界信仰シェア ${Number(p.share).toFixed(2)}%\n#転生の女神`
@@ -3028,7 +3057,7 @@ function renderSharedGoalPayload(p){
  $('#sharedGoalModal').classList.remove('hidden');
  $('#sharedGoalModal').dataset.payload=encodeGoalSharePayload(p)
 }
-function maybeOpenSharedGoalFromURL(){const m=location.hash.match(/^#result=([^&]+)/);if(!m)return false;const p=decodeGoalSharePayload(m[1]);if(!p)return false;renderSharedGoalPayload(p);return true}
+function maybeOpenSharedGoalFromURL(){const u=new URL(location.href),code=u.searchParams.get('r')||(location.hash.match(/^#result=([^&]+)/)?.[1]||'');if(!code)return false;const p=decodeGoalSharePayload(code);if(!p)return false;renderSharedGoalPayload(p);return true}
 function closeSharedGoalAndPlay(){history.replaceState(null,'',goalShareBaseURL());$('#sharedGoalModal').classList.add('hidden')}
 function sharedGoalCurrentPayload(){return decodeGoalSharePayload($('#sharedGoalModal')?.dataset.payload||'')}
 
