@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>転生の女神 v107</title>
+<title>転生の女神 v108</title>
 <style>
 :root{
   --bg0:#100d22;--bg1:#1a1635;--bg2:#28204b;
@@ -2368,6 +2368,47 @@ body.prepareHudFixed .main{
   .dungeonDeployTopStart .btn{width:100%;min-width:0}
   .archiveSortBar{align-items:stretch}
   .archiveSortBar select{min-width:0;flex:1}
+}
+
+
+/* v108: stabilize the smartphone preparation dock while the page scrolls.
+   Mobile Safari can visually drag fixed elements that use backdrop-filter during
+   viewport/compositor updates. Keep the dock on its own opaque compositing layer. */
+@media(max-width:620px){
+  body.prepareHudFixed #prepareHeaderDock:not(.hidden){
+    position:fixed!important;
+    top:auto!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:calc(18px + env(safe-area-inset-bottom, 0px))!important;
+    margin:0!important;
+
+    /* Avoid Safari's fixed + backdrop-filter scroll wobble. */
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    background:#110d28!important;
+
+    transform:translate3d(0,0,0)!important;
+    -webkit-transform:translate3d(0,0,0)!important;
+    backface-visibility:hidden!important;
+    -webkit-backface-visibility:hidden!important;
+    will-change:transform!important;
+    contain:layout paint!important;
+    isolation:isolate!important;
+    transition:none!important;
+    animation:none!important;
+  }
+
+  /* The horizontal name strip may scroll, but must not shift the whole fixed dock. */
+  body.prepareHudFixed #prepareHeaderDock .prepareHeaderNames{
+    overscroll-behavior-x:contain!important;
+    touch-action:pan-x!important;
+  }
+
+  /* Leave a little more breathing room below the page content as well. */
+  body.prepareHudFixed .main{
+    padding-bottom:calc(140px + env(safe-area-inset-bottom, 0px))!important;
+  }
 }
 
 </style>
