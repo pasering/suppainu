@@ -523,20 +523,90 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 .roll-wait-text{min-width:min(360px,calc(100% - 28px));text-align:center;border:1px solid rgba(255,255,255,.34);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 @media(max-width:600px){.roll-wait-text{min-width:min(300px,calc(100% - 24px));font-size:12px!important}}
 
+
+
+/* === v0.24 lobby / top-player portraits / mobile bottom drawer === */
+/* Lobby: keep the full-body character presentation, but at roughly YOUR TURN-card scale. */
+#lobbyPlayers{gap:10px!important}
+.lobby-entry-card{min-height:278px!important;border-radius:18px!important}
+.lobby-character-stage{height:138px!important;margin:2px 12px 0!important;border-radius:13px!important;overflow:visible!important;background:radial-gradient(circle at 50% 88%,rgba(242,211,151,.25),rgba(255,255,255,0) 60%)!important}
+.lobby-character-stage:after{left:22%!important;right:22%!important;bottom:3px!important;height:12px!important;opacity:.65!important}
+.lobby-character-full{width:82%!important;height:136px!important;max-width:170px!important;object-fit:contain!important;object-position:center bottom!important;filter:drop-shadow(0 6px 6px rgba(62,42,27,.14))!important}
+.lobby-entry-info{padding:5px 10px 10px!important}
+.lobby-entry-money{margin-bottom:5px!important}
+.lobby-empty-slot{min-height:278px!important}
+
+/* Game top player list: no decorative portrait frame; character fills the card height. */
+#gamePlayers .player-card{padding:7px 9px!important;min-height:112px!important;overflow:hidden!important}
+#gamePlayers .player-card-top{grid-template-columns:72px minmax(0,1fr)!important;gap:8px!important;align-items:stretch!important;min-height:96px!important}
+#gamePlayers .player-avatar-thumb{width:72px!important;height:auto!important;min-height:96px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;position:relative!important;align-self:stretch!important}
+#gamePlayers .player-avatar-thumb .thumb-face{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important;filter:drop-shadow(0 5px 4px rgba(0,0,0,.16))!important;z-index:1!important}
+#gamePlayers .player-avatar-thumb .thumb-frame{display:none!important}
+#gamePlayers .player-card-main{align-self:center!important}
+
+@media(max-width:1100px){
+ .lobby-entry-card,.lobby-empty-slot{min-height:266px!important}
+ .lobby-character-stage{height:128px!important}
+ .lobby-character-full{height:126px!important;max-width:156px!important}
+}
+
+@media(max-width:900px){
+ #gamePlayers .player-card{min-height:96px!important;padding:6px 7px!important}
+ #gamePlayers .player-card-top{grid-template-columns:58px minmax(0,1fr)!important;min-height:82px!important;gap:6px!important}
+ #gamePlayers .player-avatar-thumb{width:58px!important;min-height:82px!important}
+
+ /* Phone/tablet YOUR TURN becomes a full-width bottom drawer. */
+ .portrait-panel{position:fixed!important;left:6px!important;right:6px!important;bottom:0!important;top:auto!important;width:auto!important;z-index:72!important;pointer-events:auto!important;transform:translateY(0)!important;transition:transform .30s cubic-bezier(.2,.78,.2,1)!important}
+ .portrait-panel .portrait-frame{display:grid!important;grid-template-columns:104px minmax(0,1fr)!important;grid-template-rows:auto!important;gap:8px!important;align-items:center!important;min-height:132px!important;padding:9px 12px 8px!important;border-radius:18px 18px 0 0!important;overflow:hidden!important;background:rgba(255,252,246,.96)!important;box-shadow:0 -7px 24px rgba(46,32,20,.16)!important}
+ .portrait-panel .portrait-imgwrap{grid-column:1!important;grid-row:1!important;min-height:112px!important;height:112px!important;padding:0!important;align-items:flex-end!important}
+ .portrait-panel .portrait-img{max-width:100%!important;max-height:112px!important;height:112px!important;object-fit:contain!important;object-position:center bottom!important}
+ .portrait-panel .portrait-info{grid-column:2!important;grid-row:1!important;padding:7px 8px!important;background:rgba(255,255,255,.72)!important;border-radius:13px!important}
+ .portrait-panel .portrait-name{font-size:18px!important}
+ .portrait-panel .portrait-role{font-size:10px!important;margin-top:2px!important}
+ .portrait-panel .portrait-stats{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;margin-top:6px!important}
+ .portrait-panel .portrait-stat{font-size:9px!important;padding:4px 3px!important;text-align:center!important;white-space:nowrap!important}
+ .portrait-panel .portrait-stat span{display:none!important}
+ .portrait-panel .portrait-sub{font-size:9px!important;line-height:1.35!important;margin-top:5px!important}
+ .portrait-panel .portrait-badge{right:10px!important;top:8px!important;font-size:9px!important;padding:4px 8px!important}
+ .portrait-toggle{position:absolute!important;left:50%!important;right:auto!important;top:-27px!important;bottom:auto!important;transform:translateX(-50%)!important;width:84px!important;height:28px!important;border-radius:12px 12px 0 0!important;border:1px solid rgba(164,125,76,.30)!important;border-bottom:0!important;background:rgba(255,250,241,.97)!important;box-shadow:0 -4px 10px rgba(0,0,0,.12)!important;font-size:16px!important;line-height:1!important;color:#765b40!important;z-index:999!important}
+ .portrait-panel.collapsed{transform:translateY(calc(100% - 4px))!important}
+ .portrait-panel.collapsed .portrait-toggle{left:50%!important;right:auto!important;top:-27px!important;transform:translateX(-50%)!important}
+}
+
+@media(max-width:600px){
+ .lobby-entry-card,.lobby-empty-slot{min-height:228px!important}
+ .lobby-character-stage{height:104px!important;margin:0 7px!important}
+ .lobby-character-full{height:102px!important;max-width:126px!important;width:78%!important}
+ .lobby-entry-info{padding:4px 6px 7px!important}
+ #gamePlayers .player-card{min-height:88px!important}
+ #gamePlayers .player-card-top{grid-template-columns:50px minmax(0,1fr)!important;min-height:74px!important}
+ #gamePlayers .player-avatar-thumb{width:50px!important;min-height:74px!important}
+ .portrait-panel{left:4px!important;right:4px!important}
+ .portrait-panel .portrait-frame{grid-template-columns:88px minmax(0,1fr)!important;min-height:118px!important;padding:7px 8px 6px!important;gap:6px!important}
+ .portrait-panel .portrait-imgwrap{height:100px!important;min-height:100px!important}
+ .portrait-panel .portrait-img{height:100px!important;max-height:100px!important}
+ .portrait-panel .portrait-name{font-size:16px!important}
+ .portrait-panel .portrait-stats{gap:3px!important}
+ .portrait-panel .portrait-stat{font-size:8px!important;padding:3px 2px!important}
+ .portrait-panel .portrait-sub{font-size:8px!important}
+ .portrait-toggle{width:76px!important;height:26px!important;top:-25px!important}
+ .portrait-panel.collapsed .portrait-toggle{top:-25px!important}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.23 操作・エントリーUI修正版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.24 ロビー・手番UI調整版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.23</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.24</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
