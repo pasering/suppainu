@@ -350,19 +350,45 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 .route-shadow{stroke-width:10!important;opacity:.80!important}
 .route-main{stroke-width:6!important;opacity:.98!important}
 
+
+
+/* v0.19 mobile-only board spacing */
+@media(max-width:900px){
+  .board-panel{aspect-ratio:16/11!important;border-radius:18px!important}
+  .map-node{width:22px!important;height:22px!important;border-width:1.5px!important;box-shadow:0 0 0 2px rgba(255,255,255,.95),0 0 0 4px var(--nodeColor),0 4px 8px rgba(0,0,0,.22)!important}
+  .map-node.current{box-shadow:0 0 0 3px #fff,0 0 0 6px #ffd84c,0 0 0 9px rgba(255,216,76,.26),0 6px 13px rgba(0,0,0,.30)!important}
+  .node-icon{width:12px!important;height:12px!important}
+  .map-token{width:23px!important;height:23px!important;transform:translateY(-18px)!important;margin-left:-7px!important}
+  .map-token.active{animation:tokenHopMobile .7s ease-in-out infinite alternate!important}
+  .route-shadow{stroke-width:6!important;opacity:.70!important}
+  .route-main{stroke-width:3.4!important;opacity:.95!important}
+  .portrait-panel{width:126px!important}
+}
+@keyframes tokenHopMobile{to{transform:translateY(-23px) scale(1.09)}}
+@media(max-width:600px){
+  .board-panel{aspect-ratio:4/3!important}
+  .map-node{width:19px!important;height:19px!important;box-shadow:0 0 0 2px rgba(255,255,255,.95),0 0 0 3px var(--nodeColor),0 3px 7px rgba(0,0,0,.20)!important}
+  .map-node.current{box-shadow:0 0 0 2px #fff,0 0 0 5px #ffd84c,0 0 0 8px rgba(255,216,76,.24),0 5px 11px rgba(0,0,0,.27)!important}
+  .node-icon{width:10px!important;height:10px!important}
+  .map-token{width:20px!important;height:20px!important;transform:translateY(-15px)!important;margin-left:-6px!important}
+  .route-shadow{stroke-width:5!important}
+  .route-main{stroke-width:2.8!important}
+  .portrait-panel{width:116px!important}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div style="display:flex;gap:7px;align-items:center"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><span class="pill">v0.18 マップ調整版</span></div>
+    <div style="display:flex;gap:7px;align-items:center"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><span class="pill">v0.19 スマホ盤面調整版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストのPCがゲーム進行を管理します。ゲーム中はホストのタブを閉じないでください。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.18</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.19</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">

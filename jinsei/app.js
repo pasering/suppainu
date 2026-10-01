@@ -188,7 +188,7 @@ function focusBoardCamera(skipAnchorReset=false){
  const moverId=state.fx?.move?.playerId; const p=(moverId?state.players.find(x=>x.id===moverId):null)||currentPlayer(); if(!p)return;
  const pts=routePoints(stageDef().id,b.length),pt=pts[p.pos]||pts[0];
  const rect=els.boardPanel.getBoundingClientRect(); if(!rect.width||!rect.height)return;
- const isSmall=window.innerWidth<900; const scale=isSmall?(state.fx?.move?1.62:1.36):(state.fx?.move?2.34:2.08);
+ const isSmall=window.innerWidth<900; const verySmall=window.innerWidth<600; const scale=isSmall?(verySmall?(state.fx?.move?1.22:1.08):(state.fx?.move?1.34:1.14)):(state.fx?.move?2.34:2.08);
  const worldW=rect.width,worldH=rect.height;
  const anchorKey=`${state.stageIndex}:${state.turnIndex}:${p.id}:${state.fx?.move?1:0}`;
  if(!skipAnchorReset&&boardPan.anchorKey!==anchorKey) resetBoardPan(anchorKey);
