@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.22</title>
+<title>みんなの人生ロード Deluxe v0.23</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -482,20 +482,61 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 }
 @media(max-width:600px){.turn-banner{width:330px!important;height:198px!important;padding:34px 43px 20px!important}.turn-banner:before{width:100%!important;height:100%!important}.turn-banner .ava{width:102px!important;height:102px!important;flex-basis:102px!important}.turn-banner .tx{font-size:18px!important}}
 
+
+
+/* === v0.23 entry / roll confirmation / navigation === */
+.game-head{grid-template-columns:minmax(0,1fr) minmax(260px,.9fr) auto!important;align-items:center!important}
+.game-nav-actions{display:flex;justify-content:flex-end;align-items:center;gap:7px;flex-wrap:wrap}
+.btn.danger{background:#fff1ef!important;color:#a54a43!important;border:1px solid rgba(181,81,72,.25)!important}
+.btn.danger:hover{background:#ffe7e3!important}
+
+/* Lobby cards use the full character art as the main visual instead of only a tiny icon. */
+#lobbyPlayers{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important}
+.lobby-entry-card{position:relative;min-height:360px;border:2px solid #ead19a;border-radius:20px;background:linear-gradient(180deg,#fffdf9 0%,#fff7ec 100%);box-shadow:0 7px 0 rgba(210,171,85,.14),0 14px 24px rgba(72,52,26,.08);overflow:hidden;display:flex;flex-direction:column}
+.lobby-entry-card.mine{box-shadow:0 0 0 4px rgba(255,214,80,.64),0 8px 0 rgba(215,174,63,.25),0 15px 25px rgba(72,52,26,.10)}
+.lobby-entry-top{display:flex;align-items:center;gap:8px;padding:10px 11px 0;position:relative;z-index:2}
+.lobby-mini-avatar{width:46px;height:46px;flex:0 0 46px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid #fff;box-shadow:0 0 0 2px var(--pc,#d7bc83),0 3px 8px rgba(0,0,0,.12)}
+.lobby-mini-avatar img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.lobby-entry-heading{min-width:0;flex:1}.lobby-entry-name{font-size:17px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lobby-entry-kind{font-size:10px;color:#7a6e63;margin-top:2px}
+.lobby-character-stage{position:relative;height:214px;margin:1px 8px 0;border-radius:15px;background:radial-gradient(circle at 50% 82%,rgba(242,211,151,.34),rgba(255,255,255,0) 57%);display:grid;place-items:end center;overflow:hidden}
+.lobby-character-stage:after{content:"";position:absolute;left:12%;right:12%;bottom:9px;height:18px;border-radius:50%;background:rgba(107,76,47,.10);filter:blur(6px)}
+.lobby-character-full{position:relative;z-index:1;width:95%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 8px 8px rgba(62,42,27,.14))}
+.lobby-entry-info{padding:7px 11px 11px;margin-top:auto;text-align:center}.lobby-entry-money{font-size:11px;color:#76695e;margin-bottom:7px}
+.lobby-entry-card .lobby-avatar-edit{margin:0!important;display:grid!important;grid-template-columns:1fr!important;gap:4px!important}.lobby-entry-card .avatar-current-label{font-size:10px;color:#8c7b6c}
+.lobby-entry-card .cpu-remove{margin-top:6px!important}
+.lobby-empty-slot{min-height:360px;border:2px dashed rgba(189,160,107,.36);border-radius:20px;background:rgba(255,252,246,.46);display:grid;place-items:center;text-align:center;color:#a49380;font-weight:700}
+
+/* When a roll is waiting for confirmation the board must never begin a drag gesture. */
+.roll-wait-layer{touch-action:manipulation!important;pointer-events:auto}
+.roll-wait-layer.mine{cursor:pointer}
+.roll-wait-text{pointer-events:none}
+
+@media(max-width:1100px){#lobbyPlayers{grid-template-columns:repeat(2,minmax(0,1fr))!important}.lobby-entry-card,.lobby-empty-slot{min-height:330px}.lobby-character-stage{height:190px}}
+@media(max-width:900px){.game-head{grid-template-columns:1fr auto!important}.game-head>div:nth-child(2){grid-column:1/-1}.game-nav-actions{grid-column:2;grid-row:1;justify-content:flex-end}.game-nav-actions .btn{min-height:36px;padding:7px 9px;font-size:11px}}
+@media(max-width:600px){#lobbyPlayers{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.lobby-entry-card,.lobby-empty-slot{min-height:286px;border-radius:16px}.lobby-entry-top{padding:8px 8px 0;gap:6px}.lobby-mini-avatar{width:36px;height:36px;flex-basis:36px}.lobby-entry-name{font-size:14px}.lobby-character-stage{height:160px;margin:0 5px}.lobby-entry-info{padding:5px 7px 8px}.avatar-change-btn{padding:7px 6px!important;font-size:11px}.lobby-entry-money{font-size:9px}.game-nav-actions{gap:4px}.game-nav-actions .btn{font-size:10px;padding:6px 7px}.game-head{padding:9px!important}}
+
+/* v0.23: explicit confirmation control.  It sits above the board and does not depend on board drag/click bubbling. */
+.roll-wait-layer{z-index:120!important;outline:none!important;touch-action:manipulation!important;-webkit-tap-highlight-color:transparent!important;user-select:none!important;-webkit-user-select:none!important}
+.roll-wait-layer.mine{pointer-events:auto!important}
+.roll-wait-layer:not(.mine){pointer-events:none!important}
+.roll-wait-layer.sending .roll-wait-text{opacity:.72;animation:none!important}
+.roll-wait-text{min-width:min(360px,calc(100% - 28px));text-align:center;border:1px solid rgba(255,255,255,.34);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+@media(max-width:600px){.roll-wait-text{min-width:min(300px,calc(100% - 24px));font-size:12px!important}}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.22 復帰・手番UI修正版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.23 操作・エントリーUI修正版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.22</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.23</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
@@ -514,6 +555,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
     <div class="card game-head">
       <div><div class="era-title"><div class="era-icon" id="eraIcon">🍼</div><div><div id="eraName">幼少期</div><div class="sub" id="eraFlavor">最初の一歩</div></div></div></div>
       <div><div class="roundline"><strong id="roundText">第1/3ラウンド</strong><div class="round-dots" id="roundDots"></div></div><div class="sub" id="fieldInfo"></div></div>
+      <div class="game-nav-actions"><button class="btn small" id="gameHomeBtn" type="button">⌂ トップへ</button><button class="btn small danger" id="leaveGameBtn" type="button">ゲームから抜ける</button></div>
     </div>
     <div class="players" id="gamePlayers"></div>
     <div class="game-layout">
@@ -530,7 +572,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
           </div>
         </div>
       </aside>
-      <div class="board-panel" id="boardPanel" data-watermark="🍼"><div class="board-scroll"><div class="board-grid" id="board"></div></div><div id="boardRollPop" class="board-roll-pop hidden">?</div><div id="rollWaitLayer" class="roll-wait-layer hidden"><div class="roll-wait-text" id="rollWaitText">クリック / タップで進む</div></div></div>
+      <div class="board-panel" id="boardPanel" data-watermark="🍼"><div class="board-scroll"><div class="board-grid" id="board"></div></div><div id="boardRollPop" class="board-roll-pop hidden">?</div><div id="rollWaitLayer" class="roll-wait-layer hidden" role="button" tabindex="0" aria-label="コマを進める"><div class="roll-wait-text" id="rollWaitText">クリック / タップでコマを進める</div></div></div>
       <aside class="side">
         <div class="card turnbox"><div class="sub">現在の手番</div><div class="turnname" id="turnName">-</div><div class="sub" id="turnStage">-</div><div class="roulette-shell"><div class="roulette-pointer"></div><div class="roulette-wheel" id="rouletteWheel"></div><div class="roulette-value" id="rollDisplay">?</div></div><button class="btn primary" id="rollBtn">ルーレットを回す</button><div class="note" id="turnHint" style="margin-top:7px"></div></div>
         <div class="card"><div class="section-title">カード</div><div class="inventory" id="cardArea"></div></div>
