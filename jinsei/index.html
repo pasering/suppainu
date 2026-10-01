@@ -376,19 +376,66 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
   .portrait-panel{width:116px!important}
 }
 
+
+/* === v0.20 interaction / audio / message polish === */
+.sound-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.volume-control{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:12px;background:rgba(255,255,255,.75);border:1px solid rgba(104,82,58,.14);font-size:11px;color:#65584d;font-weight:700}
+.volume-control input{width:112px;padding:0;border:0;background:transparent;accent-color:#d88a52}
+#volumeValue{width:38px;text-align:right;font-variant-numeric:tabular-nums}
+
+.portrait-panel{transition:transform .32s cubic-bezier(.2,.75,.22,1),opacity .2s ease!important;overflow:visible!important}
+.portrait-toggle{position:absolute;right:-31px;top:50%;transform:translateY(-50%);width:34px;height:58px;border:0;border-radius:0 12px 12px 0;background:rgba(255,250,241,.95);color:#7b6045;font-size:19px;font-weight:900;box-shadow:5px 3px 14px rgba(0,0,0,.16);cursor:pointer;pointer-events:auto;z-index:30;border:1px solid rgba(164,125,76,.28);border-left:0}
+.portrait-panel.collapsed{transform:translateX(calc(-100% - 2px))!important}
+.portrait-panel.collapsed .portrait-toggle{right:-34px}
+.portrait-panel.collapsed .portrait-toggle{font-size:0}
+.portrait-panel.collapsed .portrait-toggle:after{content:'▶';font-size:19px}
+
+/* Strongly emphasize the current-turn piece. */
+.map-token.active{position:relative!important;z-index:30!important;animation:tokenHopStrong .72s ease-in-out infinite alternate!important;filter:drop-shadow(0 9px 7px rgba(0,0,0,.48)) drop-shadow(0 0 9px rgba(255,220,75,.95))!important}
+@keyframes tokenHopStrong{from{transform:translateY(-34px) scale(1.55)}to{transform:translateY(-43px) scale(1.86)}}
+
+/* Simple, translucent message box: no decorative image behind the text. */
+.message-window{width:min(980px,calc(100% - 34px))!important;min-height:132px!important;padding:20px 26px 18px!important;border-radius:22px!important;overflow:hidden!important;background:rgba(255,252,246,.82)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;border:1.5px solid rgba(190,145,82,.52)!important;box-shadow:0 13px 38px rgba(38,28,20,.22)!important;gap:7px!important}
+.message-window:before,.message-window:after{content:none!important;display:none!important;background:none!important}
+.message-speaker{min-height:32px!important;padding:0 15px!important;font-size:15px!important;font-weight:700!important;background:rgba(238,144,164,.16)!important;color:#865262!important;border:1px solid rgba(205,111,135,.20)!important;border-radius:999px!important;box-shadow:none!important}
+.message-text{font-size:clamp(18px,1.7vw,23px)!important;line-height:1.55!important;font-weight:500!important;color:#3f342e!important;min-height:48px!important;letter-spacing:.01em!important;text-shadow:none!important}
+.message-footer{font-size:12px!important;color:#7b6b60!important}
+.nextmark{font-size:15px!important;color:#b9793e!important}
+
+@media(max-width:900px){
+ .sound-controls{gap:5px;justify-content:flex-end}
+ .volume-control{padding:4px 7px;font-size:10px}
+ .volume-control input{width:82px}
+ .portrait-toggle{right:-29px;width:31px;height:52px;font-size:17px}
+ .portrait-panel.collapsed .portrait-toggle{right:-31px}
+ .portrait-panel.collapsed .portrait-toggle:after{font-size:17px}
+ .map-token.active{animation:tokenHopStrongMobile .72s ease-in-out infinite alternate!important}
+ @keyframes tokenHopStrongMobile{from{transform:translateY(-24px) scale(1.65)}to{transform:translateY(-31px) scale(2.02)}}
+ .message-window{width:calc(100% - 16px)!important;min-height:116px!important;padding:15px 18px 15px!important;border-radius:17px!important;bottom:7px!important}
+ .message-speaker{font-size:13px!important;min-height:27px!important;padding:0 12px!important}
+ .message-text{font-size:16px!important;line-height:1.48!important;min-height:42px!important}
+ .message-footer{font-size:10px!important}.nextmark{font-size:13px!important}
+}
+@media(max-width:600px){
+ .sound-controls .pill{display:none}
+ .volume-control input{width:70px}
+ .map-token.active{animation:tokenHopStrongTiny .72s ease-in-out infinite alternate!important}
+ @keyframes tokenHopStrongTiny{from{transform:translateY(-21px) scale(1.72)}to{transform:translateY(-27px) scale(2.08)}}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div style="display:flex;gap:7px;align-items:center"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><span class="pill">v0.19 スマホ盤面調整版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.20 操作・音響調整版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストのPCがゲーム進行を管理します。ゲーム中はホストのタブを閉じないでください。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.19</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.20</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
@@ -410,7 +457,8 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
     </div>
     <div class="players" id="gamePlayers"></div>
     <div class="game-layout">
-      <aside class="portrait-panel">
+      <aside class="portrait-panel" id="portraitPanel">
+        <button class="portrait-toggle" id="portraitToggle" type="button" aria-label="手番キャラクター表示を収納" title="手番キャラクター表示を収納">◀</button>
         <div class="portrait-frame card">
           <div class="portrait-badge" id="portraitBadge">TURN</div>
           <div class="portrait-imgwrap"><img class="portrait-img" id="portraitImg" alt="現在の手番キャラクター"></div>
