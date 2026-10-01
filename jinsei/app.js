@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const $=s=>document.querySelector(s);
-const els={home:$('#homeScreen'),lobby:$('#lobbyScreen'),game:$('#gameScreen'),result:$('#resultScreen'),hostName:$('#hostName'),joinName:$('#joinName'),roomInput:$('#roomInput'),create:$('#createBtn'),join:$('#joinBtn'),roomCode:$('#roomCodeText'),net:$('#netStatus'),lobbyPlayers:$('#lobbyPlayers'),start:$('#startBtn'),mode:$('#modeSelect'),modeInfo:$('#modeInfo'),speed:$('#speedSelect'),hostLobby:$('#hostLobbyControls'),addCpu:$('#addCpuBtn'),fillCpu:$('#fillCpuBtn'),gamePlayers:$('#gamePlayers'),board:$('#board'),boardPanel:$('#boardPanel'),turnName:$('#turnName'),turnStage:$('#turnStage'),roll:$('#rollDisplay'),wheel:$('#rouletteWheel'),rollBtn:$('#rollBtn'),hint:$('#turnHint'),cards:$('#cardArea'),assets:$('#assetArea'),log:$('#gameLog'),choice:$('#choiceOverlay'),messageClickLayer:$('#messageClickLayer'),choiceTitle:$('#choiceTitle'),choiceText:$('#choiceText'),choiceStatus:$('#choiceStatus'),choiceList:$('#choiceList'),message:$('#messageWindow'),messageSpeaker:$('#messageSpeaker'),messageText:$('#messageText'),messageOwner:$('#messageOwner'),messageNext:$('#messageNext'),curtain:$('#stageCurtain'),curtainIcon:$('#curtainIcon'),curtainName:$('#curtainName'),curtainSub:$('#curtainSub'),turnBanner:$('#turnBanner'),turnBannerName:$('#turnBannerName'),turnBannerAvatar:$('#turnBannerAvatar'),turnBannerIcon:$('#turnBannerIcon'),portraitImg:$('#portraitImg'),portraitName:$('#portraitName'),portraitRole:$('#portraitRole'),portraitStats:$('#portraitStats'),portraitSub:$('#portraitSub'),portraitBadge:$('#portraitBadge'),eraIcon:$('#eraIcon'),eraName:$('#eraName'),eraFlavor:$('#eraFlavor'),roundText:$('#roundText'),roundDots:$('#roundDots'),fieldInfo:$('#fieldInfo'),soundBtn:$('#soundBtn'),volumeSlider:$('#volumeSlider'),volumeValue:$('#volumeValue'),portraitPanel:$('#portraitPanel'),portraitToggle:$('#portraitToggle'),awardArea:$('#awardArea'),resultArea:$('#resultArea'),back:$('#backBtn'),boardRollPop:$('#boardRollPop'),rollWaitLayer:$('#rollWaitLayer'),rollWaitText:$('#rollWaitText'),avatarPicker:$('#avatarPickerOverlay'),avatarPickerGrid:$('#avatarPickerGrid'),avatarPickerClose:$('#avatarPickerClose')};
+const els={home:$('#homeScreen'),lobby:$('#lobbyScreen'),game:$('#gameScreen'),result:$('#resultScreen'),hostName:$('#hostName'),joinName:$('#joinName'),roomInput:$('#roomInput'),create:$('#createBtn'),join:$('#joinBtn'),roomCode:$('#roomCodeText'),net:$('#netStatus'),lobbyPlayers:$('#lobbyPlayers'),start:$('#startBtn'),mode:$('#modeSelect'),modeInfo:$('#modeInfo'),speed:$('#speedSelect'),hostLobby:$('#hostLobbyControls'),addCpu:$('#addCpuBtn'),fillCpu:$('#fillCpuBtn'),gamePlayers:$('#gamePlayers'),board:$('#board'),boardPanel:$('#boardPanel'),turnName:$('#turnName'),turnStage:$('#turnStage'),roll:$('#rollDisplay'),wheel:$('#rouletteWheel'),rollBtn:$('#rollBtn'),hint:$('#turnHint'),cards:$('#cardArea'),assets:$('#assetArea'),log:$('#gameLog'),choice:$('#choiceOverlay'),messageClickLayer:$('#messageClickLayer'),choiceTitle:$('#choiceTitle'),choiceText:$('#choiceText'),choiceStatus:$('#choiceStatus'),choiceList:$('#choiceList'),message:$('#messageWindow'),messageSpeaker:$('#messageSpeaker'),messageText:$('#messageText'),messageOwner:$('#messageOwner'),messageNext:$('#messageNext'),curtain:$('#stageCurtain'),curtainIcon:$('#curtainIcon'),curtainName:$('#curtainName'),curtainSub:$('#curtainSub'),turnBanner:$('#turnBanner'),turnBannerName:$('#turnBannerName'),turnBannerAvatar:$('#turnBannerAvatar'),turnBannerIcon:$('#turnBannerIcon'),portraitImg:$('#portraitImg'),portraitName:$('#portraitName'),portraitRole:$('#portraitRole'),portraitStats:$('#portraitStats'),portraitSub:$('#portraitSub'),portraitBadge:$('#portraitBadge'),eraIcon:$('#eraIcon'),eraName:$('#eraName'),eraFlavor:$('#eraFlavor'),roundText:$('#roundText'),roundDots:$('#roundDots'),fieldInfo:$('#fieldInfo'),soundBtn:$('#soundBtn'),volumeSlider:$('#volumeSlider'),volumeValue:$('#volumeValue'),portraitPanel:$('#portraitPanel'),portraitToggle:$('#portraitToggle'),awardArea:$('#awardArea'),resultArea:$('#resultArea'),back:$('#backBtn'),resumeCard:$('#resumeCard'),resumeInfo:$('#resumeInfo'),resumeBtn:$('#resumeBtn'),discardResumeBtn:$('#discardResumeBtn'),boardRollPop:$('#boardRollPop'),rollWaitLayer:$('#rollWaitLayer'),rollWaitText:$('#rollWaitText'),avatarPicker:$('#avatarPickerOverlay'),avatarPickerGrid:$('#avatarPickerGrid'),avatarPickerClose:$('#avatarPickerClose')};
 const COLORS=['#5577a8','#b45f5f','#5b8c62','#936aa2'];
 const AVATAR_OPTIONS=[{id:'akane',name:'あかね',cat:'girl',src:'assets/avatar5.webp'},{id:'kotoha',name:'ことは',cat:'girl',src:'assets/avatar6.webp'},{id:'momoka',name:'ももか',cat:'girl',src:'assets/avatar7.webp'},{id:'ruri',name:'るり',cat:'girl',src:'assets/avatar8.webp'},{id:'yukari',name:'ゆかり',cat:'girl',src:'assets/avatar9.webp'},{id:'dino_girl',name:'恐竜ガール',cat:'quirky',src:'assets/avatar15.webp'},{id:'mushroom_girl',name:'きのこガール',cat:'quirky',src:'assets/avatar16.webp'},{id:'ghost_girl',name:'おばけガール',cat:'quirky',src:'assets/avatar18.webp'},{id:'robot_girl',name:'メカガール',cat:'quirky',src:'assets/avatar19.webp'},{id:'penguin_girl',name:'ペンギンガール',cat:'quirky',src:'assets/avatar21.webp'},{id:'panda_girl',name:'パンダガール',cat:'quirky',src:'assets/avatar23.webp'},{id:'street_boy',name:'やんちゃ少年',cat:'boy',src:'assets/avatar24.webp'},{id:'adventure_boy',name:'冒険少年',cat:'boy',src:'assets/avatar25.webp'},{id:'office_boy',name:'会社員くん',cat:'boy',src:'assets/avatar26.webp'},{id:'hamster',name:'ハムスター',cat:'animal',src:'assets/avatar28.webp'},{id:'penguin',name:'ペンギン',cat:'animal',src:'assets/avatar30.webp'},{id:'dino',name:'ちび恐竜',cat:'quirky',src:'assets/avatar31.webp'},{id:'panda_odd',name:'ブサカワパンダ',cat:'animal',src:'assets/avatar33.webp'},{id:'hamster_odd',name:'ぽっちゃりハム',cat:'animal',src:'assets/avatar34.webp'},{id:'alien_odd',name:'脱力宇宙人',cat:'quirky',src:'assets/avatar35.webp'}];
 const AVATARS=AVATAR_OPTIONS.map(v=>v.src);
@@ -63,6 +63,8 @@ let peer=null,hostConn=null,isHost=false,roomCode='',localPlayerId='',state=null
 let soundOn=true,audioCtx=null,bgmTimer=null,bgmStep=0,bgmStage=-1,lastFx={roulette:null,move:'',stage:null,message:''},rollVisualTimer=null,mobileBoardFocusTimer=null,boardRollPopTimer=null;
 let masterVolume=Math.max(0,Math.min(1,Number(localStorage.getItem('lifeRoadVolume')??'1')));
 let portraitCollapsed=localStorage.getItem('lifeRoadPortraitCollapsed')==='1';
+const SESSION_KEY='lifeRoadSessionV22';
+let reconnectTimer=null,reconnectAttempts=0,resumeInProgress=false,portraitTogglePointerLock=false;
 const rnd=n=>Math.floor(Math.random()*n),pick=a=>a[rnd(a.length)],clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function uuid(){return 'x_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-5)}
 function cleanName(v){return (v||'プレイヤー').trim().slice(0,12)||'プレイヤー'}
@@ -78,6 +80,87 @@ function modeDef(){return MODES[state?.settings?.mode||'standard']}
 function speedScale(){if(location.search.includes('test=1'))return .02;return state?.settings?.speed==='fast'?.58:1}
 function later(fn,ms){const t=setTimeout(fn,Math.max(20,Math.round(ms*speedScale())));hostTimers.push(t);return t}
 function clearHostTimers(){hostTimers.forEach(clearTimeout);hostTimers=[]}
+function saveSession(){
+ if(!state||!roomCode||!localPlayerId)return;
+ try{localStorage.setItem(SESSION_KEY,JSON.stringify({v:22,ts:Date.now(),isHost,roomCode,localPlayerId,state}))}catch(e){console.warn('session save failed',e)}
+}
+function loadSession(){
+ try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return null;const d=JSON.parse(raw);if(!d||!d.roomCode||!d.localPlayerId||!d.state)return null;if(Date.now()-(d.ts||0)>1000*60*60*48)return null;return d}catch(e){return null}
+}
+function clearSavedSession(){try{localStorage.removeItem(SESSION_KEY)}catch(e){}}
+function refreshResumeCard(){
+ const d=loadSession();if(!els.resumeCard)return;
+ if(!d){els.resumeCard.classList.add('hidden');return}
+ const p=d.state?.players?.find(x=>x.id===d.localPlayerId),phase=d.state?.phase==='playing'?'ゲーム途中':d.state?.phase==='finished'?'結果画面':'ロビー';
+ els.resumeCard.classList.remove('hidden');
+ if(els.resumeInfo)els.resumeInfo.textContent=`${d.isHost?'ホスト':'参加者'} / 部屋 ${d.roomCode} / ${p?.name||'プレイヤー'} / ${phase}`;
+}
+function normalizeRestoredHostState(){
+ if(!state||state.phase!=='playing')return;
+ clearHostTimers();
+ state.fx=state.fx||{roulette:null,move:null,stage:null,turn:null};
+ // Timers disappear on reload. Convert transient animations to a safe resumable state.
+ if(state.pendingRollAdvance){state.pendingRollAdvance.ready=true;state.busy=false;state.fx.roulette=null}
+ if(state.fx.move){
+  const mv=state.fx.move,p=state.players.find(x=>x.id===mv.playerId),remaining=Math.max(0,(mv.total||0)-(mv.step||0));
+  state.fx.move=null;state.busy=false;
+  if(p&&remaining>0){setTimeout(()=>startMove(p,remaining),80);return}
+  if(p){setTimeout(()=>{resolveLanding(p,0);broadcast()},80);return}
+ }
+ if(state.fx.turn){state.fx.turn=null;state.busy=false;beginTurnCore()}
+ else if(state.fx.stage){
+  state.fx.stage=null;state.busy=false;
+  const p=currentPlayer();if(p&&!state.message&&!state.pendingChoice)setMessage(p.id,`${stageDef().icon} ${stageDef().name}`,[`${stageDef().name}のフィールドへ戻りました。`],{type:'beginTurn'});
+ }else if(state.busy&&!state.message&&!state.pendingChoice&&!state.pendingRollAdvance){state.busy=false;if(!state.turnReady)state.turnReady=true}
+}
+function handleHostPeerConnection(conn){
+ connections.set(conn.peer,conn);
+ conn.on('data',msg=>{
+  if(msg?.type==='join'){
+   const resumeId=msg.resumePlayerId;
+   if(resumeId){
+    const rp=state.players.find(x=>x.id===resumeId);
+    if(rp){rp.cpu=false;rp.resumeHuman=false;rp.cpuType=rp.cpuType||'balanced';conn.playerId=rp.id;conn.send({type:'welcome',playerId:rp.id,state,resumed:true});addLog(`${rp.name}が復帰しました`);broadcast();return}
+    if(state.phase!=='lobby'){conn.send({type:'reject',reason:'保存したプレイヤーをこの部屋で確認できませんでした'});return}
+   }
+   if(state.phase!=='lobby'){conn.send({type:'reject',reason:'ゲームは開始済みです'});return}
+   if(state.players.length>=4){conn.send({type:'reject',reason:'満員です'});return}
+   const np=makePlayer(cleanName(msg.name));state.players.push(np);conn.playerId=np.id;conn.send({type:'welcome',playerId:np.id,state});addLog(`${np.name}が参加しました`);broadcast();
+  }else if(msg?.type==='action'&&conn.playerId)hostHandleAction(conn.playerId,msg.action)
+ });
+ conn.on('close',()=>{if(conn.playerId){const p=state.players.find(x=>x.id===conn.playerId);if(state.phase==='lobby')state.players=state.players.filter(x=>x.id!==conn.playerId);else if(p&&!p.cpu){p.cpu=true;p.resumeHuman=true;p.cpuType='balanced';addLog(`${p.name}の通信が切れたためCPUが一時代行します`)}broadcast()}})
+}
+function openHostPeer(resuming=false,retry=0){
+ if(typeof Peer==='undefined'){net('オンライン通信ライブラリを読み込めませんでした。ローカルCPU対戦は遊べます。');return}
+ try{peer?.destroy?.()}catch(e){}
+ peer=new Peer('life-road-'+roomCode,{debug:0});
+ peer.on('open',()=>{reconnectAttempts=0;net(`${resuming?'復帰完了':'部屋を公開中'}：${state.players.length}/4人`);saveSession()});
+ peer.on('connection',handleHostPeerConnection);
+ peer.on('error',e=>{if(resuming&&e?.type==='unavailable-id'&&retry<6){net('部屋を復旧中...');setTimeout(()=>openHostPeer(true,retry+1),900+retry*350);return}net('通信エラー：'+(e.type||e.message||'不明'))})
+}
+function connectGuestToHost(resuming=false){
+ if(!roomCode)return;if(typeof Peer==='undefined'){net('オンライン通信ライブラリを読み込めませんでした。');return}
+ const connectNow=()=>{
+  if(hostConn?.open)return;
+  hostConn=peer.connect('life-road-'+roomCode,{reliable:true});
+  hostConn.on('open',()=>{reconnectAttempts=0;hostConn.send({type:'join',name:state?.players?.find(x=>x.id===localPlayerId)?.name||cleanName(els.joinName?.value),resumePlayerId:resuming?localPlayerId:null});net(resuming?'復帰確認中...':'ホストへ接続中...')});
+  hostConn.on('data',msg=>{if(msg?.type==='welcome'){localPlayerId=msg.playerId;state=msg.state;render();saveSession();net(msg.resumed?'対戦に復帰しました':`参加済み：${state.players.length}/4人`)}else if(msg?.type==='snapshot'){state=msg.state;render();saveSession()}else if(msg?.type==='reject'){net(msg.reason);if(!resuming)alert(msg.reason)}});
+  hostConn.on('close',()=>{net('ホストとの接続が切れました。自動で再接続します…');scheduleGuestReconnect()})
+ };
+ if(peer?.open){connectNow();return}
+ try{peer?.destroy?.()}catch(e){}
+ peer=new Peer(undefined,{debug:0});peer.on('open',connectNow);peer.on('error',e=>{net('再接続待ち…');if(resuming)scheduleGuestReconnect();else console.error(e)})
+}
+function scheduleGuestReconnect(){
+ if(isHost||!roomCode||reconnectTimer)return;
+ reconnectTimer=setTimeout(()=>{reconnectTimer=null;reconnectAttempts++;if(reconnectAttempts>40){net('再接続できません。最初の画面から「前回の対戦に復帰」を試してください。');return}connectGuestToHost(true)},1400)
+}
+function resumeLastSession(){
+ const d=loadSession();if(!d)return;resumeInProgress=true;roomCode=d.roomCode;localPlayerId=d.localPlayerId;state=d.state;isHost=!!d.isHost;
+ if(isHost){normalizeRestoredHostState();render();openHostPeer(true)}else{render();connectGuestToHost(true)}
+ saveSession();resumeInProgress=false;
+}
+
 function avatarOption(id){return AVATAR_OPTIONS.find(v=>v.id===id)||AVATAR_OPTIONS[0]}
 function usedAvatarIds(exceptPlayerId=null){return new Set((state?.players||[]).filter(p=>p.id!==exceptPlayerId).map(p=>p.avatarId).filter(Boolean))}
 function firstAvailableAvatarId(exceptPlayerId=null){const used=usedAvatarIds(exceptPlayerId);const free=AVATAR_OPTIONS.find(v=>!used.has(v.id));return (free||AVATAR_OPTIONS[0]).id}
@@ -162,7 +245,7 @@ function resetBoardPan(nextKey=''){boardPan.x=0;boardPan.y=0;boardPan.anchorKey=
 function canDragBoard(){return !!(state&&state.phase==='playing'&&!state.message&&!state.pendingChoice)}
 function updateBoardDragUi(){if(!els.boardPanel)return;els.boardPanel.classList.toggle('drag-ready',canDragBoard());els.boardPanel.classList.toggle('dragging',!!boardPan.dragging)}
 function setupBoardDrag(){if(!els.boardPanel||els.boardPanel.dataset.dragReady)return;els.boardPanel.dataset.dragReady='1';const end=()=>{if(!boardPan.dragging)return;boardPan.dragging=false;updateBoardDragUi()};els.boardPanel.addEventListener('pointerdown',e=>{if(!canDragBoard())return;boardPan.dragging=true;boardPan.startX=e.clientX;boardPan.startY=e.clientY;boardPan.baseX=boardPan.x;boardPan.baseY=boardPan.y;try{els.boardPanel.setPointerCapture(e.pointerId)}catch(err){}updateBoardDragUi();e.preventDefault()});els.boardPanel.addEventListener('pointermove',e=>{if(!boardPan.dragging)return;boardPan.x=boardPan.baseX+(e.clientX-boardPan.startX);boardPan.y=boardPan.baseY+(e.clientY-boardPan.startY);focusBoardCamera(true)});els.boardPanel.addEventListener('pointerup',end);els.boardPanel.addEventListener('pointercancel',end);updateBoardDragUi()}
-function render(){if(!state)return;if(state.phase==='lobby'){show(els.lobby);renderLobby()}else if(state.phase==='playing'){show(els.game);renderGame()}else if(state.phase==='finished'){prepareResults();show(els.result);renderResult()}updateBoardDragUi();if(isHost)maybeRunCpu()}
+function render(){if(!state)return;saveSession();if(state.phase==='lobby'){show(els.lobby);renderLobby()}else if(state.phase==='playing'){show(els.game);renderGame()}else if(state.phase==='finished'){prepareResults();show(els.result);renderResult()}updateBoardDragUi();if(isHost)maybeRunCpu()}
 function renderLobby(){state.players.forEach((p,i)=>{if(!p.avatarId){const opt=AVATAR_OPTIONS.find(v=>v.src===p.avatar)||AVATAR_OPTIONS[i%AVATAR_OPTIONS.length];p.avatarId=opt.id;p.avatar=opt.src}});els.roomCode.textContent=roomCode;els.hostLobby.classList.toggle('hidden',!isHost);els.start.classList.toggle('hidden',!isHost);els.mode.disabled=!isHost;els.speed.disabled=!isHost;els.mode.value=state.settings.mode;els.speed.value=state.settings.speed;els.modeInfo.textContent=modeDescription(state.settings.mode)+'　/　キャラクターは重複なし・早い者勝ち';els.lobbyPlayers.innerHTML=state.players.map(p=>`<div>${playerCard(p,false,true)}${avatarSelectHtml(p)}${isHost&&p.cpu?`<button class="btn small warn cpu-remove" data-id="${p.id}" style="width:100%;margin-top:5px">CPU削除</button>`:''}</div>`).join('')+Array.from({length:Math.max(0,4-state.players.length)},()=>'<div class="player-card"><div class="sub">参加待ち...</div></div>').join('');els.start.disabled=state.players.length<1;els.addCpu.disabled=!isHost||state.players.length>=4;els.fillCpu.disabled=!isHost||state.players.length>=4;net(isHost?`ホスト中：${state.players.length}/4人`:`参加済み：${state.players.length}/4人`);document.querySelectorAll('.cpu-remove').forEach(b=>b.addEventListener('click',()=>removeCpu(b.dataset.id)));document.querySelectorAll('[data-avatar-edit]').forEach(b=>b.addEventListener('click',()=>openAvatarPicker(b.dataset.avatarEdit)));if(avatarPickerTargetId&&!els.avatarPicker.classList.contains('hidden'))renderAvatarPicker()}
 function renderGame(){
  const st=stageDef(),cp=currentPlayer(),rounds=modeDef().rounds[state.stageIndex],round=Math.min(rounds,Math.floor(state.stageTurnCount/state.players.length)+1),theme=STAGE_THEME[st.id];
@@ -230,7 +313,7 @@ function renderMessage(){
  els.message.classList.toggle('cpu',!mine);
 }
 function renderCurtain(){const f=state.fx.stage;if(!f){els.curtain.classList.add('hidden');return}const st=STAGES[f.stageIndex];els.curtain.classList.remove('hidden');els.curtainIcon.textContent=st.icon;els.curtainName.textContent=st.name;els.curtainSub.textContent=STAGE_FLAVOR[st.id]}
-function renderTurnBanner(){const f=state.fx.turn;if(!f){els.turnBanner.classList.add('hidden');return}const p=state.players.find(x=>x.id===f.playerId);els.turnBanner.classList.remove('hidden');els.turnBannerName.textContent=`${p?.name||'プレイヤー'} の手番です`;els.turnBannerAvatar.style.backgroundImage=`url('${p?.avatar||AVATARS[0]}')`;els.turnBannerIcon.textContent=stageDef().icon}
+function renderTurnBanner(){const f=state.fx.turn;if(!f){els.turnBanner.classList.add('hidden');return}const p=state.players.find(x=>x.id===f.playerId);els.turnBanner.classList.remove('hidden');els.turnBannerName.textContent=`${p?.name||'プレイヤー'} の手番です`;els.turnBannerAvatar.style.backgroundImage=`url('${p?.avatar||AVATARS[0]}')`;els.turnBanner.title=(p?.id===localPlayerId&&!p?.cpu)?'クリック / タップで開始':'手番が変わります'}
 function broadcast(){state.version=(state.version||0)+1;connections.forEach(c=>{if(c.open)c.send({type:'snapshot',state})});render()}
 function sendAction(a){ensureAudio();if(isHost)hostHandleAction(localPlayerId,a);else if(hostConn?.open)hostConn.send({type:'action',action:a})}
 function setMessage(ownerId,speaker,lines,after=null){state.turnReady=false;state.message={id:uuid(),ownerId,speaker,lines:lines.map(x=>typeof x==='string'?{text:x,tone:'normal'}:x),index:0,after}}
@@ -238,7 +321,8 @@ function messageResult(playerId,speaker,lines,after='completeTurn'){setMessage(p
 function handleMessageNext(playerId){const m=state.message;if(!m||m.ownerId!==playerId)return;if(m.index<m.lines.length-1){m.index++;broadcast();return}const after=m.after;state.message=null;runAfter(after);broadcast()}
 function runAfter(a){if(!a)return;if(a.type==='beginTurn')beginTurn();else if(a.type==='completeTurn')completeTurn();else if(a.type==='openChoice')openChoice(a.choice,state.players.find(p=>p.id===a.playerId),a.returnTo||'completeTurn');else if(a.type==='finishGame')finishGame()}
 
-function beginTurn(){if(state.phase!=='playing')return;const p=currentPlayer();state.turnReady=false;state.busy=true;if(!p)return;state.fx.turn={id:uuid(),playerId:p.id};broadcast();later(()=>{state.fx.turn=null;state.busy=false;beginTurnCore();broadcast()},Math.round(1950*speedScale()))}
+function finishTurnIntro(fxId){if(!state?.fx?.turn||state.fx.turn.id!==fxId)return;state.fx.turn=null;state.busy=false;beginTurnCore();broadcast()}
+function beginTurn(){if(state.phase!=='playing')return;const p=currentPlayer();state.turnReady=false;state.busy=true;if(!p)return;const fxId=uuid();state.fx.turn={id:fxId,playerId:p.id};broadcast();later(()=>finishTurnIntro(fxId),1950)}
 function beginTurnCore(){if(state.phase!=='playing')return;const p=currentPlayer();state.turnReady=false;state.busy=false;if(!p)return;
  if(state.stageIndex===4&&!p.educationChosen){setMessage(p.id,'人生の分岐点',[`${p.name}は社会へ踏み出す前に、進路を決めることになった。`,`これまで積み重ねてきた能力や思い出が、ここからの人生を少しずつ形作っていく。`],{type:'openChoice',choice:'education',playerId:p.id,returnTo:'beginTurn'});return}
  if(state.stageIndex===4&&!p.job){setMessage(p.id,'就職活動',[`進路が決まった。次は最初の仕事を選ぼう。`,`ここで選んだ道は、今後の収入やイベントにも影響していく。`],{type:'openChoice',choice:'job',playerId:p.id,returnTo:'beginTurn'});return}
@@ -362,6 +446,7 @@ function hostHandleAction(playerId,a){if(!isHost||!state)return;const p=state.pl
   return
  }
  if(state.phase!=='playing')return;
+ if(a.kind==='dismissTurnIntro'&&state.fx?.turn?.playerId===playerId&&currentPlayer()?.id===playerId){finishTurnIntro(state.fx.turn.id);return}
  if(a.kind==='nextMessage'){handleMessageNext(playerId);return}
  if(a.kind==='choose'&&state.pendingChoice?.playerId===playerId){const c=state.pendingChoice,o=c.options[a.index];if(!o)return;state.pendingChoice=null;const lines=applyChoice(p,c,o);setMessage(p.id,'選択結果',lines,{type:c.returnTo||'completeTurn'});broadcast();return}
  if(a.kind==='advanceRoll'&&state.pendingRollAdvance?.playerId===playerId&&state.pendingRollAdvance.ready){const steps=state.pendingRollAdvance.result;startMove(p,steps);return}
@@ -375,8 +460,11 @@ function renderResult(){const rows=[...state.players].sort((a,b)=>assetScore(b)-
 function broadcastResultsIfHost(){if(isHost)connections.forEach(c=>{if(c.open)c.send({type:'snapshot',state})})}
 function maybeRunCpu(){clearTimeout(cpuTimer);if(!isHost||state?.phase!=='playing')return;if(state.fx.stage||state.fx.turn)return;const pr=state.pendingRollAdvance;if(pr?.ready){const po=state.players.find(x=>x.id===pr.playerId);if(po?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'advanceRoll'}),Math.round(700*speedScale()));return}if(state.busy)return;const m=state.message;if(m){const owner=state.players.find(p=>p.id===m.ownerId);if(owner?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(owner.id,{kind:'nextMessage'}),Math.round(760*speedScale()));return}const c=state.pendingChoice;if(c){const p=state.players.find(x=>x.id===c.playerId);if(p?.cpu)cpuTimer=setTimeout(()=>{let best=0,bestS=-1e9;c.options.forEach((o,i)=>{const s=cpuScoreOption(p,o);if(s>bestS){bestS=s;best=i}});hostHandleAction(p.id,{kind:'choose',index:best})},Math.round(850*speedScale()));return}const p=currentPlayer();if(p?.cpu&&state.turnReady)cpuTimer=setTimeout(()=>{if(p.cards.length&&Math.random()<.20){const idx=p.cards.findIndex(id=>{const c=CARDS.find(x=>x.id===id);return c&&(cpuDef(p.cpuType).w[c.tag]||1)>1.3});if(idx>=0){hostHandleAction(p.id,{kind:'useCard',index:idx});return}}hostHandleAction(p.id,{kind:'roll'})},Math.round(720*speedScale()))}
 function randomCode(){return String(Math.floor(100000+Math.random()*900000))}
-function createRoom(){ensureAudio();const name=cleanName(els.hostName.value);roomCode=randomCode();isHost=true;state=newState();const p=makePlayer(name);state.players.push(p);localPlayerId=p.id;show(els.lobby);render();if(typeof Peer==='undefined'){net('オンライン通信ライブラリを読み込めませんでした。ローカルCPU対戦は遊べます。');return}peer=new Peer('life-road-'+roomCode,{debug:0});peer.on('open',()=>net(`部屋を公開中：${state.players.length}/4人`));peer.on('connection',conn=>{connections.set(conn.peer,conn);conn.on('data',msg=>{if(msg?.type==='join'){if(state.phase!=='lobby'){conn.send({type:'reject',reason:'ゲームは開始済みです'});return}if(state.players.length>=4){conn.send({type:'reject',reason:'満員です'});return}const np=makePlayer(cleanName(msg.name));state.players.push(np);conn.playerId=np.id;conn.send({type:'welcome',playerId:np.id,state});addLog(`${np.name}が参加しました`);broadcast()}else if(msg?.type==='action'&&conn.playerId)hostHandleAction(conn.playerId,msg.action)});conn.on('close',()=>{if(conn.playerId){const p=state.players.find(x=>x.id===conn.playerId);if(state.phase==='lobby')state.players=state.players.filter(x=>x.id!==conn.playerId);else if(p){p.cpu=true;p.cpuType='balanced';addLog(`${p.name}の通信が切れたためCPUが代行します`)}broadcast()}})});peer.on('error',e=>net('通信エラー：'+(e.type||e.message||'不明')))}
-function joinRoom(){ensureAudio();const name=cleanName(els.joinName.value),code=(els.roomInput.value||'').replace(/\D/g,'').slice(0,6);if(code.length!==6){alert('6桁の部屋コードを入力してください');return}roomCode=code;isHost=false;show(els.lobby);net('ホストへ接続中...');if(typeof Peer==='undefined'){alert('オンライン通信ライブラリを読み込めませんでした。');show(els.home);return}peer=new Peer(undefined,{debug:0});peer.on('open',()=>{hostConn=peer.connect('life-road-'+roomCode,{reliable:true});hostConn.on('open',()=>hostConn.send({type:'join',name}));hostConn.on('data',msg=>{if(msg?.type==='welcome'){localPlayerId=msg.playerId;state=msg.state;render()}else if(msg?.type==='snapshot'){state=msg.state;render()}else if(msg?.type==='reject'){alert(msg.reason);location.reload()}});hostConn.on('close',()=>net('ホストとの接続が切れました'))});peer.on('error',e=>{net('参加できません：部屋コードを確認してください');console.error(e)})}
+function createRoom(){ensureAudio();clearSavedSession();const name=cleanName(els.hostName.value);roomCode=randomCode();isHost=true;state=newState();const p=makePlayer(name);state.players.push(p);localPlayerId=p.id;show(els.lobby);render();saveSession();openHostPeer(false)}
+function joinRoom(){ensureAudio();clearSavedSession();const name=cleanName(els.joinName.value),code=(els.roomInput.value||'').replace(/\D/g,'').slice(0,6);if(code.length!==6){alert('6桁の部屋コードを入力してください');return}roomCode=code;isHost=false;localPlayerId='';state={phase:'lobby',players:[],settings:{mode:'standard',speed:'normal'},fx:{roulette:null,move:null,stage:null,turn:null}};show(els.lobby);net('ホストへ接続中...');
+ if(typeof Peer==='undefined'){alert('オンライン通信ライブラリを読み込めませんでした。');show(els.home);return}
+ peer=new Peer(undefined,{debug:0});peer.on('open',()=>{hostConn=peer.connect('life-road-'+roomCode,{reliable:true});hostConn.on('open',()=>hostConn.send({type:'join',name}));hostConn.on('data',msg=>{if(msg?.type==='welcome'){localPlayerId=msg.playerId;state=msg.state;render();saveSession()}else if(msg?.type==='snapshot'){state=msg.state;render();saveSession()}else if(msg?.type==='reject'){alert(msg.reason);clearSavedSession();location.reload()}});hostConn.on('close',()=>{net('ホストとの接続が切れました。自動で再接続します…');scheduleGuestReconnect()})});peer.on('error',e=>{net('参加できません：部屋コードを確認してください');console.error(e)})
+}
 function addCpu(){if(!isHost||state.players.length>=4)return;const type=pick(CPU_TYPES),num=state.players.filter(p=>p.cpu).length+1,p=makePlayer(`CPU${num}`,true,type.id);state.players.push(p);addLog(`${p.name}（${type.name}）を追加`);broadcast()}
 function fillCpu(){while(isHost&&state.players.length<4)addCpu()}
 function removeCpu(id){if(!isHost||state.phase!=='lobby')return;state.players=state.players.filter(p=>p.id!==id);state.players.forEach((p,i)=>p.color=COLORS[i]);broadcast()}
@@ -401,7 +489,7 @@ function sfxStep(){tone(520,.055,.026,'square')}function sfxGood(){tone(659,.11,
 function sfxRoulette(){if(!soundOn||!audioCtx)return;let i=0;const tick=setInterval(()=>{tone(760-i*10,.025,.012,'square');i++;if(i>15)clearInterval(tick)},Math.max(35,Math.round(65*speedScale())))}
 function updateVolumeUi(){if(!els.volumeSlider)return;els.volumeSlider.value=String(Math.round(masterVolume*100));if(els.volumeValue)els.volumeValue.textContent=`${Math.round(masterVolume*100)}%`}
 function setMasterVolume(v){masterVolume=Math.max(0,Math.min(1,Number(v)||0));localStorage.setItem('lifeRoadVolume',String(masterVolume));updateVolumeUi();if(masterVolume>0&&soundOn)ensureAudio()}
-function applyPortraitCollapsed(){if(!els.portraitPanel)return;els.portraitPanel.classList.toggle('collapsed',portraitCollapsed);if(els.portraitToggle){els.portraitToggle.setAttribute('aria-expanded',portraitCollapsed?'false':'true');els.portraitToggle.title=portraitCollapsed?'手番キャラクター表示を開く':'手番キャラクター表示を収納'}}
+function applyPortraitCollapsed(){if(!els.portraitPanel)return;els.portraitPanel.classList.toggle('collapsed',portraitCollapsed);if(els.portraitToggle){const mobile=window.innerWidth<=900;els.portraitToggle.setAttribute('aria-expanded',portraitCollapsed?'false':'true');els.portraitToggle.title=portraitCollapsed?'手番キャラクター表示を開く':'手番キャラクター表示を収納';els.portraitToggle.textContent=mobile?(portraitCollapsed?'◀':'▶'):(portraitCollapsed?'▶':'◀')}}
 function togglePortraitPanel(){portraitCollapsed=!portraitCollapsed;localStorage.setItem('lifeRoadPortraitCollapsed',portraitCollapsed?'1':'0');applyPortraitCollapsed()}
 function toggleSound(){soundOn=!soundOn;els.soundBtn.textContent=soundOn?'🔊 サウンド ON':'🔇 サウンド OFF';if(soundOn){ensureAudio();startBgm(state?.stageIndex||0)}else if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
 els.wheel.innerHTML='';setupBoardDrag();
@@ -410,13 +498,16 @@ els.avatarPickerClose?.addEventListener('click',closeAvatarPicker);
 els.avatarPicker?.addEventListener('click',e=>{if(e.target===els.avatarPicker)closeAvatarPicker()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&els.avatarPicker&&!els.avatarPicker.classList.contains('hidden'))closeAvatarPicker()});
 
-els.create.addEventListener('click',createRoom);els.join.addEventListener('click',joinRoom);els.addCpu.addEventListener('click',addCpu);els.fillCpu.addEventListener('click',fillCpu);els.start.addEventListener('click',()=>sendAction({kind:'start'}));els.rollBtn.addEventListener('click',()=>sendAction({kind:'roll'}));els.mode.addEventListener('change',()=>{if(!isHost)return;state.settings.mode=els.mode.value;broadcast()});els.speed.addEventListener('change',()=>{if(!isHost)return;state.settings.speed=els.speed.value;broadcast()});els.soundBtn.addEventListener('click',toggleSound);els.volumeSlider?.addEventListener('input',e=>setMasterVolume(Number(e.target.value)/100));els.back.addEventListener('click',()=>location.reload());updateVolumeUi();applyPortraitCollapsed();
+els.create.addEventListener('click',createRoom);els.join.addEventListener('click',joinRoom);els.addCpu.addEventListener('click',addCpu);els.fillCpu.addEventListener('click',fillCpu);els.start.addEventListener('click',()=>sendAction({kind:'start'}));els.rollBtn.addEventListener('click',()=>sendAction({kind:'roll'}));els.mode.addEventListener('change',()=>{if(!isHost)return;state.settings.mode=els.mode.value;broadcast()});els.speed.addEventListener('change',()=>{if(!isHost)return;state.settings.speed=els.speed.value;broadcast()});els.soundBtn.addEventListener('click',toggleSound);els.volumeSlider?.addEventListener('input',e=>setMasterVolume(Number(e.target.value)/100));els.back.addEventListener('click',()=>{clearSavedSession();location.reload()});els.resumeBtn?.addEventListener('click',resumeLastSession);els.discardResumeBtn?.addEventListener('click',()=>{clearSavedSession();refreshResumeCard()});
+els.portraitToggle?.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(portraitTogglePointerLock)return;portraitTogglePointerLock=true;togglePortraitPanel();setTimeout(()=>portraitTogglePointerLock=false,180)},{capture:true});updateVolumeUi();applyPortraitCollapsed();refreshResumeCard();
 let messageAdvanceLock=false;
 function canAdvanceLocalMessage(){if(!state?.message)return false;const owner=state.players.find(p=>p.id===state.message.ownerId);return state.message.ownerId===localPlayerId&&!owner?.cpu}
 function advanceMessage(){if(!canAdvanceLocalMessage()||messageAdvanceLock)return;messageAdvanceLock=true;sendAction({kind:'nextMessage'});setTimeout(()=>{messageAdvanceLock=false},120)}
 // Capture at document level so clicking the board, side UI, portrait, or message frame all advances the current message.
-document.addEventListener('click',e=>{const toggle=e.target?.closest?.('#portraitToggle');if(toggle){e.preventDefault();e.stopImmediatePropagation();togglePortraitPanel();return}if(!canAdvanceLocalMessage())return;e.preventDefault();e.stopPropagation();advanceMessage()},{capture:true});
+document.addEventListener('click',e=>{const toggle=e.target?.closest?.('#portraitToggle');if(toggle){e.preventDefault();e.stopImmediatePropagation();return}const tf=state?.fx?.turn,tp=tf&&state?.players?.find(p=>p.id===tf.playerId);if(tf&&tp?.id===localPlayerId&&!tp.cpu){e.preventDefault();e.stopPropagation();sendAction({kind:'dismissTurnIntro'});return}if(!canAdvanceLocalMessage())return;e.preventDefault();e.stopPropagation();advanceMessage()},{capture:true});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&canAdvanceLocalMessage()){e.preventDefault();advanceMessage()}},{capture:true});
-const unlockAudio=()=>{if(soundOn)ensureAudio()};document.addEventListener('pointerdown',unlockAudio,{capture:true});document.addEventListener('touchstart',unlockAudio,{capture:true,passive:true});document.addEventListener('click',unlockAudio,{capture:true});window.addEventListener('resize',()=>{if(state?.phase==='playing')requestAnimationFrame(()=>focusBoardCamera());updateBoardDragUi()});
+const unlockAudio=()=>{if(soundOn)ensureAudio()};document.addEventListener('pointerdown',unlockAudio,{capture:true});document.addEventListener('touchstart',unlockAudio,{capture:true,passive:true});document.addEventListener('click',unlockAudio,{capture:true});window.addEventListener('resize',()=>{applyPortraitCollapsed();if(state?.phase==='playing')requestAnimationFrame(()=>focusBoardCamera());updateBoardDragUi()});
+window.addEventListener('beforeunload',saveSession);
+const navType=performance?.getEntriesByType?.('navigation')?.[0]?.type;if(navType==='reload'&&loadSession())setTimeout(resumeLastSession,80);
 if(globalThis.__LIFE_NODE_TEST__){globalThis.__lifeDebug={newState,makePlayer,startGame,hostHandleAction,maybeRunCpu,getState:()=>state,setHost:v=>{isHost=v},setState:v=>{state=v},setLocalPlayerId:v=>{localPlayerId=v},addCpu,fillCpu};}
 })();
