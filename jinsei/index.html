@@ -423,19 +423,47 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
  @keyframes tokenHopStrongTiny{from{transform:translateY(-21px) scale(1.72)}to{transform:translateY(-27px) scale(2.08)}}
 }
 
+
+/* v0.21 overrides */
+.turn-banner{top:50%!important;transform:translate(-50%,-50%)!important;min-width:0!important;width:min(360px,calc(100% - 32px))!important;padding:20px 24px 18px!important;display:flex!important;flex-direction:column!important;gap:8px!important;border-radius:24px!important;background:rgba(255,251,245,.91)!important}
+.turn-banner .ava{width:150px!important;height:170px!important;border-radius:0!important;background-size:contain!important;background-repeat:no-repeat!important;background-position:center bottom!important;border:0!important;box-shadow:none!important;filter:drop-shadow(0 12px 12px rgba(0,0,0,.20))}
+.turn-banner .tx{font-size:24px!important;font-weight:800!important;line-height:1.35!important;text-align:center!important;color:#49382f!important}
+.turn-banner .sub,.turn-banner .ic{display:none!important}
+.portrait-toggle{z-index:999!important;pointer-events:auto!important}
+.map-token.active{z-index:40!important;animation:tokenMegaPc .78s ease-in-out infinite alternate!important;transform-origin:center bottom!important;filter:drop-shadow(0 12px 9px rgba(0,0,0,.48)) drop-shadow(0 0 12px rgba(255,221,70,.98))!important}
+@keyframes tokenMegaPc{from{transform:translateY(-40px) scale(3.05)}to{transform:translateY(-52px) scale(3.65)}}
+.message-window{width:min(920px,calc(100% - 34px))!important;min-height:118px!important;padding:17px 22px 15px!important;border-radius:16px!important;background:rgba(255,252,247,.86)!important;background-image:none!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;border:1px solid rgba(167,128,78,.36)!important;box-shadow:0 10px 28px rgba(32,25,19,.18)!important;gap:5px!important}
+.message-speaker{min-height:29px!important;padding:0 13px!important;font-size:13px!important;font-weight:650!important;border-radius:12px!important;background:rgba(231,145,164,.12)!important;border:1px solid rgba(195,111,132,.16)!important}
+.message-text{font-size:clamp(16px,1.45vw,20px)!important;line-height:1.55!important;font-weight:500!important;min-height:42px!important}
+.message-footer{font-size:11px!important}.nextmark{font-size:13px!important}
+.board-roll-pop{position:absolute;left:50%;top:50%;z-index:80;transform:translate(-50%,-50%) scale(.65);font-size:clamp(92px,13vw,170px);line-height:1;font-weight:900;color:#fff9df;text-shadow:0 6px 0 #9c6d22,0 0 24px rgba(255,218,75,.95),0 12px 26px rgba(0,0,0,.38);pointer-events:none;opacity:0}
+.board-roll-pop.show{display:block!important;animation:rollPop .88s cubic-bezier(.16,.86,.2,1) forwards}
+@keyframes rollPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}22%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}58%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-57%) scale(.92)}}
+.roll-wait-layer{position:absolute;inset:0;z-index:70;display:grid;place-items:end center;padding-bottom:22px;background:transparent;cursor:pointer}
+.roll-wait-layer.hidden{display:none!important}
+.roll-wait-text{padding:9px 18px;border-radius:999px;background:rgba(42,34,28,.76);color:#fff;font-size:13px;font-weight:700;box-shadow:0 5px 16px rgba(0,0,0,.25);animation:waitPulse 1.1s ease-in-out infinite alternate}
+@keyframes waitPulse{to{transform:translateY(-3px);opacity:.72}}
+@media(max-width:900px){
+ .turn-banner{width:min(310px,calc(100% - 24px))!important;padding:16px 18px 14px!important}.turn-banner .ava{width:128px!important;height:145px!important}.turn-banner .tx{font-size:20px!important}
+ .map-token.active{animation:tokenMegaMobile .78s ease-in-out infinite alternate!important}
+ @keyframes tokenMegaMobile{from{transform:translateY(-32px) scale(3.25)}to{transform:translateY(-43px) scale(4.05)}}
+ .message-window{width:calc(100% - 14px)!important;min-height:104px!important;padding:13px 15px 13px!important;border-radius:14px!important}.message-speaker{font-size:12px!important;min-height:25px!important}.message-text{font-size:14px!important;line-height:1.5!important;min-height:36px!important}.message-footer{font-size:9px!important}.nextmark{font-size:12px!important}
+ .board-roll-pop{font-size:clamp(80px,27vw,132px)}.roll-wait-text{font-size:12px;padding:8px 14px}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.20 操作・音響調整版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn" id="soundBtn">🔊 サウンド ON</button><label class="volume-control" title="BGM・効果音の音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.21 演出・操作改善版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストのPCがゲーム進行を管理します。ゲーム中はホストのタブを閉じないでください。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.20</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.21</strong><div class="note" style="margin-top:5px">全員同期メッセージ / 手番キャラクター表示 / 画面全体クリック送り / 順番表示演出 / 視覚ルーレット / コマ移動 / 時代別ターン制 / ステージ切替演出 / BGM・効果音 / CPU自動操作 / プレイヤー同士の絡みイベント。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
@@ -470,7 +498,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
           </div>
         </div>
       </aside>
-      <div class="board-panel" id="boardPanel" data-watermark="🍼"><div class="board-scroll"><div class="board-grid" id="board"></div></div></div>
+      <div class="board-panel" id="boardPanel" data-watermark="🍼"><div class="board-scroll"><div class="board-grid" id="board"></div></div><div id="boardRollPop" class="board-roll-pop hidden">?</div><div id="rollWaitLayer" class="roll-wait-layer hidden"><div class="roll-wait-text" id="rollWaitText">クリック / タップで進む</div></div></div>
       <aside class="side">
         <div class="card turnbox"><div class="sub">現在の手番</div><div class="turnname" id="turnName">-</div><div class="sub" id="turnStage">-</div><div class="roulette-shell"><div class="roulette-pointer"></div><div class="roulette-wheel" id="rouletteWheel"></div><div class="roulette-value" id="rollDisplay">?</div></div><button class="btn primary" id="rollBtn">ルーレットを回す</button><div class="note" id="turnHint" style="margin-top:7px"></div></div>
         <div class="card"><div class="section-title">カード</div><div class="inventory" id="cardArea"></div></div>
@@ -487,7 +515,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 <div id="messageClickLayer" class="message-click-layer hidden" aria-hidden="true"></div>
 <div id="messageWindow" class="message-window hidden" role="button" tabindex="0"><div class="message-speaker" id="messageSpeaker"></div><div class="message-text" id="messageText"></div><div class="message-footer"><span id="messageOwner"></span><span class="nextmark" id="messageNext">NEXT ▶</span></div></div>
 <div id="stageCurtain" class="stage-curtain hidden"><div><div class="big" id="curtainIcon">🍼</div><div class="stage-name" id="curtainName">幼少期</div><div class="stage-sub" id="curtainSub"></div><div class="line"></div></div></div>
-<div id="turnBanner" class="turn-banner hidden"><div class="ava" id="turnBannerAvatar"></div><div><div class="sub">NEXT TURN</div><div class="tx" id="turnBannerName">-</div></div><div class="ic" id="turnBannerIcon">🎲</div></div>
+<div id="turnBanner" class="turn-banner hidden"><div class="ava" id="turnBannerAvatar"></div><div class="tx" id="turnBannerName">-</div></div>
 
 
 <div id="avatarPickerOverlay" class="avatar-picker-overlay hidden" role="dialog" aria-modal="true">
