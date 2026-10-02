@@ -72,13 +72,85 @@ const CARDS=[
  {id:'date',name:'デート応援カード',desc:'交際中なら好感度+2',tag:'love',turnCost:'end'}
 ];
 const EVENT_RAW={
- baby:[['家族みんなに可愛がられた',30000,{charm:1,communication:1},2],['積み木に夢中',0,{knowledge:2},1],['公園を走り回った',0,{fitness:2},1],['人見知りを克服',0,{communication:2},2],['お気に入りのおもちゃをなくした',-10000,{},1],['写真をたくさん撮ってもらった',0,{charm:1},3],['絵本を何度も読んだ',0,{knowledge:2},2],['よく食べてよく寝た',0,{fitness:2},1]],
- elementary:[['テストで良い点',10000,{knowledge:2},2],['運動会で活躍',10000,{fitness:2},3],['クラスの人気者に',0,{communication:2,charm:1},3],['図書館に通った',0,{knowledge:3},2],['ゲームに熱中',-10000,{knowledge:1},2],['自由研究が表彰された',30000,{knowledge:2,charm:1},4],['遠足で大はしゃぎ',-10000,{fitness:1,communication:1},4],['お手伝いでおこづかい',20000,{communication:1},1],['習い事を始めた',-20000,{charm:2},2],['友達と秘密基地を作った',0,{communication:2},4]],
- middle:[['部活に打ち込んだ',-10000,{fitness:3},3],['定期テストで上位',20000,{knowledge:3},2],['文化祭で目立った',0,{charm:2,communication:2},4],['初めてのアルバイト体験',30000,{communication:1},2],['趣味の大会に出場',-20000,{charm:2},4],['友達と大げんか',0,{communication:-1},1],['仲直りして絆が深まる',0,{communication:3},4],['資格の勉強を始めた',-10000,{knowledge:2},2],['体力測定で好記録',10000,{fitness:2},2],['SNS投稿が少し話題に',10000,{charm:2},3]],
- high:[['模試で手応え',0,{knowledge:3},2],['体育祭で大活躍',10000,{fitness:3},4],['文化祭の実行委員',0,{communication:3},4],['アルバイトで貯金',50000,{communication:1},2],['趣味に大出費',-40000,{charm:2},3],['進路相談で視野が広がる',0,{knowledge:1,communication:2},2],['コンテスト入賞',50000,{charm:3},5],['部活最後の大会',-20000,{fitness:2},5],['友達と卒業旅行の計画',-30000,{communication:2},4],['夜更かし続き',0,{fitness:-1,knowledge:1},1]],
- young:[['仕事で褒められた',60000,{communication:2},3],['資格試験に合格',-30000,{knowledge:3},3],['同僚と飲み会',-30000,{communication:2},3],['趣味のイベントへ',-50000,{charm:2},5],['副業がうまくいく',90000,{knowledge:1},2],['急な修理費',-70000,{},1],['健康診断で運動を決意',-10000,{fitness:2},2],['旅行でリフレッシュ',-80000,{charm:1,communication:1},6],['仕事のミスを挽回',-20000,{communication:2},3],['友人の結婚式',-50000,{communication:1},4],['ネット販売がヒット',120000,{charm:1},3],['勉強会に参加',-20000,{knowledge:2,communication:1},2]],
- mature:[['大きな仕事を任された',100000,{communication:2,knowledge:1},4],['後輩を育てた',0,{communication:3},4],['家電を一気に買い替え',-120000,{},2],['家族旅行',-140000,{communication:1},8],['投資先が好調',140000,{},2],['趣味の作品が売れた',100000,{charm:2},4],['健康づくりを始めた',-30000,{fitness:3},3],['地域活動に参加',0,{communication:3},5],['思わぬ臨時収入',160000,{},2],['車の買い替え',-180000,{charm:1},3],['旧友と再会',-30000,{communication:2},5],['専門知識が評価された',90000,{knowledge:2},4]],
- senior:[['昔の趣味を再開',-50000,{charm:2},6],['のんびり温泉旅行',-100000,{},8],['家族からプレゼント',50000,{},7],['地域の先生役になる',50000,{communication:2,knowledge:1},6],['健康維持の散歩',0,{fitness:2},4],['古い持ち物を整理',80000,{},3],['孫世代と遊ぶ',-30000,{communication:2},8],['思い出の場所を訪ねる',-60000,{},9],['昔の知識が役立った',70000,{knowledge:1},5],['ゆっくり読書三昧',-10000,{knowledge:2},5]]
+ baby:[
+  ['祖父母が遊びに来て、一日中抱っこされたり写真を撮られたりして可愛がられた',30000,{charm:1,communication:1},2],
+  ['木の積み木を色と形ごとに並べ、最後には自分の背丈ほどの塔を作った',0,{knowledge:2},1],
+  ['近所の公園で滑り台と追いかけっこを何度も繰り返し、帰る頃にはぐっすり眠った',0,{fitness:2},1],
+  ['親戚の集まりで最初は隠れていたが、帰る頃には自分からみんなに話しかけていた',0,{communication:2},2],
+  ['お気に入りのぬいぐるみをスーパーに置き忘れ、家族総出で探し回った',-10000,{},1],
+  ['七五三のように少しよそ行きの服を着て、家族写真をたくさん撮ってもらった',0,{charm:1},3],
+  ['動物の絵本を気に入り、同じページを何度も指さして名前を覚えた',0,{knowledge:2},2],
+  ['朝ごはんをしっかり食べ、公園で遊び、夜は早く寝る生活が続いて体が丈夫になった',0,{fitness:2},1]],
+ elementary:[
+  ['算数の小テストで満点を取り、ごほうびに好きなお菓子を買ってもらった',10000,{knowledge:2},2],
+  ['運動会のクラス対抗リレーで最終走者を任され、最後の直線で一人抜いた',10000,{fitness:2},3],
+  ['休み時間に始めた鬼ごっこへクラスの半分が参加し、いつの間にか遊びの中心になっていた',0,{communication:2,charm:1},3],
+  ['図書館で恐竜図鑑に夢中になり、借りられる上限いっぱいまで関連本を持ち帰った',0,{knowledge:3},2],
+  ['家で新しい冒険ゲームに夢中になり、おこづかいを攻略本と追加コントローラーに使った',-10000,{knowledge:1},2],
+  ['夏休みに太陽熱で目玉焼きを作る自由研究をまとめ、校内発表で表彰された',30000,{knowledge:2,charm:1},4],
+  ['遠足の水族館で友達とはしゃぎすぎ、売店で予定以上におみやげを買った',-10000,{fitness:1,communication:1},4],
+  ['週末に家族の車を洗う手伝いをして、特別なおこづかいをもらった',20000,{communication:1},1],
+  ['近所のピアノ教室へ通い始め、発表会に向けて短い曲を一曲練習することになった',-20000,{charm:2},2],
+  ['友達と空き地に段ボールとブルーシートで秘密基地を作り、合言葉まで決めた',0,{communication:2},4]],
+ middle:[
+  ['バスケットボール部で毎日シュート練習を続け、放課後の自主練にも残るようになった',-10000,{fitness:3},3],
+  ['数学の定期テストで学年上位に入り、家族から小さなお祝いをもらった',20000,{knowledge:3},2],
+  ['文化祭のステージ企画で司会を担当し、予定外のトラブルもアドリブでつないだ',0,{charm:2,communication:2},4],
+  ['商店街のパン屋で一日職業体験をし、接客と品出しを任された',30000,{communication:1},2],
+  ['学校近くのイラストコンテストへ作品を出し、結果発表まで毎日掲示板を確認した',-20000,{charm:2},4],
+  ['部活の片づけ方を巡って親友と本気で口論し、数日間ほとんど話さなくなった',0,{communication:-1},1],
+  ['けんかした親友と放課後のファミレスで話し合い、最後は同じポテトをつまんで仲直りした',0,{communication:3},4],
+  ['英語検定の参考書を買い、寝る前に毎日20分ずつ勉強する習慣を始めた',-10000,{knowledge:2},2],
+  ['体力測定の20mシャトルランで自己ベストを大きく更新し、体育の先生に驚かれた',10000,{fitness:2},2],
+  ['自作した弁当の写真をSNSに載せたところ、友達以外からも反応がついた',10000,{charm:2},3]],
+ high:[
+  ['大学受験向けの全国模試で第一志望の判定が一段上がり、勉強の手応えを感じた',0,{knowledge:3},2],
+  ['体育祭の障害物リレーでアンカーを任され、クラスを逆転優勝へ導いた',10000,{fitness:3},4],
+  ['文化祭の実行委員として出店の配置と時間割をまとめ、当日の混乱を最小限に抑えた',0,{communication:3},4],
+  ['放課後のファミレスでアルバイトを続け、夏休みの旅行代を自分で貯めた',50000,{communication:1},2],
+  ['好きなバンドの限定ライブとグッズ販売に全力を出し、一日でかなり使ってしまった',-40000,{charm:2},3],
+  ['担任との進路面談で、名前も知らなかった学部や職業をいくつも教えてもらった',0,{knowledge:1,communication:2},2],
+  ['地域の動画コンテストに三分の短編を応募し、審査員特別賞に選ばれた',50000,{charm:3},5],
+  ['バスケットボール部最後の大会で県大会出場を懸けた試合に挑んだ',-20000,{fitness:2},5],
+  ['卒業前に友達と温泉旅行を計画し、宿と交通費を少しずつ出し合った',-30000,{communication:2},4],
+  ['定期テスト前に動画を見続けて夜更かしし、翌日は眠気と戦いながら授業を受けた',0,{fitness:-1,knowledge:1},1]],
+ young:[
+  ['取引先へのプレゼンで自分の説明が採用の決め手になり、上司から臨時の報奨金をもらった',60000,{communication:2},3],
+  ['仕事に関係する資格試験へ挑み、休日の勉強が実って合格通知を受け取った',-30000,{knowledge:3},3],
+  ['同僚三人と焼き鳥屋へ行き、仕事の愚痴から趣味の話まで閉店近くまで語った',-30000,{communication:2},3],
+  ['好きな作品の大型イベントへ遠征し、交通費とグッズ代を惜しまず使った',-50000,{charm:2},5],
+  ['休日に始めた中古品のネット販売が軌道に乗り、まとまった利益が出た',90000,{knowledge:1},2],
+  ['自宅のエアコンが真夏に故障し、急いで修理業者を呼ぶことになった',-70000,{},1],
+  ['健康診断で運動不足を指摘され、帰り道でランニングシューズを買って週二回走り始めた',-10000,{fitness:2},2],
+  ['友人と二泊三日の温泉旅行へ出かけ、仕事のことを忘れてしっかり休んだ',-80000,{charm:1,communication:1},6],
+  ['提出直前に見つかった仕事のミスを一晩かけて修正し、翌朝ぎりぎりで間に合わせた',-20000,{communication:2},3],
+  ['学生時代の友人の結婚式に出席し、久しぶりに同級生たちと再会した',-50000,{communication:1},4],
+  ['趣味で作ったハンドメイド品をネット販売したところ、予想外に注文が殺到した',120000,{charm:1},3],
+  ['業界の勉強会へ参加し、講師や他社の参加者と名刺を交換して新しい知識を持ち帰った',-20000,{knowledge:2,communication:1},2]],
+ mature:[
+  ['複数部署が関わる半年規模のプロジェクト責任者を任され、無事に納期までまとめ切った',100000,{communication:2,knowledge:1},4],
+  ['新しく入った後輩の教育担当になり、週一回の面談と実務指導を続けた',0,{communication:3},4],
+  ['冷蔵庫と洗濯機が同じ月に故障し、思い切って省エネ家電へまとめて買い替えた',-120000,{},2],
+  ['家族で三泊四日の北海道旅行へ行き、レンタカーで観光地を巡った',-140000,{communication:1},8],
+  ['数年前から少額で積み立てていた投資信託が好調で、一部を利益確定した',140000,{},2],
+  ['休日に作っていた木工作品を地域のマルシェへ出したところ、用意した分がほぼ売り切れた',100000,{charm:2},4],
+  ['腰の重さが気になり、近所のスポーツジムへ入会して週末の水泳を始めた',-30000,{fitness:3},3],
+  ['町内会の夏祭りで受付と会計を手伝い、近所に顔見知りが一気に増えた',0,{communication:3},5],
+  ['昔払い過ぎていた保険料の返金通知が届き、思わぬ臨時収入になった',160000,{},2],
+  ['長年乗った車の車検見積もりを見て買い替えを決め、中古のファミリーカーを購入した',-180000,{charm:1},3],
+  ['学生時代の旧友と十数年ぶりに再会し、駅前の居酒屋で当時の話を何時間もした',-30000,{communication:2},5],
+  ['社内勉強会で自分の専門分野を解説し、その内容が別部署の案件にも採用された',90000,{knowledge:2},4]],
+ senior:[
+  ['若い頃に弾いていたギターを押し入れから出し、弦を張り替えて練習を再開した',-50000,{charm:2},6],
+  ['平日に二泊で温泉旅館へ出かけ、混雑の少ない露天風呂とのんびりした食事を楽しんだ',-100000,{},8],
+  ['誕生日に家族から新しいタブレット端末を贈られ、写真や動画を見る楽しみが増えた',50000,{},7],
+  ['公民館のスマホ教室で講師役を頼まれ、近所の人へ写真の送り方や地図アプリを教えた',50000,{communication:2,knowledge:1},6],
+  ['毎朝同じ川沿いを30分歩く習慣をつけ、季節の変化を楽しむようになった',0,{fitness:2},4],
+  ['物置を整理して使わなくなったカメラや工具をリサイクルショップへ持ち込んだ',80000,{},3],
+  ['孫世代の子どもたちとボードゲームを遊び、ルール説明から本気の勝負まで付き合った',-30000,{communication:2},8],
+  ['昔住んでいた町を訪ね、通学路だった道とよく通った店の跡をゆっくり歩いた',-60000,{},9],
+  ['昔の仕事で身につけた知識が地域の設備トラブル解決に役立ち、お礼を受け取った',70000,{knowledge:1},5],
+  ['図書館で歴史小説をまとめて借り、毎朝一冊ずつ読む穏やかな時間を楽しんだ',-10000,{knowledge:2},5]]
 };
 const EVENTS={};for(const k in EVENT_RAW)EVENTS[k]=EVENT_RAW[k].map(x=>({text:x[0],cash:x[1],stats:x[2],memory:x[3]}));
 
@@ -123,7 +195,7 @@ const CHOICE_EVENTS={
    {label:'得意そうな子を探す',out:{stats:{knowledge:2},memory:2,text:'役割分担がうまくいき、課題を早く終えられた。'}}]}
  ],
  middle:[
-  {id:'mid_club',title:'部活をどう楽しむ？',text:'少し自由に動ける時間ができた。',options:[
+  {id:'mid_club',title:'バスケットボール部の放課後',text:'通常練習が早く終わり、体育館をあと30分自由に使えることになった。',options:[
    {label:'基礎練習を続ける',out:{stats:{fitness:3},memory:2,text:'地味な練習を積み重ね、体の動きが良くなった。'}},
    {label:'後輩に教える',out:{stats:{communication:2},memory:3,text:'人に教える難しさと楽しさを知った。'}},
    {label:'新しいやり方を試す',out:{stats:{knowledge:1,charm:2},memory:3,text:'自分なりの工夫が思った以上に好評だった。'}}]},
@@ -149,7 +221,7 @@ const CHOICE_EVENTS={
    {label:'自分の案を出す',out:{stats:{charm:2,communication:1},memory:4,text:'思い切った案が採用され、準備が動き始めた。'}},
    {label:'みんなの意見をまとめる',out:{stats:{communication:3},memory:3,text:'ばらばらだった案が一つにまとまった。'}},
    {label:'必要な作業を先に始める',out:{stats:{knowledge:2,fitness:1},memory:2,text:'話し合いの間に準備を進め、後でかなり助かった。'}}]},
-  {id:'high_parttime',title:'アルバイト先が忙しい',text:'急に人手が足りなくなった。',options:[
+  {id:'high_parttime',title:'ファミレスのアルバイトが大混雑',text:'夕食どきに団体客が重なり、ホールの人手が急に足りなくなった。',options:[
    {label:'追加でシフトに入る',out:{cash:45000,stats:{communication:1,fitness:1},memory:2,text:'かなり忙しかったが、しっかり稼げた。'}},
    {label:'短時間だけ手伝う',out:{cash:20000,stats:{communication:1},memory:2,text:'無理のない範囲で手伝って感謝された。'}},
    {label:'今日は予定を優先する',out:{stats:{charm:1},memory:3,text:'自分の予定を大切にして、良い気分転換になった。'}}]},
@@ -171,7 +243,7 @@ const CHOICE_EVENTS={
    {label:'一緒に行く',out:{cash:-25000,stats:{communication:2},memory:3,text:'仕事以外の話で意外と盛り上がった。'}},
    {label:'別の人も誘う',out:{cash:-35000,stats:{communication:2,charm:1},memory:4,text:'人数が増えてにぎやかな時間になった。'}},
    {label:'今日は帰る',out:{stats:{fitness:1,knowledge:1},memory:1,text:'早めに休んで、翌日はかなり調子が良かった。'}}]},
-  {id:'young_side',title:'副業の話を聞いた',text:'知り合いから小さな副業の話を持ちかけられた。',options:[
+  {id:'young_side',title:'ネットショップの手伝いを頼まれた',text:'知り合いから、週末だけ商品撮影と出品作業を手伝ってほしいと頼まれた。',options:[
    {label:'やってみる',out:{cash:70000,stats:{knowledge:1},memory:2,text:'慣れない作業だったが、ちょっとした収入になった。'}},
    {label:'知り合いを紹介する',out:{cash:25000,stats:{communication:2},memory:2,text:'紹介した相手にも喜ばれた。'}},
    {label:'今回は断る',out:{stats:{fitness:1},memory:1,text:'無理に予定を増やさず、余裕を残した。'}}]}
@@ -181,10 +253,10 @@ const CHOICE_EVENTS={
    {label:'大掃除する',out:{stats:{fitness:2},memory:2,text:'思い切って片づけたら家がすっきりした。'}},
    {label:'家具を入れ替える',out:{cash:-70000,stats:{charm:2},memory:3,text:'部屋の雰囲気が一気に変わった。'}},
    {label:'家族や友人を招く',out:{cash:-40000,stats:{communication:2},memory:5,text:'にぎやかな時間が良い思い出になった。'}}]},
-  {id:'mat_hobby',title:'昔の趣味を再開',text:'しばらく離れていた趣味が気になってきた。',options:[
-   {label:'道具を揃え直す',out:{cash:-60000,stats:{charm:2},memory:5,text:'新しい道具でやる気が一気に戻った。'}},
-   {label:'昔の仲間に連絡する',out:{stats:{communication:3},memory:5,text:'久しぶりの再会で話が止まらなかった。'}},
-   {label:'まずは気軽に試す',out:{stats:{knowledge:1,charm:1},memory:3,text:'無理せず再開したら思った以上に楽しかった。'}}]},
+  {id:'mat_hobby',title:'昔好きだった写真撮影を再開',text:'棚の奥から古いカメラが出てきて、久しぶりに休日の街を撮り歩きたくなった。',options:[
+   {label:'新しいレンズを買う',out:{cash:-60000,stats:{charm:2},memory:5,text:'中古の単焦点レンズを一本買い、休日の撮影が一気に楽しくなった。'}},
+   {label:'昔の写真仲間に連絡する',out:{stats:{communication:3},memory:5,text:'十数年ぶりに撮影会へ集まり、昔使っていた機材の話で盛り上がった。'}},
+   {label:'スマホだけ持って散歩する',out:{stats:{knowledge:1,charm:1},memory:3,text:'構図を考えながら近所を撮るだけでも、昔の感覚が少し戻ってきた。'}}]},
   {id:'mat_money',title:'まとまった余裕資金',text:'少しだけ自由に使えるお金ができた。',options:[
    {label:'生活をちょっと豪華にする',out:{cash:-80000,stats:{charm:2},memory:5,text:'少し贅沢して、良い気分転換になった。'}},
    {label:'学び直しに使う',out:{cash:-50000,stats:{knowledge:3},memory:2,text:'新しい知識が仕事にも日常にも役立ちそうだ。'}},
@@ -207,7 +279,7 @@ const CHOICE_EVENTS={
    {label:'思い出の場所へ行く',out:{cash:-50000,memory:8,text:'昔と変わった景色、変わらない景色の両方を楽しんだ。'}},
    {label:'初めての場所へ行く',out:{cash:-70000,stats:{charm:1},memory:8,text:'まだ知らない景色に出会えた。'}},
    {label:'近所をのんびり歩く',out:{stats:{fitness:1,communication:1},memory:5,text:'近所の人と話しながら穏やかに過ごした。'}}]},
-  {id:'senior_help',title:'誰かから相談を受けた',text:'これまでの経験を聞かせてほしいと言われた。',options:[
+  {id:'senior_help',title:'近所の若い夫婦から相談を受けた',text:'仕事と子育ての両立で悩んでいるらしく、長く働いてきた経験を聞かせてほしいと言われた。',options:[
    {label:'自分の経験を話す',out:{stats:{communication:2,knowledge:1},memory:5,text:'話しているうちに、自分でも忘れていた経験を思い出した。'}},
    {label:'まず相手の話を聞く',out:{stats:{communication:3},memory:5,text:'じっくり聞くことで、相手も少し元気になった。'}},
    {label:'一緒に考えてみる',out:{stats:{knowledge:2,communication:1},memory:5,text:'答えを押しつけず、一緒に道筋を考えた。'}}]}
@@ -380,7 +452,7 @@ const TOGA_STAGE_FLAVOR={
  mature:'仕事も家庭も落ち着いてくる頃。昔の趣味や忘れていたものが時々戻ってくる。',
  senior:'長い人生の終盤。昔のセーブデータも、古い仲間も、妙な記憶もまだ残っている。'
 };
-const TOGA_CAREER_EVENTS=['古い仕様書の余白に見覚えのない筆跡で追記が増えていた','炎上案件をなんとか鎮火した','深夜の会議室で一席だけ誰も座らない椅子が増えていた','やたら事情に詳しい古参社員を説得した','深夜メンテ中、存在しない社員番号からアクセスが続いた','社内の謎ルールをようやく理解した','後輩に昔のゲームで培った段取り力が役立った','プレゼン中、一瞬だけ窓の外の街が消えた気がした'];
+const TOGA_CAREER_EVENTS=['古い仕様書の余白に、昨日までなかった筆跡で修正指示が増えていた','炎上した納品直前の案件で担当を振り直し、徹夜一回でなんとか公開日に間に合わせた','深夜の会議室を片づけていると、座席表にない椅子が一脚だけ壁際に増えていた','退職したはずなのに社内事情へ異様に詳しい古参社員へ電話し、昔の取引先の癖を教えてもらった','深夜メンテナンス中、社員名簿にない番号から同じファイルへのアクセスが何度も記録された','申請書を三部署へ回す社内ルールの理由を調べたら、十年前の一件以来ずっと誰も変えていなかった','後輩の作業手順をゲームの攻略チャートのように整理したら、ミスが目に見えて減った','取引先へのプレゼン中、一瞬だけ窓の外からビル群が消えたように見えたが、次の瞬間には元通りだった'];
 const TOGA_JOB_NAMES={office:'ギルド系会社員',sales:'異界営業',chef:'回復料理人',designer:'概念デザイナー',engineer:'魔導機関エンジニア',teacher:'知識伝承教師',nurse:'SAN値ケア医療職',civil:'王国系公務員',mechanic:'機甲整備士',creator:'深夜配信クリエイター',programmer:'古代言語プログラマー',architect:'迷宮建築士',researcher:'禁書庫研究員',doctor:'高位ヒーラー医師',lawyer:'ルールブック法律家',pilot:'空中戦パイロット',athlete:'覚醒系プロ選手',musician:'必殺曲ミュージシャン',actor:'実写化対応俳優',idol:'伝説候補タレント',manager:'作戦本部・経営企画',consultant:'攻略指南コンサル',entrepreneur:'異世界系起業家',trader:'乱数読解トレーダー',author:'締切召喚作家',artisan:'伝説級クラフター',farmer:'スローライフ農業経営',game:'クソゲー再生ゲーム企画',scientist:'宇宙的先端研究者',executive:'最終形態・企業役員'};
 const TOGA_CARD_VIEW={
  plus2:{name:'赤い加速カード',desc:'次のルーレット結果に+2。3倍ではない。'},guard:{name:'SAN値保険カード',desc:'次の損失イベントを半減。正気度そのものは保証対象外。'},study:{name:'禁書読破カード',desc:'知力+3'},charm:{name:'作画覚醒カード',desc:'魅力+3'},network:{name:'古参コネカード',desc:'交流+3'},fitness:{name:'修行回カード',desc:'体力+3'},bonus:{name:'謎の埋蔵金カード',desc:'その場で8万円'},date:{name:'恋愛イベント強制発生カード',desc:'交際中なら好感度+2'}
@@ -389,23 +461,23 @@ const TOGA_SPACE_NAMES={event:'怪異',plus:'幸運？',minus:'厄災',grow:'覚
 
 const ALL_CHOICE_EVENTS=[...Object.values(CHOICE_EVENTS).flat(),...Object.values(TOGA_CHOICE_EVENTS).flat()];
 const ABILITY_EVENT_RULES={
- '自由研究が表彰された':{stat:'knowledge',target:7,failText:'自由研究は入賞を逃したが、調べたことはしっかり身についた。'},
- '趣味の大会に出場':{stat:'charm',target:7,failText:'大会では結果を残せなかったが、良い経験になった。'},
- '体力測定で好記録':{stat:'fitness',target:7,failText:'記録は平均的だった。次はもっと伸ばせそうだ。'},
- 'コンテスト入賞':{stat:'charm',target:9,failText:'コンテストでは惜しくも入賞を逃した。'},
- '部活最後の大会':{stat:'fitness',target:9,failText:'最後の大会は悔しい結果だったが、やり切った。'},
- '資格試験に合格':{stat:'knowledge',target:10,failText:'資格試験はあと一歩。勉強した分だけ知識は増えた。'},
- '専門知識が評価された':{stat:'knowledge',target:11,failText:'専門知識を試す場面で少し力不足を感じた。'},
- '地域の先生役になる':{stat:'communication',target:10,failText:'人に教える難しさを実感したが、良い刺激になった。'}
+ '夏休みに太陽熱で目玉焼きを作る自由研究をまとめ、校内発表で表彰された':{stat:'knowledge',target:7,failText:'発表では賞に届かなかったが、実験を繰り返したぶん知識はしっかり身についた。'},
+ '学校近くのイラストコンテストへ作品を出し、結果発表まで毎日掲示板を確認した':{stat:'charm',target:7,failText:'入賞は逃したが、完成まで描き切った作品は自信につながった。'},
+ '体力測定の20mシャトルランで自己ベストを大きく更新し、体育の先生に驚かれた':{stat:'fitness',target:7,failText:'記録は平均的だったが、最後まで走り切って次の目標ができた。'},
+ '地域の動画コンテストに三分の短編を応募し、審査員特別賞に選ばれた':{stat:'charm',target:9,failText:'入賞は逃したものの、作品を完成させて公開した経験は大きかった。'},
+ 'バスケットボール部最後の大会で県大会出場を懸けた試合に挑んだ':{stat:'fitness',target:9,failText:'県大会には届かなかったが、最後の笛まで走り切って部活を終えた。'},
+ '仕事に関係する資格試験へ挑み、休日の勉強が実って合格通知を受け取った':{stat:'knowledge',target:10,failText:'合格にはあと少し届かなかった。勉強した範囲は仕事で使える知識として残った。'},
+ '社内勉強会で自分の専門分野を解説し、その内容が別部署の案件にも採用された':{stat:'knowledge',target:11,failText:'説明には苦戦したが、質問を受けたことで自分の理解不足も見つかった。'},
+ '公民館のスマホ教室で講師役を頼まれ、近所の人へ写真の送り方や地図アプリを教えた':{stat:'communication',target:10,failText:'説明がうまく伝わらない場面もあったが、一緒に操作しながら最後まで付き合った。'}
 };
-const CAREER_EVENTS=['大口案件を成功させた','資格が仕事に活きた','チームをまとめた','新企画が採用された','難しいトラブルを解決した','顧客から高評価を受けた','後輩の指導が評価された','社内表彰を受けた'];
+const CAREER_EVENTS=['取引先向けの提案資料を作り直し、プレゼンで大型契約を決めた','取得した資格の知識を使って、現場の手戻りを一つ減らした','納期が遅れていたチームの作業を整理し、担当を振り直して立て直した','社内公募へ出した新サービス案が採用され、試験運用まで進んだ','顧客先で起きた急なトラブルへ対応し、その日のうちに復旧までこぎつけた','担当した顧客から名指しで感謝のメールが届き、上司にも共有された','新人の教育担当として作った手順書が部署全体で使われるようになった','一年間の成果が認められ、社内表彰で名前を呼ばれた'];
 const MILESTONES={baby:'幼少期が始まった',elementary:'小学校生活が始まった',middle:'中学生になった',high:'高校生活が始まった',young:'大人としての生活が始まった',mature:'人生の中盤に入った',senior:'円熟期に入った'};
 
 const STAGE_FLAVOR={baby:'家族に見守られながら、はじめての世界へ。',elementary:'遊びも勉強も、毎日が新発見。',middle:'得意なことや人間関係が少しずつ形になる。',high:'進路を考えながら、自分らしさを伸ばす。',young:'仕事・恋愛・資産形成。選択肢が一気に広がる。',mature:'仕事も家庭も人生の大きな節目へ。',senior:'積み重ねた人生を楽しみ、最後の総決算へ。'};
 const STAGE_THEME={baby:['#e7f2e5','#fff0d5'],elementary:['#e1f1dc','#fff1bd'],middle:['#dce8f5','#eadff4'],high:['#e8e3f7','#f8dfdc'],young:['#dcefe8','#dce7f6'],mature:['#e0e8ee','#f0decf'],senior:['#f2e6d7','#f1dcae']};
 const SPACE_META={start:['🏁','スタート'],event:['🎲','出来事'],plus:['＋','プラス'],minus:['－','マイナス'],grow:['📚','成長'],social:['💬','交流'],chance:['✨','チャンス'],payday:['💴','収入'],card:['🃏','カード'],treasure:['💎','お宝'],submap:['🗺️','寄り道'],romance:['💗','恋愛'],property:['🏠','物件'],career:['💼','仕事'],family:['👪','家族']};
 let peer=null,hostConn=null,isHost=false,roomCode='',localPlayerId='',state=null,cpuTimer=null,hostTimers=[];const connections=new Map();
-let bgmOn=localStorage.getItem('lifeRoadBgmOn')!=='0',sfxOn=localStorage.getItem('lifeRoadSfxOn')!=='0',audioCtx=null,bgmTimer=null,bgmStep=0,bgmStage=-1,lastFx={roulette:null,move:'',stage:null,message:''},rollVisualTimer=null,mobileBoardFocusTimer=null,boardRollPopTimer=null;
+let bgmOn=localStorage.getItem('lifeRoadBgmOn')!=='0',sfxOn=localStorage.getItem('lifeRoadSfxOn')!=='0',audioCtx=null,bgmTimer=null,bgmStep=0,bgmStage=-1,bgmThemeKey='',lastFx={roulette:null,move:'',stage:null,message:''},rollVisualTimer=null,mobileBoardFocusTimer=null,boardRollPopTimer=null;
 let typewriterTimer=null,typewriterKey='',typewriterFullText='',typewriterDone=true,typewriterPos=0,messageSceneKey='',landingPopKey='';
 let masterVolume=Math.max(0,Math.min(1,Number(localStorage.getItem('lifeRoadVolume')??'1')));
 let portraitCollapsed=localStorage.getItem('lifeRoadPortraitCollapsed')==='1';
@@ -767,7 +839,7 @@ function resetBoardPan(nextKey=''){boardPan.x=0;boardPan.y=0;boardPan.anchorKey=
 function canDragBoard(){return !!(state&&state.phase==='playing'&&!state.busy&&!state.message&&!state.pendingChoice&&!state.pendingRollAdvance&&!state.fx?.turn&&!state.fx?.landing)}
 function updateBoardDragUi(){if(!els.boardPanel)return;els.boardPanel.classList.toggle('drag-ready',canDragBoard());els.boardPanel.classList.toggle('dragging',!!boardPan.dragging)}
 function setupBoardDrag(){if(!els.boardPanel||els.boardPanel.dataset.dragReady)return;els.boardPanel.dataset.dragReady='1';const end=()=>{if(!boardPan.dragging)return;boardPan.dragging=false;updateBoardDragUi()};els.boardPanel.addEventListener('pointerdown',e=>{if(!canDragBoard())return;boardPan.dragging=true;boardPan.startX=e.clientX;boardPan.startY=e.clientY;boardPan.baseX=boardPan.x;boardPan.baseY=boardPan.y;try{els.boardPanel.setPointerCapture(e.pointerId)}catch(err){}updateBoardDragUi();e.preventDefault()});els.boardPanel.addEventListener('pointermove',e=>{if(!boardPan.dragging)return;boardPan.x=boardPan.baseX+(e.clientX-boardPan.startX);boardPan.y=boardPan.baseY+(e.clientY-boardPan.startY);focusBoardCamera(true)});els.boardPanel.addEventListener('pointerup',end);els.boardPanel.addEventListener('pointercancel',end);updateBoardDragUi()}
-function render(){if(!state)return;saveSession();if(localHomeView){show(els.home);refreshResumeCard();updateBoardDragUi();if(isHost)maybeRunCpu();return}if(state.phase==='lobby'){show(els.lobby);renderLobby()}else if(state.phase==='playing'){show(els.game);renderGame()}else if(state.phase==='finished'){prepareResults();show(els.result);renderResult()}updateBoardDragUi();if(isHost)maybeRunCpu()}
+function render(){if(!state)return;saveSession();if(localHomeView){show(els.home);refreshResumeCard();updateBoardDragUi();if(isHost)maybeRunCpu();return}if(state.phase==='lobby'){show(els.lobby);renderLobby()}else if(state.phase==='playing'){show(els.game);renderGame()}else if(state.phase==='finished'){prepareResults();show(els.result);renderResult()}updateBoardDragUi();updateBgmForState();if(isHost)maybeRunCpu()}
 function lobbyEntryCard(p){
  const mine=p.id===localPlayerId&&!p.cpu,kind=p.cpu?`${cpuDef(p.cpuType).icon} ${cpuDef(p.cpuType).name} CPU`:'👤 プレイヤー',opt=avatarOption(p.avatarId);
  return `<div class="lobby-entry-card ${mine?'mine':''}" style="--pc:${p.color}"><div class="lobby-entry-top"><div class="lobby-mini-avatar"><img src="${esc(p.avatar||AVATARS[0])}" alt=""></div><div class="lobby-entry-heading"><div class="lobby-entry-name">${esc(p.name)}</div><div class="lobby-entry-kind">${esc(kind)}</div></div></div><div class="lobby-character-stage"><img class="lobby-character-full" src="${esc(p.avatar||AVATARS[0])}" alt="${esc(opt.name)}"></div><div class="lobby-entry-info"><div class="lobby-entry-money">初期資金 ${money(p.cash)}</div>${avatarSelectHtml(p)}${isHost&&p.cpu?`<button class="btn small warn cpu-remove" data-id="${p.id}" style="width:100%">CPU削除</button>`:''}</div></div>`;
@@ -994,8 +1066,8 @@ function adjustedAbilityEvent(p,e){
  return{event:weaker,check:{ok,stat:rule.stat,roll,text:rule.failText}};
 }
 function choiceEventById(id){return ALL_CHOICE_EVENTS.find(e=>e.id===id)||null}
-function createStageEventChoice(p,returnTo,ctx={}){const pool=activeChoiceEventsForStage(stageDef().id),ev=choiceEventById(ctx.eventId)||pick(pool),spaceType=ctx.spaceType||'event',meta=spaceMeta(spaceType);state.pendingChoice={playerId:p.id,type:'event3',eventId:ev.id,spaceType,returnTo,title:spaceType==='event'?ev.title:`${meta[1]}マス：${ev.title}`,text:ev.text,options:ev.options.map((o,i)=>({label:o.label,value:String(i),desc:'',outcome:o.out}))}}
-function queueStageChoice(p,prefix=[],spaceType='event'){const pool=activeChoiceEventsForStage(stageDef().id),ev=pick(pool),meta=spaceMeta(spaceType);setMessage(p.id,`${meta[1]}マス`,[...prefix,{text:ev.text}],{type:'openChoice',choice:'event3',eventId:ev.id,spaceType,playerId:p.id,returnTo:'completeTurn'});broadcast()}
+function createStageEventChoice(p,returnTo,ctx={}){const pool=activeChoiceEventsForStage(stageDef().id),ev=choiceEventById(ctx.eventId)||pick(pool),spaceType=ctx.spaceType||'event',meta=spaceMeta(spaceType);state.pendingChoice={playerId:p.id,type:'event3',eventId:ev.id,spaceType,returnTo,title:spaceType==='event'?ev.title:`${meta[1]}マス：${ev.title}`,text:ctx.introShown?'どうする？':`${ev.title}。${ev.text}`,options:ev.options.map((o,i)=>({label:o.label,value:String(i),desc:'',outcome:o.out}))}}
+function queueStageChoice(p,prefix=[],spaceType='event'){const pool=activeChoiceEventsForStage(stageDef().id),ev=pick(pool),meta=spaceMeta(spaceType);setMessage(p.id,`${meta[1]}マス`,[...prefix,{text:`${ev.title}。`},{text:ev.text}],{type:'openChoice',choice:'event3',eventId:ev.id,spaceType,playerId:p.id,returnTo:'completeTurn',introShown:true});broadcast()}
 function applyHiddenEventChoice(p,o,c={}){const base=o.outcome||{},out={...base,stats:{...(base.stats||{})}},spaceType=c.spaceType||'event',lines=[];
  const stage=state.stageIndex||0;
  // Keep each ordinary space recognizable without spoiling the hidden choice result beforehand.
@@ -1048,35 +1120,15 @@ function resolveLandingEffect(p,wraps=0,sOverride=null){state.busy=false;const s
 
 function flavorLine(stageId){const map={baby:['家族の笑顔に包まれ、部屋の空気までやさしく感じられた。','小さな出来事でも心に残る、大事な思い出がまたひとつ増える。'],elementary:['教室や校庭の空気がにぎやかで、今日も何かが起こりそうだ。','友だちとの何気ない時間が、あとから大きな思い出になる。'],middle:['少し背伸びした毎日が、得意なことや人間関係を育てていく。','嬉しいことも気まずいことも、全部が今の自分をつくっていく。'],high:['忙しい日々の中で、将来へつながる経験が少しずつ積み上がっていく。','友人や挑戦との出会いが、人生の進路をゆっくり変えていく。'],young:['仕事も遊びも選択肢が多く、ひとつの決断が明日を大きく動かす。','自分で選んだ行動が、収入や人間関係へはっきり返ってくる時期だ。'],mature:['積み上げた経験が実を結び、周囲との関わり方にも深みが出てくる。','家庭も仕事も忙しいが、そのぶん得られるものも大きい。'],senior:['これまでの歩みを振り返りながら、余裕のある時間を楽しめる。','穏やかな毎日の中にも、心が動く出来事はまだまだ待っている。']};return pick(map[stageId]||map.young)}
 function togaEventStoryLines(p,e,stageId,amt){
- const openers={
-  baby:[`${p.name}の家では、いつも通りの一日が過ぎていた。`,`何でもないはずの日常の中で、${p.name}の周りに少し妙なことが起きた。`],
-  elementary:[`いつもの学校生活の途中、${p.name}は少し変わった出来事に出会った。`,`放課後まで普段通りの一日だった。そこまでは。`],
-  middle:[`部活や友人との時間を過ごしていた${p.name}に、思いがけない出来事が起きた。`,`いつもの学校生活の途中、少し説明しづらいことが起きた。`],
-  high:[`受験や文化祭で忙しい、ごく普通の高校生活。そんな中でひとつ出来事が起きた。`,`いつもの放課後、${p.name}は妙に印象へ残る出来事に出会った。`],
-  young:[`仕事や私生活を送る、ごく普通の一日の途中だった。`,`いつも通りの生活をしていた${p.name}に、少し変わった出来事が起きた。`],
-  mature:[`仕事や家庭に追われる日々の中、${p.name}に思いがけない出来事があった。`,`慣れた日常の途中でも、時々説明のつかないことは起きる。`],
-  senior:[`穏やかな日常を過ごしていた${p.name}に、少し変わった出来事が訪れた。`,`長く生きていても、初めて見るものはまだある。`]
- };
  const text=/[。！？!?]$/.test(e.text)?e.text:`${e.text}。`;
  const tone=amt>0?'good':amt<0?'bad':'normal';
- return[{text:pick(openers[stageId]||openers.young)},{text,tone}]
+ return[{text,tone}]
 }
 function eventStoryLines(p,e,stageId,amt){
  if(isToga())return togaEventStoryLines(p,e,stageId,amt);
- const openers={
-  baby:[`${p.name}のまわりで、いつもと少し違う一日が始まった。`,`家族が見守る中、${p.name}に小さな出来事が訪れた。`],
-  elementary:[`放課後までまだ時間はたっぷり。${p.name}の一日は思わぬ方向へ転がり始めた。`,`学校で過ごす何気ない一日。その途中で${p.name}にちょっとした事件が起きた。`],
-  middle:[`友人関係も勉強も少し複雑になる頃。${p.name}にも新しい出来事が舞い込んだ。`,`いつもの学校生活のはずが、今日は少しだけ空気が違った。`],
-  high:[`将来を意識し始めた${p.name}。そんな日々の中で、忘れにくい出来事が起きた。`,`忙しい高校生活の途中、${p.name}に思いがけない展開が待っていた。`],
-  young:[`仕事や私生活に慣れてきた${p.name}。しかし今日は予定通りには進まなかった。`,`大人の毎日は選択の連続。${p.name}にも新しい話が飛び込んできた。`],
-  mature:[`経験を積んだ${p.name}にも、まだ予想外の出来事はやってくる。`,`仕事も暮らしも落ち着いてきた頃、${p.name}の日常に変化が訪れた。`],
-  senior:[`ゆったりした時間を楽しむ${p.name}。今日は少し特別な一日になりそうだ。`,`これまでの人生を振り返る中で、${p.name}に新しい思い出が加わった。`]
- };
- const afterGood=['思っていた以上にうまくいき、気分よく一日を終えた。','予想外の幸運に恵まれ、しばらく顔がほころんだ。','小さな成功だったが、次につながりそうな手応えを感じた。'];
- const afterBad=['痛い出費にはなったが、あとで笑い話にできそうだ。','予定外の展開に少し落ち込んだものの、経験だけはしっかり残った。','思い通りにはいかなかった。それでも、この失敗も人生の一部だ。'];
- const afterFlat=['派手な出来事ではないが、こういう一日が後から思い出になっていく。','何気ない経験が、少しだけ${p.name}を成長させた。'.replace('${p.name}',p.name),'その場では気づかなかったが、今日の経験は確かに何かを残した。'];
- const resultTone=amt>0?'good':amt<0?'bad':'normal';
- return [{text:pick(openers[stageId]||openers.young)},{text:`そして――「${e.text}」。`,tone:resultTone},{text:pick(amt>0?afterGood:amt<0?afterBad:afterFlat),tone:resultTone}];
+ const text=/[。！？!?]$/.test(e.text)?e.text:`${e.text}。`;
+ const tone=amt>0?'good':amt<0?'bad':'normal';
+ return[{text,tone}]
 }
 function randomOtherPlayer(p){const others=state.players.filter(x=>x.id!==p.id);return others.length?pick(others):null}
 function maybeTogaPlayerInteraction(p,force=false){
@@ -1105,18 +1157,18 @@ function maybePlayerInteraction(p,force=false){
  if(school){
   const r=rnd(5);
   if(r===0){applyStats(p,{communication:1,knowledge:1});applyStats(other,{communication:1});p.memory+=3;other.memory+=2;lines.push({text:`そこへ${other.name}も合流。二人で相談しながら動くうち、いつの間にか息が合ってきた。`,tone:'normal'},{text:`最後は二人とも笑顔で解散。${p.name}は知力・交流+1、${other.name}は交流+1。`,tone:'good'},{text:`思い出：${p.name}+3 / ${other.name}+2`,tone:'good'});}
-  else if(r===1){const a=p.stats.knowledge+p.stats.fitness+rnd(8),b=other.stats.knowledge+other.stats.fitness+rnd(8),winner=a>=b?p:other,loser=winner.id===p.id?other:p;winner.memory+=4;loser.memory+=2;applyStats(winner,{charm:1});lines.push({text:`話の流れで、${p.name}と${other.name}がちょっとした勝負をすることになった！`},{text:`接戦の末、今回は${winner.name}の勝ち！ ${loser.name}も「次は負けない」と笑っている。`,tone:'good'},{text:`${winner.name} 魅力+1・思い出+4 / ${loser.name} 思い出+2`,tone:'good'});}
+  else if(r===1){const a=p.stats.knowledge+p.stats.fitness+rnd(8),b=other.stats.knowledge+other.stats.fitness+rnd(8),winner=a>=b?p:other,loser=winner.id===p.id?other:p;winner.memory+=4;loser.memory+=2;applyStats(winner,{charm:1});{const contests=['積み木をどちらが高く積めるか','紙飛行機をどちらが遠くまで飛ばせるか','早押しクイズで何問取れるか','体育館のフリースローを何本決められるか'],contest=contests[Math.min(state.stageIndex,3)];lines.push({text:`${p.name}と${other.name}が「${contest}」で勝負することになった！`},{text:`接戦の末、今回は${winner.name}の勝ち！ ${loser.name}も「次は負けない」と笑っている。`,tone:'good'},{text:`${winner.name} 魅力+1・思い出+4 / ${loser.name} 思い出+2`,tone:'good'});}}
   else if(r===2){applyStats(p,{communication:2});applyStats(other,{knowledge:1});p.memory+=2;other.memory+=2;lines.push({text:`困っていた${other.name}に${p.name}が声をかけ、二人で問題を片づけることになった。`},{text:`助けたつもりが、${p.name}のほうも意外なことを教わった。持ちつ持たれつだ。`,tone:'good'},{text:`${p.name} 交流+2 / ${other.name} 知力+1 / 二人の思い出+2`,tone:'good'});}
-  else if(r===3){const g=10000+rnd(30000);p.cash+=g;other.cash+=g;p.memory+=2;other.memory+=2;lines.push({text:`${p.name}と${other.name}は一緒に小さな企画へ参加することにした。`},{text:`思った以上に盛り上がり、ごほうびまで獲得！ 二人で山分けした。`,tone:'good'},{text:`二人とも +${money(g)} / 思い出+2`,tone:'good'});}
+  else if(r===3){const g=10000+rnd(30000);p.cash+=g;other.cash+=g;p.memory+=2;other.memory+=2;lines.push({text:`${p.name}と${other.name}は商店街のスタンプラリーへペアで参加し、制限時間内に全チェックポイントを回ることにした。`},{text:`最後の一か所へ滑り込み、完走賞の賞金を二人で山分けした。`,tone:'good'},{text:`二人とも +${money(g)} / 思い出+2`,tone:'good'});}
   else{p.memory+=4;other.memory+=4;applyStats(p,{charm:1});applyStats(other,{charm:1});lines.push({text:`帰り道、${p.name}と${other.name}は予定を忘れて長話。気づけばすっかり遅い時間だ。`},{text:`特に何かを得たわけではない。でも、二人にとってかなり楽しい一日になった。`,tone:'good'},{text:`二人とも 魅力+1・思い出+4`,tone:'good'});}
  }else{
   const r=rnd(6);
   if(r===0){const cost=25000+rnd(45000);p.cash-=cost;other.memory+=3;p.memory+=4;lines.push({text:`帰り際、${p.name}は偶然${other.name}を見つけ、そのまま食事へ行くことになった。`},{text:`話が盛り上がった勢いで、今回は${p.name}がお会計を引き受けた。`,tone:'normal'},{text:`${p.name} -${money(cost)}・思い出+4 / ${other.name} 思い出+3`,tone:'bad'});}
   else if(r===1){const gain=50000+rnd(90000);p.cash+=gain;other.cash+=Math.round(gain*.7);applyStats(p,{communication:1});applyStats(other,{communication:1});lines.push({text:`${p.name}と${other.name}は、二人で小さな副業企画を試してみることにした。`},{text:`役割分担がうまくハマり、予想以上の成果が出た！`,tone:'good'},{text:`${p.name} +${money(gain)} / ${other.name} +${money(Math.round(gain*.7))} / 二人とも交流+1`,tone:'good'});}
-  else if(r===2){const swing=30000+rnd(70000),pa=p.stats.knowledge+p.stats.communication+rnd(10),pb=other.stats.knowledge+other.stats.communication+rnd(10);if(pa>=pb){p.cash+=swing;other.cash-=Math.round(swing*.35);lines.push({text:`${p.name}と${other.name}が同じチャンスを狙うことになり、静かな競争が始まった。`},{text:`今回は${p.name}が一歩先へ！ ${other.name}は悔しそうに結果を見つめている。`,tone:'good'},{text:`${p.name} +${money(swing)} / ${other.name} -${money(Math.round(swing*.35))}`,tone:'good'});}else{other.cash+=swing;p.cash-=Math.round(swing*.35);lines.push({text:`${p.name}と${other.name}が同じチャンスを狙うことになり、静かな競争が始まった。`},{text:`最後に抜け出したのは${other.name}！ ${p.name}は次の機会を狙うことにした。`,tone:'bad'},{text:`${p.name} -${money(Math.round(swing*.35))} / ${other.name} +${money(swing)}`,tone:'normal'});}}
-  else if(r===3){applyStats(p,{knowledge:1,communication:1});applyStats(other,{knowledge:1,communication:1});p.memory+=3;other.memory+=3;lines.push({text:`${other.name}から相談を持ちかけられ、${p.name}は少し長めに話を聞くことになった。`},{text:`話しているうちにお互い考えが整理され、結局二人とも得をした気分になった。`,tone:'good'},{text:`二人とも 知力+1・交流+1・思い出+3`,tone:'good'});}
+  else if(r===2){const swing=30000+rnd(70000),pa=p.stats.knowledge+p.stats.communication+rnd(10),pb=other.stats.knowledge+other.stats.communication+rnd(10);if(pa>=pb){p.cash+=swing;other.cash-=Math.round(swing*.35);lines.push({text:`${p.name}と${other.name}が、社内公募の新企画プレゼンで同じ採用枠を争うことになった。`},{text:`今回は${p.name}が一歩先へ！ ${other.name}は悔しそうに結果を見つめている。`,tone:'good'},{text:`${p.name} +${money(swing)} / ${other.name} -${money(Math.round(swing*.35))}`,tone:'good'});}else{other.cash+=swing;p.cash-=Math.round(swing*.35);lines.push({text:`${p.name}と${other.name}が、社内公募の新企画プレゼンで同じ採用枠を争うことになった。`},{text:`最後に抜け出したのは${other.name}！ ${p.name}は次の機会を狙うことにした。`,tone:'bad'},{text:`${p.name} -${money(Math.round(swing*.35))} / ${other.name} +${money(swing)}`,tone:'normal'});}}
+  else if(r===3){applyStats(p,{knowledge:1,communication:1});applyStats(other,{knowledge:1,communication:1});p.memory+=3;other.memory+=3;lines.push({text:`${other.name}から転職候補の二社で迷っていると相談され、${p.name}は求人票と条件を一緒に見比べることになった。`},{text:`話しているうちに${p.name}自身の働き方も整理され、二人とも少し頭がすっきりした。`,tone:'good'},{text:`二人とも 知力+1・交流+1・思い出+3`,tone:'good'});}
   else if(r===4){const cost=40000+rnd(50000);p.cash-=cost;other.cash-=cost;p.memory+=7;other.memory+=7;lines.push({text:`予定が偶然合い、${p.name}と${other.name}は思い切って日帰り旅行へ！`},{text:`財布は少し軽くなったが、写真フォルダは一気ににぎやかになった。`,tone:'good'},{text:`二人とも -${money(cost)} / 思い出+7`,tone:'normal'});}
-  else{applyStats(p,{charm:1});applyStats(other,{communication:2});p.memory+=3;other.memory+=3;lines.push({text:`${p.name}の何気ない一言がきっかけで、${other.name}との会話が思わぬ方向へ広がった。`},{text:`二人とも「こんな話をするとは思わなかった」と笑いながら別れた。`,tone:'good'},{text:`${p.name} 魅力+1 / ${other.name} 交流+2 / 二人の思い出+3`,tone:'good'});}
+  else{applyStats(p,{charm:1});applyStats(other,{communication:2});p.memory+=3;other.memory+=3;lines.push({text:`${p.name}が昔好きだったゲームの話を出すと、${other.name}も同じ作品を遊んでいたことが判明した。`},{text:`好きだったキャラクターや難所の話で予想以上に盛り上がり、二人とも笑いながら別れた。`,tone:'good'},{text:`${p.name} 魅力+1 / ${other.name} 交流+2 / 二人の思い出+3`,tone:'good'});}
  }
  return lines;
 }
@@ -1224,7 +1276,7 @@ function joinRoom(){ensureAudio();clearSavedSession();intentionalDisconnect=fals
 function addCpu(){if(!isHost||state.players.length>=4)return;const type=pick(CPU_TYPES),num=state.players.filter(p=>p.cpu).length+1,p=makePlayer(`CPU${num}`,true,type.id);state.players.push(p);addLog(`${p.name}（${type.name}）を追加`);broadcast()}
 function fillCpu(){while(isHost&&state.players.length<4)addCpu()}
 function removeCpu(id){if(!isHost||state.phase!=='lobby')return;state.players=state.players.filter(p=>p.id!==id);state.players.forEach((p,i)=>p.color=COLORS[i]);broadcast()}
-function handleFx(){const f=state.fx;if(f.roulette&&lastFx.roulette!==f.roulette.id){const result=f.roulette.result;lastFx.roulette=f.roulette.id;animateRoulette(result);sfxRoulette();const delay=Math.round(1450*speedScale());if(f.roulette.kind!=='promotion')setTimeout(()=>{if(window.innerWidth<900)focusMobileBoardAfterRoulette();setTimeout(()=>showBoardRollPop(result),window.innerWidth<900?330:0)},delay)}const mv=f.move;if(mv){const key=mv.id+'_'+mv.step;if(lastFx.move!==key){lastFx.move=key;sfxStep();requestAnimationFrame(focusBoardCamera)}}if(f.stage&&lastFx.stage!==f.stage.id){lastFx.stage=f.stage.id;startBgm(f.stage.stageIndex);sfxStage()}const m=state.message;if(m){const key=m.id+'_'+m.index;if(lastFx.message!==key){lastFx.message=key;els.messageText.classList.remove('message-enter');void els.messageText.offsetWidth;els.messageText.classList.add('message-enter');const line=m.lines[m.index];if(line?.tone==='good')sfxGood();else if(line?.tone==='bad')sfxBad()}}}
+function handleFx(){const f=state.fx;if(f.roulette&&lastFx.roulette!==f.roulette.id){const result=f.roulette.result;lastFx.roulette=f.roulette.id;animateRoulette(result);sfxRoulette();const delay=Math.round(1450*speedScale());if(f.roulette.kind!=='promotion')setTimeout(()=>{if(window.innerWidth<900)focusMobileBoardAfterRoulette();setTimeout(()=>showBoardRollPop(result),window.innerWidth<900?330:0)},delay)}const mv=f.move;if(mv){const key=mv.id+'_'+mv.step;if(lastFx.move!==key){lastFx.move=key;sfxStep();requestAnimationFrame(focusBoardCamera)}}if(f.stage&&lastFx.stage!==f.stage.id){lastFx.stage=f.stage.id;updateBgmForState(true);sfxStage()}const m=state.message;if(m){const key=m.id+'_'+m.index;if(lastFx.message!==key){lastFx.message=key;els.messageText.classList.remove('message-enter');void els.messageText.offsetWidth;els.messageText.classList.add('message-enter');const line=m.lines[m.index];if(line?.tone==='good')sfxGood();else if(line?.tone==='bad')sfxBad()}}}
 function focusMobileBoardAfterRoulette(){
  if(window.innerWidth>=900||!els.boardPanel||state?.phase!=='playing')return;
  els.boardPanel.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});
@@ -1237,9 +1289,45 @@ function animateRoulette(result){
  rollVisualTimer=setTimeout(()=>{els.roll.textContent=String(result)},Math.round(1050*speedScale()));
 
 }
-function ensureAudio(){if(!bgmOn&&!sfxOn)return;if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC()}if(audioCtx.state==='suspended')audioCtx.resume();if(bgmOn&&!bgmTimer)startBgm(state?.stageIndex||0)}
+function ensureAudio(){if(!bgmOn&&!sfxOn)return;if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC()}if(audioCtx.state==='suspended')audioCtx.resume();if(bgmOn&&!bgmTimer)updateBgmForState(true)}
 function tone(freq,dur=.09,g=.028,type='sine',when=0,kind='sfx'){if(!audioCtx)return;if(kind==='bgm'?!bgmOn:!sfxOn)return;const o=audioCtx.createOscillator(),gain=audioCtx.createGain();o.type=type;o.frequency.value=freq;gain.gain.setValueAtTime(Math.min(.58,g*6*masterVolume),audioCtx.currentTime+when);gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+when+dur);o.connect(gain).connect(audioCtx.destination);o.start(audioCtx.currentTime+when);o.stop(audioCtx.currentTime+when+dur+.02)}
-function startBgm(si){if(!bgmOn)return;ensureAudioCore();if(!audioCtx)return;bgmStage=si;bgmStep=0;if(bgmTimer)clearInterval(bgmTimer);const seqs=[[262,330,392,330,294,349,392,349],[294,370,440,370,330,392,494,392],[247,294,370,294,220,277,330,277],[262,311,392,311,294,349,466,349],[220,277,330,277,247,294,370,294],[196,247,294,247,220,262,330,262],[175,220,262,220,196,247,294,247]],seq=seqs[si]||seqs[0];bgmTimer=setInterval(()=>{if(!bgmOn||!audioCtx||audioCtx.state!=='running')return;const f=seq[bgmStep++%seq.length];tone(f,.24,.018,'triangle',0,'bgm');if(bgmStep%4===1)tone(f/2,.30,.012,'sine',0,'bgm')},320)}
+const BGM_THEMES={
+ lobby:{seq:[330,392,494,392,349,440,523,440],tempo:390,wave:'triangle',gain:.014,bass:.010},
+ bright:{seq:[523,659,784,659,587,698,880,784],tempo:255,wave:'triangle',gain:.018,bass:.011},
+ warm:{seq:[392,494,587,494,440,523,659,523],tempo:410,wave:'sine',gain:.017,bass:.011},
+ choice:{seq:[330,392,440,392,349,415,466,415],tempo:340,wave:'triangle',gain:.015,bass:.010},
+ eerie:{seq:[220,233,196,185,207,174,196,165],tempo:470,wave:'sine',gain:.014,bass:.012},
+ trouble:{seq:[220,196,174,196,185,165,147,165],tempo:310,wave:'triangle',gain:.016,bass:.012},
+ tension:{seq:[262,294,311,349,311,294,370,349],tempo:225,wave:'square',gain:.011,bass:.010},
+ result:{seq:[523,659,784,1047,880,784,659,784],tempo:330,wave:'triangle',gain:.019,bass:.012},
+ field0:{seq:[262,330,392,330,294,349,392,349],tempo:355,wave:'triangle',gain:.015,bass:.010},
+ field1:{seq:[294,370,440,370,330,392,494,392],tempo:335,wave:'triangle',gain:.015,bass:.010},
+ field2:{seq:[247,294,370,294,220,277,330,277],tempo:370,wave:'triangle',gain:.015,bass:.010},
+ field3:{seq:[262,311,392,311,294,349,466,349],tempo:345,wave:'triangle',gain:.015,bass:.010},
+ field4:{seq:[220,277,330,277,247,294,370,294],tempo:360,wave:'triangle',gain:.015,bass:.010},
+ field5:{seq:[196,247,294,247,220,262,330,262],tempo:390,wave:'triangle',gain:.015,bass:.010},
+ field6:{seq:[175,220,262,220,196,247,294,247],tempo:420,wave:'sine',gain:.016,bass:.011}
+};
+function desiredBgmTheme(){
+ if(localHomeView)return'lobby';
+ if(!state)return'lobby';
+ if(state.phase==='finished')return'result';
+ if(state.phase!=='playing')return'lobby';
+ if(state.pendingPromotion||state.pendingChoice?.type==='bigGamble'||state.fx?.lastTurn)return'tension';
+ if(state.pendingChoice)return'choice';
+ const m=state.message;
+ if(m){
+  const line=m.lines?.[m.index],text=`${m.speaker||''} ${typeof line==='string'?line:(line?.text||'')}`,toneName=typeof line==='string'?'normal':(line?.tone||'normal');
+  if(isToga()&&/黒|怪異|行方不明|見知らぬ|存在しない|石像|砂嵐|深夜|名状|異様|押し入れ|廊下|転移|星の並び|排水路|白い部屋/.test(text))return'eerie';
+  if(/恋愛|家族|デート|結婚|誕生|パートナー/.test(text))return'warm';
+  if(toneName==='bad')return'trouble';
+  if(toneName==='good')return'bright';
+ }
+ return`field${state.stageIndex||0}`;
+}
+function updateBgmForState(force=false){if(!bgmOn||!audioCtx||audioCtx.state!=='running')return;const key=desiredBgmTheme();if(!force&&bgmThemeKey===key&&bgmTimer)return;startBgmTheme(key)}
+function startBgmTheme(key){if(!bgmOn)return;ensureAudioCore();if(!audioCtx)return;const cfg=BGM_THEMES[key]||BGM_THEMES.field0;bgmThemeKey=key;bgmStep=0;if(bgmTimer)clearInterval(bgmTimer);bgmTimer=setInterval(()=>{if(!bgmOn||!audioCtx||audioCtx.state!=='running')return;const f=cfg.seq[bgmStep++%cfg.seq.length];tone(f,.25,cfg.gain,cfg.wave,0,'bgm');if(bgmStep%4===1)tone(f/2,.34,cfg.bass,'sine',0,'bgm');if((key==='eerie'||key==='tension')&&bgmStep%4===3)tone(f*1.5,.16,cfg.gain*.45,'sine',.04,'bgm')},cfg.tempo)}
+function startBgm(si){bgmStage=si;startBgmTheme(`field${si}`)}
 function ensureAudioCore(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC()}}
 function sfxStep(){tone(520,.055,.026,'square')}function sfxGood(){tone(659,.11,.034,'triangle');tone(784,.13,.028,'triangle',.07)}function sfxBad(){tone(220,.13,.032,'sawtooth');tone(174,.17,.026,'sawtooth',.08)}function sfxStage(){tone(392,.13,.038,'triangle');tone(523,.15,.035,'triangle',.1);tone(659,.19,.032,'triangle',.2)}
 function sfxRoulette(){if(!sfxOn||!audioCtx)return;let i=0;const tick=setInterval(()=>{tone(760-i*10,.025,.012,'square');i++;if(i>15)clearInterval(tick)},Math.max(35,Math.round(65*speedScale())))}
@@ -1248,7 +1336,7 @@ function updateAudioToggleUi(){if(els.bgmBtn){els.bgmBtn.textContent=bgmOn?'🎵
 function setMasterVolume(v){masterVolume=Math.max(0,Math.min(1,Number(v)||0));localStorage.setItem('lifeRoadVolume',String(masterVolume));updateVolumeUi();if(masterVolume>0&&(bgmOn||sfxOn))ensureAudio()}
 function applyPortraitCollapsed(){if(!els.portraitPanel)return;els.portraitPanel.classList.toggle('collapsed',portraitCollapsed);if(els.portraitToggle){const mobile=window.innerWidth<=900;els.portraitToggle.setAttribute('aria-expanded',portraitCollapsed?'false':'true');els.portraitToggle.title=portraitCollapsed?'手番キャラクター表示を開く':'手番キャラクター表示を収納';els.portraitToggle.textContent=mobile?(portraitCollapsed?'▲':'▼'):(portraitCollapsed?'▶':'◀')}}
 function togglePortraitPanel(){portraitCollapsed=!portraitCollapsed;localStorage.setItem('lifeRoadPortraitCollapsed',portraitCollapsed?'1':'0');applyPortraitCollapsed()}
-function toggleBgm(){bgmOn=!bgmOn;localStorage.setItem('lifeRoadBgmOn',bgmOn?'1':'0');updateAudioToggleUi();if(bgmOn){ensureAudio();startBgm(state?.stageIndex||0)}else if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function toggleBgm(){bgmOn=!bgmOn;localStorage.setItem('lifeRoadBgmOn',bgmOn?'1':'0');updateAudioToggleUi();if(bgmOn){ensureAudio();updateBgmForState(true)}else if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
 function toggleSfx(){sfxOn=!sfxOn;localStorage.setItem('lifeRoadSfxOn',sfxOn?'1':'0');updateAudioToggleUi();if(sfxOn)ensureAudio()}
 els.wheel.innerHTML='';setupBoardDrag();
 const advanceRollInput=e=>{if(!state?.pendingRollAdvance?.ready)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();tryAdvancePendingRoll()};
