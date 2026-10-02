@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.42</title>
+<title>みんなの人生ロード Deluxe v0.43</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -740,20 +740,35 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 @keyframes lastTurnPop{0%{opacity:0;transform:scale(.55) rotate(-4deg)}18%{opacity:1;transform:scale(1.09) rotate(1deg)}30%{transform:scale(.98)}72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
 @media(max-width:620px){.last-turn-card{min-width:88vw;padding:28px 18px 24px;border-radius:20px}.last-turn-card::before,.last-turn-card::after{font-size:22px}.last-turn-main{font-size:52px}.last-turn-sub{font-size:14px}}
 
+
+/* v0.43: top player cards show each player's car token. */
+#gamePlayers .player-card{position:relative!important}
+#gamePlayers .player-token-badge{position:absolute;right:7px;top:6px;width:46px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.82);border:1px solid rgba(91,74,54,.14);border-radius:10px;box-shadow:0 3px 9px rgba(0,0,0,.10);z-index:8;pointer-events:none}
+#gamePlayers .player-token-badge img{display:block;width:42px;height:30px;object-fit:contain;filter:drop-shadow(0 3px 2px rgba(0,0,0,.18))}
+#gamePlayers .player-name{padding-right:50px!important}
+@media(max-width:900px){
+ #gamePlayers .player-token-badge{left:3px;right:auto;top:3px;width:34px;height:27px;border-radius:8px;background:rgba(255,255,255,.90)}
+ #gamePlayers .player-token-badge img{width:31px;height:23px}
+ #gamePlayers .player-name{padding-right:28px!important}
+}
+@media(max-width:600px){
+ #gamePlayers .player-token-badge{left:2px;top:2px;width:30px;height:24px}
+ #gamePlayers .player-token-badge img{width:27px;height:20px}
+}
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.42 UI文言整理版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.43 コマ表示調整版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.42</strong><div class="note" style="margin-top:5px">ゲーム時間の説明や設定画面の文言を整理し、初めて遊ぶ人にも分かりやすい現行仕様の表記に統一しました。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.43</strong><div class="note" style="margin-top:5px">コマの移動速度を少しゆっくりにし、上部のプレイヤー一覧で各プレイヤーの車コマを確認できるようにしました。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
