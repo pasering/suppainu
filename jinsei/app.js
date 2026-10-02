@@ -82,8 +82,9 @@ const EVENT_RAW={
 };
 const EVENTS={};for(const k in EVENT_RAW)EVENTS[k]=EVENT_RAW[k].map(x=>({text:x[0],cash:x[1],stats:x[2],memory:x[3]}));
 
-// Roughly half of ordinary event spaces become hidden-result 3-choice events.
-// The choices intentionally do not reveal stat changes, checks, or rewards before selection.
+// Roughly half of the ordinary life spaces (event / plus / minus / grow / social)
+// become hidden-result 3-choice events. Choices do not reveal stat changes, checks,
+// or rewards before selection; each space type adds its own flavor after the choice.
 const CHOICE_EVENTS={
  baby:[
   {id:'baby_box',title:'大きな箱を見つけた',text:'部屋のすみに、ちょうど入れそうな大きな箱がある。どうしよう？',options:[
@@ -754,13 +755,23 @@ function adjustedAbilityEvent(p,e){
  return{event:weaker,check:{ok,stat:rule.stat,roll,text:rule.failText}};
 }
 function choiceEventById(id){return ALL_CHOICE_EVENTS.find(e=>e.id===id)||null}
-function createStageEventChoice(p,returnTo,ctx={}){const pool=CHOICE_EVENTS[stageDef().id]||CHOICE_EVENTS.young,ev=choiceEventById(ctx.eventId)||pick(pool);state.pendingChoice={playerId:p.id,type:'event3',eventId:ev.id,returnTo,title:ev.title,text:ev.text,options:ev.options.map((o,i)=>({label:o.label,value:String(i),desc:'',outcome:o.out}))}}
-function queueStageChoice(p,prefix=[]){const pool=CHOICE_EVENTS[stageDef().id]||CHOICE_EVENTS.young,ev=pick(pool);setMessage(p.id,'出来事',[...prefix,{text:ev.text}],{type:'openChoice',choice:'event3',eventId:ev.id,playerId:p.id,returnTo:'completeTurn'});broadcast()}
-function applyHiddenEventChoice(p,o){const out=o.outcome||{},lines=[];let amt=0;if(out.cash)amt=cashChange(p,out.cash);if(out.stats)applyStats(p,out.stats);if(out.memory)p.memory+=out.memory;if(out.jobExp&&p.job)p.jobExp+=out.jobExp;lines.push({text:out.text||'選んだ行動が思わぬ結果につながった。',tone:(amt>0||Object.values(out.stats||{}).some(v=>v>0))?'good':amt<0?'bad':'normal'});const detail=[];if(amt)detail.push(`${amt>0?'+':''}${money(amt)}`);for(const [k,v] of Object.entries(out.stats||{}))if(v)detail.push(`${paramLabel(k)}${v>0?'+':''}${v}`);if(out.memory)detail.push(`思い出+${out.memory}`);if(out.jobExp&&p.job)detail.push(`仕事経験+${out.jobExp}`);if(detail.length)lines.push({text:detail.join(' / '),tone:amt<0?'bad':'good'});return lines}
+function createStageEventChoice(p,returnTo,ctx={}){const pool=CHOICE_EVENTS[stageDef().id]||CHOICE_EVENTS.young,ev=choiceEventById(ctx.eventId)||pick(pool),spaceType=ctx.spaceType||'event',meta=SPACE_META[spaceType]||SPACE_META.event;state.pendingChoice={playerId:p.id,type:'event3',eventId:ev.id,spaceType,returnTo,title:spaceType==='event'?ev.title:`${meta[1]}マス：${ev.title}`,text:ev.text,options:ev.options.map((o,i)=>({label:o.label,value:String(i),desc:'',outcome:o.out}))}}
+function queueStageChoice(p,prefix=[],spaceType='event'){const pool=CHOICE_EVENTS[stageDef().id]||CHOICE_EVENTS.young,ev=pick(pool),meta=SPACE_META[spaceType]||SPACE_META.event;setMessage(p.id,`${meta[1]}マス`,[...prefix,{text:ev.text}],{type:'openChoice',choice:'event3',eventId:ev.id,spaceType,playerId:p.id,returnTo:'completeTurn'});broadcast()}
+function applyHiddenEventChoice(p,o,c={}){const base=o.outcome||{},out={...base,stats:{...(base.stats||{})}},spaceType=c.spaceType||'event',lines=[];
+ const stage=state.stageIndex||0;
+ // Keep each ordinary space recognizable without spoiling the hidden choice result beforehand.
+ if(spaceType==='plus'){const b=15000+stage*10000;out.cash=Math.max(0,out.cash||0)+b;out.memory=(out.memory||0)+1}
+ if(spaceType==='minus'){const b=12000+stage*9000;out.cash=Math.min(0,out.cash||0)-b}
+ if(spaceType==='grow'){const positives=Object.entries(out.stats).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const key=positives[0]?.[0]||['knowledge','fitness','charm','communication'][rnd(4)];out.stats[key]=(out.stats[key]||0)+1;out.memory=(out.memory||0)+1}
+ if(spaceType==='social'){out.stats.communication=(out.stats.communication||0)+1;out.memory=(out.memory||0)+1}
+ let amt=0;if(out.cash)amt=cashChange(p,out.cash);if(Object.keys(out.stats).length)applyStats(p,out.stats);if(out.memory)p.memory+=out.memory;if(out.jobExp&&p.job)p.jobExp+=out.jobExp;
+ lines.push({text:out.text||'選んだ行動が思わぬ結果につながった。',tone:(amt>0||Object.values(out.stats||{}).some(v=>v>0))?'good':amt<0?'bad':'normal'});const detail=[];if(amt)detail.push(`${amt>0?'+':''}${money(amt)}`);for(const [k,v] of Object.entries(out.stats||{}))if(v)detail.push(`${paramLabel(k)}${v>0?'+':''}${v}`);if(out.memory)detail.push(`思い出+${out.memory}`);if(out.jobExp&&p.job)detail.push(`仕事経験+${out.jobExp}`);if(detail.length)lines.push({text:detail.join(' / '),tone:amt<0?'bad':'good'});
+ if(spaceType==='social')lines.push(...maybePlayerInteraction(p,true));
+ return lines}
 function resolveLandingEffect(p,wraps=0,sOverride=null){state.busy=false;const s=sOverride||stageBoard()[p.pos],lines=lapBonus(p,wraps);const finish=(more,speaker='出来事')=>{const all=[...lines,...more];messageResult(p.id,speaker,all.length?all:[{text:'何事もなく穏やかな一日だった。'}])};
  if(s.type==='start'){finish([{text:'スタート地点に戻ってきた。次の周回へ！',tone:'good'}],'周回');return}
  if(['event','plus','minus','grow','social'].includes(s.type)){
-  if(s.type==='event'&&Math.random()<.5){queueStageChoice(p,lines);return}
+  if(Math.random()<.5){queueStageChoice(p,lines,s.type);return}
   const all=EVENTS[stageDef().id]||EVENTS.young;
   let pool=all, speaker='出来事', bonusStats={}, bonusMemory=0, forcedTone='normal', forceInteraction=false;
   if(s.type==='plus'){pool=all.filter(e=>e.cash>0||Object.values(e.stats||{}).some(v=>v>0));speaker='プラスマス';forcedTone='good';bonusMemory=1}
@@ -849,7 +860,7 @@ function createPropertyChoice(p,returnTo){const affordable=PROPS.filter(x=>!p.pr
 function createRomanceChoice(p,returnTo){if(!p.partner){const cand=[...PARTNERS].sort(()=>Math.random()-.5).slice(0,3),used=new Set();const options=cand.map(x=>{const avatar=nextFamilyPortrait(null,used);used.add(avatar);return{label:x.name,value:x.id,avatar,desc:`${x.desc} / ${x.job}`,tags:{love:2}}});state.pendingChoice={playerId:p.id,type:'meet',returnTo,title:'新しい出会い',text:'気になる相手と交流してみますか？',options:[...options,{label:'今は恋愛しない',value:'skip',desc:'自分の時間を優先',tags:{career:1,asset:1}}]};return}state.pendingChoice={playerId:p.id,type:'date',returnTo,title:`${p.partner.name}とどうする？`,text:`現在の好感度：${p.affection}`,options:[{label:'気軽なデート',value:'light',desc:'気楽に一緒の時間を過ごす',tags:{love:1.5}},{label:'特別なデート',value:'special',desc:'少し特別な時間を作る',tags:{love:2.3}},{label:'プロポーズ',value:'propose',desc:'思い切って気持ちを伝える',tags:{love:3,risk:1.3}},{label:'今回は見送る',value:'skip',desc:'何もしない',tags:{career:1}}]}}
 function createSubmapChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'submap',returnTo,title:'寄り道スポット',text:'1つ選んで過ごします。',options:[{label:'学びの街',value:'study',desc:'じっくり学びに行く',tags:{study:2}},{label:'スポーツ施設',value:'fitness',desc:'思いきり体を動かす',tags:{career:1.2}},{label:'交流フェス',value:'social',desc:'人が集まる場所へ行く',tags:{love:1.5,career:1}},{label:'チャレンジ市場',value:'market',desc:'ちょっと変わった市場をのぞく',tags:{asset:1.5,risk:2}}]}}
 function applyChoice(p,c,o){const lines=[];
- if(c.type==='event3')return applyHiddenEventChoice(p,o);
+ if(c.type==='event3')return applyHiddenEventChoice(p,o,c);
  if(c.type==='education'){p.educationChosen=true;if(o.value==='work'){p.education='高校';p.cash+=50000}else if(o.value==='voc'){p.education='専門';p.cash-=150000;applyStats(p,{knowledge:3,charm:2})}else{p.education='大学';p.cash-=300000;applyStats(p,{knowledge:6,communication:2})}lines.push({text:`進路は「${p.education}」に決定。`,tone:'good'});return lines}
  if(c.type==='job'){if(o.value==='keep'){p.jobExp++;lines.push({text:`${p.job.name}を続けることにした。仕事経験が少し増えた。`});return lines}const j=JOBS.find(x=>x.id===o.value);if(j){const changed=!p.job||p.job.id!==j.id;p.job=j;if(changed){p.jobRank=1;p.jobExp=0}lines.push({text:`${j.name}として働くことにした。`,tone:'good'})}return lines}
  if(c.type==='treasure'){if(o.value==='skip')lines.push({text:'お宝は見送った。'});else{const t=TREASURES.find(x=>x.id===o.value);p.cash-=t.buy;p.treasures.push({id:t.id,appraised:0});lines.push({text:`「${t.name}」を購入した。最後の鑑定が楽しみだ。`,tone:'good'})}return lines}
