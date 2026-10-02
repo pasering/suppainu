@@ -702,20 +702,58 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 .space-detail-title{font-size:25px;font-weight:1000;line-height:1.15}
 .space-detail-text{margin-top:15px;font-size:15px;line-height:1.75;color:#514940;background:rgba(255,255,255,.72);border:1px solid rgba(70,57,43,.08);border-radius:12px;padding:13px 14px}
 @media(max-width:520px){.space-detail-box{width:calc(100vw - 24px);padding:18px}.space-detail-icon{width:48px;height:48px;font-size:27px}.space-detail-title{font-size:22px}.space-detail-text{font-size:14px}}
+
+/* === v0.40 staged result ceremony === */
+.result-ceremony{max-width:980px;margin:12px auto 0;padding:24px!important;min-height:520px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,#fffdf8,#f7f0e4)!important}
+.result-step-label{text-align:center;font-size:12px;font-weight:1000;letter-spacing:.08em;color:#8a755d;margin-bottom:10px}
+.result-reveal-area{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:390px;text-align:center}
+.result-reveal-title{font-size:clamp(28px,5vw,48px);font-weight:1000;line-height:1.15;margin-bottom:18px;color:#3f3429}
+.result-big-copy{font-size:clamp(22px,3.4vw,34px);font-weight:1000;line-height:1.35;margin:8px 0}
+.result-copy{font-size:15px;line-height:1.85;color:#61564b;max-width:720px;margin:8px auto}
+.result-next-btn{width:min(420px,100%);margin:18px auto 0;font-size:17px}
+.result-player-card{width:min(820px,100%);display:grid;grid-template-columns:160px minmax(0,1fr);gap:18px;text-align:left;align-items:stretch}
+.result-player-visual{border-radius:20px;background:radial-gradient(circle at 50% 85%,rgba(232,196,122,.28),transparent 58%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:8px 10px 12px;min-height:270px}
+.result-player-visual img{width:136px;height:210px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 9px 12px rgba(0,0,0,.15))}
+.result-player-visual strong{font-size:20px;margin-top:4px}
+.result-player-life{display:grid;gap:8px;align-content:center}
+.result-player-life>div{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:9px 11px;border-radius:11px;background:rgba(255,255,255,.68);border:1px solid rgba(83,66,47,.08)}
+.result-player-life b{color:#876c4d}.result-player-life span{font-weight:700;color:#433a31}
+.result-money-breakdown{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:2px}
+.result-money-breakdown>div{padding:8px 9px;border-radius:11px;background:#f0e9de;display:grid;gap:3px;text-align:center}
+.result-money-breakdown span{font-size:11px;color:#796e63}.result-money-breakdown b{font-size:15px}
+.result-money-breakdown .result-money-total{grid-column:1/-1;background:linear-gradient(135deg,#f7df91,#f1c75b);color:#453719;padding:11px}.result-money-total span{color:#6e561f}.result-money-total b{font-size:24px}
+.result-award-icon{font-size:72px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.12))}
+.result-overall{margin-bottom:18px;padding:18px 20px;border-radius:16px;background:linear-gradient(135deg,#fff8df,#f7ead0);border:1px solid rgba(161,122,44,.18)}
+.result-overall-title{font-size:24px;font-weight:1000;margin-bottom:8px}.result-overall p{margin:7px 0;line-height:1.75}
+@media(max-width:620px){.result-ceremony{padding:16px!important;min-height:500px}.result-player-card{grid-template-columns:105px minmax(0,1fr);gap:10px}.result-player-visual{min-height:220px}.result-player-visual img{width:95px;height:170px}.result-player-visual strong{font-size:16px}.result-player-life>div{grid-template-columns:56px 1fr;font-size:12px;padding:7px 8px}.result-money-breakdown{grid-template-columns:repeat(2,1fr)}.result-money-breakdown .result-money-total{grid-column:1/-1}.result-reveal-title{font-size:29px}.result-big-copy{font-size:22px}}
+
+
+/* === v0.40 finance swings / last round === */
+.debt-text{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;background:#8f2530;color:#fff;font-size:11px;font-weight:900;vertical-align:1px}
+.last-turn-banner{position:fixed;inset:0;z-index:1900;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle at center,rgba(39,18,5,.38),rgba(0,0,0,.62));animation:lastTurnBackdrop 2.4s ease both}
+.last-turn-banner.hidden{display:none!important}
+.last-turn-card{position:relative;min-width:min(680px,88vw);padding:34px 42px 30px;border-radius:26px;text-align:center;background:linear-gradient(135deg,#fff9d5 0%,#f8c95d 48%,#df7d34 100%);border:4px solid rgba(255,255,255,.85);box-shadow:0 24px 70px rgba(0,0,0,.4),inset 0 0 0 3px rgba(107,53,7,.22);animation:lastTurnPop 2.35s cubic-bezier(.18,.82,.2,1) both}
+.last-turn-card::before,.last-turn-card::after{content:'★';position:absolute;top:18px;font-size:30px;color:#8f3a1e;text-shadow:0 2px 0 #fff8c5}.last-turn-card::before{left:24px}.last-turn-card::after{right:24px}
+.last-turn-main{font-size:clamp(42px,8vw,86px);font-weight:1000;line-height:1;letter-spacing:.06em;color:#6e2117;text-shadow:0 4px 0 #fff4b0,0 8px 14px rgba(88,28,10,.22)}
+.last-turn-sub{margin-top:15px;font-size:clamp(15px,2.4vw,22px);font-weight:900;color:#6d351c;letter-spacing:.08em}
+@keyframes lastTurnBackdrop{0%{opacity:0}12%,78%{opacity:1}100%{opacity:0}}
+@keyframes lastTurnPop{0%{opacity:0;transform:scale(.55) rotate(-4deg)}18%{opacity:1;transform:scale(1.09) rotate(1deg)}30%{transform:scale(.98)}72%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+@media(max-width:620px){.last-turn-card{min-width:88vw;padding:28px 18px 24px;border-radius:20px}.last-turn-card::before,.last-turn-card::after{font-size:22px}.last-turn-main{font-size:52px}.last-turn-sub{font-size:14px}}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.38 収入通過・マス説明版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.41 給料・昇進バランス調整版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.38</strong><div class="note" style="margin-top:5px">通常／トガ両モード共通で、収入マスは通過時に給与・家族収入・物件収入を受け取り、昇格チャンスも発生します。盤面の各マスは停止中にタップすると、そのマスで起こることを簡単に確認できます。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.41</strong><div class="note" style="margin-top:5px">職業ランクの給料差を強化。Lv4は初任給の2.5倍、Lv5は5倍。上位昇格は必要能力と昇格ルーレットを厳しく調整しました。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
@@ -723,7 +761,7 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
     <div class="card stack">
       <div class="lobby-head"><h2 style="margin:0">参加者</h2><span class="sub">人間＋CPUで最大4人</span></div><div class="players" id="lobbyPlayers"></div>
       <div id="hostLobbyControls" class="settings-grid">
-        <div class="stack"><div class="field"><label>ゲーム内容</label><select id="variantSelect"><option value="normal" selected>通常モード</option><option value="toga">トガモード</option></select><div class="note">トガモード：オタク・レトロゲーム・漫画アニメ的お約束・宇宙的怪異が混ざるカオス版。</div></div><div class="field"><label>ゲーム時間</label><select id="modeSelect"><option value="quick">さっくり</option><option value="standard" selected>じっくり</option><option value="long">ロング</option></select></div><div class="note" id="modeInfo"></div><div class="field"><label>演出テンポ</label><select id="speedSelect"><option value="normal" selected>標準</option><option value="fast">テンポ速め</option></select></div><div class="field"><label>CPUメッセージ速度</label><select id="messageSpeedSelect"><option value="slow">ゆっくり</option><option value="normal" selected>標準</option><option value="fast">速め</option></select><div class="note">標準でも従来よりゆっくり読めます。</div></div></div>
+        <div class="stack"><div class="field"><label>ゲーム内容</label><select id="variantSelect"><option value="normal" selected>通常モード</option><option value="toga">トガモード</option></select><div class="note">トガモード：オタク・レトロゲーム・漫画アニメ的お約束・宇宙的怪異が混ざるカオス版。</div></div><div class="field"><label>ゲーム時間</label><select id="modeSelect"><option value="quick">さっくり</option><option value="standard" selected>普通</option><option value="long">ロング</option></select></div><div class="note" id="modeInfo"></div><div class="field"><label>演出テンポ</label><select id="speedSelect"><option value="normal" selected>標準</option><option value="fast">テンポ速め</option></select></div><div class="field"><label>CPUメッセージ速度</label><select id="messageSpeedSelect"><option value="slow">ゆっくり</option><option value="normal" selected>標準</option><option value="fast">速め</option></select><div class="note">標準でも従来よりゆっくり読めます。</div></div></div>
         <div class="stack"><button class="btn" id="addCpuBtn">CPUを追加</button><button class="btn" id="fillCpuBtn">空きをCPUで埋める</button><div class="note">CPUもメッセージ送り・ルーレット・選択を自動で行います。</div></div>
       </div>
       <button class="btn primary" id="startBtn">ゲーム開始</button>
@@ -761,7 +799,18 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
     </div>
   </section>
 
-  <section id="resultScreen" class="hidden stack"><div class="card"><h2 style="margin:0 0 10px">人生ロード 結果発表</h2><div id="awardArea" class="stack"></div></div><div class="card" id="resultArea"></div><button class="btn" id="backBtn">最初の画面へ戻る</button></section>
+  <section id="resultScreen" class="hidden stack">
+    <div class="card result-ceremony" id="resultCeremony">
+      <div class="result-step-label" id="resultStepLabel">人生の総決算</div>
+      <div id="resultRevealArea" class="result-reveal-area"></div>
+      <button class="btn primary result-next-btn" id="resultNextBtn">次へ</button>
+    </div>
+    <div id="resultSummaryWrap" class="hidden stack">
+      <div class="card"><h2 style="margin:0 0 10px">特別賞</h2><div id="awardArea" class="stack"></div></div>
+      <div class="card" id="resultArea"></div>
+      <button class="btn primary" id="backBtn">リザルトを終了してトップへ</button>
+    </div>
+  </section>
 </div>
 
 <div id="choiceOverlay" class="choice-overlay hidden" role="dialog" aria-modal="true"><div class="choice-box"><div class="choice-title" id="choiceTitle"></div><div class="note" id="choiceText"></div><div class="status" id="choiceStatus" style="margin-top:9px"></div><div class="choices" id="choiceList"></div></div></div>
@@ -770,6 +819,7 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 <div id="messageWindow" class="message-window hidden" role="button" tabindex="0"><div class="message-speaker" id="messageSpeaker"></div><div class="message-text" id="messageText"></div><div class="message-footer"><span id="messageOwner"></span><span class="nextmark" id="messageNext">NEXT ▶</span></div></div>
 <div id="stageCurtain" class="stage-curtain hidden"><div><div class="big" id="curtainIcon">🍼</div><div class="stage-name" id="curtainName">幼少期</div><div class="stage-sub" id="curtainSub"></div><div class="line"></div></div></div>
 <div id="turnBanner" class="turn-banner hidden"><div class="ava" id="turnBannerAvatar"></div><div class="tx" id="turnBannerName">-</div></div>
+<div id="lastTurnBanner" class="last-turn-banner hidden" aria-hidden="true"><div class="last-turn-card"><div class="last-turn-main">ラストターン！</div><div class="last-turn-sub">最後の1巡が始まります</div></div></div>
 
 
 
