@@ -14,8 +14,8 @@ const STAGES=[
  {id:'young',name:'大人前半',icon:'🌱'},{id:'mature',name:'大人後半',icon:'🏙️'},{id:'senior',name:'円熟期',icon:'🌅'}
 ];
 const MODES={
- quick:{name:'さっくり',rounds:[3,4,4,5,7,7,5],sizes:[42,42,42,42,42,42,42],desc:'旧じっくり相当。短めでも進路・仕事・恋愛・家族まで一通り遊びやすい。'},
- standard:{name:'普通',rounds:[4,5,5,6,9,9,7],sizes:[42,42,42,42,42,42,42],desc:'旧ロング相当。大人時代をしっかり遊べる標準ボリューム。'},
+ quick:{name:'さっくり',rounds:[3,4,4,5,7,7,5],sizes:[42,42,42,42,42,42,42],desc:'短めのプレイ時間で、進路・仕事・恋愛・家族まで一通り楽しめます。'},
+ standard:{name:'普通',rounds:[4,5,5,6,9,9,7],sizes:[42,42,42,42,42,42,42],desc:'大人時代までバランスよく遊べる標準ボリュームです。'},
  long:{name:'ロング',rounds:[4,5,5,6,13,13,8],sizes:[42,42,42,42,42,42,42],desc:'大人前半・後半を大幅に増量。恋愛・結婚・昇進・家族・資産形成をじっくり楽しむ。'}
 };
 const CPU_TYPES=[
@@ -31,7 +31,7 @@ const JOBS=[
  ['manager','経営企画',130000,{knowledge:7,communication:7},'career'],['consultant','コンサルタント',140000,{knowledge:8,communication:8},'career'],['entrepreneur','起業家',120000,{knowledge:6,communication:7},'risk'],['trader','トレーダー',125000,{knowledge:7},'asset'],['author','作家',85000,{knowledge:6,charm:5},'risk'],['artisan','職人',100000,{fitness:5,knowledge:4},'career'],['farmer','農業経営',95000,{fitness:5,communication:3},'asset'],['game','ゲーム企画',105000,{knowledge:6,charm:4},'career'],['scientist','先端研究者',155000,{knowledge:12},'study'],['executive','企業役員',170000,{knowledge:9,communication:10},'career']
 ].map((x,i)=>({id:x[0],name:x[1],base:x[2],req:x[3],tag:x[4],index:i}));
 // Family members reuse character art that already existed in the project.
-// The 15 extra images were previously removed from the player picker and are NPC/family-only.
+// These extra existing images are reserved for NPC/family use and do not appear in the player picker.
 const EXTRA_EXISTING_AVATARS=[
  {id:'old_sakura',src:'assets/avatar1.webp',family:true},{id:'old_mio',src:'assets/avatar2.webp',family:true},{id:'old_tsubaki',src:'assets/avatar3.webp',family:true},{id:'old_sumire',src:'assets/avatar4.webp',family:true},
  {id:'old_alice',src:'assets/avatar10.webp',family:true},{id:'old_chloe',src:'assets/avatar11.webp',family:true},{id:'old_mint',src:'assets/avatar12.webp',family:true},{id:'old_serena',src:'assets/avatar13.webp',family:true},{id:'old_koharu',src:'assets/avatar14.webp',family:true},
