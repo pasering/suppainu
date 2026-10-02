@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const $=s=>document.querySelector(s);
-const els={home:$('#homeScreen'),lobby:$('#lobbyScreen'),game:$('#gameScreen'),result:$('#resultScreen'),hostName:$('#hostName'),joinName:$('#joinName'),roomInput:$('#roomInput'),create:$('#createBtn'),join:$('#joinBtn'),roomCode:$('#roomCodeText'),net:$('#netStatus'),lobbyPlayers:$('#lobbyPlayers'),start:$('#startBtn'),mode:$('#modeSelect'),modeInfo:$('#modeInfo'),speed:$('#speedSelect'),hostLobby:$('#hostLobbyControls'),addCpu:$('#addCpuBtn'),fillCpu:$('#fillCpuBtn'),gamePlayers:$('#gamePlayers'),board:$('#board'),boardPanel:$('#boardPanel'),turnName:$('#turnName'),turnStage:$('#turnStage'),roll:$('#rollDisplay'),wheel:$('#rouletteWheel'),rollBtn:$('#rollBtn'),hint:$('#turnHint'),cards:$('#cardArea'),assets:$('#assetArea'),log:$('#gameLog'),choice:$('#choiceOverlay'),messageClickLayer:$('#messageClickLayer'),choiceTitle:$('#choiceTitle'),choiceText:$('#choiceText'),choiceStatus:$('#choiceStatus'),choiceList:$('#choiceList'),message:$('#messageWindow'),messageSpeaker:$('#messageSpeaker'),messageText:$('#messageText'),messageOwner:$('#messageOwner'),messageNext:$('#messageNext'),curtain:$('#stageCurtain'),curtainIcon:$('#curtainIcon'),curtainName:$('#curtainName'),curtainSub:$('#curtainSub'),turnBanner:$('#turnBanner'),turnBannerName:$('#turnBannerName'),turnBannerAvatar:$('#turnBannerAvatar'),turnBannerIcon:$('#turnBannerIcon'),portraitImg:$('#portraitImg'),portraitName:$('#portraitName'),portraitRole:$('#portraitRole'),portraitStats:$('#portraitStats'),portraitSub:$('#portraitSub'),portraitBadge:$('#portraitBadge'),eraIcon:$('#eraIcon'),eraName:$('#eraName'),eraFlavor:$('#eraFlavor'),roundText:$('#roundText'),roundDots:$('#roundDots'),fieldInfo:$('#fieldInfo'),soundBtn:$('#soundBtn'),volumeSlider:$('#volumeSlider'),volumeValue:$('#volumeValue'),portraitPanel:$('#portraitPanel'),portraitToggle:$('#portraitToggle'),awardArea:$('#awardArea'),resultArea:$('#resultArea'),back:$('#backBtn'),resumeCard:$('#resumeCard'),resumeInfo:$('#resumeInfo'),resumeBtn:$('#resumeBtn'),discardResumeBtn:$('#discardResumeBtn'),boardRollPop:$('#boardRollPop'),rollWaitLayer:$('#rollWaitLayer'),rollWaitText:$('#rollWaitText'),avatarPicker:$('#avatarPickerOverlay'),avatarPickerGrid:$('#avatarPickerGrid'),avatarPickerClose:$('#avatarPickerClose'),gameHomeBtn:$('#gameHomeBtn'),leaveGameBtn:$('#leaveGameBtn')};
+const els={home:$('#homeScreen'),lobby:$('#lobbyScreen'),game:$('#gameScreen'),result:$('#resultScreen'),hostName:$('#hostName'),joinName:$('#joinName'),roomInput:$('#roomInput'),create:$('#createBtn'),join:$('#joinBtn'),roomCode:$('#roomCodeText'),net:$('#netStatus'),lobbyPlayers:$('#lobbyPlayers'),start:$('#startBtn'),mode:$('#modeSelect'),modeInfo:$('#modeInfo'),speed:$('#speedSelect'),messageSpeed:$('#messageSpeedSelect'),hostLobby:$('#hostLobbyControls'),addCpu:$('#addCpuBtn'),fillCpu:$('#fillCpuBtn'),gamePlayers:$('#gamePlayers'),board:$('#board'),boardPanel:$('#boardPanel'),turnName:$('#turnName'),turnStage:$('#turnStage'),roll:$('#rollDisplay'),wheel:$('#rouletteWheel'),rollBtn:$('#rollBtn'),hint:$('#turnHint'),cards:$('#cardArea'),assets:$('#assetArea'),log:$('#gameLog'),choice:$('#choiceOverlay'),messageClickLayer:$('#messageClickLayer'),choiceTitle:$('#choiceTitle'),choiceText:$('#choiceText'),choiceStatus:$('#choiceStatus'),choiceList:$('#choiceList'),message:$('#messageWindow'),messageSpeaker:$('#messageSpeaker'),messageText:$('#messageText'),messageOwner:$('#messageOwner'),messageNext:$('#messageNext'),messageScene:$('#messageScene'),messageActors:$('#messageActors'),curtain:$('#stageCurtain'),curtainIcon:$('#curtainIcon'),curtainName:$('#curtainName'),curtainSub:$('#curtainSub'),turnBanner:$('#turnBanner'),turnBannerName:$('#turnBannerName'),turnBannerAvatar:$('#turnBannerAvatar'),turnBannerIcon:$('#turnBannerIcon'),portraitImg:$('#portraitImg'),portraitName:$('#portraitName'),portraitRole:$('#portraitRole'),portraitStats:$('#portraitStats'),portraitSub:$('#portraitSub'),portraitBadge:$('#portraitBadge'),eraIcon:$('#eraIcon'),eraName:$('#eraName'),eraFlavor:$('#eraFlavor'),roundText:$('#roundText'),roundDots:$('#roundDots'),fieldInfo:$('#fieldInfo'),bgmBtn:$('#bgmBtn'),sfxBtn:$('#sfxBtn'),volumeSlider:$('#volumeSlider'),volumeValue:$('#volumeValue'),portraitPanel:$('#portraitPanel'),portraitToggle:$('#portraitToggle'),awardArea:$('#awardArea'),resultArea:$('#resultArea'),back:$('#backBtn'),resumeCard:$('#resumeCard'),resumeInfo:$('#resumeInfo'),resumeBtn:$('#resumeBtn'),discardResumeBtn:$('#discardResumeBtn'),boardRollPop:$('#boardRollPop'),spaceLandingPop:$('#spaceLandingPop'),spaceLandingIcon:$('#spaceLandingIcon'),spaceLandingText:$('#spaceLandingText'),rollWaitLayer:$('#rollWaitLayer'),rollWaitText:$('#rollWaitText'),avatarPicker:$('#avatarPickerOverlay'),avatarPickerGrid:$('#avatarPickerGrid'),avatarPickerClose:$('#avatarPickerClose'),gameHomeBtn:$('#gameHomeBtn'),leaveGameBtn:$('#leaveGameBtn')};
 const COLORS=['#5577a8','#b45f5f','#5b8c62','#936aa2'];
 const AVATAR_OPTIONS=[{id:'akane',name:'あかね',cat:'girl',src:'assets/avatar5.webp'},{id:'kotoha',name:'ことは',cat:'girl',src:'assets/avatar6.webp'},{id:'momoka',name:'ももか',cat:'girl',src:'assets/avatar7.webp'},{id:'ruri',name:'るり',cat:'girl',src:'assets/avatar8.webp'},{id:'yukari',name:'ゆかり',cat:'girl',src:'assets/avatar9.webp'},{id:'dino_girl',name:'恐竜ガール',cat:'quirky',src:'assets/avatar15.webp'},{id:'mushroom_girl',name:'きのこガール',cat:'quirky',src:'assets/avatar16.webp'},{id:'ghost_girl',name:'おばけガール',cat:'quirky',src:'assets/avatar18.webp'},{id:'robot_girl',name:'メカガール',cat:'quirky',src:'assets/avatar19.webp'},{id:'penguin_girl',name:'ペンギンガール',cat:'quirky',src:'assets/avatar21.webp'},{id:'panda_girl',name:'パンダガール',cat:'quirky',src:'assets/avatar23.webp'},{id:'street_boy',name:'やんちゃ少年',cat:'boy',src:'assets/avatar24.webp'},{id:'adventure_boy',name:'冒険少年',cat:'boy',src:'assets/avatar25.webp'},{id:'office_boy',name:'会社員くん',cat:'boy',src:'assets/avatar26.webp'},{id:'hamster',name:'ハムスター',cat:'animal',src:'assets/avatar28.webp'},{id:'penguin',name:'ペンギン',cat:'animal',src:'assets/avatar30.webp'},{id:'dino',name:'ちび恐竜',cat:'quirky',src:'assets/avatar31.webp'},{id:'panda_odd',name:'ブサカワパンダ',cat:'animal',src:'assets/avatar33.webp'},{id:'hamster_odd',name:'ぽっちゃりハム',cat:'animal',src:'assets/avatar34.webp'},{id:'alien_odd',name:'脱力宇宙人',cat:'quirky',src:'assets/avatar35.webp'}];
 const AVATARS=AVATAR_OPTIONS.map(v=>v.src);
@@ -30,7 +30,35 @@ const JOBS=[
  ['programmer','プログラマー',105000,{knowledge:6},'study'],['architect','建築士',115000,{knowledge:7},'study'],['researcher','研究職',120000,{knowledge:8},'study'],['doctor','医師',145000,{knowledge:10},'study'],['lawyer','法律家',135000,{knowledge:9,communication:5},'study'],['pilot','パイロット',130000,{knowledge:7,fitness:5},'career'],['athlete','プロスポーツ選手',125000,{fitness:10},'risk'],['musician','音楽家',90000,{charm:7},'risk'],['actor','俳優',95000,{charm:8,communication:5},'risk'],['idol','タレント',100000,{charm:9},'risk'],
  ['manager','経営企画',130000,{knowledge:7,communication:7},'career'],['consultant','コンサルタント',140000,{knowledge:8,communication:8},'career'],['entrepreneur','起業家',120000,{knowledge:6,communication:7},'risk'],['trader','トレーダー',125000,{knowledge:7},'asset'],['author','作家',85000,{knowledge:6,charm:5},'risk'],['artisan','職人',100000,{fitness:5,knowledge:4},'career'],['farmer','農業経営',95000,{fitness:5,communication:3},'asset'],['game','ゲーム企画',105000,{knowledge:6,charm:4},'career'],['scientist','先端研究者',155000,{knowledge:12},'study'],['executive','企業役員',170000,{knowledge:9,communication:10},'career']
 ].map((x,i)=>({id:x[0],name:x[1],base:x[2],req:x[3],tag:x[4],index:i}));
-const PARTNERS=[['あおい','落ち着いた読書好き','knowledge'],['ひなた','明るいアウトドア派','fitness'],['れん','話好きの社交派','communication'],['みさき','おしゃれ好き','charm'],['かえで','堅実な仕事人','knowledge'],['そら','自由なクリエイター','charm'],['ゆう','スポーツ好き','fitness'],['なお','聞き上手','communication'],['つばさ','好奇心旺盛','knowledge'],['まこと','行動派','fitness']].map((x,i)=>({id:'pt'+i,name:x[0],desc:x[1],pref:x[2]}));
+// Family members reuse character art that already existed in the project.
+// The 15 extra images were previously removed from the player picker and are NPC/family-only.
+const EXTRA_EXISTING_AVATARS=[
+ {id:'old_sakura',src:'assets/avatar1.webp',family:true},{id:'old_mio',src:'assets/avatar2.webp',family:true},{id:'old_tsubaki',src:'assets/avatar3.webp',family:true},{id:'old_sumire',src:'assets/avatar4.webp',family:true},
+ {id:'old_alice',src:'assets/avatar10.webp',family:true},{id:'old_chloe',src:'assets/avatar11.webp',family:true},{id:'old_mint',src:'assets/avatar12.webp',family:true},{id:'old_serena',src:'assets/avatar13.webp',family:true},{id:'old_koharu',src:'assets/avatar14.webp',family:true},
+ {id:'old_alien_girl',src:'assets/avatar17.webp',family:true},{id:'old_slime_girl',src:'assets/avatar20.webp',family:true},{id:'old_hamster_girl',src:'assets/avatar22.webp',family:true},
+ {id:'old_panda',src:'assets/avatar27.webp',family:false},{id:'old_alien',src:'assets/avatar29.webp',family:false},{id:'old_ghost',src:'assets/avatar32.webp',family:false}
+];
+const FAMILY_FRIENDLY_CURRENT_IDS=new Set(['akane','kotoha','momoka','ruri','yukari','dino_girl','mushroom_girl','ghost_girl','robot_girl','penguin_girl','panda_girl','street_boy','adventure_boy','office_boy']);
+const ALL_EXISTING_CHARACTER_ART=[
+ ...AVATAR_OPTIONS.map(v=>({id:v.id,src:v.src,family:FAMILY_FRIENDLY_CURRENT_IDS.has(v.id)})),
+ ...EXTRA_EXISTING_AVATARS
+];
+const CHILD_NAMES=['あお','ひかり','ゆず','りん','はる','なぎ','つむぎ','そら','みなと','かなた','いおり','こはる','あさひ','すず','れお','しおん','まひろ','ひなた','あき','るか'];
+const CHILD_JOBS=[
+ ['会社員',32000],['デザイナー',35000],['エンジニア',42000],['公務員',38000],['料理人',34000],['研究職',45000],['販売職',30000],['クリエイター',36000],['医療職',43000],['スポーツ関係',36000]
+];
+const PARTNERS=[
+ ['あおい','落ち着いた読書好き','knowledge','図書館スタッフ',72000],
+ ['ひなた','明るいアウトドア派','fitness','スポーツインストラクター',78000],
+ ['れん','話好きの社交派','communication','営業職',88000],
+ ['みさき','おしゃれ好き','charm','デザイナー',84000],
+ ['かえで','堅実な仕事人','knowledge','会社員',90000],
+ ['そら','自由なクリエイター','charm','クリエイター',82000],
+ ['ゆう','スポーツ好き','fitness','トレーナー',80000],
+ ['なお','聞き上手','communication','福祉スタッフ',76000],
+ ['つばさ','好奇心旺盛','knowledge','研究補助',94000],
+ ['まこと','行動派','fitness','技術職',86000]
+].map((x,i)=>({id:'pt'+i,name:x[0],desc:x[1],pref:x[2],job:x[3],income:x[4]}));
 const PROPS=[['郊外の小さな家',220000,180000,0],['駅近マンション',360000,330000,10000],['海辺のコテージ',420000,380000,12000],['古民家リノベ',480000,450000,14000],['都市型マンション',650000,620000,18000],['店舗付き住宅',760000,720000,28000],['高原別荘',880000,800000,20000],['小さなアパート',1000000,970000,45000],['デザイナーズ住宅',1200000,1150000,26000],['商業ビル区画',1500000,1450000,65000],['リゾートヴィラ',1800000,1700000,42000],['大型賃貸物件',2200000,2100000,90000]].map((x,i)=>({id:'pr'+i,name:x[0],price:x[1],value:x[2],income:x[3]}));
 const TREASURES=[['古い腕時計',50000,180000],['限定スニーカー',30000,120000],['アンティーク食器',60000,250000],['希少なレコード',40000,200000],['古いカメラ',70000,260000],['記念硬貨セット',80000,320000],['名工の工芸品',100000,420000],['謎の絵画',120000,650000],['ヴィンテージ家具',90000,350000],['絶版コミック全集',50000,230000],['古酒コレクション',100000,480000],['クラシック楽器',130000,550000],['鉱石標本',60000,300000],['サイン入り記念品',70000,380000],['古地図',90000,500000],['未鑑定の箱',30000,800000]].map((x,i)=>({id:'tr'+i,name:x[0],buy:x[1],max:x[2]}));
 const CARDS=[
@@ -60,7 +88,8 @@ const STAGE_FLAVOR={baby:'家族に見守られながら、はじめての世界
 const STAGE_THEME={baby:['#e7f2e5','#fff0d5'],elementary:['#e1f1dc','#fff1bd'],middle:['#dce8f5','#eadff4'],high:['#e8e3f7','#f8dfdc'],young:['#dcefe8','#dce7f6'],mature:['#e0e8ee','#f0decf'],senior:['#f2e6d7','#f1dcae']};
 const SPACE_META={start:['🏁','スタート'],event:['🎲','出来事'],plus:['＋','プラス'],minus:['－','マイナス'],grow:['📚','成長'],social:['💬','交流'],chance:['✨','チャンス'],payday:['💴','収入'],card:['🃏','カード'],treasure:['💎','お宝'],submap:['🗺️','寄り道'],romance:['💗','恋愛'],property:['🏠','物件'],career:['💼','仕事'],family:['👪','家族']};
 let peer=null,hostConn=null,isHost=false,roomCode='',localPlayerId='',state=null,cpuTimer=null,hostTimers=[];const connections=new Map();
-let soundOn=true,audioCtx=null,bgmTimer=null,bgmStep=0,bgmStage=-1,lastFx={roulette:null,move:'',stage:null,message:''},rollVisualTimer=null,mobileBoardFocusTimer=null,boardRollPopTimer=null;
+let bgmOn=localStorage.getItem('lifeRoadBgmOn')!=='0',sfxOn=localStorage.getItem('lifeRoadSfxOn')!=='0',audioCtx=null,bgmTimer=null,bgmStep=0,bgmStage=-1,lastFx={roulette:null,move:'',stage:null,message:''},rollVisualTimer=null,mobileBoardFocusTimer=null,boardRollPopTimer=null;
+let typewriterTimer=null,typewriterKey='',typewriterFullText='',typewriterDone=true,typewriterPos=0,messageSceneKey='',landingPopKey='';
 let masterVolume=Math.max(0,Math.min(1,Number(localStorage.getItem('lifeRoadVolume')??'1')));
 let portraitCollapsed=localStorage.getItem('lifeRoadPortraitCollapsed')==='1';
 const SESSION_KEY='lifeRoadSessionV22';
@@ -78,11 +107,16 @@ function stageDef(i=state?.stageIndex||0){return STAGES[i]||STAGES[0]}
 function cpuDef(id){return CPU_TYPES.find(c=>c.id===id)||CPU_TYPES[0]}
 function modeDef(){return MODES[state?.settings?.mode||'standard']}
 function speedScale(){if(location.search.includes('test=1'))return .02;return state?.settings?.speed==='fast'?.58:1}
+function messageSpeedMode(){return state?.settings?.messageSpeed||'normal'}
+function messageSpeedConfig(){return({slow:{char:46,hold:1950,min:3900,max:18000},normal:{char:32,hold:1450,min:2850,max:14000},fast:{char:20,hold:900,min:1850,max:9000}})[messageSpeedMode()]||{char:32,hold:1450,min:2850,max:14000}}
+function currentMessageLineText(m=state?.message){const line=m?.lines?.[m.index];return typeof line==='string'?line:(line?.text||'…')}
+function cpuMessageDelay(m){if(location.search.includes('test=1'))return 45;const cfg=messageSpeedConfig(),text=currentMessageLineText(m),chars=Array.from(text).length,punct=(text.match(/[、。！？!?…]/g)||[]).length;return clamp(chars*cfg.char+punct*95+cfg.hold,cfg.min,cfg.max)}
+function typewriterDelay(ch){const base=messageSpeedConfig().char;if(/[。！？!?]/.test(ch))return base+125;if(/[、,]/.test(ch))return base+65;if(ch==='…')return base+45;return base}
 function later(fn,ms){const t=setTimeout(fn,Math.max(20,Math.round(ms*speedScale())));hostTimers.push(t);return t}
 function clearHostTimers(){hostTimers.forEach(clearTimeout);hostTimers=[]}
 function saveSession(){
  if(!state||!roomCode||!localPlayerId)return;
- try{localStorage.setItem(SESSION_KEY,JSON.stringify({v:23,ts:Date.now(),isHost,roomCode,localPlayerId,state}))}catch(e){console.warn('session save failed',e)}
+ try{localStorage.setItem(SESSION_KEY,JSON.stringify({v:25,ts:Date.now(),isHost,roomCode,localPlayerId,state}))}catch(e){console.warn('session save failed',e)}
 }
 function loadSession(){
  try{const raw=localStorage.getItem(SESSION_KEY);if(!raw)return null;const d=JSON.parse(raw);if(!d||!d.roomCode||!d.localPlayerId||!d.state)return null;if(Date.now()-(d.ts||0)>1000*60*60*48)return null;return d}catch(e){return null}
@@ -108,9 +142,15 @@ function refreshResumeCard(){
 }
 function normalizeRestoredHostState(){
  if(!state||state.phase!=='playing')return;
+ state.settings=state.settings||{};state.settings.mode=state.settings.mode||'standard';state.settings.speed=state.settings.speed||'normal';state.settings.messageSpeed=state.settings.messageSpeed||'normal';
+ state.players.forEach(ensureFamilyData);
  clearHostTimers();
- state.fx=state.fx||{roulette:null,move:null,stage:null,turn:null};
+ state.fx=state.fx||{roulette:null,move:null,stage:null,turn:null,landing:null};
  // Timers disappear on reload. Convert transient animations to a safe resumable state.
+ if(state.fx.landing){
+  const lf=state.fx.landing,p=state.players.find(x=>x.id===lf.playerId);state.fx.landing=null;state.busy=false;
+  if(p){setTimeout(()=>{resolveLandingEffect(p,lf.wraps||0);broadcast()},80);return}
+ }
  if(state.pendingRollAdvance){state.pendingRollAdvance.ready=true;state.busy=false;state.fx.roulette=null}
  if(state.fx.move){
   const mv=state.fx.move,p=state.players.find(x=>x.id===mv.playerId),remaining=Math.max(0,(mv.total||0)-(mv.step||0));
@@ -222,9 +262,9 @@ function renderAvatarPicker(){
  }))
 }
 function makePlayer(name,cpu=false,cpuType='balanced'){
- const idx=state?state.players.length:0;const avatarId=firstAvailableAvatarId();return{id:uuid(),name,color:COLORS[idx%COLORS.length],avatarId,avatar:avatarOption(avatarId).src,token:TOKENS[idx%TOKENS.length],cpu,cpuType,cash:120000,job:null,jobRank:0,jobExp:0,education:'高校',educationChosen:false,careerReviewDone:false,retireDone:false,stats:{knowledge:1,fitness:1,charm:1,communication:1},memory:0,pos:0,laps:0,partner:null,affection:0,married:false,children:0,home:null,properties:[],treasures:[],cards:[],nextRollBonus:0,guard:false,awards:0};
+ const idx=state?state.players.length:0;const avatarId=firstAvailableAvatarId();return{id:uuid(),name,color:COLORS[idx%COLORS.length],avatarId,avatar:avatarOption(avatarId).src,token:TOKENS[idx%TOKENS.length],cpu,cpuType,cash:120000,job:null,jobRank:0,jobExp:0,education:'高校',educationChosen:false,careerReviewDone:false,retireDone:false,stats:{knowledge:1,fitness:1,charm:1,communication:1},memory:0,pos:0,laps:0,partner:null,affection:0,married:false,children:0,childProfiles:[],home:null,properties:[],treasures:[],cards:[],nextRollBonus:0,guard:false,awards:0};
 }
-function newState(){return{phase:'lobby',players:[],turnIndex:0,stageIndex:0,stageTurnCount:0,pendingChoice:null,message:null,pendingRollAdvance:null,busy:false,turnReady:false,lastRoll:null,log:['部屋を作成しました。'],settings:{mode:'standard',speed:'normal'},boards:[],version:1,fx:{roulette:null,move:null,stage:null,turn:null},awards:[],resultPrepared:false};}
+function newState(){return{phase:'lobby',players:[],turnIndex:0,stageIndex:0,stageTurnCount:0,pendingChoice:null,message:null,pendingRollAdvance:null,busy:false,turnReady:false,lastRoll:null,log:['部屋を作成しました。'],settings:{mode:'standard',speed:'normal',messageSpeed:'normal'},boards:[],version:1,fx:{roulette:null,move:null,stage:null,turn:null,landing:null},awards:[],resultPrepared:false};}
 function modeDescription(m){const d=MODES[m];if(!d)return'';return`${d.desc}　ターン数：${d.rounds.join(' / ')}`}
 function stageBoard(){return state.boards[state.stageIndex]||[]}
 
@@ -263,6 +303,65 @@ function boardPosStyle(i){const cols=8,row=Math.floor(i/cols),raw=i%cols,col=row
 function boardCoord(i){const cols=8,row=Math.floor(i/cols),raw=i%cols,col=row%2===0?raw:cols-1-raw;return{row,col}}
 function spaceDirClass(i,len){if(i>=len-1)return 'end';const a=boardCoord(i),b=boardCoord(i+1);if(b.row===a.row&&b.col>a.col)return 'dir-right';if(b.row===a.row&&b.col<a.col)return 'dir-left';return 'dir-down'}
 function salaryNow(p){return p.job?Math.round(p.job.base*(1+.22*(p.jobRank-1))):0}
+function partnerIncome(p){return p.married&&p.partner?Math.round(p.partner.income||0):0}
+function childList(p){return Array.isArray(p.childProfiles)?p.childProfiles:[]}
+function childCount(p){return childList(p).length||(Number(p.children)||0)}
+function adultChildIncome(p){return childList(p).reduce((sum,c)=>sum+(c.adult?(c.income||0):0),0)}
+function familyIncome(p){return partnerIncome(p)+adultChildIncome(p)}
+function totalChildrenCount(){return state?.players?.reduce((sum,p)=>sum+childCount(p),0)||0}
+function isLegacyGeneratedFamilyArt(src){return /^assets\/(?:family|child)\d+\.webp$/.test(src||'')}
+function usedFamilyPortraits(ignoreEntity=null){
+ const used=new Set((state?.players||[]).map(p=>p.avatar).filter(Boolean));
+ for(const p of state?.players||[]){
+  if(p.partner&&p.partner!==ignoreEntity&&p.partner.avatar&&!isLegacyGeneratedFamilyArt(p.partner.avatar))used.add(p.partner.avatar);
+  for(const c of childList(p))if(c!==ignoreEntity&&c.avatar&&!isLegacyGeneratedFamilyArt(c.avatar))used.add(c.avatar);
+ }
+ return used;
+}
+function availableFamilyPortraits(ignoreEntity=null){
+ const used=usedFamilyPortraits(ignoreEntity),free=ALL_EXISTING_CHARACTER_ART.filter(x=>!used.has(x.src)),friendly=free.filter(x=>x.family);
+ return friendly.length?friendly:free;
+}
+function nextFamilyPortrait(ignoreEntity=null,extraUsed=new Set()){
+ let pool=availableFamilyPortraits(ignoreEntity).filter(x=>!extraUsed.has(x.src));
+ if(!pool.length)pool=ALL_EXISTING_CHARACTER_ART.filter(x=>!extraUsed.has(x.src));
+ return pick(pool)?.src||AVATARS[0];
+}
+function makeChildProfile(p){
+ const usedNames=new Set((state?.players||[]).flatMap(x=>childList(x).map(c=>c.name))),names=CHILD_NAMES.filter(n=>!usedNames.has(n));
+ return{id:uuid(),name:pick(names.length?names:CHILD_NAMES),avatar:nextFamilyPortrait(),age:0,adult:false,job:null,income:0};
+}
+function ensureFamilyData(p){
+ if(!p)return;
+ if(p.partner?.id){
+  const def=PARTNERS.find(x=>x.id===p.partner.id);
+  if(def)p.partner={...def,...p.partner,job:p.partner.job||def.job,income:p.partner.income||def.income};
+  if(!p.partner.avatar||isLegacyGeneratedFamilyArt(p.partner.avatar))p.partner.avatar=nextFamilyPortrait(p.partner);
+ }
+ if(!Array.isArray(p.childProfiles)){
+  p.childProfiles=[];const legacy=Math.max(0,Number(p.children)||0);
+  for(let i=0;i<legacy;i++)p.childProfiles.push(makeChildProfile(p));
+ }
+ for(const c of p.childProfiles)if(!c.avatar||isLegacyGeneratedFamilyArt(c.avatar))c.avatar=nextFamilyPortrait(c);
+ p.children=p.childProfiles.length;
+}
+function growChildrenForStage(stageIndex){
+ if(stageIndex<5)return[];
+ const addYears=stageIndex===5?10:12,notices=[];
+ for(const p of state.players){
+  ensureFamilyData(p);
+  for(const c of p.childProfiles){
+   if(c.adult)continue;
+   c.age=(c.age||0)+addYears;
+   if(c.age>=18){
+    c.adult=true;
+    const j=pick(CHILD_JOBS);c.job=j[0];c.income=j[1]+rnd(15001);
+    notices.push(`${p.name}の子ども・${c.name}が成人し、${c.job}として働き始めた`);
+   }
+  }
+ }
+ return notices;
+}
 function passiveIncome(p){return p.properties.reduce((s,id)=>s+(PROPS.find(x=>x.id===id)?.income||0),0)}
 function assetScore(p){return p.cash+(p.home?.value||0)+p.properties.reduce((s,id)=>s+(PROPS.find(x=>x.id===id)?.value||0),0)+p.treasures.reduce((s,t)=>s+(t.appraised||0),0)+p.awards}
 function applyStats(p,d={}){for(const k of ['knowledge','fitness','charm','communication'])p.stats[k]=clamp(p.stats[k]+(d[k]||0),0,30)}
@@ -274,11 +373,11 @@ function rankUpCheck(p){if(!p.job)return null;const need=p.jobRank*3;if(p.jobRan
 
 function playerCard(p,active=false,lobby=false){
  const c=p.cpu?`${cpuDef(p.cpuType).icon} CPU`:'👤 人間',job=p.job?`${p.job.name} Lv.${p.jobRank}`:'未就職';
- return `<div class="player-card ${active?'active':''} ${lobby?'lobbycard':''}" style="border-color:${p.color};--pc:${p.color}"><div class="player-card-top"><div class="player-avatar-thumb"><img class="thumb-face" src="${esc(p.avatar||AVATARS[0])}" alt=""></div><div class="player-card-main"><div class="player-name">${esc(p.name)}</div><div class="player-meta"><span class="pill">${c}</span>${lobby?'':`<span class="pill">周回 ${p.laps}</span>`}</div>${lobby?`<div class="statsline">${p.cpu?esc(cpuDef(p.cpuType).name):'プレイヤー'} / 初期資金 ${money(p.cash)}</div>`:`<div class="statsline">${esc(job)} / ${money(p.cash)}<br>${p.married?'💍結婚':'未婚'}・子${p.children}人・物件${p.properties.length}</div><div class="param-grid"><span class="param">🧠 知力 ${p.stats.knowledge}</span><span class="param">💪 体力 ${p.stats.fitness}</span><span class="param">✨ 魅力 ${p.stats.charm}</span><span class="param">🗣 交流 ${p.stats.communication}</span></div>`}</div></div></div>`}
+ return `<div class="player-card ${active?'active':''} ${lobby?'lobbycard':''}" style="border-color:${p.color};--pc:${p.color}"><div class="player-card-top"><div class="player-avatar-thumb"><img class="thumb-face" src="${esc(p.avatar||AVATARS[0])}" alt=""></div><div class="player-card-main"><div class="player-name">${esc(p.name)}</div><div class="player-meta"><span class="pill">${c}</span>${lobby?'':`<span class="pill">周回 ${p.laps}</span>`}</div>${lobby?`<div class="statsline">${p.cpu?esc(cpuDef(p.cpuType).name):'プレイヤー'} / 初期資金 ${money(p.cash)}</div>`:`<div class="statsline">${esc(job)} / ${money(p.cash)}<br>${p.married?'💍結婚':'未婚'}・子${childCount(p)}人・物件${p.properties.length}</div><div class="param-grid"><span class="param">🧠 知力 ${p.stats.knowledge}</span><span class="param">💪 体力 ${p.stats.fitness}</span><span class="param">✨ 魅力 ${p.stats.charm}</span><span class="param">🗣 交流 ${p.stats.communication}</span></div>`}</div></div></div>`}
 
 let boardPan={x:0,y:0,anchorKey:'',dragging:false,startX:0,startY:0,baseX:0,baseY:0};
 function resetBoardPan(nextKey=''){boardPan.x=0;boardPan.y=0;boardPan.anchorKey=nextKey||''}
-function canDragBoard(){return !!(state&&state.phase==='playing'&&!state.message&&!state.pendingChoice&&!state.pendingRollAdvance&&!state.fx?.turn)}
+function canDragBoard(){return !!(state&&state.phase==='playing'&&!state.busy&&!state.message&&!state.pendingChoice&&!state.pendingRollAdvance&&!state.fx?.turn&&!state.fx?.landing)}
 function updateBoardDragUi(){if(!els.boardPanel)return;els.boardPanel.classList.toggle('drag-ready',canDragBoard());els.boardPanel.classList.toggle('dragging',!!boardPan.dragging)}
 function setupBoardDrag(){if(!els.boardPanel||els.boardPanel.dataset.dragReady)return;els.boardPanel.dataset.dragReady='1';const end=()=>{if(!boardPan.dragging)return;boardPan.dragging=false;updateBoardDragUi()};els.boardPanel.addEventListener('pointerdown',e=>{if(!canDragBoard())return;boardPan.dragging=true;boardPan.startX=e.clientX;boardPan.startY=e.clientY;boardPan.baseX=boardPan.x;boardPan.baseY=boardPan.y;try{els.boardPanel.setPointerCapture(e.pointerId)}catch(err){}updateBoardDragUi();e.preventDefault()});els.boardPanel.addEventListener('pointermove',e=>{if(!boardPan.dragging)return;boardPan.x=boardPan.baseX+(e.clientX-boardPan.startX);boardPan.y=boardPan.baseY+(e.clientY-boardPan.startY);focusBoardCamera(true)});els.boardPanel.addEventListener('pointerup',end);els.boardPanel.addEventListener('pointercancel',end);updateBoardDragUi()}
 function render(){if(!state)return;saveSession();if(localHomeView){show(els.home);refreshResumeCard();updateBoardDragUi();if(isHost)maybeRunCpu();return}if(state.phase==='lobby'){show(els.lobby);renderLobby()}else if(state.phase==='playing'){show(els.game);renderGame()}else if(state.phase==='finished'){prepareResults();show(els.result);renderResult()}updateBoardDragUi();if(isHost)maybeRunCpu()}
@@ -286,7 +385,7 @@ function lobbyEntryCard(p){
  const mine=p.id===localPlayerId&&!p.cpu,kind=p.cpu?`${cpuDef(p.cpuType).icon} ${cpuDef(p.cpuType).name} CPU`:'👤 プレイヤー',opt=avatarOption(p.avatarId);
  return `<div class="lobby-entry-card ${mine?'mine':''}" style="--pc:${p.color}"><div class="lobby-entry-top"><div class="lobby-mini-avatar"><img src="${esc(p.avatar||AVATARS[0])}" alt=""></div><div class="lobby-entry-heading"><div class="lobby-entry-name">${esc(p.name)}</div><div class="lobby-entry-kind">${esc(kind)}</div></div></div><div class="lobby-character-stage"><img class="lobby-character-full" src="${esc(p.avatar||AVATARS[0])}" alt="${esc(opt.name)}"></div><div class="lobby-entry-info"><div class="lobby-entry-money">初期資金 ${money(p.cash)}</div>${avatarSelectHtml(p)}${isHost&&p.cpu?`<button class="btn small warn cpu-remove" data-id="${p.id}" style="width:100%">CPU削除</button>`:''}</div></div>`;
 }
-function renderLobby(){state.players.forEach((p,i)=>{if(!p.avatarId){const opt=AVATAR_OPTIONS.find(v=>v.src===p.avatar)||AVATAR_OPTIONS[i%AVATAR_OPTIONS.length];p.avatarId=opt.id;p.avatar=opt.src}});els.roomCode.textContent=roomCode;els.hostLobby.classList.toggle('hidden',!isHost);els.start.classList.toggle('hidden',!isHost);els.mode.disabled=!isHost;els.speed.disabled=!isHost;els.mode.value=state.settings.mode;els.speed.value=state.settings.speed;els.modeInfo.textContent=modeDescription(state.settings.mode)+'　/　キャラクターは重複なし・早い者勝ち';els.lobbyPlayers.innerHTML=state.players.map(lobbyEntryCard).join('')+Array.from({length:Math.max(0,4-state.players.length)},()=>'<div class="lobby-empty-slot"><div>参加待ち…<br><span class="sub">キャラクターがここに表示されます</span></div></div>').join('');els.start.disabled=state.players.length<1;els.addCpu.disabled=!isHost||state.players.length>=4;els.fillCpu.disabled=!isHost||state.players.length>=4;net(isHost?`ホスト中：${state.players.length}/4人`:`参加済み：${state.players.length}/4人`);document.querySelectorAll('.cpu-remove').forEach(b=>b.addEventListener('click',()=>removeCpu(b.dataset.id)));document.querySelectorAll('[data-avatar-edit]').forEach(b=>b.addEventListener('click',()=>openAvatarPicker(b.dataset.avatarEdit)));if(avatarPickerTargetId&&!els.avatarPicker.classList.contains('hidden'))renderAvatarPicker()}
+function renderLobby(){state.settings=state.settings||{};state.settings.mode=state.settings.mode||'standard';state.settings.speed=state.settings.speed||'normal';state.settings.messageSpeed=state.settings.messageSpeed||'normal';state.players.forEach((p,i)=>{if(!p.avatarId){const opt=AVATAR_OPTIONS.find(v=>v.src===p.avatar)||AVATAR_OPTIONS[i%AVATAR_OPTIONS.length];p.avatarId=opt.id;p.avatar=opt.src}});els.roomCode.textContent=roomCode;els.hostLobby.classList.toggle('hidden',!isHost);els.start.classList.toggle('hidden',!isHost);els.mode.disabled=!isHost;els.speed.disabled=!isHost;if(els.messageSpeed)els.messageSpeed.disabled=!isHost;els.mode.value=state.settings.mode;els.speed.value=state.settings.speed;if(els.messageSpeed)els.messageSpeed.value=state.settings.messageSpeed;els.modeInfo.textContent=modeDescription(state.settings.mode)+'　/　キャラクターは重複なし・早い者勝ち';els.lobbyPlayers.innerHTML=state.players.map(lobbyEntryCard).join('')+Array.from({length:Math.max(0,4-state.players.length)},()=>'<div class="lobby-empty-slot"><div>参加待ち…<br><span class="sub">キャラクターがここに表示されます</span></div></div>').join('');els.start.disabled=state.players.length<1;els.addCpu.disabled=!isHost||state.players.length>=4;els.fillCpu.disabled=!isHost||state.players.length>=4;net(isHost?`ホスト中：${state.players.length}/4人`:`参加済み：${state.players.length}/4人`);document.querySelectorAll('.cpu-remove').forEach(b=>b.addEventListener('click',()=>removeCpu(b.dataset.id)));document.querySelectorAll('[data-avatar-edit]').forEach(b=>b.addEventListener('click',()=>openAvatarPicker(b.dataset.avatarEdit)));if(avatarPickerTargetId&&!els.avatarPicker.classList.contains('hidden'))renderAvatarPicker()}
 function renderGame(){
  const st=stageDef(),cp=currentPlayer(),rounds=modeDef().rounds[state.stageIndex],round=Math.min(rounds,Math.floor(state.stageTurnCount/state.players.length)+1),theme=STAGE_THEME[st.id];
  document.documentElement.style.setProperty('--stageA',theme[0]);document.documentElement.style.setProperty('--stageB',theme[1]);
@@ -294,8 +393,8 @@ function renderGame(){
  els.eraIcon.textContent=st.icon;els.eraName.textContent=st.name;els.eraFlavor.textContent=STAGE_FLAVOR[st.id];els.roundText.textContent=`第${round}/${rounds}ラウンド`;els.fieldInfo.textContent=`専用${stageBoard().length}マスマップ・規定ラウンド終了まで周回します`;els.roundDots.innerHTML=Array.from({length:rounds},(_,i)=>`<span class="round-dot ${i<round-1?'done':i===round-1?'now':''}"></span>`).join('');
  els.gamePlayers.innerHTML=state.players.map((p,i)=>playerCard(p,i===state.turnIndex)).join('');renderBoard();els.turnName.textContent=cp?.name||'-';els.turnStage.textContent=`${st.icon} ${st.name}`;const mine=cp&&cp.id===localPlayerId&&!cp.cpu,rollWait=state.pendingRollAdvance;els.rollBtn.disabled=!mine||!state.turnReady||state.busy||!!state.message||!!state.pendingChoice||!!rollWait;els.rollBtn.textContent=mine?'ルーレットを回す':cp?.cpu?'CPUが考え中…':'相手の手番です';els.hint.textContent=rollWait?(rollWait.ready?(mine?'盤面をクリック / タップして進みます':`${cp?.name||'相手'}の操作待ち`):'出目を確認中…'):state.message?'メッセージ進行中':state.pendingChoice?'選択中':state.busy?'演出中…':mine&&state.turnReady?'あなたの手番です':cp?.cpu?'CPUの手番です':'手番を待っています';els.log.innerHTML=state.log.map(x=>`<div class="logline">${esc(x)}</div>`).join('');
  const pp=cp||state.players[0];
- if(pp){els.portraitImg.src=pp.avatar||AVATARS[0];els.portraitName.textContent=pp.name;els.portraitRole.textContent=pp.job?`${pp.job.name} Lv.${pp.jobRank}`:(pp.cpu?`${cpuDef(pp.cpuType).name} CPU`:'プレイヤー');els.portraitBadge.textContent=mine?'YOUR TURN':'NOW';els.portraitStats.innerHTML=`<div class="portrait-stat">🧠 <span>知力</span><strong>${pp.stats.knowledge}</strong></div><div class="portrait-stat">💪 <span>体力</span><strong>${pp.stats.fitness}</strong></div><div class="portrait-stat">✨ <span>魅力</span><strong>${pp.stats.charm}</strong></div><div class="portrait-stat">🗣 <span>交流</span><strong>${pp.stats.communication}</strong></div>`;els.portraitSub.innerHTML=`<strong>${money(pp.cash)}</strong> / 思い出 ${pp.memory}pt${pp.partner?`<br>パートナー：${esc(pp.partner.name)} 好感度${pp.affection}${pp.married?'・結婚':''}`:''}${pp.children?`<br>家族：子ども ${pp.children}人`:''}`}
- setupBoardDrag();renderCards();renderAssets();renderChoice();renderMessage();renderCurtain();renderTurnBanner();renderRollWait();handleFx();
+ if(pp){els.portraitImg.src=pp.avatar||AVATARS[0];els.portraitName.textContent=pp.name;els.portraitRole.textContent=pp.job?`${pp.job.name} Lv.${pp.jobRank}`:(pp.cpu?`${cpuDef(pp.cpuType).name} CPU`:'プレイヤー');els.portraitBadge.textContent=mine?'YOUR TURN':'NOW';els.portraitStats.innerHTML=`<div class="portrait-stat">🧠 <span>知力</span><strong>${pp.stats.knowledge}</strong></div><div class="portrait-stat">💪 <span>体力</span><strong>${pp.stats.fitness}</strong></div><div class="portrait-stat">✨ <span>魅力</span><strong>${pp.stats.charm}</strong></div><div class="portrait-stat">🗣 <span>交流</span><strong>${pp.stats.communication}</strong></div>`;ensureFamilyData(pp);els.portraitSub.innerHTML=`<strong>${money(pp.cash)}</strong> / 思い出 ${pp.memory}pt${pp.partner?`<br>パートナー：${esc(pp.partner.name)} 好感度${pp.affection}${pp.married?`・結婚 / 収入 ${money(partnerIncome(pp))}`:''}`:''}${childCount(pp)?`<br>家族：子ども ${childCount(pp)}人${adultChildIncome(pp)?` / 成人子収入 ${money(adultChildIncome(pp))}`:''}`:''}`}
+ setupBoardDrag();renderCards();renderAssets();renderChoice();renderMessage();renderCurtain();renderTurnBanner();renderRollWait();renderLandingPop();handleFx();
 }
 function renderBoard(){
  const b=stageBoard(),cp=currentPlayer(),pts=routePoints(stageDef().id,b.length),mapSrc=STAGE_BACKGROUNDS[stageDef().id]||STAGE_BACKGROUNDS.young;
@@ -310,10 +409,10 @@ function renderBoard(){
 function focusBoardCamera(skipAnchorReset=false){
  if(!state||state.phase!=='playing'||!els.board||!els.boardPanel)return;
  const b=stageBoard(); if(!b.length)return;
- const moverId=state.fx?.move?.playerId; const p=(moverId?state.players.find(x=>x.id===moverId):null)||currentPlayer(); if(!p)return;
+ const moverId=state.fx?.move?.playerId||state.fx?.landing?.playerId; const p=(moverId?state.players.find(x=>x.id===moverId):null)||currentPlayer(); if(!p)return;
  const pts=routePoints(stageDef().id,b.length),pt=pts[p.pos]||pts[0];
  const rect=els.boardPanel.getBoundingClientRect(); if(!rect.width||!rect.height)return;
- const isSmall=window.innerWidth<900,verySmall=window.innerWidth<600,focused=!!(state.turnReady||state.pendingRollAdvance||state.fx?.move),moving=!!state.fx?.move; const scale=isSmall?(verySmall?(focused?(moving?1.78:1.62):1.02):(focused?(moving?1.92:1.72):1.04)):(focused?(moving?2.95:2.72):1.08);
+ const isSmall=window.innerWidth<900,verySmall=window.innerWidth<600,focused=!!(state.turnReady||state.pendingRollAdvance||state.fx?.move||state.fx?.landing),moving=!!state.fx?.move; const scale=isSmall?(verySmall?(focused?(moving?1.78:1.62):1.02):(focused?(moving?1.92:1.72):1.04)):(focused?(moving?2.95:2.72):1.08);
  const worldW=rect.width,worldH=rect.height;
  const anchorKey=`${state.stageIndex}:${state.turnIndex}:${p.id}:${state.fx?.move?1:0}`;
  if(!skipAnchorReset&&boardPan.anchorKey!==anchorKey) resetBoardPan(anchorKey);
@@ -332,6 +431,15 @@ function renderRollWait(){
  els.rollWaitText.textContent=mine?(rollAdvanceLock?'移動を開始します…':'クリック / タップでコマを進める'):`${owner?.name||'プレイヤー'}の操作待ち`;
 }
 function showBoardRollPop(result){if(!els.boardRollPop)return;clearTimeout(boardRollPopTimer);els.boardRollPop.textContent=String(result);els.boardRollPop.classList.remove('hidden','show');void els.boardRollPop.offsetWidth;els.boardRollPop.classList.add('show');boardRollPopTimer=setTimeout(()=>{els.boardRollPop.classList.remove('show');els.boardRollPop.classList.add('hidden')},920)}
+function landingSpaceLabel(type){const meta=SPACE_META[type]||SPACE_META.event;return `${meta?.[1]||'出来事'}マス`}
+function renderLandingPop(){
+ const f=state?.fx?.landing;if(!els.spaceLandingPop)return;
+ if(!f){els.spaceLandingPop.classList.add('hidden');els.spaceLandingPop.classList.remove('show');landingPopKey='';return}
+ if(els.spaceLandingText)els.spaceLandingText.textContent=f.label||landingSpaceLabel(f.type);
+ if(els.spaceLandingIcon){els.spaceLandingIcon.src=spaceIcon(f.type||'event');els.spaceLandingIcon.alt=f.label||''}
+ els.spaceLandingPop.classList.remove('hidden');
+ if(landingPopKey!==f.id){landingPopKey=f.id;els.spaceLandingPop.classList.remove('show');void els.spaceLandingPop.offsetWidth;els.spaceLandingPop.classList.add('show')}
+}
 function tryAdvancePendingRoll(){
  const r=state?.pendingRollAdvance;if(!r||!r.ready)return false;
  const owner=state.players.find(p=>p.id===r.playerId);if(!owner||owner.id!==localPlayerId||owner.cpu)return false;
@@ -351,30 +459,66 @@ function tryAdvancePendingRoll(){
  net('ホストへ再接続中…');scheduleGuestReconnect();return true;
 }
 function renderCards(){const p=state.players.find(x=>x.id===localPlayerId);if(!p){els.cards.innerHTML='<span class="sub">-</span>';return}const can=currentPlayer()?.id===p.id&&state.turnReady&&!state.busy&&!state.message&&!state.pendingChoice&&!p.cpu;els.cards.innerHTML=p.cards.length?p.cards.map((id,i)=>{const c=CARDS.find(x=>x.id===id);return`<button class="invbtn use-card" data-i="${i}" ${can?'':'disabled'} title="${esc(c?.desc||'')}">${esc(c?.name||id)}</button>`}).join(''):'<span class="sub">カードなし</span>';document.querySelectorAll('.use-card').forEach(b=>b.addEventListener('click',()=>sendAction({kind:'useCard',index:Number(b.dataset.i)})))}
-function renderAssets(){const p=state.players.find(x=>x.id===localPlayerId)||currentPlayer();if(!p){els.assets.innerHTML='-';return}els.assets.innerHTML=`<div>現金：<strong>${money(p.cash)}</strong></div><div>給料：${money(salaryNow(p))}</div><div>住まい：${p.home?esc(p.home.name):'賃貸'}</div><div>物件：${p.properties.length}件 / お宝：${p.treasures.length}個</div><div>思い出：${p.memory}pt</div>${p.partner?`<div>パートナー：${esc(p.partner.name)} 好感度${p.affection}${p.married?'（結婚）':''}</div>`:''}`}
-function renderChoice(){const c=state.pendingChoice;if(!c){els.choice.classList.add('hidden');return}els.choice.classList.remove('hidden');const owner=state.players.find(p=>p.id===c.playerId),mine=c.playerId===localPlayerId&&!owner?.cpu;els.choiceTitle.textContent=c.title;els.choiceText.textContent=c.text||'';els.choiceStatus.textContent=mine?'あなたが選択してください':`${owner?.name||'プレイヤー'}が選択中です`;els.choiceList.innerHTML='';c.options.forEach((o,i)=>{const b=document.createElement('button');b.className='choicebtn';b.disabled=!mine;b.innerHTML=`<strong>${esc(o.label)}</strong><span class="note">${esc(o.desc||'')}</span>`;b.addEventListener('click',()=>sendAction({kind:'choose',index:i}));els.choiceList.appendChild(b)})}
+function renderAssets(){const p=state.players.find(x=>x.id===localPlayerId)||currentPlayer();if(!p){els.assets.innerHTML='-';return}ensureFamilyData(p);const fam=familyIncome(p),kids=childList(p);els.assets.innerHTML=`<div>現金：<strong>${money(p.cash)}</strong></div><div>本人給料：${money(salaryNow(p))}</div><div>家族収入：${money(fam)}${p.married?`（配偶者 ${money(partnerIncome(p))}${adultChildIncome(p)?` + 成人した子 ${money(adultChildIncome(p))}`:''}）`:''}</div><div>住まい：${p.home?esc(p.home.name):'賃貸'}</div><div>物件：${p.properties.length}件 / お宝：${p.treasures.length}個</div><div>思い出：${p.memory}pt</div><div>子ども：${childCount(p)}人（全体 ${totalChildrenCount()}/15）</div>${p.partner?`<div class="family-card"><img src="${esc(p.partner.avatar||AVATARS[0])}" alt=""><div><strong>${esc(p.partner.name)}</strong><br><span>${p.married?'配偶者':'交際中'} / ${esc(p.partner.job||'仕事中')}</span>${p.married?`<br><span>家計収入 ${money(partnerIncome(p))}</span>`:''}</div></div>`:''}${kids.length?`<div class="family-kids">${kids.map(c=>`<div class="family-kid"><img src="${esc(c.avatar)}" alt=""><div><strong>${esc(c.name)}</strong><br><span>${c.adult?`成人・${esc(c.job||'就職')} / ${money(c.income||0)}`:`${c.age||0}歳・成長中`}</span></div></div>`).join('')}</div>`:''}` }
+function renderChoice(){const c=state.pendingChoice;if(!c){els.choice.classList.add('hidden');return}els.choice.classList.remove('hidden');const owner=state.players.find(p=>p.id===c.playerId),mine=c.playerId===localPlayerId&&!owner?.cpu;els.choiceTitle.textContent=c.title;els.choiceText.textContent=c.text||'';els.choiceStatus.textContent=mine?'あなたが選択してください':`${owner?.name||'プレイヤー'}が選択中です`;els.choiceList.innerHTML='';c.options.forEach((o,i)=>{const b=document.createElement('button');b.className='choicebtn';b.disabled=!mine;b.innerHTML=`${o.avatar?`<img class="choice-avatar" src="${esc(o.avatar)}" alt="">`:''}<span class="choice-copy"><strong>${esc(o.label)}</strong><span class="note">${esc(o.desc||'')}</span></span>`;b.addEventListener('click',()=>sendAction({kind:'choose',index:i}));els.choiceList.appendChild(b)})}
+function clearTypewriter(){if(typewriterTimer){clearTimeout(typewriterTimer);typewriterTimer=null}}
+function finishTypewriter(){const m=state?.message,key=m?`${m.id}_${m.index}`:'';if(!m||key!==typewriterKey||typewriterDone)return false;clearTypewriter();typewriterDone=true;typewriterPos=Array.from(typewriterFullText).length;els.messageText.textContent=typewriterFullText;els.message.classList.remove('typing');return true}
+function startTypewriter(key,text){clearTypewriter();typewriterKey=key;typewriterFullText=text;typewriterDone=false;typewriterPos=0;els.message.classList.add('typing');els.messageText.textContent='';const chars=Array.from(text);const step=()=>{if(typewriterKey!==key||!state?.message||`${state.message.id}_${state.message.index}`!==key){clearTypewriter();return}if(typewriterPos>=chars.length){typewriterDone=true;typewriterTimer=null;els.message.classList.remove('typing');const owner=state.players.find(p=>p.id===state.message?.ownerId);if(state.message?.ownerId===localPlayerId&&!owner?.cpu)els.messageOwner.textContent='クリックで次へ';return}const ch=chars[typewriterPos++];els.messageText.textContent+=ch;typewriterTimer=setTimeout(step,typewriterDelay(ch))};step()}
+function messageActorsFor(m,line){
+ const owner=state.players.find(p=>p.id===m.ownerId),out=[],seen=new Set();
+ const upto=(m.lines||[]).slice(0,(m.index||0)+1).map(v=>typeof v==='string'?v:(v?.text||''));
+ const text=[m.speaker,...upto].join(' '),currentText=`${m.speaker||''} ${typeof line==='string'?line:(line?.text||'')}`;
+ const add=(name,avatar)=>{if(!avatar||seen.has(avatar)||out.length>=4)return;seen.add(avatar);out.push({name:name||'',avatar})};
+ // The owner is always on stage. Other people only join after they have actually appeared in the story.
+ if(owner){ensureFamilyData(owner);add(owner.name,owner.avatar)}
+ for(const p of state.players){if(p.id!==owner?.id&&text.includes(p.name))add(p.name,p.avatar)}
+ if(owner?.partner){
+  const partnerCue=text.includes(owner.partner.name)||/夫婦|パートナー|結婚|恋愛|デート|プロポーズ/.test(text)||/家族/.test(m.speaker||'');
+  if(partnerCue)add(owner.partner.name,owner.partner.avatar)
+ }
+ if(owner){
+  for(const c of childList(owner))if(text.includes(c.name))add(c.name,c.avatar);
+  // A family event starts with the family already involved, but unrelated future characters are never pre-shown.
+  if(/家族/.test(m.speaker||'')&&out.length<4){for(const c of childList(owner)){add(c.name,c.avatar);if(out.length>=4)break}}
+ }
+ return out
+}
+function renderMessageScene(m,line,key){
+ if(!els.messageScene||!els.messageActors)return;
+ const actors=messageActorsFor(m,line);
+ if(!actors.length){els.messageScene.classList.add('hidden');els.messageActors.innerHTML='';messageSceneKey='';return}
+ const tone=(typeof line==='string'?'normal':(line?.tone||'normal')),anim=tone==='good'?'anim-bounce':tone==='bad'?'anim-shake':'anim-sway';
+ els.messageScene.classList.remove('hidden');els.messageActors.dataset.count=String(actors.length);
+ els.messageActors.innerHTML=actors.map(a=>`<div class="message-actor ${anim}"><img src="${esc(a.avatar)}" alt="${esc(a.name)}"><div class="message-actor-name">${esc(a.name)}</div></div>`).join('');
+ // Wipe the stage in only once per message. Later characters simply join the existing black stage.
+ if(messageSceneKey!==m.id){messageSceneKey=m.id;els.messageScene.classList.remove('scene-enter');void els.messageScene.offsetWidth;els.messageScene.classList.add('scene-enter')}
+}
 function renderMessage(){
  const m=state?.message;
  if(!m){
+  clearTypewriter();typewriterKey='';typewriterDone=true;messageSceneKey='';
   els.message.classList.add('hidden');
-  els.message.classList.remove('mine','cpu');
+  els.message.classList.remove('mine','cpu','typing');
   els.message.removeAttribute('data-tone');
   els.message.style.removeProperty('display');
   els.messageClickLayer.classList.add('hidden');
+  if(els.messageScene)els.messageScene.classList.add('hidden');
+  if(els.messageActors)els.messageActors.innerHTML='';
   return;
  }
- const line=m.lines?.[m.index]||{text:'…'};
+ const line=m.lines?.[m.index]||{text:'…'},key=`${m.id}_${m.index}`,fullText=(typeof line==='string'?line:(line.text||'…'));
  const owner=state.players.find(p=>p.id===m.ownerId);
  const mine=m.ownerId===localPlayerId&&!owner?.cpu;
  els.message.classList.remove('hidden');
  els.messageClickLayer.classList.toggle('hidden',!mine);
  els.messageSpeaker.textContent=m.speaker||'出来事';
- els.messageText.textContent=(typeof line==='string'?line:(line.text||'…'));
- els.messageOwner.textContent=mine?'画面のどこをクリックしても進みます':owner?.cpu?`${owner.name}（CPU）が進行中`:`${owner?.name||'プレイヤー'}が進めています`;
+ if(typewriterKey!==key)startTypewriter(key,fullText);else if(typewriterDone)els.messageText.textContent=fullText;
+ els.messageOwner.textContent=mine?(typewriterDone?'クリックで次へ':'クリックで全文表示'):owner?.cpu?`${owner.name}（CPU）が進行中`:`${owner?.name||'プレイヤー'}が進めています`;
  els.messageNext.style.visibility=mine?'visible':'hidden';
  els.message.dataset.tone=line.tone||'normal';
  els.message.classList.toggle('mine',!!mine);
  els.message.classList.toggle('cpu',!mine);
+ renderMessageScene(m,line,key);
 }
 function renderCurtain(){const f=state.fx.stage;if(!f){els.curtain.classList.add('hidden');return}const st=STAGES[f.stageIndex];els.curtain.classList.remove('hidden');els.curtainIcon.textContent=st.icon;els.curtainName.textContent=st.name;els.curtainSub.textContent=STAGE_FLAVOR[st.id]}
 function renderTurnBanner(){const f=state.fx.turn;if(!f){els.turnBanner.classList.add('hidden');return}const p=state.players.find(x=>x.id===f.playerId);els.turnBanner.classList.remove('hidden');els.turnBannerName.textContent=`${p?.name||'プレイヤー'} の手番です`;els.turnBannerAvatar.style.backgroundImage=`url('${p?.avatar||AVATARS[0]}')`;els.turnBanner.title=(p?.id===localPlayerId&&!p?.cpu)?'クリック / タップで開始':'手番が変わります'}
@@ -394,13 +538,20 @@ function beginTurnCore(){if(state.phase!=='playing')return;const p=currentPlayer
  if(state.stageIndex===6&&!p.retireDone){p.retireDone=true;setMessage(p.id,'これからの働き方',[`円熟期をどう過ごすか、働き方を決める時が来た。`,`お金を追うか、ゆとりを取るか、それとも最後の大勝負に出るか。`],{type:'openChoice',choice:'retire',playerId:p.id,returnTo:'beginTurn'});return}
  state.turnReady=true;
 }
-function startGame(){const md=modeDef();state.boards=STAGES.map((_,i)=>buildStageBoard(i,md.sizes[i]));state.phase='playing';state.resultPrepared=false;state.stageIndex=0;state.stageTurnCount=0;state.turnIndex=0;state.players.forEach((p,i)=>{p.color=COLORS[i];p.pos=0;p.laps=0});addLog(`${md.name}モード開始！`);startStage(0,true)}
-function startStage(si,initial=false){state.stageIndex=si;state.stageTurnCount=0;state.turnIndex=0;state.busy=true;state.turnReady=false;state.pendingChoice=null;state.message=null;state.pendingRollAdvance=null;state.players.forEach(p=>{p.pos=0;p.laps=0});state.fx.stage={id:uuid(),stageIndex:si};broadcast();later(()=>{state.fx.stage=null;state.busy=false;const p=currentPlayer();setMessage(p.id,`${stageDef(si).icon} ${stageDef(si).name}`,[initial?'人生ロード、スタート！':`${stageDef(si).name}のフィールドへ進みます。`,STAGE_FLAVOR[stageDef(si).id]],{type:'beginTurn'});broadcast()},1650)}
+function startGame(){const md=modeDef();state.players.forEach(ensureFamilyData);state.boards=STAGES.map((_,i)=>buildStageBoard(i,md.sizes[i]));state.phase='playing';state.resultPrepared=false;state.stageIndex=0;state.stageTurnCount=0;state.turnIndex=0;state.players.forEach((p,i)=>{p.color=COLORS[i];p.pos=0;p.laps=0});addLog(`${md.name}モード開始！`);startStage(0,true)}
+function startStage(si,initial=false){const familyNotices=!initial?growChildrenForStage(si):[];familyNotices.forEach(addLog);state.stageIndex=si;state.stageTurnCount=0;state.turnIndex=0;state.busy=true;state.turnReady=false;state.pendingChoice=null;state.message=null;state.pendingRollAdvance=null;state.players.forEach(p=>{p.pos=0;p.laps=0});state.fx.landing=null;state.fx.stage={id:uuid(),stageIndex:si};broadcast();later(()=>{state.fx.stage=null;state.busy=false;const p=currentPlayer();setMessage(p.id,`${stageDef(si).icon} ${stageDef(si).name}`,[initial?'人生ロード、スタート！':`${stageDef(si).name}のフィールドへ進みます。`,STAGE_FLAVOR[stageDef(si).id]],{type:'beginTurn'});broadcast()},1650)}
 function completeTurn(){state.turnReady=false;state.stageTurnCount++;const need=modeDef().rounds[state.stageIndex]*state.players.length;if(state.stageTurnCount>=need){if(state.stageIndex>=STAGES.length-1){const owner=currentPlayer()?.id||state.players[0].id;setMessage(owner,'人生の総決算',[`すべての時代が終わりました。`,`現金・住居・物件・お宝・特別賞を集計します。`],{type:'finishGame'});return}addLog(`${stageDef().name}が終了`);startStage(state.stageIndex+1);return}state.turnIndex=(state.turnIndex+1)%state.players.length;state.lastRoll=null;beginTurn()}
 function doRoll(p){if(!state.turnReady||state.busy)return;state.turnReady=false;state.busy=true;let roll=1+rnd(10);if(p.nextRollBonus){roll=clamp(roll+p.nextRollBonus,1,10);p.nextRollBonus=0}state.lastRoll=roll;state.pendingRollAdvance={id:uuid(),playerId:p.id,result:roll,ready:false};state.fx.roulette={id:uuid(),playerId:p.id,result:roll};addLog(`${p.name}：ルーレット ${roll}`);broadcast();later(()=>{if(!state.pendingRollAdvance||state.pendingRollAdvance.playerId!==p.id)return;state.pendingRollAdvance.ready=true;state.busy=false;state.fx.roulette=null;broadcast()},Math.max(1900,Math.round(2350*speedScale())))}
 function startMove(p,steps){state.pendingRollAdvance=null;state.fx.roulette=null;state.busy=true;const board=stageBoard();let left=steps,wraps=0,step=0;function go(){if(left<=0){state.fx.move=null;broadcast();later(()=>{resolveLanding(p,wraps);broadcast()},220);return}const prev=p.pos;p.pos=(p.pos+1)%board.length;if(p.pos<prev){p.laps++;wraps++}left--;step++;state.fx.move={id:`${p.id}_${state.version}_${steps}`,playerId:p.id,step,total:steps,pos:p.pos};broadcast();later(go,170)}go()}
 function lapBonus(p,wraps){if(!wraps)return[];const lines=[];for(let n=0;n<wraps;n++){if(state.stageIndex<4){p.memory+=2;applyStats(p,{communication:1});lines.push({text:`フィールドを1周！ 思い出+2、交流+1`,tone:'good'})}else{const gain=40000+state.stageIndex*15000;p.cash+=gain;lines.push({text:`フィールドを1周！ 周回ボーナス +${money(gain)}`,tone:'good'})}}return lines}
-function resolveLanding(p,wraps=0){state.busy=false;const s=stageBoard()[p.pos],lines=lapBonus(p,wraps);const finish=(more,speaker='出来事')=>{const all=[...lines,...more];messageResult(p.id,speaker,all.length?all:[{text:'何事もなく穏やかな一日だった。'}])};
+function resolveLanding(p,wraps=0){
+ const s=stageBoard()[p.pos];if(!s){resolveLandingEffect(p,wraps);return}
+ state.turnReady=false;state.busy=true;state.fx=state.fx||{};
+ const fxId=uuid();state.fx.landing={id:fxId,playerId:p.id,pos:p.pos,type:s.type,label:landingSpaceLabel(s.type),wraps};
+ broadcast();
+ later(()=>{if(!state.fx?.landing||state.fx.landing.id!==fxId)return;state.fx.landing=null;resolveLandingEffect(p,wraps,s);broadcast()},1050)
+}
+function resolveLandingEffect(p,wraps=0,sOverride=null){state.busy=false;const s=sOverride||stageBoard()[p.pos],lines=lapBonus(p,wraps);const finish=(more,speaker='出来事')=>{const all=[...lines,...more];messageResult(p.id,speaker,all.length?all:[{text:'何事もなく穏やかな一日だった。'}])};
  if(s.type==='start'){finish([{text:'スタート地点に戻ってきた。次の周回へ！',tone:'good'}],'周回');return}
  if(['event','plus','minus','grow','social'].includes(s.type)){
   const all=EVENTS[stageDef().id]||EVENTS.young;
@@ -426,7 +577,7 @@ function resolveLanding(p,wraps=0){state.busy=false;const s=stageBoard()[p.pos],
   }
   return}
  if(s.type==='chance'){resolveChance(p,lines);return}
- if(s.type==='payday'){const total=salaryNow(p)+passiveIncome(p);if(total){p.cash+=total;p.jobExp+=p.job?1:0;const rank=rankUpCheck(p);finish([{text:`給料・物件収入を受け取った。 +${money(total)}`,tone:'good'},...(rank?[{text:rank,tone:'good'}]:[])],'給料日')}else finish([{text:'まだ定期収入はない。'}],'給料日');return}
+ if(s.type==='payday'){ensureFamilyData(p);const own=salaryNow(p),prop=passiveIncome(p),fam=familyIncome(p),total=own+prop+fam;if(total){p.cash+=total;p.jobExp+=p.job?1:0;const rank=rankUpCheck(p),breakdown=[own?`本人給料 ${money(own)}`:'',partnerIncome(p)?`配偶者収入 ${money(partnerIncome(p))}`:'',adultChildIncome(p)?`成人した子の収入 ${money(adultChildIncome(p))}`:'',prop?`物件収入 ${money(prop)}`:''].filter(Boolean).join(' / ');finish([{text:`世帯の定期収入を受け取った。 +${money(total)}`,tone:'good'},{text:breakdown},...(rank?[{text:rank,tone:'good'}]:[])],'給料日')}else finish([{text:'まだ定期収入はない。'}],'給料日');return}
  if(s.type==='card'){if(p.cards.length>=5)finish([{text:'カード枠がいっぱいで、新しいカードを持てなかった。'}],'カード');else{const c=pick(CARDS);p.cards.push(c.id);finish([{text:`「${c.name}」を手に入れた！`,tone:'good'},{text:c.desc}],'カード')}return}
  if(s.type==='treasure'){setMessage(p.id,'お宝マス',[...lines,{text:'価値の読めないお宝を見つけた。買ってみる？'}],{type:'openChoice',choice:'treasure',playerId:p.id,returnTo:'completeTurn'});broadcast();return}
  if(s.type==='submap'){setMessage(p.id,'寄り道マス',[...lines,{text:'少し寄り道できそうだ。どこへ行こう？'}],{type:'openChoice',choice:'submap',playerId:p.id,returnTo:'completeTurn'});broadcast();return}
@@ -480,7 +631,7 @@ function maybePlayerInteraction(p,force=false){
 
 function cashChange(p,amt){if(amt<0&&p.guard){amt=Math.ceil(amt/2);p.guard=false}p.cash+=amt;return amt}
 function resolveChance(p,prefix=[]){const n=rnd(5),a=[...prefix,{text:'何が起こるか分からない、特別な流れがやってきた。'}];if(n===0){const g=100000+rnd(180000);p.cash+=g;a.push({text:`臨時ボーナス！ +${money(g)}`,tone:'good'})}else if(n===1){applyStats(p,{knowledge:2,communication:2});a.push({text:'良い出会いから大きく成長。知力+2・交流+2',tone:'good'})}else if(n===2){const t=pick(TREASURES);p.treasures.push({id:t.id,appraised:0});a.push({text:`お宝「${t.name}」を手に入れた！`,tone:'good'})}else if(n===3){if(p.cards.length<5){const c=pick(CARDS);p.cards.push(c.id);a.push({text:`「${c.name}」を手に入れた！`,tone:'good'})}else a.push({text:'カード枠がいっぱいだった。'})}else{p.memory+=8;a.push({text:'忘れられない体験！ 思い出+8',tone:'good'})}if(Math.random()<.26)a.push(...maybePlayerInteraction(p));messageResult(p.id,'チャンス！',a)}
-function resolveFamily(p,prefix=[]){const a=[...prefix,{text:'家族にまつわる時間は、資産では測れない大きな影響を残していく。'}];if(p.married&&Math.random()<.55&&p.children<3){p.children++;p.cash-=80000;p.memory+=10;a.push({text:`家族が増えた！ 子ども${p.children}人 / -${money(80000)} / 思い出+10`,tone:'good'})}else if(p.children){const g=p.children*(30000+rnd(30000));p.cash+=g;p.memory+=4;a.push({text:`家族から嬉しい知らせ。 +${money(g)} / 思い出+4`,tone:'good'})}else{p.memory+=5;a.push({text:'穏やかな休日を満喫。思い出+5',tone:'good'})}if(Math.random()<.2)a.push(...maybePlayerInteraction(p));messageResult(p.id,'家族イベント',a)}
+function resolveFamily(p,prefix=[]){ensureFamilyData(p);const a=[...prefix,{text:'家族にまつわる時間は、資産では測れない大きな影響を残していく。'}];if(p.married&&Math.random()<.55&&totalChildrenCount()<15){const c=makeChildProfile(p);p.childProfiles.push(c);p.children=p.childProfiles.length;p.cash-=80000;p.memory+=10;a.push({text:`${p.partner?.name||'パートナー'}との間に ${c.name} が誕生！ 子ども${p.children}人 / -${money(80000)} / 思い出+10`,tone:'good'})}else if(childCount(p)){const g=childCount(p)*(30000+rnd(30000));p.cash+=g;p.memory+=4;a.push({text:`家族から嬉しい知らせ。 +${money(g)} / 思い出+4`,tone:'good'});if(totalChildrenCount()>=15)a.push({text:'家族みんなで穏やかな時間を過ごした。'})}else{p.memory+=5;a.push({text:'穏やかな休日を満喫。思い出+5',tone:'good'})}if(Math.random()<.2)a.push(...maybePlayerInteraction(p));messageResult(p.id,'家族イベント',a)}
 function openChoice(kind,p,returnTo){if(!p)return;if(kind==='education')createEducationChoice(p,returnTo);else if(kind==='job')createJobChoice(p,returnTo);else if(kind==='retire')createRetireChoice(p,returnTo);else if(kind==='treasure')createTreasureChoice(p,returnTo);else if(kind==='submap')createSubmapChoice(p,returnTo);else if(kind==='romance')createRomanceChoice(p,returnTo);else if(kind==='property')createPropertyChoice(p,returnTo)}
 function createEducationChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'education',returnTo,title:'卒業後の進路',text:'費用と成長量、将来の職業候補が変わります。',options:[{label:'すぐ就職',value:'work',desc:'費用なし。現金+5万円',tags:{career:2}},{label:'専門スクール',value:'voc',desc:'15万円。知力+3、魅力+2',tags:{career:1.5,study:1.5}},{label:'大学へ進学',value:'college',desc:'30万円。知力+6、交流+2',tags:{study:2.5}}]}}
 function eligibleJobs(p){const list=JOBS.filter(j=>jobEligible(p,j));return list.length?list:JOBS.slice(0,7)}
@@ -488,14 +639,14 @@ function createJobChoice(p,returnTo){let pool=eligibleJobs(p).sort(()=>Math.rand
 function createRetireChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'retire',returnTo,title:'これからの働き方',text:'円熟期をどう過ごしますか？',options:[{label:'仕事を続ける',value:'continue',desc:'給料を受け取り続ける',tags:{career:2,asset:1}},{label:'ゆったり引退',value:'retire',desc:'退職金を受け取り、思い出+10',tags:{love:1,asset:1}},{label:'第二の挑戦',value:'challenge',desc:'20万円を投じて大きな成功を狙う',tags:{risk:2,career:1}}]}}
 function createTreasureChoice(p,returnTo){const t=pick(TREASURES);state.pendingChoice={playerId:p.id,type:'treasure',returnTo,title:'お宝を発見',text:'最後に本当の価値が判明します。',options:[{label:`${t.name}を買う`,value:t.id,desc:`価格 ${money(t.buy)} / 最大鑑定 ${money(t.max)}`,tags:{asset:1.6,risk:1.2}},{label:'見送る',value:'skip',desc:'現金を温存',tags:{asset:.7}}]}}
 function createPropertyChoice(p,returnTo){const affordable=PROPS.filter(x=>!p.properties.includes(x.id)).filter(x=>x.price<=Math.max(300000,p.cash+250000)).sort((a,b)=>a.price-b.price),picks=affordable.slice(-3);state.pendingChoice={playerId:p.id,type:'property',returnTo,title:'物件購入チャンス',text:'物件は収入マスで利益を生み、最後に資産価値も加算されます。',options:[...picks.map(x=>({label:x.name,value:x.id,desc:`価格 ${money(x.price)} / 資産 ${money(x.value)} / 収入 ${money(x.income)}`,tags:{asset:2}})),{label:'買わない',value:'skip',desc:'今回は見送る',tags:{asset:.6}}]}}
-function createRomanceChoice(p,returnTo){if(!p.partner){const cand=[...PARTNERS].sort(()=>Math.random()-.5).slice(0,3);state.pendingChoice={playerId:p.id,type:'meet',returnTo,title:'新しい出会い',text:'気になる相手と交流してみますか？',options:[...cand.map(x=>({label:x.name,value:x.id,desc:`${x.desc} / ${paramLabel(x.pref)}が高いと好感度ボーナス`,tags:{love:2}})),{label:'今は恋愛しない',value:'skip',desc:'自分の時間を優先',tags:{career:1,asset:1}}]};return}state.pendingChoice={playerId:p.id,type:'date',returnTo,title:`${p.partner.name}とどうする？`,text:`現在の好感度：${p.affection}`,options:[{label:'気軽なデート',value:'light',desc:'2万円 / 好感度+1〜2',tags:{love:1.5}},{label:'特別なデート',value:'special',desc:'7万円 / 好感度+2〜4',tags:{love:2.3}},{label:'プロポーズ',value:'propose',desc:'好感度5以上で成功しやすい',tags:{love:3,risk:1.3}},{label:'今回は見送る',value:'skip',desc:'何もしない',tags:{career:1}}]}}
+function createRomanceChoice(p,returnTo){if(!p.partner){const cand=[...PARTNERS].sort(()=>Math.random()-.5).slice(0,3),used=new Set();const options=cand.map(x=>{const avatar=nextFamilyPortrait(null,used);used.add(avatar);return{label:x.name,value:x.id,avatar,desc:`${x.desc} / ${x.job} / 結婚後の収入 ${money(x.income)} / ${paramLabel(x.pref)}が高いと好感度ボーナス`,tags:{love:2}}});state.pendingChoice={playerId:p.id,type:'meet',returnTo,title:'新しい出会い',text:'気になる相手と交流してみますか？',options:[...options,{label:'今は恋愛しない',value:'skip',desc:'自分の時間を優先',tags:{career:1,asset:1}}]};return}state.pendingChoice={playerId:p.id,type:'date',returnTo,title:`${p.partner.name}とどうする？`,text:`現在の好感度：${p.affection}`,options:[{label:'気軽なデート',value:'light',desc:'2万円 / 好感度+1〜2',tags:{love:1.5}},{label:'特別なデート',value:'special',desc:'7万円 / 好感度+2〜4',tags:{love:2.3}},{label:'プロポーズ',value:'propose',desc:'好感度5以上で成功しやすい',tags:{love:3,risk:1.3}},{label:'今回は見送る',value:'skip',desc:'何もしない',tags:{career:1}}]}}
 function createSubmapChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'submap',returnTo,title:'寄り道スポット',text:'1つ選んで過ごします。',options:[{label:'学びの街',value:'study',desc:'8万円 / 知力+4',tags:{study:2}},{label:'スポーツ施設',value:'fitness',desc:'5万円 / 体力+4',tags:{career:1.2}},{label:'交流フェス',value:'social',desc:'6万円 / 魅力+2・交流+3',tags:{love:1.5,career:1}},{label:'チャレンジ市場',value:'market',desc:'10万円を賭けて0〜30万円',tags:{asset:1.5,risk:2}}]}}
 function applyChoice(p,c,o){const lines=[];
  if(c.type==='education'){p.educationChosen=true;if(o.value==='work'){p.education='高校';p.cash+=50000}else if(o.value==='voc'){p.education='専門';p.cash-=150000;applyStats(p,{knowledge:3,charm:2})}else{p.education='大学';p.cash-=300000;applyStats(p,{knowledge:6,communication:2})}lines.push({text:`進路は「${p.education}」に決定。`,tone:'good'});return lines}
  if(c.type==='job'){if(o.value==='keep'){p.jobExp++;const rank=rankUpCheck(p);lines.push({text:`${p.job.name}を続けることにした。`});if(rank)lines.push({text:rank,tone:'good'});return lines}const j=JOBS.find(x=>x.id===o.value);if(j){const changed=!p.job||p.job.id!==j.id;p.job=j;if(changed){p.jobRank=1;p.jobExp=0}lines.push({text:`${j.name}として働くことにした。`,tone:'good'})}return lines}
  if(c.type==='treasure'){if(o.value==='skip')lines.push({text:'お宝は見送った。'});else{const t=TREASURES.find(x=>x.id===o.value);p.cash-=t.buy;p.treasures.push({id:t.id,appraised:0});lines.push({text:`「${t.name}」を購入した。最後の鑑定が楽しみだ。`,tone:'good'})}return lines}
  if(c.type==='property'){if(o.value==='skip')lines.push({text:'物件購入は見送った。'});else{const x=PROPS.find(x=>x.id===o.value);p.cash-=x.price;p.properties.push(x.id);if(!p.home)p.home={name:x.name,value:Math.round(x.value*.55)};lines.push({text:`「${x.name}」を購入！`,tone:'good'})}return lines}
- if(c.type==='meet'){if(o.value==='skip'){p.memory++;lines.push({text:'今は恋愛より自分の時間を大切にした。'})}else{const x=PARTNERS.find(x=>x.id===o.value);p.partner=x;p.affection=1+Math.floor(p.stats[x.pref]/5);lines.push({text:`${x.name}と知り合った。好感度${p.affection}`,tone:'good'})}return lines}
+ if(c.type==='meet'){if(o.value==='skip'){p.memory++;lines.push({text:'今は恋愛より自分の時間を大切にした。'})}else{const x=PARTNERS.find(x=>x.id===o.value);p.partner={...x,avatar:o.avatar||nextFamilyPortrait()};p.affection=1+Math.floor(p.stats[x.pref]/5);lines.push({text:`${x.name}と知り合った。好感度${p.affection}`,tone:'good'})}return lines}
  if(c.type==='date'){if(o.value==='light'){p.cash-=20000;p.affection+=1+rnd(2);p.memory+=2;lines.push({text:`気軽なデートを楽しんだ。好感度${p.affection}`,tone:'good'})}else if(o.value==='special'){p.cash-=70000;p.affection+=2+rnd(3);p.memory+=5;lines.push({text:`特別なデートは大成功。好感度${p.affection}`,tone:'good'})}else if(o.value==='propose'){const chance=clamp(.25+p.affection*.1+p.stats.charm*.015,.3,.95);if(Math.random()<chance){p.married=true;p.cash-=120000;p.memory+=15;lines.push({text:`${p.partner.name}と結婚！`,tone:'good'},{text:'新しい家族として人生を歩んでいく。',tone:'good'})}else{p.affection=Math.max(0,p.affection-1);lines.push({text:'プロポーズはまだ早かったようだ…。',tone:'bad'})}}else lines.push({text:'今回は自分の時間を優先した。'});return lines}
  if(c.type==='submap'){if(o.value==='study'){p.cash-=80000;applyStats(p,{knowledge:4});lines.push({text:'学びの街で集中。知力+4',tone:'good'})}if(o.value==='fitness'){p.cash-=50000;applyStats(p,{fitness:4});lines.push({text:'しっかり体を動かした。体力+4',tone:'good'})}if(o.value==='social'){p.cash-=60000;applyStats(p,{charm:2,communication:3});lines.push({text:'交流フェスを満喫。魅力+2・交流+3',tone:'good'})}if(o.value==='market'){p.cash-=100000;const g=[0,40000,100000,180000,300000][rnd(5)];p.cash+=g;lines.push({text:`市場チャレンジの戻り ${money(g)}`,tone:g>=100000?'good':'bad'})}p.memory+=3;return lines}
  if(c.type==='retire'){if(o.value==='continue'){p.jobExp+=2;const rank=rankUpCheck(p);lines.push({text:'仕事を続けることにした。'});if(rank)lines.push({text:rank,tone:'good'})}else if(o.value==='retire'){const severance=p.job?salaryNow(p)*3:80000;p.cash+=severance;p.job=null;p.jobRank=0;p.memory+=10;lines.push({text:`ゆったり引退。退職金 ${money(severance)}`,tone:'good'})}else{p.cash-=200000;const ok=Math.random()<.55;if(ok){p.cash+=600000;lines.push({text:`第二の挑戦が大成功！ +${money(600000)}`,tone:'good'})}else lines.push({text:'第二の挑戦は実らなかった…。',tone:'bad'})}return lines}
@@ -518,14 +669,14 @@ function hostHandleAction(playerId,a){if(!isHost||!state)return;const p=state.pl
  if(a.kind==='useCard'&&state.turnReady&&!state.busy&&!state.message&&!state.pendingChoice){useCard(p,a.index);broadcast();return}
  if(a.kind==='roll'&&state.turnReady&&!state.busy&&!state.message&&!state.pendingChoice){doRoll(p);return}
 }
-function finishGame(){state.message=null;state.busy=false;state.turnReady=false;state.players.forEach(p=>{for(const t of p.treasures){const def=TREASURES.find(x=>x.id===t.id);t.appraised=Math.round(def.buy+(def.max-def.buy)*(.25+Math.random()*.75))}});state.phase='finished';prepareResults()}
-function prepareResults(){if(state.resultPrepared)return;state.resultPrepared=true;const awards=[['知の達人',p=>p.stats.knowledge],['体力自慢',p=>p.stats.fitness],['人気者',p=>p.stats.charm+p.stats.communication],['思い出王',p=>p.memory+p.children*5],['資産運用賞',p=>p.properties.length*4+p.treasures.length*3]];state.awards=[];for(const [name,fn] of awards){const best=Math.max(...state.players.map(fn)),winners=state.players.filter(p=>fn(p)===best),bonus=Math.round(180000/winners.length);winners.forEach(p=>p.awards+=bonus);state.awards.push({name,winners:winners.map(p=>p.name),bonus})}}
-function renderResult(){const rows=[...state.players].sort((a,b)=>assetScore(b)-assetScore(a));els.awardArea.innerHTML=state.awards.map(a=>`<div class="award"><strong>${esc(a.name)}</strong>：${a.winners.map(esc).join('・')}　賞金 ${money(a.bonus)} / 人</div>`).join('');els.resultArea.innerHTML=`<table class="summary-table"><thead><tr><th>順位</th><th>名前</th><th>総資産</th><th>現金</th><th>仕事</th><th>家族</th><th>物件/お宝</th></tr></thead><tbody>${rows.map((p,i)=>`<tr class="${i===0?'rank1':''}"><td>${i+1}位</td><td>${esc(p.name)}</td><td><strong>${money(assetScore(p))}</strong></td><td>${money(p.cash)}</td><td>${p.job?esc(p.job.name)+' Lv.'+p.jobRank:'引退'}</td><td>${p.married?'結婚':''} 子${p.children}</td><td>${p.properties.length}/${p.treasures.length}</td></tr>`).join('')}</tbody></table><div class="note" style="margin-top:10px">総資産＝現金＋住居価値＋物件価値＋お宝鑑定額＋特別賞。</div>`;broadcastResultsIfHost()}
+function finishGame(){state.message=null;state.busy=false;if(state.fx)state.fx.landing=null;state.turnReady=false;state.players.forEach(p=>{for(const t of p.treasures){const def=TREASURES.find(x=>x.id===t.id);t.appraised=Math.round(def.buy+(def.max-def.buy)*(.25+Math.random()*.75))}});state.phase='finished';prepareResults()}
+function prepareResults(){if(state.resultPrepared)return;state.resultPrepared=true;const awards=[['知の達人',p=>p.stats.knowledge],['体力自慢',p=>p.stats.fitness],['人気者',p=>p.stats.charm+p.stats.communication],['思い出王',p=>p.memory+childCount(p)*5],['資産運用賞',p=>p.properties.length*4+p.treasures.length*3]];state.awards=[];for(const [name,fn] of awards){const best=Math.max(...state.players.map(fn)),winners=state.players.filter(p=>fn(p)===best),bonus=Math.round(180000/winners.length);winners.forEach(p=>p.awards+=bonus);state.awards.push({name,winners:winners.map(p=>p.name),bonus})}}
+function renderResult(){const rows=[...state.players].sort((a,b)=>assetScore(b)-assetScore(a));els.awardArea.innerHTML=state.awards.map(a=>`<div class="award"><strong>${esc(a.name)}</strong>：${a.winners.map(esc).join('・')}　賞金 ${money(a.bonus)} / 人</div>`).join('');els.resultArea.innerHTML=`<table class="summary-table"><thead><tr><th>順位</th><th>名前</th><th>総資産</th><th>現金</th><th>仕事</th><th>家族</th><th>物件/お宝</th></tr></thead><tbody>${rows.map((p,i)=>`<tr class="${i===0?'rank1':''}"><td>${i+1}位</td><td>${esc(p.name)}</td><td><strong>${money(assetScore(p))}</strong></td><td>${money(p.cash)}</td><td>${p.job?esc(p.job.name)+' Lv.'+p.jobRank:'引退'}</td><td>${p.married?'結婚':''} 子${childCount(p)}</td><td>${p.properties.length}/${p.treasures.length}</td></tr>`).join('')}</tbody></table><div class="note" style="margin-top:10px">総資産＝現金＋住居価値＋物件価値＋お宝鑑定額＋特別賞。</div>`;broadcastResultsIfHost()}
 function broadcastResultsIfHost(){if(isHost)connections.forEach(c=>{if(c.open)c.send({type:'snapshot',state})})}
-function maybeRunCpu(){clearTimeout(cpuTimer);if(!isHost||state?.phase!=='playing')return;if(state.fx.stage||state.fx.turn)return;const pr=state.pendingRollAdvance;if(pr?.ready){const po=state.players.find(x=>x.id===pr.playerId);if(po?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'advanceRoll'}),Math.round(700*speedScale()));return}if(state.busy)return;const m=state.message;if(m){const owner=state.players.find(p=>p.id===m.ownerId);if(owner?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(owner.id,{kind:'nextMessage'}),Math.round(760*speedScale()));return}const c=state.pendingChoice;if(c){const p=state.players.find(x=>x.id===c.playerId);if(p?.cpu)cpuTimer=setTimeout(()=>{let best=0,bestS=-1e9;c.options.forEach((o,i)=>{const s=cpuScoreOption(p,o);if(s>bestS){bestS=s;best=i}});hostHandleAction(p.id,{kind:'choose',index:best})},Math.round(850*speedScale()));return}const p=currentPlayer();if(p?.cpu&&state.turnReady)cpuTimer=setTimeout(()=>{if(p.cards.length&&Math.random()<.20){const idx=p.cards.findIndex(id=>{const c=CARDS.find(x=>x.id===id);return c&&(cpuDef(p.cpuType).w[c.tag]||1)>1.3});if(idx>=0){hostHandleAction(p.id,{kind:'useCard',index:idx});return}}hostHandleAction(p.id,{kind:'roll'})},Math.round(720*speedScale()))}
+function maybeRunCpu(){clearTimeout(cpuTimer);if(!isHost||state?.phase!=='playing')return;if(state.fx.stage||state.fx.turn)return;const pr=state.pendingRollAdvance;if(pr?.ready){const po=state.players.find(x=>x.id===pr.playerId);if(po?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'advanceRoll'}),Math.round(700*speedScale()));return}if(state.busy)return;const m=state.message;if(m){const owner=state.players.find(p=>p.id===m.ownerId);if(owner?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(owner.id,{kind:'nextMessage'}),cpuMessageDelay(m));return}const c=state.pendingChoice;if(c){const p=state.players.find(x=>x.id===c.playerId);if(p?.cpu)cpuTimer=setTimeout(()=>{let best=0,bestS=-1e9;c.options.forEach((o,i)=>{const s=cpuScoreOption(p,o);if(s>bestS){bestS=s;best=i}});hostHandleAction(p.id,{kind:'choose',index:best})},Math.round(850*speedScale()));return}const p=currentPlayer();if(p?.cpu&&state.turnReady)cpuTimer=setTimeout(()=>{if(p.cards.length&&Math.random()<.20){const idx=p.cards.findIndex(id=>{const c=CARDS.find(x=>x.id===id);return c&&(cpuDef(p.cpuType).w[c.tag]||1)>1.3});if(idx>=0){hostHandleAction(p.id,{kind:'useCard',index:idx});return}}hostHandleAction(p.id,{kind:'roll'})},Math.round(720*speedScale()))}
 function randomCode(){return String(Math.floor(100000+Math.random()*900000))}
 function createRoom(){ensureAudio();clearSavedSession();intentionalDisconnect=false;localHomeView=false;const name=cleanName(els.hostName.value);roomCode=randomCode();isHost=true;state=newState();const p=makePlayer(name);state.players.push(p);localPlayerId=p.id;show(els.lobby);render();saveSession();openHostPeer(false)}
-function joinRoom(){ensureAudio();clearSavedSession();intentionalDisconnect=false;localHomeView=false;const name=cleanName(els.joinName.value),code=(els.roomInput.value||'').replace(/\D/g,'').slice(0,6);if(code.length!==6){alert('6桁の部屋コードを入力してください');return}roomCode=code;isHost=false;localPlayerId='';state={phase:'lobby',players:[],settings:{mode:'standard',speed:'normal'},fx:{roulette:null,move:null,stage:null,turn:null}};show(els.lobby);net('ホストへ接続中...');
+function joinRoom(){ensureAudio();clearSavedSession();intentionalDisconnect=false;localHomeView=false;const name=cleanName(els.joinName.value),code=(els.roomInput.value||'').replace(/\D/g,'').slice(0,6);if(code.length!==6){alert('6桁の部屋コードを入力してください');return}roomCode=code;isHost=false;localPlayerId='';state={phase:'lobby',players:[],settings:{mode:'standard',speed:'normal',messageSpeed:'normal'},fx:{roulette:null,move:null,stage:null,turn:null,landing:null}};show(els.lobby);net('ホストへ接続中...');
  if(typeof Peer==='undefined'){alert('オンライン通信ライブラリを読み込めませんでした。');show(els.home);return}
  connectGuestToHost(false);
 }
@@ -545,17 +696,19 @@ function animateRoulette(result){
  rollVisualTimer=setTimeout(()=>{els.roll.textContent=String(result)},Math.round(1050*speedScale()));
 
 }
-function ensureAudio(){if(!soundOn)return;if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC()}if(audioCtx.state==='suspended')audioCtx.resume();if(!bgmTimer)startBgm(state?.stageIndex||0)}
-function tone(freq,dur=.09,g=.028,type='sine',when=0){if(!soundOn||!audioCtx)return;const o=audioCtx.createOscillator(),gain=audioCtx.createGain();o.type=type;o.frequency.value=freq;gain.gain.setValueAtTime(Math.min(.58,g*6*masterVolume),audioCtx.currentTime+when);gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+when+dur);o.connect(gain).connect(audioCtx.destination);o.start(audioCtx.currentTime+when);o.stop(audioCtx.currentTime+when+dur+.02)}
-function startBgm(si){if(!soundOn)return;ensureAudioCore();bgmStage=si;bgmStep=0;if(bgmTimer)clearInterval(bgmTimer);const seqs=[[262,330,392,330,294,349,392,349],[294,370,440,370,330,392,494,392],[247,294,370,294,220,277,330,277],[262,311,392,311,294,349,466,349],[220,277,330,277,247,294,370,294],[196,247,294,247,220,262,330,262],[175,220,262,220,196,247,294,247]],seq=seqs[si]||seqs[0];bgmTimer=setInterval(()=>{if(!soundOn||!audioCtx||audioCtx.state!=='running')return;const f=seq[bgmStep++%seq.length];tone(f,.24,.018,'triangle');if(bgmStep%4===1)tone(f/2,.30,.012,'sine')},320)}
+function ensureAudio(){if(!bgmOn&&!sfxOn)return;if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC()}if(audioCtx.state==='suspended')audioCtx.resume();if(bgmOn&&!bgmTimer)startBgm(state?.stageIndex||0)}
+function tone(freq,dur=.09,g=.028,type='sine',when=0,kind='sfx'){if(!audioCtx)return;if(kind==='bgm'?!bgmOn:!sfxOn)return;const o=audioCtx.createOscillator(),gain=audioCtx.createGain();o.type=type;o.frequency.value=freq;gain.gain.setValueAtTime(Math.min(.58,g*6*masterVolume),audioCtx.currentTime+when);gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+when+dur);o.connect(gain).connect(audioCtx.destination);o.start(audioCtx.currentTime+when);o.stop(audioCtx.currentTime+when+dur+.02)}
+function startBgm(si){if(!bgmOn)return;ensureAudioCore();if(!audioCtx)return;bgmStage=si;bgmStep=0;if(bgmTimer)clearInterval(bgmTimer);const seqs=[[262,330,392,330,294,349,392,349],[294,370,440,370,330,392,494,392],[247,294,370,294,220,277,330,277],[262,311,392,311,294,349,466,349],[220,277,330,277,247,294,370,294],[196,247,294,247,220,262,330,262],[175,220,262,220,196,247,294,247]],seq=seqs[si]||seqs[0];bgmTimer=setInterval(()=>{if(!bgmOn||!audioCtx||audioCtx.state!=='running')return;const f=seq[bgmStep++%seq.length];tone(f,.24,.018,'triangle',0,'bgm');if(bgmStep%4===1)tone(f/2,.30,.012,'sine',0,'bgm')},320)}
 function ensureAudioCore(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC()}}
 function sfxStep(){tone(520,.055,.026,'square')}function sfxGood(){tone(659,.11,.034,'triangle');tone(784,.13,.028,'triangle',.07)}function sfxBad(){tone(220,.13,.032,'sawtooth');tone(174,.17,.026,'sawtooth',.08)}function sfxStage(){tone(392,.13,.038,'triangle');tone(523,.15,.035,'triangle',.1);tone(659,.19,.032,'triangle',.2)}
-function sfxRoulette(){if(!soundOn||!audioCtx)return;let i=0;const tick=setInterval(()=>{tone(760-i*10,.025,.012,'square');i++;if(i>15)clearInterval(tick)},Math.max(35,Math.round(65*speedScale())))}
+function sfxRoulette(){if(!sfxOn||!audioCtx)return;let i=0;const tick=setInterval(()=>{tone(760-i*10,.025,.012,'square');i++;if(i>15)clearInterval(tick)},Math.max(35,Math.round(65*speedScale())))}
 function updateVolumeUi(){if(!els.volumeSlider)return;els.volumeSlider.value=String(Math.round(masterVolume*100));if(els.volumeValue)els.volumeValue.textContent=`${Math.round(masterVolume*100)}%`}
-function setMasterVolume(v){masterVolume=Math.max(0,Math.min(1,Number(v)||0));localStorage.setItem('lifeRoadVolume',String(masterVolume));updateVolumeUi();if(masterVolume>0&&soundOn)ensureAudio()}
+function updateAudioToggleUi(){if(els.bgmBtn){els.bgmBtn.textContent=bgmOn?'🎵 BGM ON':'🎵 BGM OFF';els.bgmBtn.classList.toggle('off',!bgmOn)}if(els.sfxBtn){els.sfxBtn.textContent=sfxOn?'🔔 効果音 ON':'🔕 効果音 OFF';els.sfxBtn.classList.toggle('off',!sfxOn)}}
+function setMasterVolume(v){masterVolume=Math.max(0,Math.min(1,Number(v)||0));localStorage.setItem('lifeRoadVolume',String(masterVolume));updateVolumeUi();if(masterVolume>0&&(bgmOn||sfxOn))ensureAudio()}
 function applyPortraitCollapsed(){if(!els.portraitPanel)return;els.portraitPanel.classList.toggle('collapsed',portraitCollapsed);if(els.portraitToggle){const mobile=window.innerWidth<=900;els.portraitToggle.setAttribute('aria-expanded',portraitCollapsed?'false':'true');els.portraitToggle.title=portraitCollapsed?'手番キャラクター表示を開く':'手番キャラクター表示を収納';els.portraitToggle.textContent=mobile?(portraitCollapsed?'▲':'▼'):(portraitCollapsed?'▶':'◀')}}
 function togglePortraitPanel(){portraitCollapsed=!portraitCollapsed;localStorage.setItem('lifeRoadPortraitCollapsed',portraitCollapsed?'1':'0');applyPortraitCollapsed()}
-function toggleSound(){soundOn=!soundOn;els.soundBtn.textContent=soundOn?'🔊 サウンド ON':'🔇 サウンド OFF';if(soundOn){ensureAudio();startBgm(state?.stageIndex||0)}else if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function toggleBgm(){bgmOn=!bgmOn;localStorage.setItem('lifeRoadBgmOn',bgmOn?'1':'0');updateAudioToggleUi();if(bgmOn){ensureAudio();startBgm(state?.stageIndex||0)}else if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function toggleSfx(){sfxOn=!sfxOn;localStorage.setItem('lifeRoadSfxOn',sfxOn?'1':'0');updateAudioToggleUi();if(sfxOn)ensureAudio()}
 els.wheel.innerHTML='';setupBoardDrag();
 const advanceRollInput=e=>{if(!state?.pendingRollAdvance?.ready)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();tryAdvancePendingRoll()};
 els.rollWaitLayer?.addEventListener('pointerdown',advanceRollInput,{capture:true});
@@ -565,15 +718,15 @@ els.avatarPickerClose?.addEventListener('click',closeAvatarPicker);
 els.avatarPicker?.addEventListener('click',e=>{if(e.target===els.avatarPicker)closeAvatarPicker()});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&els.avatarPicker&&!els.avatarPicker.classList.contains('hidden'))closeAvatarPicker()});
 
-els.create.addEventListener('click',createRoom);els.join.addEventListener('click',joinRoom);els.addCpu.addEventListener('click',addCpu);els.fillCpu.addEventListener('click',fillCpu);els.start.addEventListener('click',()=>sendAction({kind:'start'}));els.rollBtn.addEventListener('click',()=>sendAction({kind:'roll'}));els.mode.addEventListener('change',()=>{if(!isHost)return;state.settings.mode=els.mode.value;broadcast()});els.speed.addEventListener('change',()=>{if(!isHost)return;state.settings.speed=els.speed.value;broadcast()});els.soundBtn.addEventListener('click',toggleSound);els.volumeSlider?.addEventListener('input',e=>setMasterVolume(Number(e.target.value)/100));els.back.addEventListener('click',()=>{clearSavedSession();location.reload()});els.gameHomeBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showTopScreen()});els.leaveGameBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();leaveCurrentGame(true)});els.resumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)returnToActiveSession();else resumeLastSession()});els.discardResumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)leaveCurrentGame(true);else{clearSavedSession();refreshResumeCard()}});
-els.portraitToggle?.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(portraitTogglePointerLock)return;portraitTogglePointerLock=true;togglePortraitPanel();setTimeout(()=>portraitTogglePointerLock=false,180)},{capture:true});updateVolumeUi();applyPortraitCollapsed();refreshResumeCard();
+els.create.addEventListener('click',createRoom);els.join.addEventListener('click',joinRoom);els.addCpu.addEventListener('click',addCpu);els.fillCpu.addEventListener('click',fillCpu);els.start.addEventListener('click',()=>sendAction({kind:'start'}));els.rollBtn.addEventListener('click',()=>sendAction({kind:'roll'}));els.mode.addEventListener('change',()=>{if(!isHost)return;state.settings.mode=els.mode.value;broadcast()});els.speed.addEventListener('change',()=>{if(!isHost)return;state.settings.speed=els.speed.value;broadcast()});els.messageSpeed?.addEventListener('change',()=>{if(!isHost)return;state.settings.messageSpeed=els.messageSpeed.value;broadcast()});els.bgmBtn?.addEventListener('click',toggleBgm);els.sfxBtn?.addEventListener('click',toggleSfx);els.volumeSlider?.addEventListener('input',e=>setMasterVolume(Number(e.target.value)/100));els.back.addEventListener('click',()=>{clearSavedSession();location.reload()});els.gameHomeBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showTopScreen()});els.leaveGameBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();leaveCurrentGame(true)});els.resumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)returnToActiveSession();else resumeLastSession()});els.discardResumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)leaveCurrentGame(true);else{clearSavedSession();refreshResumeCard()}});
+els.portraitToggle?.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(portraitTogglePointerLock)return;portraitTogglePointerLock=true;togglePortraitPanel();setTimeout(()=>portraitTogglePointerLock=false,180)},{capture:true});updateVolumeUi();updateAudioToggleUi();applyPortraitCollapsed();refreshResumeCard();
 let messageAdvanceLock=false;
 function canAdvanceLocalMessage(){if(!state?.message)return false;const owner=state.players.find(p=>p.id===state.message.ownerId);return state.message.ownerId===localPlayerId&&!owner?.cpu}
-function advanceMessage(){if(!canAdvanceLocalMessage()||messageAdvanceLock)return;messageAdvanceLock=true;sendAction({kind:'nextMessage'});setTimeout(()=>{messageAdvanceLock=false},120)}
+function advanceMessage(){if(!canAdvanceLocalMessage()||messageAdvanceLock)return;if(finishTypewriter()){if(state?.message)els.messageOwner.textContent='クリックで次へ';return}messageAdvanceLock=true;sendAction({kind:'nextMessage'});setTimeout(()=>{messageAdvanceLock=false},120)}
 // Capture at document level so clicking the board, side UI, portrait, or message frame all advances the current message.
 document.addEventListener('click',e=>{const priority=e.target?.closest?.('#portraitToggle,#gameHomeBtn,#leaveGameBtn,#resumeBtn,#discardResumeBtn');if(priority){if(priority.id==='portraitToggle'){e.preventDefault();e.stopImmediatePropagation()}return}if(tryAdvancePendingRoll()){e.preventDefault();e.stopPropagation();return}const tf=state?.fx?.turn,tp=tf&&state?.players?.find(p=>p.id===tf.playerId);if(tf&&tp?.id===localPlayerId&&!tp.cpu){e.preventDefault();e.stopPropagation();sendAction({kind:'dismissTurnIntro'});return}if(!canAdvanceLocalMessage())return;e.preventDefault();e.stopPropagation();advanceMessage()},{capture:true});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){if(tryAdvancePendingRoll()){e.preventDefault();return}if(canAdvanceLocalMessage()){e.preventDefault();advanceMessage()}}},{capture:true});
-const unlockAudio=()=>{if(soundOn)ensureAudio()};document.addEventListener('pointerdown',unlockAudio,{capture:true});document.addEventListener('touchstart',unlockAudio,{capture:true,passive:true});document.addEventListener('click',unlockAudio,{capture:true});window.addEventListener('resize',()=>{applyPortraitCollapsed();if(state?.phase==='playing')requestAnimationFrame(()=>focusBoardCamera());updateBoardDragUi()});
+const unlockAudio=()=>{if(bgmOn||sfxOn)ensureAudio()};document.addEventListener('pointerdown',unlockAudio,{capture:true});document.addEventListener('touchstart',unlockAudio,{capture:true,passive:true});document.addEventListener('click',unlockAudio,{capture:true});window.addEventListener('resize',()=>{applyPortraitCollapsed();if(state?.phase==='playing')requestAnimationFrame(()=>focusBoardCamera());updateBoardDragUi()});
 window.addEventListener('beforeunload',saveSession);
 const navType=performance?.getEntriesByType?.('navigation')?.[0]?.type;if(navType==='reload'&&loadSession())setTimeout(resumeLastSession,80);
 if(globalThis.__LIFE_NODE_TEST__){globalThis.__lifeDebug={newState,makePlayer,startGame,hostHandleAction,maybeRunCpu,getState:()=>state,setHost:v=>{isHost=v},setState:v=>{state=v},setLocalPlayerId:v=>{localPlayerId=v},addCpu,fillCpu};}
