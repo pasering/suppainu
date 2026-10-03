@@ -715,20 +715,26 @@ function routePoints(stageId,count=42){
  const out=[];for(let i=0;i<count;i++){const t=i*(a.length-1)/(count-1),j=Math.floor(t),f=t-j,p=a[j],q=a[Math.min(a.length-1,j+1)];out.push([p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f])}return out
 }
 function spacePalette(type){return({start:'#e3ad2f',plus:'#2387e8',minus:'#e33d48',grow:'#43a862',social:'#d96aaf',event:'#ed893c',chance:'#9565dd',card:'#6671cc',payday:'#dba321',career:'#8a5b41',romance:'#e86d9b',property:'#41a8b5',treasure:'#d1a119',submap:'#e2822d',branch:'#f08b24',family:'#df865b',bigluck:'#f2b300',bigbad:'#9b2548'}[type]||'#7aa9df')}
-const BIG_SPACE_POSITIONS=[
- {luck:[8,31],bad:[19,38]},{luck:[10,33],bad:[21,39]},{luck:[7,30],bad:[18,37]},{luck:[9,32],bad:[20,39]},
- {luck:[8,34],bad:[19,40]},{luck:[10,32],bad:[21,38]},{luck:[7,31],bad:[18,39]}
-];
-// Each era has one visible fork. The alternate route either short-cuts the board or trades safety for a 50/50 large outcome.
+// Each era has one meaningful fork. The normal route keeps a big-luck square in reach,
+// but a big-bad square waits just before the merge. The shortcut skips the whole 6-square segment.
 const BRANCH_CONFIG={
- baby:{at:13,altTo:16,kind:'shortcut',mainLabel:'いつもの道',altLabel:'近道',altNote:'3マス先へショートカット'},
- elementary:{at:20,altTo:24,kind:'gamble',mainLabel:'安全な道',altLabel:'運試しルート',altNote:'大ラッキーか大不幸'},
- middle:{at:13,altTo:16,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'3マス先へショートカット'},
- high:{at:13,altTo:17,kind:'gamble',mainLabel:'堅実な道',altLabel:'勝負ルート',altNote:'大ラッキーか大不幸'},
- young:{at:13,altTo:17,kind:'shortcut',mainLabel:'通常ルート',altLabel:'高速ルート',altNote:'4マス先へショートカット'},
- mature:{at:20,altTo:24,kind:'gamble',mainLabel:'安全ルート',altLabel:'勝負ルート',altNote:'大ラッキーか大不幸'},
- senior:{at:13,altTo:16,kind:'shortcut',mainLabel:'のんびりルート',altLabel:'近道',altNote:'3マス先へショートカット'}
+ baby:{at:13,altTo:20,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:15,badAt:19},
+ elementary:{at:13,altTo:20,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:15,badAt:19},
+ middle:{at:13,altTo:20,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:15,badAt:19},
+ high:{at:13,altTo:20,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:15,badAt:19},
+ young:{at:20,altTo:27,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:22,badAt:26},
+ mature:{at:20,altTo:27,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:22,badAt:26},
+ senior:{at:20,altTo:27,kind:'shortcut',mainLabel:'通常ルート',altLabel:'近道',altNote:'6マスを飛ばして合流',luckAt:22,badAt:26}
 };
+const BIG_SPACE_POSITIONS=[
+ {luck:[15,31],bad:[19,38]},
+ {luck:[15,33],bad:[19,39]},
+ {luck:[15,30],bad:[19,37]},
+ {luck:[15,32],bad:[19,39]},
+ {luck:[22,34],bad:[26,40]},
+ {luck:[22,32],bad:[26,38]},
+ {luck:[22,31],bad:[26,39]}
+];
 function branchDef(si=state?.stageIndex||0){const id=STAGES[si]?.id;return id?BRANCH_CONFIG[id]||null:null}
 
 function buildStageBoard(si,size){
@@ -1178,12 +1184,8 @@ function chooseBranchRoute(p,option){
  state.pendingBranch=null;let target=(br.at+1)%stageBoard().length;
  if(option==='alt'){
   target=br.altTo;
-  // 分岐選択そのものではメッセージを挟まない。選んだらそのまま移動を再開する。
-  if(br.kind==='gamble'){
-   const lucky=Math.random()<.5;
-   // 勝負ルートの効果は即時反映するが、選択結果専用のメッセージは出さない。
-   if(lucky)resolveBigLuck(p);else resolveBigBad(p);
-  }
+  // 近道は通常ルート上の大ラッキー／大不幸区間をまとめて飛ばす。
+  // 分岐選択そのものではメッセージを挟まず、そのまま移動を再開する。
  }
  moveToPosition(p,ctx,target)
 }
@@ -1495,7 +1497,7 @@ function renderResultReveal(){const steps=resultRevealSteps(),step=steps[Math.mi
 function advanceResultPresentation(){const steps=resultRevealSteps();if(resultRevealIndex<steps.length-1){resultRevealIndex++;renderResultReveal();window.scrollTo({top:0,behavior:'smooth'});return}resultSummaryVisible=true;renderResult();window.scrollTo({top:0,behavior:'smooth'})}
 function renderResult(){hideResultObscuringUi();ensureResultPresentation();const rows=[...state.players].sort((a,b)=>assetScore(b)-assetScore(a));if(resultSummaryVisible){els.resultCeremony.classList.add('hidden');els.resultSummaryWrap.classList.remove('hidden');els.awardArea.innerHTML=state.awards.map(a=>`<div class="award"><strong>${esc(a.name)}</strong>：${a.winners.map(esc).join('・')}　賞金 ${money(a.bonus)} / 人</div>`).join('');els.resultArea.innerHTML=`${resultOverallComment(rows)}<table class="summary-table"><thead><tr><th>順位</th><th>名前</th><th>総資産</th><th>現金</th><th>仕事</th><th>家族</th><th>物件/お宝</th></tr></thead><tbody>${rows.map((p,i)=>`<tr class="${i===0?'rank1':''}"><td>${i+1}位</td><td>${esc(p.name)}</td><td><strong>${money(assetScore(p))}</strong></td><td>${money(p.cash)}</td><td>${p.job?esc(jobDisplayName(p.job))+' Lv.'+p.jobRank:'引退'}</td><td>${p.married?'結婚':''} 子${childCount(p)}</td><td>${p.properties.length}/${p.treasures.length}</td></tr>`).join('')}</tbody></table><div class="note" style="margin-top:10px">総資産＝現金＋住居価値＋物件価値＋お宝鑑定額＋特別賞。</div>`}else{els.resultSummaryWrap.classList.add('hidden');els.resultCeremony.classList.remove('hidden');renderResultReveal()}broadcastResultsIfHost()}
 function broadcastResultsIfHost(){if(isHost)connections.forEach(c=>{if(c.open)c.send({type:'snapshot',state})})}
-function maybeRunCpu(){clearTimeout(cpuTimer);if(!isHost||state?.phase!=='playing')return;if(state.pendingPromotion){const id=state.pendingPromotion.id;cpuTimer=setTimeout(()=>finishPromotionRoulette(id),Math.round(1850*speedScale()));return}if(state.fx.stage||state.fx.turn||state.fx.lastTurn)return;if(state.pendingBranch){const pb=state.pendingBranch,po=state.players.find(x=>x.id===pb.playerId);if(po?.cpu){const br=branchDef(pb.stageIndex),risk=cpuDef(po.cpuType).w.risk||1,altChance=br?.kind==='gamble'?clamp(.28+(risk-1)*.22,.18,.72):.62;cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'branchChoose',option:Math.random()<altChance?'alt':'main'}),Math.round(900*speedScale()))}return}const pr=state.pendingRollAdvance;if(pr?.ready){const po=state.players.find(x=>x.id===pr.playerId);if(po?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'advanceRoll'}),Math.round(700*speedScale()));return}if(state.busy)return;const m=state.message;if(m){const owner=state.players.find(p=>p.id===m.ownerId);if(owner?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(owner.id,{kind:'nextMessage'}),cpuMessageDelay(m));return}const c=state.pendingChoice;if(c){if(c.revealing)return;const p=state.players.find(x=>x.id===c.playerId);if(p?.cpu)cpuTimer=setTimeout(()=>{let best=0,bestS=-1e9;c.options.forEach((o,i)=>{const s=cpuScoreOption(p,o);if(s>bestS){bestS=s;best=i}});hostHandleAction(p.id,{kind:'choose',index:best})},Math.round(850*speedScale()));return}const p=currentPlayer();if(p?.cpu&&state.turnReady)cpuTimer=setTimeout(()=>{if(!p.cardUsedThisTurn&&p.cards.length&&Math.random()<.20){const idx=p.cards.findIndex(id=>{const c=CARDS.find(x=>x.id===id);return c&&(cpuDef(p.cpuType).w[c.tag]||1)>1.3});if(idx>=0){hostHandleAction(p.id,{kind:'useCard',index:idx});return}}hostHandleAction(p.id,{kind:'roll'})},Math.round(720*speedScale()))}
+function maybeRunCpu(){clearTimeout(cpuTimer);if(!isHost||state?.phase!=='playing')return;if(state.pendingPromotion){const id=state.pendingPromotion.id;cpuTimer=setTimeout(()=>finishPromotionRoulette(id),Math.round(1850*speedScale()));return}if(state.fx.stage||state.fx.turn||state.fx.lastTurn)return;if(state.pendingBranch){const pb=state.pendingBranch,po=state.players.find(x=>x.id===pb.playerId);if(po?.cpu){const br=branchDef(pb.stageIndex),risk=cpuDef(po.cpuType).w.risk||1,altChance=clamp(.56+(risk-1)*.08,.42,.72);cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'branchChoose',option:Math.random()<altChance?'alt':'main'}),Math.round(900*speedScale()))}return}const pr=state.pendingRollAdvance;if(pr?.ready){const po=state.players.find(x=>x.id===pr.playerId);if(po?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(po.id,{kind:'advanceRoll'}),Math.round(700*speedScale()));return}if(state.busy)return;const m=state.message;if(m){const owner=state.players.find(p=>p.id===m.ownerId);if(owner?.cpu)cpuTimer=setTimeout(()=>hostHandleAction(owner.id,{kind:'nextMessage'}),cpuMessageDelay(m));return}const c=state.pendingChoice;if(c){if(c.revealing)return;const p=state.players.find(x=>x.id===c.playerId);if(p?.cpu)cpuTimer=setTimeout(()=>{let best=0,bestS=-1e9;c.options.forEach((o,i)=>{const s=cpuScoreOption(p,o);if(s>bestS){bestS=s;best=i}});hostHandleAction(p.id,{kind:'choose',index:best})},Math.round(850*speedScale()));return}const p=currentPlayer();if(p?.cpu&&state.turnReady)cpuTimer=setTimeout(()=>{if(!p.cardUsedThisTurn&&p.cards.length&&Math.random()<.20){const idx=p.cards.findIndex(id=>{const c=CARDS.find(x=>x.id===id);return c&&(cpuDef(p.cpuType).w[c.tag]||1)>1.3});if(idx>=0){hostHandleAction(p.id,{kind:'useCard',index:idx});return}}hostHandleAction(p.id,{kind:'roll'})},Math.round(720*speedScale()))}
 function randomCode(){return String(Math.floor(100000+Math.random()*900000))}
 function createRoom(){ensureAudio();clearSavedSession();intentionalDisconnect=false;localHomeView=false;const name=cleanName(els.hostName.value);roomCode=randomCode();isHost=true;state=newState();const p=makePlayer(name);state.players.push(p);localPlayerId=p.id;show(els.lobby);render();saveSession();openHostPeer(false)}
 function joinRoom(){ensureAudio();clearSavedSession();intentionalDisconnect=false;localHomeView=false;const name=cleanName(els.joinName.value),code=(els.roomInput.value||'').replace(/\D/g,'').slice(0,6);if(code.length!==6){alert('6桁の部屋コードを入力してください');return}roomCode=code;isHost=false;localPlayerId='';state={phase:'lobby',players:[],settings:{variant:'normal',mode:'standard',speed:'normal',messageSpeed:'normal'},fx:{roulette:null,move:null,stage:null,turn:null,landing:null}};show(els.lobby);net('ホストへ接続中...');
