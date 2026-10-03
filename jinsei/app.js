@@ -1620,8 +1620,28 @@ function adjustedAbilityEvent(p,e){
  return{event:weaker,check:{ok,stat:rule.stat,roll,text:rule.failText}};
 }
 function choiceEventById(id){return ALL_SPACE_CHOICE_EVENTS.find(e=>e.id===id)||ALL_CHOICE_EVENTS.find(e=>e.id===id)||null}
-function createStageEventChoice(p,returnTo,ctx={}){const spaceType=ctx.spaceType||'event',category=ctx.eventCategory||spaceType,meta=spaceMeta(spaceType),pool=ctx.togaSpecial?activeChoiceEventsForStage(stageDef().id):activeSpaceChoices(category,stageDef().id),ev=choiceEventById(ctx.eventId)||pickFresh(p,pool,ctx.togaSpecial?'toga-choice':`space-${category}`);state.pendingChoice={playerId:p.id,type:'event3',eventId:ev.id,spaceType,eventCategory:category,togaSpecial:!!ctx.togaSpecial,returnTo,title:spaceType==='event'?ev.title:`${meta[1]}マス：${ev.title}`,text:ctx.introShown?'どうする？':`${ev.title}。${ev.text}`,options:ev.options.map((o,i)=>({label:o.label,value:String(i),desc:'',outcome:o.out}))}}
-function queueSpecificStageChoice(p,ev,prefix=[],spaceType='event',eventCategory=spaceType,togaSpecial=false){const meta=spaceMeta(spaceType);setMessage(p.id,`${meta[1]}マス`,[...prefix,{text:`${ev.title}。`},{text:ev.text}],{type:'openChoice',choice:'event3',eventId:ev.id,spaceType,eventCategory,togaSpecial,playerId:p.id,returnTo:'completeTurn',introShown:true});broadcast()}
+// v0.66: choice-event titles stay as UI headings only. The spoken/message intro must stand on its own.
+const CHOICE_INTRO_OVERRIDES={
+ '公園で新しい遊具':'公園で見たことのない遊具を見つけた。どれから遊ぼう？',
+ '家族写真を撮ることに':'今日は家族みんなで記念写真を撮ることになった。どんな一枚にしよう？',
+ '運動会の自由種目':'運動会では希望する種目を一つ選べることになった。どれに出よう？',
+ '家庭科クラブの体験会':'家庭科クラブの体験会で、簡単なおやつを一つ作れることになった。何にしよう？',
+ '学芸会の役決め':'学芸会の劇で、希望する役を自由に選べることになった。どの役にしよう？',
+ '文化祭で何を担当する？':'文化祭のクラス企画で担当を決めることになった。どの役割を引き受けよう？',
+ '校外学習の自由時間':'校外学習で、班ごとに一時間だけ自由に回れる時間ができた。どこへ行こう？',
+ '模試の結果が返ってきた':'模試の結果が返ってきた。志望校判定は少し微妙だった。ここからどうする？',
+ '校内コンテストへ出す作品':'校内コンテストへ自由作品を一つ提出できることになった。何を作ろう？',
+ 'ボーナスの使い道':'会社から予想より少し多めのボーナスが入った。どう使おう？',
+ '引っ越し先を迷う':'今の住まいの契約更新が近づき、住み替えも検討できる時期になった。どうする？',
+ '親から相談の電話':'親から電話があり、実家のことで少し相談したいと言われた。どう対応しよう？',
+ '大きな仕事のまとめ役':'仕事で複数人をまとめる大きめの案件を任された。どう進めよう？',
+ '学校のお祭り':'学校のお祭りで、クラスの担当を決めることになった。何を担当しよう？',
+ '文化祭の企画会議':'文化祭の企画会議が始まったが、クラスの案がなかなかまとまらない。どう動こう？',
+ 'お客さんがやってきた':'家族の知り合いだという大人がお客さんとして家へやってきた。どう過ごそう？'
+};
+function choiceIntroText(ev){const text=CHOICE_INTRO_OVERRIDES[ev?.title]||ev?.text||'';return String(text).trim()}
+function createStageEventChoice(p,returnTo,ctx={}){const spaceType=ctx.spaceType||'event',category=ctx.eventCategory||spaceType,meta=spaceMeta(spaceType),pool=ctx.togaSpecial?activeChoiceEventsForStage(stageDef().id):activeSpaceChoices(category,stageDef().id),ev=choiceEventById(ctx.eventId)||pickFresh(p,pool,ctx.togaSpecial?'toga-choice':`space-${category}`);state.pendingChoice={playerId:p.id,type:'event3',eventId:ev.id,spaceType,eventCategory:category,togaSpecial:!!ctx.togaSpecial,returnTo,title:spaceType==='event'?ev.title:`${meta[1]}マス：${ev.title}`,text:ctx.introShown?'どうする？':choiceIntroText(ev),options:ev.options.map((o,i)=>({label:o.label,value:String(i),desc:'',outcome:o.out}))}}
+function queueSpecificStageChoice(p,ev,prefix=[],spaceType='event',eventCategory=spaceType,togaSpecial=false){const meta=spaceMeta(spaceType);setMessage(p.id,`${meta[1]}マス`,[...prefix,{text:choiceIntroText(ev)}],{type:'openChoice',choice:'event3',eventId:ev.id,spaceType,eventCategory,togaSpecial,playerId:p.id,returnTo:'completeTurn',introShown:true});broadcast()}
 function queueStageChoice(p,prefix=[],spaceType='event',eventCategory=spaceType,togaSpecial=false){const pool=togaSpecial?activeChoiceEventsForStage(stageDef().id):activeSpaceChoices(eventCategory,stageDef().id),ev=pickFresh(p,pool,togaSpecial?'toga-choice':`space-${eventCategory}`);queueSpecificStageChoice(p,ev,prefix,spaceType,eventCategory,togaSpecial)}
 function maybeAwardEventCard(p,category,spaceType,lines){
  if(!p||p.cards.length>=5)return;
