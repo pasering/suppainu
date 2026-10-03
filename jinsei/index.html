@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.73</title>
+<title>みんなの人生ロード Deluxe v0.74</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -774,7 +774,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 }
 
 
-/* v0.73 icon centering + size rebalance */
+/* v0.74 icon centering + size rebalance */
 .map-node{display:grid!important;place-items:center!important}
 .node-icon{display:block!important;justify-self:center!important;align-self:center!important;object-fit:contain!important;object-position:center center!important;transform:none!important;margin:0!important;image-rendering:auto!important}
 .map-node.bigluck,.map-node.bigbad{width:52px!important;height:52px!important}
@@ -795,7 +795,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 }
 
 
-/* v0.73 final desktop icon clarity + refreshed turn banner */
+/* v0.74 final desktop icon clarity + refreshed turn banner */
 @media(min-width:901px){
   .map-node{display:block!important}
   .node-icon{position:absolute!important;left:50%!important;top:50%!important;display:block!important;object-fit:contain!important;object-position:center center!important;margin:0!important;transform-origin:center center!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important}
@@ -808,7 +808,33 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
   .node-icon{width:64px!important;height:64px!important;transform:translate(-50%,-50%) scale(.37)!important}
   .map-node.bigluck .node-icon,.map-node.bigbad .node-icon{width:82px!important;height:82px!important;transform:translate(-50%,-50%) scale(.39)!important}
 }
-.turn-banner:before{background:url('assets/ui_banner_v73.webp') center center/100% 100% no-repeat!important}
+.turn-banner:before{background:url('assets/ui_banner_v74.webp') center center/100% 100% no-repeat!important}
+
+
+/* v0.74 turn intro backing + unified branch chooser */
+.turn-banner{
+  background:#fff!important;
+  border-radius:28px!important;
+  border:1px solid rgba(215,196,174,.78)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+.branch-mobile-panel:not(.hidden){display:block!important}
+@media(min-width:901px){
+  .branch-mobile-panel{
+    position:fixed!important;left:50%!important;right:auto!important;bottom:24px!important;transform:translateX(-50%)!important;
+    width:min(720px,calc(100% - 48px))!important;z-index:119!important;background:rgba(28,26,24,.96)!important;
+    border:1px solid rgba(255,255,255,.18)!important;border-radius:18px!important;padding:12px 12px 13px!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.28)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  }
+  .branch-mobile-title{text-align:center!important;color:#fff!important;font-weight:900!important;font-size:14px!important;margin-bottom:9px!important}
+  .branch-mobile-options{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .branch-mobile-btn{min-height:70px!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:14px!important;background:linear-gradient(180deg,#fffdf7,#f4ead9)!important;color:#45382e!important;box-shadow:inset 0 0 0 3px rgba(226,177,67,.72)!important;padding:9px 10px!important;cursor:pointer!important}
+  .branch-mobile-btn.risk{background:linear-gradient(180deg,#fff8f3,#ffe5e4)!important;box-shadow:inset 0 0 0 3px rgba(199,57,72,.72)!important}
+  .branch-mobile-btn strong{display:block!important;font-size:16px!important;line-height:1.2!important;margin-bottom:4px!important}
+  .branch-mobile-btn small{display:block!important;font-size:11px!important;line-height:1.3!important;color:#78685c!important;font-weight:800!important}
+}
 
 </style>
 
@@ -954,7 +980,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
   .node-icon{width:64px!important;height:64px!important;transform:scale(.344) translateZ(0)!important;transform-origin:center center!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important}
 }
 
-/* v0.73 icon centering + size rebalance */
+/* v0.74 icon centering + size rebalance */
 .map-node{display:grid!important;place-items:center!important}
 .node-icon{display:block!important;justify-self:center!important;align-self:center!important;object-fit:contain!important;object-position:center center!important;transform:none!important;margin:0!important;image-rendering:auto!important}
 .map-node.bigluck,.map-node.bigbad{width:52px!important;height:52px!important}
@@ -975,7 +1001,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 }
 
 
-/* v0.73 final desktop icon clarity + refreshed turn banner */
+/* v0.74 final desktop icon clarity + refreshed turn banner */
 @media(min-width:901px){
   .map-node{display:block!important}
   .node-icon{position:absolute!important;left:50%!important;top:50%!important;display:block!important;object-fit:contain!important;object-position:center center!important;margin:0!important;transform-origin:center center!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important}
@@ -988,7 +1014,33 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
   .node-icon{width:64px!important;height:64px!important;transform:translate(-50%,-50%) scale(.37)!important}
   .map-node.bigluck .node-icon,.map-node.bigbad .node-icon{width:82px!important;height:82px!important;transform:translate(-50%,-50%) scale(.39)!important}
 }
-.turn-banner:before{background:url('assets/ui_banner_v73.webp') center center/100% 100% no-repeat!important}
+.turn-banner:before{background:url('assets/ui_banner_v74.webp') center center/100% 100% no-repeat!important}
+
+
+/* v0.74 turn intro backing + unified branch chooser */
+.turn-banner{
+  background:#fff!important;
+  border-radius:28px!important;
+  border:1px solid rgba(215,196,174,.78)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  box-shadow:none!important;
+}
+.branch-mobile-panel:not(.hidden){display:block!important}
+@media(min-width:901px){
+  .branch-mobile-panel{
+    position:fixed!important;left:50%!important;right:auto!important;bottom:24px!important;transform:translateX(-50%)!important;
+    width:min(720px,calc(100% - 48px))!important;z-index:119!important;background:rgba(28,26,24,.96)!important;
+    border:1px solid rgba(255,255,255,.18)!important;border-radius:18px!important;padding:12px 12px 13px!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.28)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  }
+  .branch-mobile-title{text-align:center!important;color:#fff!important;font-weight:900!important;font-size:14px!important;margin-bottom:9px!important}
+  .branch-mobile-options{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .branch-mobile-btn{min-height:70px!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:14px!important;background:linear-gradient(180deg,#fffdf7,#f4ead9)!important;color:#45382e!important;box-shadow:inset 0 0 0 3px rgba(226,177,67,.72)!important;padding:9px 10px!important;cursor:pointer!important}
+  .branch-mobile-btn.risk{background:linear-gradient(180deg,#fff8f3,#ffe5e4)!important;box-shadow:inset 0 0 0 3px rgba(199,57,72,.72)!important}
+  .branch-mobile-btn strong{display:block!important;font-size:16px!important;line-height:1.2!important;margin-bottom:4px!important}
+  .branch-mobile-btn small{display:block!important;font-size:11px!important;line-height:1.3!important;color:#78685c!important;font-weight:800!important}
+}
 
 </style>
 
@@ -997,14 +1049,14 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.73 分岐UI・恋人説明調整版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.74 分岐UI・恋人説明調整版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.73</strong><div class="note" style="margin-top:5px">PC版の分岐選択をスマホ版と同じ画面下部の2択パネルに統一し、最初の恋人選択時に「一度恋人になると別の相手へ変更できない」注意書きを追加しました。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.74</strong><div class="note" style="margin-top:5px">PC版の分岐選択をスマホ版と同じ画面下部の2択パネルに統一し、最初の恋人選択時に「一度恋人になると別の相手へ変更できない」注意書きを追加しました。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
