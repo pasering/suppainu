@@ -1063,7 +1063,7 @@ function passiveIncome(p){return p.properties.reduce((s,id)=>s+(PROPS.find(x=>x.
 function isMajorSpaceType(type){return ['start','payday','career','romance','property','family','treasure','submap','branch','bigluck','bigbad'].includes(type)}
 function collectIncomePass(p){ensureFamilyData(p);const own=salaryNow(p),prop=passiveIncome(p),fam=familyIncome(p),total=own+prop+fam;if(total)p.cash+=total;if(p.job)p.jobExp+=1;return{own,prop,fam,total,partner:partnerIncome(p),adultChild:adultChildIncome(p)}}
 function incomePassLines(p,passes){const count=passes.length,total=passes.reduce((n,x)=>n+x.total,0),own=passes.reduce((n,x)=>n+x.own,0),partner=passes.reduce((n,x)=>n+x.partner,0),adultChild=passes.reduce((n,x)=>n+x.adultChild,0),prop=passes.reduce((n,x)=>n+x.prop,0),lines=[];if(total){lines.push({text:`収入マスを${count>1?count+'回 ':''}通過。世帯の定期収入 +${money(total)}`,tone:'good'});const parts=[own?`本人給料 ${money(own)}`:'',partner?`配偶者収入 ${money(partner)}`:'',adultChild?`成人した子の収入 ${money(adultChild)}`:'',prop?`物件収入 ${money(prop)}`:''].filter(Boolean);if(parts.length)lines.push({text:parts.join(' / ')})}else lines.push({text:'収入マスを通過したが、まだ定期収入はない。'});if(p.job)lines.push({text:`仕事経験 +${count}`});return lines}
-function finishMoveAfterIncomePass(p,wraps,passes,routeLines=[]){if(!passes.length&&!routeLines.length){resolveLanding(p,wraps);return}const finalSpace=stageBoard()[p.pos],after=finalSpace?.type==='payday'?{type:'completeTurn'}:{type:'resolveLandingAfterIncome',playerId:p.id,wraps},lines=[...(finalSpace?.type==='payday'?lapBonus(p,wraps):[]),...routeLines,...(passes.length?incomePassLines(p,passes):[])],rank=passes.length?rankUpCheck(p):null;if(rank?.kind==='success')lines.push({text:rank.text,tone:'good'});else if(rank?.kind==='blocked')lines.push({text:'昇格候補に上がったが、今はまだ実力を磨く時期のようだ。'});const speaker=routeLines.length?'分かれ道の結果':'収入マス通過';if(rank?.kind==='roulette'){beginPromotionRoulette(p,rank,lines,speaker,after);return}state.busy=false;setMessage(p.id,speaker,lines,after)}
+function finishMoveAfterIncomePass(p,wraps,passes,routeLines=[]){if(!passes.length&&!routeLines.length){resolveLanding(p,wraps);return}const finalSpace=stageBoard()[p.pos],after=finalSpace?.type==='payday'?{type:'completeTurn'}:{type:'resolveLandingAfterIncome',playerId:p.id,wraps},lines=[...(finalSpace?.type==='payday'?lapBonus(p,wraps):[]),...routeLines,...(passes.length?incomePassLines(p,passes):[])],rank=passes.length?rankUpCheck(p):null;if(rank?.kind==='success')lines.push({text:rank.text,tone:'good'});else if(rank?.kind==='blocked'||rank?.kind==='progress')lines.push({text:promotionProgressText(p,rank)});const speaker=routeLines.length?'分かれ道の結果':'収入マス通過';if(rank?.kind==='roulette'){beginPromotionRoulette(p,rank,lines,speaker,after);return}state.busy=false;setMessage(p.id,speaker,lines,after)}
 function assetScore(p){return p.cash+(p.home?.value||0)+p.properties.reduce((s,id)=>s+(PROPS.find(x=>x.id===id)?.value||0),0)+p.treasures.reduce((s,t)=>s+(t.appraised||0),0)+p.awards}
 function applyStats(p,d={}){for(const k of ['knowledge','fitness','charm','communication'])p.stats[k]=clamp(p.stats[k]+(d[k]||0),0,30)}
 function jobEligible(p,j){return Object.entries(j.req).every(([k,v])=>p.stats[k]>=v)}
@@ -1080,9 +1080,21 @@ function promotionRequirements(p,targetRank){
  return{req,needExp:expTable[targetRank]||999};
 }
 function promotionReqText(req){return Object.entries(req||{}).map(([k,v])=>`${paramLabel(k)}${v}`).join('・')}
+function promotionProgressText(p,check){
+ if(!p?.job||!check?.plan)return'';
+ const plan=check.plan,targetRank=check.targetRank||p.jobRank+1,parts=[];
+ const curExp=Math.max(0,Number(p.jobExp)||0),needExp=Math.max(0,Number(plan.needExp)||0),expLeft=Math.max(0,needExp-curExp);
+ parts.push(`仕事経験 ${curExp}/${needExp}${expLeft?`（あと${expLeft}）`:' ✓'}`);
+ for(const [k,v] of Object.entries(plan.req||{})){
+  const cur=Math.max(0,Number(p.stats?.[k])||0),left=Math.max(0,v-cur);
+  parts.push(`${paramLabel(k)} ${cur}/${v}${left?`（あと${left}）`:' ✓'}`);
+ }
+ return`次の昇格条件（Lv.${targetRank}）：${parts.join(' / ')}`;
+}
 function rankUpCheck(p){
  if(!p.job||p.jobRank>=5)return null;
- const targetRank=p.jobRank+1,plan=promotionRequirements(p,targetRank);if(!plan||p.jobExp<plan.needExp)return null;
+ const targetRank=p.jobRank+1,plan=promotionRequirements(p,targetRank);if(!plan)return null;
+ if(p.jobExp<plan.needExp)return{kind:'progress',targetRank,plan};
  const meets=Object.entries(plan.req).every(([k,v])=>(p.stats[k]||0)>=v);
  if(!meets)return{kind:'blocked',targetRank,plan};
  const needsRoulette=targetRank>=4||(targetRank>=3&&p.job.tag==='risk');
@@ -1116,7 +1128,7 @@ function finishPromotionRoulette(id){
 function finishWithPromotion(p,rank,baseLines,speaker,finish){
  if(!rank){finish(baseLines,speaker);return true}
  if(rank.kind==='success'){finish([...baseLines,{text:rank.text,tone:'good'}],speaker);return true}
- if(rank.kind==='blocked'){finish([...baseLines,{text:'昇格候補に上がったが、今はまだ実力を磨く時期のようだ。'}],speaker);return true}
+ if(rank.kind==='blocked'||rank.kind==='progress'){finish([...baseLines,{text:promotionProgressText(p,rank)}],speaker);return true}
  if(rank.kind==='roulette'){beginPromotionRoulette(p,rank,baseLines,speaker);return true}
  return false
 }
@@ -1834,5 +1846,5 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){if(tryA
 const unlockAudio=()=>{if(bgmOn||sfxOn)ensureAudio()};document.addEventListener('pointerdown',unlockAudio,{capture:true});document.addEventListener('touchstart',unlockAudio,{capture:true,passive:true});document.addEventListener('click',unlockAudio,{capture:true});window.addEventListener('resize',()=>{applyPortraitCollapsed();if(state?.phase==='playing'){renderBoard();renderBranchMobilePanel();requestAnimationFrame(()=>focusBoardCamera())}updateBoardDragUi()});
 window.addEventListener('beforeunload',saveSession);
 const navType=performance?.getEntriesByType?.('navigation')?.[0]?.type;if(navType==='reload'&&loadSession())setTimeout(resumeLastSession,80);
-if(globalThis.__LIFE_NODE_TEST__){globalThis.__lifeDebug={newState,makePlayer,startGame,hostHandleAction,maybeRunCpu,getState:()=>state,setHost:v=>{isHost=v},setState:v=>{state=v},setLocalPlayerId:v=>{localPlayerId=v},addCpu,fillCpu,rankUpCheck,eligibleJobs,applyHiddenEventChoice,useCard,CARDS,JOBS,CHOICE_EVENTS,TOGA_CHOICE_EVENTS,TOGA_EVENTS,isToga};}
+if(globalThis.__LIFE_NODE_TEST__){globalThis.__lifeDebug={newState,makePlayer,startGame,hostHandleAction,maybeRunCpu,getState:()=>state,setHost:v=>{isHost=v},setState:v=>{state=v},setLocalPlayerId:v=>{localPlayerId=v},addCpu,fillCpu,rankUpCheck,promotionRequirements,promotionProgressText,eligibleJobs,applyHiddenEventChoice,useCard,CARDS,JOBS,CHOICE_EVENTS,TOGA_CHOICE_EVENTS,TOGA_EVENTS,isToga};}
 })();
