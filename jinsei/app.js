@@ -910,7 +910,7 @@ function typewriterDelay(ch){const base=messageSpeedConfig().char;if(/[。！？
 function later(fn,ms){const t=setTimeout(fn,Math.max(20,Math.round(ms*speedScale())));hostTimers.push(t);return t}
 function clearHostTimers(){hostTimers.forEach(clearTimeout);hostTimers=[]}
 function saveSession(){
- if(!state||!roomCode||!localPlayerId)return;
+ if(intentionalDisconnect||!state||!roomCode||!localPlayerId)return;
  try{localStorage.setItem(SESSION_KEY,JSON.stringify({v:40,ts:Date.now(),isHost,roomCode,localPlayerId,state}))}catch(e){console.warn('session save failed',e)}
 }
 function loadSession(){
@@ -1024,6 +1024,9 @@ function handleRoomClosed(reason='ホストがゲームを終了しました。'
 }
 function showTopScreen(){
  if(!state)return;localHomeView=true;saveSession();show(els.home);refreshResumeCard();window.scrollTo({top:0,behavior:'smooth'});
+}
+function exitResultsToTitle(){
+ intentionalDisconnect=true;clearSavedSession();resetLocalSessionState();show(els.home);refreshResumeCard();intentionalDisconnect=false;window.scrollTo({top:0,behavior:'smooth'});
 }
 function returnToActiveSession(){
  if(!state)return;localHomeView=false;render();window.scrollTo({top:0,behavior:'smooth'});
@@ -2040,7 +2043,7 @@ els.avatarPicker?.addEventListener('click',e=>{if(e.target===els.avatarPicker)cl
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(els.avatarPicker&&!els.avatarPicker.classList.contains('hidden'))closeAvatarPicker();if(els.spaceDetail&&!els.spaceDetail.classList.contains('hidden'))closeSpaceDetail()}});
 
 els.resultNext?.addEventListener('click',advanceResultPresentation);
-els.create.addEventListener('click',createRoom);els.join.addEventListener('click',joinRoom);els.addCpu.addEventListener('click',addCpu);els.fillCpu.addEventListener('click',fillCpu);els.start.addEventListener('click',()=>sendAction({kind:'start'}));els.rollBtn.addEventListener('click',()=>sendAction({kind:state?.pendingGamble?'gambleRoll':'roll'}));els.variant?.addEventListener('change',()=>{if(!isHost)return;state.settings.variant=els.variant.value==='toga'?'toga':'normal';broadcast()});els.mode.addEventListener('change',()=>{if(!isHost)return;state.settings.mode=els.mode.value;broadcast()});els.speed.addEventListener('change',()=>{if(!isHost)return;state.settings.speed=els.speed.value;broadcast()});els.messageSpeed?.addEventListener('change',()=>{if(!isHost)return;state.settings.messageSpeed=els.messageSpeed.value;broadcast()});els.bgmBtn?.addEventListener('click',toggleBgm);els.sfxBtn?.addEventListener('click',toggleSfx);els.volumeSlider?.addEventListener('input',e=>setMasterVolume(Number(e.target.value)/100));els.back.addEventListener('click',()=>{clearSavedSession();location.reload()});els.gameHomeBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showTopScreen()});els.leaveGameBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();leaveCurrentGame(true)});els.resumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)returnToActiveSession();else resumeLastSession()});els.discardResumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)leaveCurrentGame(true);else{clearSavedSession();refreshResumeCard()}});
+els.create.addEventListener('click',createRoom);els.join.addEventListener('click',joinRoom);els.addCpu.addEventListener('click',addCpu);els.fillCpu.addEventListener('click',fillCpu);els.start.addEventListener('click',()=>sendAction({kind:'start'}));els.rollBtn.addEventListener('click',()=>sendAction({kind:state?.pendingGamble?'gambleRoll':'roll'}));els.variant?.addEventListener('change',()=>{if(!isHost)return;state.settings.variant=els.variant.value==='toga'?'toga':'normal';broadcast()});els.mode.addEventListener('change',()=>{if(!isHost)return;state.settings.mode=els.mode.value;broadcast()});els.speed.addEventListener('change',()=>{if(!isHost)return;state.settings.speed=els.speed.value;broadcast()});els.messageSpeed?.addEventListener('change',()=>{if(!isHost)return;state.settings.messageSpeed=els.messageSpeed.value;broadcast()});els.bgmBtn?.addEventListener('click',toggleBgm);els.sfxBtn?.addEventListener('click',toggleSfx);els.volumeSlider?.addEventListener('input',e=>setMasterVolume(Number(e.target.value)/100));els.back.addEventListener('click',exitResultsToTitle);els.gameHomeBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();showTopScreen()});els.leaveGameBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();leaveCurrentGame(true)});els.resumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)returnToActiveSession();else resumeLastSession()});els.discardResumeBtn?.addEventListener('click',()=>{if(localHomeView&&state)leaveCurrentGame(true);else{clearSavedSession();refreshResumeCard()}});
 els.portraitToggle?.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();if(portraitTogglePointerLock)return;portraitTogglePointerLock=true;togglePortraitPanel();setTimeout(()=>portraitTogglePointerLock=false,180)},{capture:true});updateVolumeUi();updateAudioToggleUi();applyPortraitCollapsed();refreshResumeCard();
 let messageAdvanceLock=false;
 function canAdvanceLocalMessage(){if(!state?.message)return false;const owner=state.players.find(p=>p.id===state.message.ownerId);return state.message.ownerId===localPlayerId&&!owner?.cpu}
