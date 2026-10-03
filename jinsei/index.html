@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.55</title>
+<title>みんなの人生ロード Deluxe v0.58</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -680,14 +680,6 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 .inventory-card .use-card{justify-self:stretch;min-height:31px!important;padding:5px 8px!important}
 @media(max-width:700px){.inventory-card{padding:7px}.inventory-card-head strong{font-size:11px}.inventory-card-desc{font-size:10px}.card-turn-tag{font-size:8px}}
 
-/* mode selector / TOGA mode */
-.mode-variant-badge{display:inline-flex;align-items:center;margin-left:8px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:1000;vertical-align:middle;background:#1c1628;color:#f2d7ff;border:1px solid #7e5da2;box-shadow:0 2px 7px rgba(35,18,53,.24)}
-body[data-life-variant="toga"] .game-head{background:linear-gradient(135deg,rgba(24,19,34,.96),rgba(50,34,63,.94))!important;color:#f9f2ff!important;border-color:#7e5da2!important}
-body[data-life-variant="toga"] .game-head .sub{color:#d8c7e5!important}
-body[data-life-variant="toga"] .era-icon{background:linear-gradient(135deg,#24172e,#5d3f68)!important;color:#fff!important}
-body[data-life-variant="toga"] .board-panel{border-color:#6f527f!important;box-shadow:0 9px 0 #3c2a46,0 19px 42px rgba(30,17,39,.28)!important}
-body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;border-color:#74458f!important}
-
 
 /* income pass / major-square nodes / space detail */
 .map-node.major{border-radius:11px!important;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(247,243,235,.98))!important}
@@ -886,7 +878,7 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 }
 @media(max-width:600px){.branch-route-shadow{stroke-width:5!important}.branch-route-main{stroke-width:2.8!important}}
 
-/* v0.55: education wait turns */
+/* v0.58: expanded dedicated event pools, normal mode only */
 .branch-route-shadow{stroke:rgba(145,72,72,.58)!important}
 .branch-route-main{stroke:#f3b1b1!important;filter:drop-shadow(0 1px 0 rgba(255,255,255,.9))!important}
 </style>
@@ -896,14 +888,14 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.55 進学待機ターン版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.58 イベント拡充版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.55</strong><div class="note" style="margin-top:5px">大人前半の進路差を強化。専門は1ターン、大学は2ターン待機してから就職し、その分能力上昇を強化しました。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.58</strong><div class="note" style="margin-top:5px">各系統を通常5＋3択5へ再編し、大人前半・後半は各系統20種に倍増。トガモードを廃止し、カードも以前より入手しやすくしました。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
@@ -911,7 +903,7 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
     <div class="card stack">
       <div class="lobby-head"><h2 style="margin:0">参加者</h2><span class="sub">人間＋CPUで最大4人</span></div><div class="players" id="lobbyPlayers"></div>
       <div id="hostLobbyControls" class="settings-grid">
-        <div class="stack"><div class="field"><label>ゲーム内容</label><select id="variantSelect"><option value="normal" selected>通常モード</option><option value="toga">トガモード</option></select><div class="note">トガモード：オタク・レトロゲーム・漫画アニメ的お約束・宇宙的怪異が混ざるカオス版。</div></div><div class="field"><label>ゲーム時間</label><select id="modeSelect"><option value="quick">さっくり</option><option value="standard" selected>普通</option><option value="long">ロング</option></select></div><div class="note" id="modeInfo"></div><div class="field"><label>演出テンポ</label><select id="speedSelect"><option value="normal" selected>標準</option><option value="fast">テンポ速め</option></select></div><div class="field"><label>CPUメッセージ速度</label><select id="messageSpeedSelect"><option value="slow">ゆっくり</option><option value="normal" selected>標準</option><option value="fast">速め</option></select><div class="note">CPUのメッセージ表示時間を3段階から選べます。</div></div></div>
+        <div class="stack"><div class="field"><label>ゲーム時間</label><select id="modeSelect"><option value="quick">さっくり</option><option value="standard" selected>普通</option><option value="long">ロング</option></select></div><div class="note" id="modeInfo"></div><div class="field"><label>演出テンポ</label><select id="speedSelect"><option value="normal" selected>標準</option><option value="fast">テンポ速め</option></select></div><div class="field"><label>CPUメッセージ速度</label><select id="messageSpeedSelect"><option value="slow">ゆっくり</option><option value="normal" selected>標準</option><option value="fast">速め</option></select><div class="note">CPUのメッセージ表示時間を3段階から選べます。</div></div></div>
         <div class="stack"><button class="btn" id="addCpuBtn">CPUを追加</button><button class="btn" id="fillCpuBtn">空きをCPUで埋める</button><div class="note">CPUもメッセージ送り・ルーレット・選択を自動で行います。</div></div>
       </div>
       <button class="btn primary" id="startBtn">ゲーム開始</button>
@@ -920,7 +912,7 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 
   <section id="gameScreen" class="hidden stack">
     <div class="card game-head">
-      <div><div class="era-title"><div class="era-icon" id="eraIcon">🍼</div><div><div><span id="eraName">幼少期</span><span id="variantBadge" class="mode-variant-badge hidden">トガモード</span></div><div class="sub" id="eraFlavor">最初の一歩</div></div></div></div>
+      <div><div class="era-title"><div class="era-icon" id="eraIcon">🍼</div><div><div><span id="eraName">幼少期</span></div><div class="sub" id="eraFlavor">最初の一歩</div></div></div></div>
       <div><div class="roundline"><strong id="roundText">第1/3ラウンド</strong><div class="round-dots" id="roundDots"></div></div><div class="sub" id="fieldInfo"></div></div>
       <div class="game-nav-actions"><button class="btn small" id="gameHomeBtn" type="button">⌂ トップへ</button><button class="btn small danger" id="leaveGameBtn" type="button">ゲームから抜ける</button></div>
     </div>
