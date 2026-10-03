@@ -834,7 +834,9 @@ const ALL_SPACE_CHOICE_EVENTS=Object.values(SPACE_CHOICE_EVENTS).flatMap(byStage
 function activeSpaceEvents(type,id){return SPACE_EVENTS[type]?.[id]||SPACE_EVENTS[type]?.young||[]}
 function activeSpaceChoices(type,id){return SPACE_CHOICE_EVENTS[type]?.[id]||SPACE_CHOICE_EVENTS[type]?.young||[]}
 function spaceContentPool(type,id){return[...activeSpaceEvents(type,id).map(e=>({id:`${type}:${e.text}`,kind:'normal',event:e})),...activeSpaceChoices(type,id).map(e=>({id:`${type}:${e.sourceText||('choice:'+e.id)}`,kind:'choice',event:e}))]}
-function pickSpaceContent(p,type,id){return pickFresh(p,spaceContentPool(type,id),`space-${type}`)}
+function isCurrentWorkFailureContent(item){const e=item?.event||item||{},texts=[e.text,e.title,e.sourceText,e?.out?.text,...(e.options||[]).map(o=>o?.out?.text||o?.outcome?.text||'')].filter(Boolean).join(' ');return/(仕事|職場|会社|社内|業務|取引先|顧客|部下|上司|同僚|会議|勤務|案件|納期)/.test(texts)}
+function eligibleSpaceContentPool(p,type,id){let pool=spaceContentPool(type,id);if(id==='senior'&&type==='minus'&&!p.job){const filtered=pool.filter(x=>!isCurrentWorkFailureContent(x));if(filtered.length)pool=filtered}return pool}
+function pickSpaceContent(p,type,id){return pickFresh(p,eligibleSpaceContentPool(p,type,id),`space-${type}`)}
 
 const ABILITY_EVENT_RULES={
  '夏休みに太陽熱で目玉焼きを作る自由研究をまとめ、校内発表で表彰された':{stat:'knowledge',target:7,failText:'発表では賞に届かなかったが、実験を繰り返したぶん知識はしっかり身についた。'},
@@ -1231,9 +1233,10 @@ function promotionRequirements(p,targetRank){
  const abilityOffset={2:0,3:1,4:3,5:5}[targetRank]??99;
  const abilityFloor={2:3,3:5,4:8,5:12}[targetRank]??99;
  const req={};for(const [k,v] of Object.entries(p.job.req||{}))req[k]=Math.max(v+abilityOffset,abilityFloor);
- // 経験は昇格時に消費。Lv4以降は能力条件とルーレットも重くなる。
- const expTable={2:3,3:6,4:10,5:14};
- return{req,needExp:expTable[targetRank]||999};
+ // 仕事経験は昇格で消費せず、その職業での累積値として扱う。
+ // Lv2=3、Lv3=3+6=9、Lv4=+10で19、Lv5=+14で33。
+ const cumulativeExpTable={2:3,3:9,4:19,5:33};
+ return{req,needExp:cumulativeExpTable[targetRank]||999};
 }
 function promotionReqText(req){return Object.entries(req||{}).map(([k,v])=>`${paramLabel(k)}${v}`).join('・')}
 function promotionProgressText(p,check){
@@ -1255,7 +1258,7 @@ function rankUpCheck(p){
  if(!meets)return{kind:'blocked',targetRank,plan};
  const needsRoulette=targetRank>=4||(targetRank>=3&&p.job.tag==='risk');
  if(!needsRoulette){
-  p.jobExp-=plan.needExp;p.jobRank=targetRank;const bonus=targetRank*30000;p.cash+=bonus;
+  p.jobRank=targetRank;const bonus=targetRank*30000;p.cash+=bonus;
   return{kind:'success',text:`${jobDisplayName(p.job)}がランク${p.jobRank}にアップ！ 昇格祝い +${money(bonus)}`};
  }
  const excess=Object.entries(plan.req).reduce((sum,[k,v])=>sum+Math.max(0,(p.stats[k]||0)-v),0);
@@ -1265,7 +1268,7 @@ function rankUpCheck(p){
  return{kind:'roulette',targetRank,needExp:plan.needExp,successMax,plan};
 }
 function finishPromotionSuccess(p,targetRank,needExp){
- p.jobExp=Math.max(0,p.jobExp-needExp);p.jobRank=targetRank;const bonus=targetRank*30000;p.cash+=bonus;
+ p.jobRank=targetRank;const bonus=targetRank*30000;p.cash+=bonus;
  return`${jobDisplayName(p.job)}がランク${targetRank}にアップ！ 昇格祝い +${money(bonus)}`;
 }
 function beginPromotionRoulette(p,check,lines,speaker,after={type:'completeTurn'}){
@@ -1476,7 +1479,7 @@ function renderCards(){
  els.cards.innerHTML=`<div class="card-rule-note">1ターンに使用できるカードは1枚まで</div>`+p.cards.map((id,i)=>{const c=CARDS.find(x=>x.id===id);if(!c)return'';const cv=cardDisplay(c),turnLabel=c.turnCost==='end'?'使用すると手番終了':'使用後も手番継続',usable=canBase&&canUseCard(p,c);return`<div class="inventory-card"><div class="inventory-card-head"><strong>${esc(cv.name)}</strong><span class="card-turn-tag ${c.turnCost==='end'?'end':'free'}">${turnLabel}</span></div><div class="inventory-card-desc">${esc(cv.desc)}</div><button class="btn small use-card" data-i="${i}" ${usable?'':'disabled'}>${p.cardUsedThisTurn?'このターンは使用済み':(c.needsOther&&!state.players.some(x=>x.id!==p.id)?'他プレイヤーが必要':(c.id==='date'&&(!p.partner||p.married)?'交際中のみ使用可':'使用する'))}</button></div>`}).join('');
  document.querySelectorAll('.use-card').forEach(b=>b.addEventListener('click',()=>sendAction({kind:'useCard',index:Number(b.dataset.i)})))
 }
-function renderAssets(){const p=state.players.find(x=>x.id===localPlayerId)||currentPlayer();if(!p){els.assets.innerHTML='-';return}ensureFamilyData(p);const fam=familyIncome(p),kids=childList(p);els.assets.innerHTML=`<div>現金：<strong>${money(p.cash)}</strong>${p.cash<0?` <span class="debt-text">借金 ${money(-p.cash)}</span>`:''}</div><div>本人給料：${money(salaryNow(p))}</div><div>家族収入：${money(fam)}${p.married?`（配偶者 ${money(partnerIncome(p))}${adultChildIncome(p)?` + 成人した子 ${money(adultChildIncome(p))}`:''}）`:''}</div><div>住まい：${p.home?esc(p.home.name):'賃貸'}</div><div>物件：${p.properties.length}件 / お宝：${p.treasures.length}個</div><div>思い出：${p.memory}pt</div><div>子ども：${childCount(p)}人（全体 ${totalChildrenCount()}/15）</div>${p.partner?`<div class="family-card"><img src="${esc(p.partner.avatar||AVATARS[0])}" alt=""><div><strong>${esc(p.partner.name)}</strong> <span>${esc(partnerTypeDef(p.partner).icon)}${esc(partnerTypeDef(p.partner).name)}</span><br><span>${p.married?'配偶者':'交際中'} / ${esc(p.partner.job||'仕事中')}</span>${p.married?`<br><span>家計収入 ${money(partnerIncome(p))}</span>`:''}${p.partner.lastLifeNote?`<br><span>最近：${esc(p.partner.lastLifeNote)}</span>`:''}</div></div>`:''}${kids.length?`<div class="family-kids">${kids.map(c=>`<div class="family-kid"><img src="${esc(c.avatar)}" alt=""><div><strong>${esc(c.name)}</strong><br><span>${c.adult?`成人・${esc(c.job||'就職')} / ${money(c.income||0)}`:`${c.age||0}歳・成長中`}</span></div></div>`).join('')}</div>`:''}` }
+function renderAssets(){const p=state.players.find(x=>x.id===localPlayerId)||currentPlayer();if(!p){els.assets.innerHTML='-';return}ensureFamilyData(p);const fam=familyIncome(p),kids=childList(p);let expLine='';if(p.job){if(p.jobRank>=5)expLine=`<div>仕事経験：<strong>${Math.max(0,Number(p.jobExp)||0)}pt</strong>（最高Lv.5）</div>`;else{const plan=promotionRequirements(p,p.jobRank+1),cur=Math.max(0,Number(p.jobExp)||0),need=Math.max(0,Number(plan?.needExp)||0),left=Math.max(0,need-cur);expLine=`<div>仕事経験：<strong>${cur}pt</strong> / 次のLv.${p.jobRank+1}まで ${left?`あと${left}pt`:'経験条件達成'}</div>`}}else if((Number(p.jobExp)||0)>0)expLine=`<div>仕事経験：<strong>${Math.max(0,Number(p.jobExp)||0)}pt</strong>（引退時点）</div>`;els.assets.innerHTML=`<div>現金：<strong>${money(p.cash)}</strong>${p.cash<0?` <span class="debt-text">借金 ${money(-p.cash)}</span>`:''}</div><div>本人給料：${money(salaryNow(p))}</div>${expLine}<div>家族収入：${money(fam)}${p.married?`（配偶者 ${money(partnerIncome(p))}${adultChildIncome(p)?` + 成人した子 ${money(adultChildIncome(p))}`:''}）`:''}</div><div>住まい：${p.home?esc(p.home.name):'賃貸'}</div><div>物件：${p.properties.length}件 / お宝：${p.treasures.length}個</div><div>思い出：${p.memory}pt</div><div>子ども：${childCount(p)}人（全体 ${totalChildrenCount()}/15）</div>${p.partner?`<div class="family-card"><img src="${esc(p.partner.avatar||AVATARS[0])}" alt=""><div><strong>${esc(p.partner.name)}</strong> <span>${esc(partnerTypeDef(p.partner).icon)}${esc(partnerTypeDef(p.partner).name)}</span><br><span>${p.married?'配偶者':'交際中'} / ${esc(p.partner.job||'仕事中')}</span>${p.married?`<br><span>家計収入 ${money(partnerIncome(p))}</span>`:''}${p.partner.lastLifeNote?`<br><span>最近：${esc(p.partner.lastLifeNote)}</span>`:''}</div></div>`:''}${kids.length?`<div class="family-kids">${kids.map(c=>`<div class="family-kid"><img src="${esc(c.avatar)}" alt=""><div><strong>${esc(c.name)}</strong><br><span>${c.adult?`成人・${esc(c.job||'就職')} / ${money(c.income||0)}`:`${c.age||0}歳・成長中`}</span></div></div>`).join('')}</div>`:''}` }
 function renderChoice(){const c=state.pendingChoice;if(!c){els.choice.classList.add('hidden');return}els.choice.classList.remove('hidden');const owner=state.players.find(p=>p.id===c.playerId),mine=c.playerId===localPlayerId&&!owner?.cpu,revealing=!!c.revealing;els.choiceTitle.textContent=c.title;els.choiceText.textContent=c.text||'';els.choiceStatus.textContent=revealing?`${owner?.name||'プレイヤー'}が「${c.options?.[c.selectedIndex]?.label||''}」を選択しました`:mine?'あなたが選択してください':`${owner?.name||'プレイヤー'}が選択中です`;els.choiceList.innerHTML='';c.options.forEach((o,i)=>{const b=document.createElement('button');b.className=`choicebtn ${revealing&&i===c.selectedIndex?'choice-selected-reveal':''}`;b.disabled=revealing||!mine;b.innerHTML=`${o.avatar?`<img class="choice-avatar" src="${esc(o.avatar)}" alt="">`:''}<span class="choice-copy"><strong>${esc(o.label)}</strong><span class="note">${esc(o.desc||'')}</span></span>`;b.addEventListener('click',()=>{if(!revealing)sendAction({kind:'choose',index:i})});els.choiceList.appendChild(b)})}
 function choiceAnnouncement(p,c,o){
  if(c.type==='cardFreeRoll')return `${p.name}は次のルーレットの出目を「${o.label}」に決めた。`;
@@ -1677,6 +1680,10 @@ function resolveLandingEffect(p,wraps=0,sOverride=null){state.busy=false;const s
  if(s.type==='bigbad'){finish(resolveBigBad(p),'大不幸マス');return}
  if(['event','plus','minus','grow','social'].includes(s.type)){
   const sid=stageDef().id,spaceType=s.type;
+  if(spaceType==='social'&&state.stageIndex>=3&&Math.random()<.5){
+   if(p.married){finish(marriedRomanceLines(p),'交流マス：恋愛・夫婦イベント')}else{setMessage(p.id,'交流マス：恋愛イベント',[...lines,{text:p.partner?'交流の中で、パートナーとの関係を進めるきっかけができた。':'交流の場で、少し気になる相手と出会うきっかけがあった。'}],{type:'openChoice',choice:'romance',playerId:p.id,returnTo:'completeTurn'});broadcast()}
+   return
+  }
   // Toga's strange one-off scenes live on the generic event space; signed/grow/social spaces stay semantically consistent.
   if(spaceType==='event'&&isToga()&&Math.random()<.28){
    if(Math.random()<.48){const pool=activeChoiceEventsForStage(sid),ev=pickFresh(p,pool,'toga-choice');queueSpecificStageChoice(p,ev,lines,'event','event',true);return}
