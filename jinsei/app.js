@@ -47,18 +47,122 @@ const CHILD_NAMES=['あお','ひかり','ゆず','りん','はる','なぎ','つ
 const CHILD_JOBS=[
  ['会社員',32000],['デザイナー',35000],['エンジニア',42000],['公務員',38000],['料理人',34000],['研究職',45000],['販売職',30000],['クリエイター',36000],['医療職',43000],['スポーツ関係',36000]
 ];
+const PARTNER_TYPES={
+ family:{id:'family',name:'家庭派',icon:'🏠',desc:'家で過ごす時間や家族行事を大切にする。家庭イベントで思い出が増えやすい。'},
+ career:{id:'career',name:'キャリア派',icon:'💼',desc:'仕事への意欲が高い。昇進・転職・大きな仕事で配偶者収入が伸びやすい。'},
+ steady:{id:'steady',name:'堅実派',icon:'🐢',desc:'派手さより安定重視。貯蓄や資格など、じわじわ家計を強くする展開が多い。'},
+ social:{id:'social',name:'社交派',icon:'🤝',desc:'人付き合いが広い。友人・人脈・地域活動から交流や臨時収入につながりやすい。'},
+ adventure:{id:'adventure',name:'冒険派',icon:'🧭',desc:'旅行や新しい挑戦が好き。出費も増えるが、思い出や能力が大きく伸びやすい。'},
+ intellectual:{id:'intellectual',name:'知性派',icon:'📚',desc:'学びや資格取得を好む。知力が伸び、専門性を活かして収入が上がることもある。'},
+ creative:{id:'creative',name:'クリエイティブ派',icon:'🎨',desc:'作品づくりや副業に積極的。魅力や思い出が伸び、当たれば副収入も大きい。'},
+ volatile:{id:'volatile',name:'波乱派',icon:'🎢',desc:'転職・独立・思い切った挑戦が多い。大成功も大失敗もあり、人生の振れ幅が大きい。'}
+};
 const PARTNERS=[
- ['あおい','落ち着いた読書好き','knowledge','図書館スタッフ',72000],
- ['ひなた','明るいアウトドア派','fitness','スポーツインストラクター',78000],
- ['れん','話好きの社交派','communication','営業職',88000],
- ['みさき','おしゃれ好き','charm','デザイナー',84000],
- ['かえで','堅実な仕事人','knowledge','会社員',90000],
- ['そら','自由なクリエイター','charm','クリエイター',82000],
- ['ゆう','スポーツ好き','fitness','トレーナー',80000],
- ['なお','聞き上手','communication','福祉スタッフ',76000],
- ['つばさ','好奇心旺盛','knowledge','研究補助',94000],
- ['まこと','行動派','fitness','技術職',86000]
-].map((x,i)=>({id:'pt'+i,name:x[0],desc:x[1],pref:x[2],job:x[3],income:x[4]}));
+ ['あおい','落ち着いた読書好き','knowledge','図書館スタッフ',72000,'intellectual'],
+ ['ひなた','明るいアウトドア派','fitness','スポーツインストラクター',78000,'adventure'],
+ ['れん','話好きの社交派','communication','営業職',88000,'social'],
+ ['みさき','おしゃれ好き','charm','デザイナー',84000,'creative'],
+ ['かえで','堅実な仕事人','knowledge','会社員',90000,'steady'],
+ ['そら','自由なクリエイター','charm','クリエイター',82000,'volatile'],
+ ['ゆう','スポーツ好き','fitness','トレーナー',80000,'adventure'],
+ ['なお','聞き上手','communication','福祉スタッフ',76000,'family'],
+ ['つばさ','好奇心旺盛','knowledge','研究補助',94000,'intellectual'],
+ ['まこと','行動派','fitness','技術職',86000,'career']
+].map((x,i)=>({id:'pt'+i,name:x[0],desc:x[1],pref:x[2],job:x[3],income:x[4],type:x[5]}));
+
+const PARTNER_LIFE_EVENTS={
+ family:[
+  {id:'family_schedule',text:'勤務時間を少し調整し、家で過ごせる時間を増やした。',incomeDelta:-3000,stats:{communication:1},memory:5,tone:'good'},
+  {id:'family_sidework',text:'家でできる小さな副業を始め、家計の足しになるようになった。',cash:70000,incomeDelta:3000,memory:3,tone:'good'},
+  {id:'family_skill',text:'家事や暮らしに役立つ講座へ通い、生活の段取りがかなり上手くなった。',stats:{knowledge:1},memory:4,tone:'good'},
+  {id:'family_support',text:'親戚の手伝いをきっかけに、家族同士の付き合いがぐっと増えた。',stats:{communication:2},memory:6,tone:'good'}
+ ],
+ career:[
+  {id:'career_promo',text:'仕事ぶりが評価され、配偶者が昇進した。',incomeDelta:14000,cash:120000,memory:3,tone:'good'},
+  {id:'career_headhunt',text:'別の会社から声がかかり、より条件の良い職場へ転職した。',incomeDelta:18000,job:'管理職',memory:4,tone:'good'},
+  {id:'career_project',text:'大きな案件を成功させ、まとまった成果報酬が入った。',cash:220000,stats:{communication:1},memory:4,tone:'good'},
+  {id:'career_reset',text:'忙しさが続き、いったん役職を離れて働き方を見直すことにした。',incomeDelta:-9000,stats:{communication:1},memory:5,tone:'bad'}
+ ],
+ steady:[
+  {id:'steady_raise',text:'長く勤めた実績が評価され、少しだけ給料が上がった。',incomeDelta:6000,memory:2,tone:'good'},
+  {id:'steady_save',text:'家計を見直して固定費を整理し、まとまったお金を貯蓄へ回せた。',cash:110000,memory:2,tone:'good'},
+  {id:'steady_cert',text:'仕事に役立つ資格を取得し、毎月の収入も少し増えた。',incomeDelta:7000,stats:{knowledge:1},memory:3,tone:'good'},
+  {id:'steady_bonus',text:'勤務先から永年勤続の小さな表彰と一時金を受け取った。',cash:90000,memory:4,tone:'good'}
+ ],
+ social:[
+  {id:'social_network',text:'人脈から新しい仕事を紹介され、ちょっとした副収入につながった。',cash:100000,incomeDelta:3000,stats:{communication:1},memory:4,tone:'good'},
+  {id:'social_event',text:'地域イベントのまとめ役を引き受け、知り合いが一気に増えた。',stats:{communication:2},memory:6,tone:'good'},
+  {id:'social_party',text:'友人たちを集めた大きな会を開き、出費はしたが忘れられない夜になった。',cash:-90000,stats:{communication:1,charm:1},memory:8,tone:'normal'},
+  {id:'social_offer',text:'知人から仕事の相談を受け、そのまま継続案件になった。',incomeDelta:5000,cash:60000,memory:3,tone:'good'}
+ ],
+ adventure:[
+  {id:'adv_trip',text:'思い立って長めの旅行を計画し、普段なら行かない場所まで足を伸ばした。',cash:-140000,stats:{fitness:1},memory:9,tone:'good'},
+  {id:'adv_project',text:'遠方のプロジェクトへ自分から手を挙げ、新しい仕事経験を積んだ。',incomeDelta:9000,job:'プロジェクト担当',stats:{knowledge:1},memory:6,tone:'good'},
+  {id:'adv_hobby',text:'新しいアウトドア趣味を始め、休日の過ごし方が大きく変わった。',cash:-70000,stats:{fitness:2},memory:7,tone:'good'},
+  {id:'adv_sidejob',text:'旅先で知り合った人から思わぬ仕事を頼まれ、臨時収入になった。',cash:150000,stats:{communication:1},memory:5,tone:'good'}
+ ],
+ intellectual:[
+  {id:'intel_cert',text:'難しい資格試験に合格し、専門手当が付くようになった。',incomeDelta:9000,stats:{knowledge:2},memory:4,tone:'good'},
+  {id:'intel_lecture',text:'得意分野について小さな講座を頼まれ、講師料を受け取った。',cash:100000,stats:{knowledge:1,communication:1},memory:5,tone:'good'},
+  {id:'intel_job',text:'専門性を買われ、より高度な仕事を任されるようになった。',incomeDelta:11000,job:'専門職',stats:{knowledge:1},memory:3,tone:'good'},
+  {id:'intel_study',text:'仕事とは別に勉強を続け、家でも新しい知識の話題が増えた。',stats:{knowledge:2},memory:5,tone:'good'}
+ ],
+ creative:[
+  {id:'creative_hit',text:'作ったものが予想以上に評判になり、まとまった依頼が舞い込んだ。',cash:190000,incomeDelta:7000,stats:{charm:1},memory:6,tone:'good'},
+  {id:'creative_show',text:'作品を発表する場を作り、準備費はかかったが大きな手応えを得た。',cash:-90000,stats:{charm:2},memory:8,tone:'good'},
+  {id:'creative_slump',text:'しばらく思うように仕事が進まず、収入も少し落ち込んだ。',incomeDelta:-7000,memory:3,tone:'bad'},
+  {id:'creative_client',text:'昔の作品を見た人から新しい依頼が入り、副収入が増えた。',cash:120000,incomeDelta:4000,memory:4,tone:'good'}
+ ],
+ volatile:[
+  {id:'volatile_startup_win',text:'勢いで始めた新しい事業が当たり、生活が一気に忙しくなった。',cash:320000,incomeDelta:23000,job:'起業家',memory:8,tone:'good'},
+  {id:'volatile_startup_loss',text:'思い切って始めた仕事がうまくいかず、立て直しにかなりのお金がかかった。',cash:-280000,incomeDelta:-18000,job:'フリーランス',memory:7,tone:'bad'},
+  {id:'volatile_change',text:'突然まったく違う業界へ飛び込み、ゼロから新しい仕事を始めた。',incomeDelta:6000,job:'新しい業界の仕事',stats:{communication:1},memory:7,tone:'normal'},
+  {id:'volatile_bigdeal',text:'一か八かで受けた大仕事が成功し、予想外の報酬が入った。',cash:380000,stats:{charm:1},memory:8,tone:'good'}
+ ]
+};
+
+const PARTNER_COUPLE_EVENTS={
+ family:[
+  {text:'家で一緒に少し手の込んだ夕食を作り、ゆっくり話して過ごした。',cash:-25000,stats:{communication:1},memory:7},
+  {text:'近場へ家族向けの小旅行に出かけ、写真をたくさん残した。',cash:-80000,stats:{communication:1},memory:9},
+  {text:'家の模様替えを二人で始め、思った以上に大仕事になった。',cash:-45000,stats:{knowledge:1},memory:6}
+ ],
+ career:[
+  {text:'お互いの仕事の節目を祝って、少し良い店で食事をした。',cash:-70000,stats:{communication:1},memory:6},
+  {text:'忙しい予定を合わせて丸一日休みを取り、久しぶりに二人で出かけた。',cash:-55000,stats:{charm:1},memory:7},
+  {text:'配偶者の仕事の相談にじっくり付き合い、次の方針を一緒に考えた。',cash:0,stats:{knowledge:1,communication:1},memory:5}
+ ],
+ steady:[
+  {text:'近所の店を何軒か巡る、背伸びしない穏やかなデートを楽しんだ。',cash:-18000,stats:{communication:1},memory:6},
+  {text:'二人で家計と将来の予定を整理し、欲しいものを一つだけ買うことにした。',cash:-30000,stats:{knowledge:1},memory:5},
+  {text:'家で映画を見ながらのんびり過ごし、静かな休日を満喫した。',cash:-5000,stats:{},memory:6}
+ ],
+ social:[
+  {text:'配偶者の友人たちとの食事会へ参加し、新しい知り合いが増えた。',cash:-50000,stats:{communication:2},memory:7},
+  {text:'二人で大きなイベントへ出かけ、帰る頃には知り合いが何人も増えていた。',cash:-65000,stats:{communication:1,charm:1},memory:8},
+  {text:'友人夫婦を招いてホームパーティーを開き、夜までにぎやかに過ごした。',cash:-45000,stats:{communication:2},memory:7}
+ ],
+ adventure:[
+  {text:'朝に思い立って遠出し、予定になかった場所までドライブした。',cash:-90000,stats:{fitness:1},memory:9},
+  {text:'二人で初めてのアクティビティに挑戦し、翌日は筋肉痛になった。',cash:-70000,stats:{fitness:2},memory:8},
+  {text:'格安チケットを見つけ、その勢いのまま短い旅行へ出発した。',cash:-120000,stats:{charm:1},memory:10}
+ ],
+ intellectual:[
+  {text:'本屋と博物館を一日かけて巡り、帰宅後も話が尽きなかった。',cash:-30000,stats:{knowledge:2},memory:7},
+  {text:'興味のある講演会へ二人で参加し、帰り道に感想を語り合った。',cash:-20000,stats:{knowledge:1,communication:1},memory:6},
+  {text:'家でそれぞれ好きな本を読み、面白かった部分だけ交換して話した。',cash:-5000,stats:{knowledge:1},memory:5}
+ ],
+ creative:[
+  {text:'展覧会を見に行き、そのまま街を歩きながら写真を撮って回った。',cash:-45000,stats:{charm:2},memory:8},
+  {text:'二人で小さな作品を作り始め、休日を丸ごと使って完成させた。',cash:-35000,stats:{charm:1,knowledge:1},memory:8},
+  {text:'ライブや舞台を見に行き、帰宅後まで演出の話で盛り上がった。',cash:-65000,stats:{charm:2},memory:9}
+ ],
+ volatile:[
+  {text:'突然「今日は豪華にいこう」と言い出し、予定外の高級店へ向かった。',cash:-130000,stats:{charm:1},memory:9},
+  {text:'急に予定を変えて知らない街へ出かけ、結果的にかなり面白い一日になった。',cash:-60000,stats:{communication:1},memory:9},
+  {text:'思いつきで二人の新しい趣味を始め、道具を一式そろえてしまった。',cash:-100000,stats:{fitness:1,charm:1},memory:8}
+ ]
+};
 const PROPS=[['郊外の小さな家',220000,180000,0],['駅近マンション',360000,330000,10000],['海辺のコテージ',420000,380000,12000],['古民家リノベ',480000,450000,14000],['都市型マンション',650000,620000,18000],['店舗付き住宅',760000,720000,28000],['高原別荘',880000,800000,20000],['小さなアパート',1000000,970000,45000],['デザイナーズ住宅',1200000,1150000,26000],['商業ビル区画',1500000,1450000,65000],['リゾートヴィラ',1800000,1700000,42000],['大型賃貸物件',2200000,2100000,90000]].map((x,i)=>({id:'pr'+i,name:x[0],price:x[1],value:x[2],income:x[3]}));
 const TREASURES=[['古い腕時計',50000,180000],['限定スニーカー',30000,120000],['アンティーク食器',60000,250000],['希少なレコード',40000,200000],['古いカメラ',70000,260000],['記念硬貨セット',80000,320000],['名工の工芸品',100000,420000],['謎の絵画',120000,650000],['ヴィンテージ家具',90000,350000],['絶版コミック全集',50000,230000],['古酒コレクション',100000,480000],['クラシック楽器',130000,550000],['鉱石標本',60000,300000],['サイン入り記念品',70000,380000],['古地図',90000,500000],['未鑑定の箱',30000,800000]].map((x,i)=>({id:'tr'+i,name:x[0],buy:x[1],max:x[2]}));
 const CARDS=[
@@ -996,6 +1100,11 @@ const BIG_SPACE_POSITIONS=[
 ];
 function branchDef(si=state?.stageIndex||0){const id=STAGES[si]?.id;return id?BRANCH_CONFIG[id]||null:null}
 
+const ROMANCE_EXTRA_POSITIONS={
+ high:[8,28],
+ young:[10,30],
+ mature:[10,30]
+};
 function buildStageBoard(si,size){
  const st=STAGES[si],a=[];
  const early=['plus','social','grow','event','plus','grow','minus','social','event','plus'];
@@ -1013,6 +1122,7 @@ function buildStageBoard(si,size){
   if(bigPos.luck.includes(i))type='bigluck';
   else if(bigPos.bad.includes(i))type='bigbad';
   if(BRANCH_CONFIG[st.id]?.at===i)type='event';
+  if((ROMANCE_EXTRA_POSITIONS[st.id]||[]).includes(i))type='romance';
   const meta=spaceMeta(type);
   a.push({i,type,title:meta[1],icon:meta[0],stage:st.id});
  }
@@ -1024,6 +1134,29 @@ function spaceDirClass(i,len){if(i>=len-1)return 'end';const a=boardCoord(i),b=b
 const SALARY_MULTIPLIERS={1:1,2:1.35,3:1.75,4:2.5,5:5};
 function salaryNow(p){return p.job?Math.round(p.job.base*(SALARY_MULTIPLIERS[p.jobRank]||1)):0}
 function partnerIncome(p){return p.married&&p.partner?Math.round(p.partner.income||0):0}
+function partnerTypeDef(partnerOrType){const id=typeof partnerOrType==='string'?partnerOrType:partnerOrType?.type;return PARTNER_TYPES[id]||PARTNER_TYPES.steady}
+function partnerTypeLabel(partner){const t=partnerTypeDef(partner);return `${t.icon} ${t.name}`}
+function partnerLifeEventLines(p,chance=.38){
+ ensureFamilyData(p);if(!p.married||!p.partner||Math.random()>chance)return[];
+ const pool=PARTNER_LIFE_EVENTS[p.partner.type]||PARTNER_LIFE_EVENTS.steady;
+ let candidates=pool.filter(e=>e.id!==p.partner.lastLifeEventId);if(!candidates.length)candidates=pool;
+ const e=pick(candidates),lines=[];p.partner.lastLifeEventId=e.id;p.partner.lifeEventCount=(p.partner.lifeEventCount||0)+1;
+ let detail=[];
+ if(e.cash){const actual=cashChange(p,e.cash);detail.push(`${actual>0?'+':''}${money(actual)}`)}
+ if(e.incomeDelta){const before=Math.max(0,Math.round(p.partner.income||0));p.partner.income=Math.max(0,before+e.incomeDelta);detail.push(`配偶者収入 ${e.incomeDelta>0?'+':''}${money(e.incomeDelta)}`)}
+ if(e.job){p.partner.job=e.job;detail.push(`仕事：${e.job}`)}
+ if(e.stats){applyStats(p,e.stats);const t=Object.entries(e.stats).filter(([,v])=>v).map(([k,v])=>`${paramLabel(k)}${v>0?'+':''}${v}`).join(' / ');if(t)detail.push(t)}
+ if(e.memory){p.memory+=e.memory;detail.push(`思い出+${e.memory}`)}
+ p.partner.lastLifeNote=e.text;
+ lines.push({text:`${p.partner.name}の人生にも変化があった。${e.text}`,tone:e.tone||'normal'});if(detail.length)lines.push({text:detail.join(' / '),tone:e.tone||'normal'});return lines
+}
+function marriedRomanceLines(p){
+ ensureFamilyData(p);const t=partnerTypeDef(p.partner),pool=PARTNER_COUPLE_EVENTS[t.id]||PARTNER_COUPLE_EVENTS.steady,e=pick(pool),lines=[];let detail=[];
+ if(e.cash){const actual=cashChange(p,e.cash);detail.push(`${actual>0?'+':''}${money(actual)}`)}
+ if(e.stats){applyStats(p,e.stats);const txt=Object.entries(e.stats).filter(([,v])=>v).map(([k,v])=>`${paramLabel(k)}${v>0?'+':''}${v}`).join(' / ');if(txt)detail.push(txt)}
+ p.memory+=e.memory||0;if(e.memory)detail.push(`思い出+${e.memory}`);
+ lines.push({text:`【${t.name}】${p.partner.name}と過ごした。${e.text}`,tone:'good'});if(detail.length)lines.push({text:detail.join(' / '),tone:'good'});lines.push(...partnerLifeEventLines(p,.32));return lines
+}
 function childList(p){return Array.isArray(p.childProfiles)?p.childProfiles:[]}
 function childCount(p){return childList(p).length||(Number(p.children)||0)}
 function adultChildIncome(p){return childList(p).reduce((sum,c)=>sum+(c.adult?(c.income||0):0),0)}
@@ -1055,7 +1188,7 @@ function ensureFamilyData(p){
  if(!p)return;
  if(p.partner?.id){
   const def=PARTNERS.find(x=>x.id===p.partner.id);
-  if(def)p.partner={...def,...p.partner,job:p.partner.job||def.job,income:p.partner.income||def.income};
+  if(def)p.partner={...def,...p.partner,type:p.partner.type||def.type,job:p.partner.job||def.job,income:p.partner.income??def.income};
   if(!p.partner.avatar||isLegacyGeneratedFamilyArt(p.partner.avatar))p.partner.avatar=nextFamilyPortrait(p.partner);
  }
  if(!Array.isArray(p.childProfiles)){
@@ -1184,7 +1317,7 @@ function renderGame(){
  document.body.dataset.lifeVariant=state.settings?.variant||'normal';els.eraIcon.textContent=st.icon;els.eraName.textContent=st.name;els.eraFlavor.textContent=stageFlavor(st.id);if(els.variantBadge){els.variantBadge.classList.toggle('hidden',!isToga());els.variantBadge.textContent=isToga()?'トガモード':'通常モード'};els.roundText.textContent=`第${round}/${rounds}ラウンド`;els.fieldInfo.textContent=`専用${stageBoard().length}マスマップ・規定ラウンド終了まで周回します`;els.roundDots.innerHTML=Array.from({length:rounds},(_,i)=>`<span class="round-dot ${i<round-1?'done':i===round-1?'now':''}"></span>`).join('');
  els.gamePlayers.innerHTML=state.players.map((p,i)=>playerCard(p,i===state.turnIndex)).join('');renderBoard();renderBranchMobilePanel();els.turnName.textContent=cp?.name||'-';els.turnStage.textContent=`${st.icon} ${st.name}`;const mine=cp&&cp.id===localPlayerId&&!cp.cpu,rollWait=state.pendingRollAdvance,branchWait=state.pendingBranch;els.rollBtn.disabled=!mine||!state.turnReady||state.busy||!!state.message||!!state.pendingChoice||!!branchWait||!!rollWait;els.rollBtn.textContent=mine?'ルーレットを回す':cp?.cpu?'CPUが考え中…':'相手の手番です';els.hint.textContent=branchWait?(mine?(window.innerWidth<=900?'画面下部から進むルートを選んでください':'盤面の矢印から進むルートを選んでください'):`${cp?.name||'相手'}がルートを選択中`):rollWait?(rollWait.ready?(mine?'盤面をクリック / タップして進みます':`${cp?.name||'相手'}の操作待ち`):'出目を確認中…'):state.message?'メッセージ進行中':state.pendingChoice?'選択中':state.busy?'演出中…':mine&&state.turnReady?'あなたの手番です':cp?.cpu?'CPUの手番です':'手番を待っています';els.log.innerHTML=state.log.map(x=>`<div class="logline">${esc(x)}</div>`).join('');
  const pp=cp||state.players[0];
- if(pp){els.portraitImg.src=pp.avatar||AVATARS[0];els.portraitName.textContent=pp.name;els.portraitRole.textContent=pp.job?`${jobDisplayName(pp.job)} Lv.${pp.jobRank}`:(pp.cpu?`${cpuDef(pp.cpuType).name} CPU`:'プレイヤー');els.portraitBadge.textContent=mine?'YOUR TURN':'NOW';els.portraitStats.innerHTML=`<div class="portrait-stat">🧠 <span>知力</span><strong>${pp.stats.knowledge}</strong></div><div class="portrait-stat">💪 <span>体力</span><strong>${pp.stats.fitness}</strong></div><div class="portrait-stat">✨ <span>魅力</span><strong>${pp.stats.charm}</strong></div><div class="portrait-stat">🗣 <span>交流</span><strong>${pp.stats.communication}</strong></div>`;ensureFamilyData(pp);els.portraitSub.innerHTML=`<strong>${money(pp.cash)}</strong>${pp.cash<0?' <span class="debt-text">借金</span>':''} / 思い出 ${pp.memory}pt${pp.partner?`<br>パートナー：${esc(pp.partner.name)} 好感度${pp.affection}${pp.married?`・結婚 / 収入 ${money(partnerIncome(pp))}`:''}`:''}${childCount(pp)?`<br>家族：子ども ${childCount(pp)}人${adultChildIncome(pp)?` / 成人子収入 ${money(adultChildIncome(pp))}`:''}`:''}`}
+ if(pp){els.portraitImg.src=pp.avatar||AVATARS[0];els.portraitName.textContent=pp.name;els.portraitRole.textContent=pp.job?`${jobDisplayName(pp.job)} Lv.${pp.jobRank}`:(pp.cpu?`${cpuDef(pp.cpuType).name} CPU`:'プレイヤー');els.portraitBadge.textContent=mine?'YOUR TURN':'NOW';els.portraitStats.innerHTML=`<div class="portrait-stat">🧠 <span>知力</span><strong>${pp.stats.knowledge}</strong></div><div class="portrait-stat">💪 <span>体力</span><strong>${pp.stats.fitness}</strong></div><div class="portrait-stat">✨ <span>魅力</span><strong>${pp.stats.charm}</strong></div><div class="portrait-stat">🗣 <span>交流</span><strong>${pp.stats.communication}</strong></div>`;ensureFamilyData(pp);els.portraitSub.innerHTML=`<strong>${money(pp.cash)}</strong>${pp.cash<0?' <span class="debt-text">借金</span>':''} / 思い出 ${pp.memory}pt${pp.partner?`<br>パートナー：${esc(pp.partner.name)}【${esc(partnerTypeDef(pp.partner).name)}】 好感度${pp.affection}${pp.married?`・結婚 / 収入 ${money(partnerIncome(pp))}`:''}`:''}${childCount(pp)?`<br>家族：子ども ${childCount(pp)}人${adultChildIncome(pp)?` / 成人子収入 ${money(adultChildIncome(pp))}`:''}`:''}`}
  setupBoardDrag();renderMapOverviewButton();renderCards();renderAssets();renderChoice();renderMessage();renderCurtain();renderTurnBanner();renderLastTurnBanner();renderRollWait();renderLandingPop();handleFx();
 }
 function canInspectSpace(){return !!(state&&state.phase==='playing'&&!state.fx?.move&&!state.pendingBranch&&!state.pendingRollAdvance&&!state.fx?.landing)}
@@ -1343,7 +1476,7 @@ function renderCards(){
  els.cards.innerHTML=`<div class="card-rule-note">1ターンに使用できるカードは1枚まで</div>`+p.cards.map((id,i)=>{const c=CARDS.find(x=>x.id===id);if(!c)return'';const cv=cardDisplay(c),turnLabel=c.turnCost==='end'?'使用すると手番終了':'使用後も手番継続',usable=canBase&&canUseCard(p,c);return`<div class="inventory-card"><div class="inventory-card-head"><strong>${esc(cv.name)}</strong><span class="card-turn-tag ${c.turnCost==='end'?'end':'free'}">${turnLabel}</span></div><div class="inventory-card-desc">${esc(cv.desc)}</div><button class="btn small use-card" data-i="${i}" ${usable?'':'disabled'}>${p.cardUsedThisTurn?'このターンは使用済み':(c.needsOther&&!state.players.some(x=>x.id!==p.id)?'他プレイヤーが必要':(c.id==='date'&&(!p.partner||p.married)?'交際中のみ使用可':'使用する'))}</button></div>`}).join('');
  document.querySelectorAll('.use-card').forEach(b=>b.addEventListener('click',()=>sendAction({kind:'useCard',index:Number(b.dataset.i)})))
 }
-function renderAssets(){const p=state.players.find(x=>x.id===localPlayerId)||currentPlayer();if(!p){els.assets.innerHTML='-';return}ensureFamilyData(p);const fam=familyIncome(p),kids=childList(p);els.assets.innerHTML=`<div>現金：<strong>${money(p.cash)}</strong>${p.cash<0?` <span class="debt-text">借金 ${money(-p.cash)}</span>`:''}</div><div>本人給料：${money(salaryNow(p))}</div><div>家族収入：${money(fam)}${p.married?`（配偶者 ${money(partnerIncome(p))}${adultChildIncome(p)?` + 成人した子 ${money(adultChildIncome(p))}`:''}）`:''}</div><div>住まい：${p.home?esc(p.home.name):'賃貸'}</div><div>物件：${p.properties.length}件 / お宝：${p.treasures.length}個</div><div>思い出：${p.memory}pt</div><div>子ども：${childCount(p)}人（全体 ${totalChildrenCount()}/15）</div>${p.partner?`<div class="family-card"><img src="${esc(p.partner.avatar||AVATARS[0])}" alt=""><div><strong>${esc(p.partner.name)}</strong><br><span>${p.married?'配偶者':'交際中'} / ${esc(p.partner.job||'仕事中')}</span>${p.married?`<br><span>家計収入 ${money(partnerIncome(p))}</span>`:''}</div></div>`:''}${kids.length?`<div class="family-kids">${kids.map(c=>`<div class="family-kid"><img src="${esc(c.avatar)}" alt=""><div><strong>${esc(c.name)}</strong><br><span>${c.adult?`成人・${esc(c.job||'就職')} / ${money(c.income||0)}`:`${c.age||0}歳・成長中`}</span></div></div>`).join('')}</div>`:''}` }
+function renderAssets(){const p=state.players.find(x=>x.id===localPlayerId)||currentPlayer();if(!p){els.assets.innerHTML='-';return}ensureFamilyData(p);const fam=familyIncome(p),kids=childList(p);els.assets.innerHTML=`<div>現金：<strong>${money(p.cash)}</strong>${p.cash<0?` <span class="debt-text">借金 ${money(-p.cash)}</span>`:''}</div><div>本人給料：${money(salaryNow(p))}</div><div>家族収入：${money(fam)}${p.married?`（配偶者 ${money(partnerIncome(p))}${adultChildIncome(p)?` + 成人した子 ${money(adultChildIncome(p))}`:''}）`:''}</div><div>住まい：${p.home?esc(p.home.name):'賃貸'}</div><div>物件：${p.properties.length}件 / お宝：${p.treasures.length}個</div><div>思い出：${p.memory}pt</div><div>子ども：${childCount(p)}人（全体 ${totalChildrenCount()}/15）</div>${p.partner?`<div class="family-card"><img src="${esc(p.partner.avatar||AVATARS[0])}" alt=""><div><strong>${esc(p.partner.name)}</strong> <span>${esc(partnerTypeDef(p.partner).icon)}${esc(partnerTypeDef(p.partner).name)}</span><br><span>${p.married?'配偶者':'交際中'} / ${esc(p.partner.job||'仕事中')}</span>${p.married?`<br><span>家計収入 ${money(partnerIncome(p))}</span>`:''}${p.partner.lastLifeNote?`<br><span>最近：${esc(p.partner.lastLifeNote)}</span>`:''}</div></div>`:''}${kids.length?`<div class="family-kids">${kids.map(c=>`<div class="family-kid"><img src="${esc(c.avatar)}" alt=""><div><strong>${esc(c.name)}</strong><br><span>${c.adult?`成人・${esc(c.job||'就職')} / ${money(c.income||0)}`:`${c.age||0}歳・成長中`}</span></div></div>`).join('')}</div>`:''}` }
 function renderChoice(){const c=state.pendingChoice;if(!c){els.choice.classList.add('hidden');return}els.choice.classList.remove('hidden');const owner=state.players.find(p=>p.id===c.playerId),mine=c.playerId===localPlayerId&&!owner?.cpu,revealing=!!c.revealing;els.choiceTitle.textContent=c.title;els.choiceText.textContent=c.text||'';els.choiceStatus.textContent=revealing?`${owner?.name||'プレイヤー'}が「${c.options?.[c.selectedIndex]?.label||''}」を選択しました`:mine?'あなたが選択してください':`${owner?.name||'プレイヤー'}が選択中です`;els.choiceList.innerHTML='';c.options.forEach((o,i)=>{const b=document.createElement('button');b.className=`choicebtn ${revealing&&i===c.selectedIndex?'choice-selected-reveal':''}`;b.disabled=revealing||!mine;b.innerHTML=`${o.avatar?`<img class="choice-avatar" src="${esc(o.avatar)}" alt="">`:''}<span class="choice-copy"><strong>${esc(o.label)}</strong><span class="note">${esc(o.desc||'')}</span></span>`;b.addEventListener('click',()=>{if(!revealing)sendAction({kind:'choose',index:i})});els.choiceList.appendChild(b)})}
 function choiceAnnouncement(p,c,o){
  if(c.type==='cardFreeRoll')return `${p.name}は次のルーレットの出目を「${o.label}」に決めた。`;
@@ -1566,7 +1699,7 @@ function resolveLandingEffect(p,wraps=0,sOverride=null){state.busy=false;const s
  if(s.type==='card'){if(p.cards.length>=5)finish([{text:'カード枠がいっぱいで、新しいカードを持てなかった。'}],'カード');else{const c=pick(CARDS);p.cards.push(c.id);{const cv=cardDisplay(c);finish([{text:`「${cv.name}」を手に入れた！`,tone:'good'},{text:cv.desc}],'カード')}}return}
  if(s.type==='treasure'){setMessage(p.id,'お宝マス',[...lines,{text:'価値の読めないお宝を見つけた。買ってみる？'}],{type:'openChoice',choice:'treasure',playerId:p.id,returnTo:'completeTurn'});broadcast();return}
  if(s.type==='submap'){setMessage(p.id,'寄り道マス',[...lines,{text:'少し寄り道できそうだ。どこへ行こう？'}],{type:'openChoice',choice:'submap',playerId:p.id,returnTo:'completeTurn'});broadcast();return}
- if(s.type==='romance'){if(p.married){const cost=30000+rnd(50000);p.cash-=cost;p.memory+=5;finish([{text:`パートナーと特別な時間を過ごした。 -${money(cost)} / 思い出+5`,tone:'good'}],'家族の時間')}else{setMessage(p.id,'恋愛マス',[...lines,{text:p.partner?'パートナーとの関係を進めるチャンス。':'新しい出会いがありそうだ。'}],{type:'openChoice',choice:'romance',playerId:p.id,returnTo:'completeTurn'});broadcast()}return}
+ if(s.type==='romance'){if(p.married){finish(marriedRomanceLines(p),'夫婦の時間')}else{setMessage(p.id,'恋愛マス',[...lines,{text:p.partner?'パートナーとの関係を進めるチャンス。':'新しい出会いがありそうだ。'}],{type:'openChoice',choice:'romance',playerId:p.id,returnTo:'completeTurn'});broadcast()}return}
  if(s.type==='property'){setMessage(p.id,'物件マス',[...lines,{text:'気になる物件情報が入ってきた。'}],{type:'openChoice',choice:'property',playerId:p.id,returnTo:'completeTurn'});broadcast();return}
  if(s.type==='career'){const gain=30000+p.jobRank*20000+rnd(50000);if(p.job){p.cash+=gain;p.jobExp+=2;applyStats(p,{communication:1,knowledge:1});const rank=rankUpCheck(p);finishWithPromotion(p,rank,[{text:`${pick(activeCareerEvents())} +${money(gain)}`,tone:'good'}],'仕事イベント',finish)}else finish([{text:'仕事イベントは起きたが、まだ職には就いていない。'}],'仕事イベント');return}
  if(s.type==='family'){resolveFamily(p,lines);return}
@@ -1662,7 +1795,7 @@ function createBigGambleChoice(p,returnTo){
  state.pendingChoice={playerId:p.id,type:'bigGamble',returnTo,title:state.stageIndex>=6?'老後の大勝負':'一発逆転の大勝負',text:state.stageIndex>=6?'ここからでも順位はひっくり返せる。どこまで張る？':'大きく状況を変えられる話が舞い込んだ。乗るか、見送るか。',options};
 }
 function resolveChance(p,prefix=[]){if(state.stageIndex>=4&&Math.random()<.52){setMessage(p.id,'チャンスマス',[...prefix,{text:'後半戦らしい、大きな勝負の話が舞い込んだ。'}],{type:'openChoice',choice:'bigGamble',playerId:p.id,returnTo:'completeTurn'});broadcast();return}const n=rnd(6),a=[...prefix,{text:'何が起こるか分からない、特別な流れがやってきた。'}];if(n===0){const g=100000+rnd(180000);p.cash+=g;a.push({text:isToga()?`妙に羽振りのいい研究アンケートの謝礼が届いた。 +${money(g)}`:`臨時ボーナス！ +${money(g)}`,tone:'good'})}else if(n===1){applyStats(p,{knowledge:2,communication:2});a.push({text:isToga()?'深夜の電波越しに妙に話の合う相手と長話をした。知力+2・交流+2':'良い出会いから大きく成長。知力+2・交流+2',tone:'good'})}else if(n===2){const t=pick(TREASURES);p.treasures.push({id:t.id,appraised:0});a.push({text:isToga()?`フリーマーケットの隅で妙に気になる「${t.name}」を手に入れた！`:`お宝「${t.name}」を手に入れた！`,tone:'good'})}else if(n===3||n===4){if(p.cards.length<5){const c=pick(CARDS),cv=cardDisplay(c);p.cards.push(c.id);a.push({text:`「${cv.name}」を手に入れた！`,tone:'good'})}else a.push({text:'カード枠がいっぱいだった。'})}else{p.memory+=8;a.push({text:isToga()?'記憶に残りすぎる体験。思い出+8（詳細は語らない）':'忘れられない体験！ 思い出+8',tone:'good'})}if(Math.random()<.26)a.push(...maybePlayerInteraction(p));messageResult(p.id,'チャンス！',a)}
-function resolveFamily(p,prefix=[]){ensureFamilyData(p);const a=[...prefix,{text:isToga()?'家族にまつわる普通の時間。たまに変な話題が混ざるくらいだ。':'家族にまつわる時間は、資産では測れない大きな影響を残していく。'}];if(p.married&&Math.random()<.55&&totalChildrenCount()<15){const c=makeChildProfile(p);p.childProfiles.push(c);p.children=p.childProfiles.length;p.cash-=80000;p.memory+=10;a.push({text:`${p.partner?.name||'パートナー'}との間に ${c.name} が誕生！ 子ども${p.children}人 / -${money(80000)} / 思い出+10`,tone:'good'})}else if(childCount(p)){const g=childCount(p)*(30000+rnd(30000));p.cash+=g;p.memory+=4;a.push({text:`家族から嬉しい知らせ。 +${money(g)} / 思い出+4`,tone:'good'});if(totalChildrenCount()>=15)a.push({text:'家族みんなで穏やかな時間を過ごした。'})}else{p.memory+=5;a.push({text:'穏やかな休日を満喫。思い出+5',tone:'good'})}if(Math.random()<.2)a.push(...maybePlayerInteraction(p));messageResult(p.id,'家族イベント',a)}
+function resolveFamily(p,prefix=[]){ensureFamilyData(p);const a=[...prefix,{text:isToga()?'家族にまつわる普通の時間。たまに変な話題が混ざるくらいだ。':'家族にまつわる時間は、資産では測れない大きな影響を残していく。'}],pt=p.married&&p.partner?partnerTypeDef(p.partner):null;const birthChance=pt?.id==='family'?0.67:0.55;if(p.married&&Math.random()<birthChance&&totalChildrenCount()<15){const c=makeChildProfile(p);p.childProfiles.push(c);p.children=p.childProfiles.length;p.cash-=80000;p.memory+=10;a.push({text:`${p.partner?.name||'パートナー'}との間に ${c.name} が誕生！ 子ども${p.children}人 / -${money(80000)} / 思い出+10`,tone:'good'});if(pt?.id==='family'){p.memory+=2;a.push({text:'家庭派のパートナーらしく、家族みんなで新しい生活の準備を楽しんだ。思い出+2',tone:'good'})}}else if(childCount(p)){const g=childCount(p)*(30000+rnd(30000));p.cash+=g;p.memory+=4;a.push({text:`家族から嬉しい知らせ。 +${money(g)} / 思い出+4`,tone:'good'});if(totalChildrenCount()>=15)a.push({text:'家族みんなで穏やかな時間を過ごした。'})}else{p.memory+=5;a.push({text:'穏やかな休日を満喫。思い出+5',tone:'good'})}if(p.married)a.push(...partnerLifeEventLines(p,.42));if(Math.random()<.2)a.push(...maybePlayerInteraction(p));messageResult(p.id,'家族イベント',a)}
 function openChoice(kind,p,returnTo,ctx={}){if(!p)return;if(kind==='event3')createStageEventChoice(p,returnTo,ctx);else if(kind==='education')createEducationChoice(p,returnTo);else if(kind==='job')createJobChoice(p,returnTo);else if(kind==='retire')createRetireChoice(p,returnTo);else if(kind==='treasure')createTreasureChoice(p,returnTo);else if(kind==='submap')createSubmapChoice(p,returnTo);else if(kind==='romance')createRomanceChoice(p,returnTo);else if(kind==='property')createPropertyChoice(p,returnTo);else if(kind==='bigGamble')createBigGambleChoice(p,returnTo)}
 function createEducationChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'education',returnTo,title:'卒業後の進路',text:'費用・待機ターン・能力上昇を確認して進路を選びます。',options:[{label:'すぐ就職',value:'work',desc:'費用 ¥0 / 待機 0ターン / 能力上昇なし / 仕事経験4から開始',tags:{career:2}},{label:'専門卒業後に就職',value:'voc',desc:'学費 -¥150,000 / 待機 1ターン / 知力+4・魅力+2 / 専門・技術系職を上位表示',tags:{career:1.5,study:1.5}},{label:'大学卒業後に就職',value:'college',desc:'学費 -¥300,000 / 待機 2ターン / 知力+6・交流+4 / 高度専門職を解禁',tags:{study:2.5}}]}}
 const COLLEGE_REQUIRED_JOBS=new Set(['teacher','architect','researcher','doctor','lawyer','scientist','executive','consultant']);
@@ -1690,7 +1823,7 @@ function createJobChoice(p,returnTo){
 function createRetireChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'retire',returnTo,title:'これからの働き方',text:'円熟期をどう過ごしますか？',options:[{label:'仕事を続ける',value:'continue',desc:'今の仕事を続ける',tags:{career:2,asset:1}},{label:'ゆったり引退',value:'retire',desc:'仕事を離れてゆっくり過ごす',tags:{love:1,asset:1}},{label:'第二の挑戦',value:'challenge',desc:'新しいことに挑む',tags:{risk:2,career:1}}]}}
 function createTreasureChoice(p,returnTo){const t=pick(TREASURES);state.pendingChoice={playerId:p.id,type:'treasure',returnTo,title:'お宝を発見',text:'最後に本当の価値が判明します。',options:[{label:`${t.name}を買う`,value:t.id,desc:`価格 ${money(t.buy)} / 最大鑑定 ${money(t.max)}`,tags:{asset:1.6,risk:1.2}},{label:'見送る',value:'skip',desc:'現金を温存',tags:{asset:.7}}]}}
 function createPropertyChoice(p,returnTo){const affordable=PROPS.filter(x=>!p.properties.includes(x.id)).filter(x=>x.price<=Math.max(300000,p.cash+250000)).sort((a,b)=>a.price-b.price),picks=affordable.slice(-3);state.pendingChoice={playerId:p.id,type:'property',returnTo,title:'物件購入チャンス',text:'物件は収入マスで利益を生み、最後に資産価値も加算されます。',options:[...picks.map(x=>({label:x.name,value:x.id,desc:`価格 ${money(x.price)} / 資産 ${money(x.value)} / 収入 ${money(x.income)}`,tags:{asset:2}})),{label:'買わない',value:'skip',desc:'今回は見送る',tags:{asset:.6}}]}}
-function createRomanceChoice(p,returnTo){if(!p.partner){const cand=[...PARTNERS].sort(()=>Math.random()-.5).slice(0,3),used=new Set();const options=cand.map(x=>{const avatar=nextFamilyPortrait(null,used);used.add(avatar);return{label:x.name,value:x.id,avatar,desc:`${x.desc} / ${x.job}`,tags:{love:2}}});state.pendingChoice={playerId:p.id,type:'meet',returnTo,title:'新しい出会い',text:'気になる相手と交流してみますか？',options:[...options,{label:'今は恋愛しない',value:'skip',desc:'自分の時間を優先',tags:{career:1,asset:1}}]};return}state.pendingChoice={playerId:p.id,type:'date',returnTo,title:`${p.partner.name}とどうする？`,text:`現在の好感度：${p.affection}`,options:[{label:'気軽なデート',value:'light',desc:'気楽に一緒の時間を過ごす',tags:{love:1.5}},{label:'特別なデート',value:'special',desc:'少し特別な時間を作る',tags:{love:2.3}},{label:'プロポーズ',value:'propose',desc:'思い切って気持ちを伝える',tags:{love:3,risk:1.3}},{label:'今回は見送る',value:'skip',desc:'何もしない',tags:{career:1}}]}}
+function createRomanceChoice(p,returnTo){const school=stageDef().id==='high';if(!p.partner){const cand=[...PARTNERS].sort(()=>Math.random()-.5).slice(0,3),used=new Set();const options=cand.map(x=>{const avatar=nextFamilyPortrait(null,used);used.add(avatar);const t=partnerTypeDef(x);return{label:`${x.name}　${t.icon}${t.name}`,value:x.id,avatar,desc:school?`タイプ：${t.name}｜${t.desc}｜${x.desc} / 同級生`:`タイプ：${t.name}｜${t.desc}｜${x.desc} / ${x.job}`,tags:{love:2}}});state.pendingChoice={playerId:p.id,type:'meet',returnTo,title:school?'放課後の出会い':'新しい出会い',text:school?'相手のタイプによって、将来結婚した後の暮らしや出来事も変わります。':'相手のタイプによって、結婚後の夫婦イベントや配偶者自身の人生展開が変わります。',school,options:[...options,{label:'今は恋愛しない',value:'skip',desc:'自分の時間を優先',tags:{career:1,asset:1}}]};return}ensureFamilyData(p);const t=partnerTypeDef(p.partner);const options=school?[{label:'放課後に寄り道',value:'light',desc:'一緒に帰りながら少し寄り道する',tags:{love:1.5}},{label:'休日にデート',value:'special',desc:'休みの日に少し特別な時間を作る',tags:{love:2.3}},{label:'今回は見送る',value:'skip',desc:'今日は自分の予定を優先',tags:{career:1}}]:[{label:'気軽なデート',value:'light',desc:'気楽に一緒の時間を過ごす',tags:{love:1.5}},{label:'特別なデート',value:'special',desc:'少し特別な時間を作る',tags:{love:2.3}},{label:'プロポーズ',value:'propose',desc:`結婚後は「${t.name}」らしい夫婦イベントや相手側の人生イベントが発生`,tags:{love:3,risk:1.3}},{label:'今回は見送る',value:'skip',desc:'何もしない',tags:{career:1}}];state.pendingChoice={playerId:p.id,type:'date',returnTo,title:`${p.partner.name}とどうする？`,text:`現在の好感度：${p.affection} / タイプ：${t.icon}${t.name} — ${t.desc}`,school,options}}
 function createSubmapChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'submap',returnTo,title:'寄り道スポット',text:'1つ選んで過ごします。',options:[{label:'学びの街',value:'study',desc:'じっくり学びに行く',tags:{study:2}},{label:'スポーツ施設',value:'fitness',desc:'思いきり体を動かす',tags:{career:1.2}},{label:'交流フェス',value:'social',desc:'人が集まる場所へ行く',tags:{love:1.5,career:1}},{label:'チャレンジ市場',value:'market',desc:'ちょっと変わった市場をのぞく',tags:{asset:1.5,risk:2}}]}}
 function applyChoice(p,c,o){const lines=[];
  if(c.type==='cardFreeRoll'){p.nextRollFixed=clamp(Number(o.value)||1,1,10);lines.push({text:'自由気ままカードの効果がセットされた。',tone:'good'});return lines}
@@ -1739,13 +1872,13 @@ function applyChoice(p,c,o){const lines=[];
  }
  if(c.type==='meet'){
   if(o.value==='skip'){p.memory++;lines.push({text:'自分の時間を楽しみ、思い出+1。'})}
-  else{const x=PARTNERS.find(x=>x.id===o.value);p.partner={...x,avatar:o.avatar||nextFamilyPortrait()};p.affection=1+Math.floor(p.stats[x.pref]/5);lines.push({text:`会話が弾み、好感度${p.affection}から関係が始まった。`,tone:'good'})}
+  else{const x=PARTNERS.find(x=>x.id===o.value),t=partnerTypeDef(x);p.partner={...x,avatar:o.avatar||nextFamilyPortrait()};p.affection=1+Math.floor(p.stats[x.pref]/5);lines.push({text:`会話が弾み、好感度${p.affection}から関係が始まった。`,tone:'good'},{text:`${x.name}は【${t.icon}${t.name}】タイプ。${t.desc}`,tone:'good'})}
   return lines
  }
  if(c.type==='date'){
-  if(o.value==='light'){p.cash-=20000;p.affection+=1+rnd(2);p.memory+=2;lines.push({text:`自然体で楽しい時間になった。好感度${p.affection} / -${money(20000)} / 思い出+2`,tone:'good'})}
-  else if(o.value==='special'){p.cash-=70000;p.affection+=2+rnd(3);p.memory+=5;lines.push({text:`忘れられない一日になった。好感度${p.affection} / -${money(70000)} / 思い出+5`,tone:'good'})}
-  else if(o.value==='propose'){const chance=clamp(.25+p.affection*.1+p.stats.charm*.015,.3,.95);if(Math.random()<chance){p.married=true;p.cash-=120000;p.memory+=15;lines.push({text:`想いが届いた！ ${p.partner.name}と結婚することになった。`,tone:'good'},{text:`結婚費用 -${money(120000)} / 思い出+15`,tone:'good'})}else{p.affection=Math.max(0,p.affection-1);lines.push({text:`まだタイミングが合わなかった。好感度${p.affection}`,tone:'bad'})}}
+  if(o.value==='light'){const cost=c.school?3000:20000;p.cash-=cost;p.affection+=1+rnd(2);p.memory+=2;lines.push({text:`自然体で楽しい時間になった。好感度${p.affection} / -${money(cost)} / 思い出+2`,tone:'good'})}
+  else if(o.value==='special'){const cost=c.school?10000:70000;p.cash-=cost;p.affection+=2+rnd(3);p.memory+=5;lines.push({text:`忘れられない一日になった。好感度${p.affection} / -${money(cost)} / 思い出+5`,tone:'good'})}
+  else if(o.value==='propose'){const chance=clamp(.25+p.affection*.1+p.stats.charm*.015,.3,.95);if(Math.random()<chance){p.married=true;p.cash-=120000;p.memory+=15;const pt=partnerTypeDef(p.partner);lines.push({text:`想いが届いた！ ${p.partner.name}と結婚することになった。`,tone:'good'},{text:`配偶者タイプ：${pt.icon}${pt.name} — ${pt.desc}`,tone:'good'},{text:`結婚費用 -${money(120000)} / 思い出+15`,tone:'good'})}else{p.affection=Math.max(0,p.affection-1);lines.push({text:`まだタイミングが合わなかった。好感度${p.affection}`,tone:'bad'})}}
   else lines.push({text:'自分の時間をゆっくり過ごした。'});
   return lines
  }
@@ -1796,7 +1929,7 @@ function prepareResults(){if(state.resultPrepared)return;state.resultPrepared=tr
 function resultAssetParts(p){const home=p.home?.value||0,properties=p.properties.reduce((sum,id)=>sum+(PROPS.find(x=>x.id===id)?.value||0),0),treasures=p.treasures.reduce((sum,t)=>sum+(t.appraised||0),0),awards=p.awards||0,totalBeforeAwards=p.cash+home+properties+treasures;return{cash:p.cash,home,properties,treasures,awards,totalBeforeAwards,total:totalBeforeAwards+awards}}
 function ensureResultPresentation(){const key=state.resultId||`legacy_${roomCode}_${state.players.map(p=>p.id).join('_')}`;if(resultSessionKey!==key){resultSessionKey=key;resultRevealIndex=0;resultSummaryVisible=false}}
 function resultRevealSteps(){const steps=[{kind:'intro',title:'人生の総決算',subtitle:`${modeDef().name}`,html:`<div class="result-big-copy">長い人生ロード、おつかれさまでした。</div><div class="result-copy">まずは一人ずつ、仕事・家族・資産を振り返ります。そのあと特別賞を発表し、最後に最終順位と総評を確認します。</div>`}];
- for(const p of state.players){const a=resultAssetParts(p),family=p.married?`${esc(p.partner?.name||'パートナー')}と結婚・子ども${childCount(p)}人`:`未婚・子ども${childCount(p)}人`,job=p.job?`${esc(jobDisplayName(p.job))} Lv.${p.jobRank}`:'引退';steps.push({kind:'player',title:`${p.name}の人生`,subtitle:'個人集計',html:`<div class="result-player-card"><div class="result-player-visual"><img src="${esc(p.avatar||AVATARS[0])}" alt=""><strong>${esc(p.name)}</strong></div><div class="result-player-life"><div><b>仕事</b><span>${job}</span></div><div><b>家族</b><span>${family}</span></div><div><b>能力</b><span>知力 ${p.stats.knowledge} / 体力 ${p.stats.fitness} / 魅力 ${p.stats.charm} / 交流 ${p.stats.communication}</span></div><div><b>思い出</b><span>${p.memory}</span></div></div><div class="result-money-breakdown"><div><span>現金</span><b>${money(a.cash)}</b></div><div><span>住居</span><b>${money(a.home)}</b></div><div><span>物件</span><b>${money(a.properties)}</b></div><div><span>お宝</span><b>${money(a.treasures)}</b></div><div class="result-money-total"><span>特別賞前の資産</span><b>${money(a.totalBeforeAwards)}</b></div></div></div>`})}
+ for(const p of state.players){const a=resultAssetParts(p),family=p.married?`${esc(p.partner?.name||'パートナー')}（${esc(partnerTypeDef(p.partner).name)}）と結婚・子ども${childCount(p)}人`:`未婚・子ども${childCount(p)}人`,job=p.job?`${esc(jobDisplayName(p.job))} Lv.${p.jobRank}`:'引退';steps.push({kind:'player',title:`${p.name}の人生`,subtitle:'個人集計',html:`<div class="result-player-card"><div class="result-player-visual"><img src="${esc(p.avatar||AVATARS[0])}" alt=""><strong>${esc(p.name)}</strong></div><div class="result-player-life"><div><b>仕事</b><span>${job}</span></div><div><b>家族</b><span>${family}</span></div><div><b>能力</b><span>知力 ${p.stats.knowledge} / 体力 ${p.stats.fitness} / 魅力 ${p.stats.charm} / 交流 ${p.stats.communication}</span></div><div><b>思い出</b><span>${p.memory}</span></div></div><div class="result-money-breakdown"><div><span>現金</span><b>${money(a.cash)}</b></div><div><span>住居</span><b>${money(a.home)}</b></div><div><span>物件</span><b>${money(a.properties)}</b></div><div><span>お宝</span><b>${money(a.treasures)}</b></div><div class="result-money-total"><span>特別賞前の資産</span><b>${money(a.totalBeforeAwards)}</b></div></div></div>`})}
  for(const a of state.awards){steps.push({kind:'award',title:a.name,subtitle:'特別賞',html:`<div class="result-award-icon">🏆</div><div class="result-big-copy">${a.winners.map(esc).join('・')}</div><div class="result-copy">${esc(a.name)}を獲得！　賞金は1人 ${money(a.bonus)}。</div>`})}
  steps.push({kind:'final',title:'すべての集計が完了',subtitle:'FINAL',html:`<div class="result-award-icon">🎉</div><div class="result-big-copy">いよいよ最終順位です。</div><div class="result-copy">特別賞も総資産に加算されました。次の画面で順位と人生の総評をまとめて確認できます。</div>`});return steps}
 function resultOverallComment(rows){if(!rows.length)return'';const winner=rows[0],memoryTop=[...state.players].sort((a,b)=>(b.memory+childCount(b)*5)-(a.memory+childCount(a)*5))[0],careerTop=[...state.players].sort((a,b)=>(b.jobRank||0)-(a.jobRank||0))[0];return `<div class="result-overall"><div class="result-overall-title">人生ロード 総評</div><p>今回の1位は <strong>${esc(winner.name)}</strong>。最終総資産は <strong>${money(assetScore(winner))}</strong> でした。</p><p>思い出と家族の積み重ねが目立ったのは <strong>${esc(memoryTop.name)}</strong>${careerTop?.job?`、仕事では <strong>${esc(careerTop.name)}</strong> が ${esc(jobDisplayName(careerTop.job))} Lv.${careerTop.jobRank} まで歩みました。`:'。'} お金だけでなく、仕事・家族・能力にもそれぞれ違った人生が残りました。</p></div>`}
