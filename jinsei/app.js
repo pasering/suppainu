@@ -1671,7 +1671,22 @@ const WORK_PRIORITY_JOBS=new Set(['office','sales','chef','mechanic','creator','
 function educationAllowsJob(p,j){return !COLLEGE_REQUIRED_JOBS.has(j.id)||p.education==='大学'}
 function educationJobScore(p,j){let score=Math.random()*1.25;if(p.education==='専門'&&VOCATIONAL_PRIORITY_JOBS.has(j.id))score+=3.4;if(p.education==='大学'&&COLLEGE_REQUIRED_JOBS.has(j.id))score+=3.6;if(p.education==='高校'&&WORK_PRIORITY_JOBS.has(j.id))score+=2.2;return score}
 function eligibleJobs(p){const list=JOBS.filter(j=>jobEligible(p,j)&&educationAllowsJob(p,j));return list.length?list:[JOBS[0]]}
-function createJobChoice(p,returnTo){let pool=eligibleJobs(p).map(j=>({j,score:educationJobScore(p,j)})).sort((a,b)=>b.score-a.score||a.j.index-b.j.index).map(x=>x.j);if(p.job&&!pool.find(j=>j.id===p.job.id))pool.unshift(p.job);const pathText=p.job?'現在の能力条件を満たしている転職先をすべて表示しています。':p.education==='高校'?'能力条件を満たしている仕事をすべて表示しています。すぐ就職を選んだため、仕事経験4から開始します。':p.education==='専門'?'能力条件を満たしている仕事をすべて表示しています。専門・技術系の仕事は見つけやすいよう上位に並びます。':'能力条件を満たしている仕事をすべて表示しています。大学卒業で解禁された高度専門職も含まれます。';state.pendingChoice={playerId:p.id,type:'job',returnTo,title:p.job?'仕事を見直す':'仕事を選ぶ',text:pathText,options:[...pool.map(j=>({label:jobDisplayName(j),value:j.id,desc:`初任給 ${money(j.base)}${COLLEGE_REQUIRED_JOBS.has(j.id)?' / 大卒対象':''}`,tags:{[j.tag]:2,career:1}})),...(p.job?[{label:'今の仕事を続ける',value:'keep',desc:`${jobDisplayName(p.job)} Lv.${p.jobRank}`,tags:{career:1.2}}]:[])]}}
+function jobFocusText(j){
+ const req=Object.entries(j?.req||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+ if(!req.length)return'バランス型';
+ if(req.length===1)return`${paramLabel(req[0][0])}中心`;
+ const [first,second]=req;
+ if(first[1]>=second[1]+2)return`${paramLabel(first[0])}中心・${paramLabel(second[0])}も重要`;
+ return`${paramLabel(first[0])}・${paramLabel(second[0])}`;
+}
+function createJobChoice(p,returnTo){
+ let pool=eligibleJobs(p).map(j=>({j,score:educationJobScore(p,j)})).sort((a,b)=>b.score-a.score||a.j.index-b.j.index).map(x=>x.j);
+ if(p.job)pool=pool.filter(j=>j.id!==p.job.id);
+ const pathText=(p.job?'現在の仕事を続けるか、能力条件を満たしている転職先を選べます。':'能力条件を満たしている仕事を選べます。')+' 「重視」は、その仕事で昇格していくうえで特に重要なステータスの目安です。'+(!p.job?(p.education==='高校'?' すぐ就職を選んだため、仕事経験4から開始します。':p.education==='専門'?' 専門・技術系の仕事は見つけやすいよう上位に並びます。':' 大学卒業で解禁された高度専門職も含まれます。'):'');
+ const jobOptions=pool.map(j=>({label:jobDisplayName(j),value:j.id,desc:`重視：${jobFocusText(j)} / 初任給 ${money(j.base)}${COLLEGE_REQUIRED_JOBS.has(j.id)?' / 大卒対象':''}`,tags:{[j.tag]:2,career:1}}));
+ const keepOption=p.job?{label:'今の職業を続ける',value:'keep',desc:`現在：${jobDisplayName(p.job)} Lv.${p.jobRank} / 重視：${jobFocusText(p.job)}`,tags:{career:1.2}}:null;
+ state.pendingChoice={playerId:p.id,type:'job',returnTo,title:p.job?'仕事を見直す':'仕事を選ぶ',text:pathText,options:[...(keepOption?[keepOption]:[]),...jobOptions]}
+}
 function createRetireChoice(p,returnTo){state.pendingChoice={playerId:p.id,type:'retire',returnTo,title:'これからの働き方',text:'円熟期をどう過ごしますか？',options:[{label:'仕事を続ける',value:'continue',desc:'今の仕事を続ける',tags:{career:2,asset:1}},{label:'ゆったり引退',value:'retire',desc:'仕事を離れてゆっくり過ごす',tags:{love:1,asset:1}},{label:'第二の挑戦',value:'challenge',desc:'新しいことに挑む',tags:{risk:2,career:1}}]}}
 function createTreasureChoice(p,returnTo){const t=pick(TREASURES);state.pendingChoice={playerId:p.id,type:'treasure',returnTo,title:'お宝を発見',text:'最後に本当の価値が判明します。',options:[{label:`${t.name}を買う`,value:t.id,desc:`価格 ${money(t.buy)} / 最大鑑定 ${money(t.max)}`,tags:{asset:1.6,risk:1.2}},{label:'見送る',value:'skip',desc:'現金を温存',tags:{asset:.7}}]}}
 function createPropertyChoice(p,returnTo){const affordable=PROPS.filter(x=>!p.properties.includes(x.id)).filter(x=>x.price<=Math.max(300000,p.cash+250000)).sort((a,b)=>a.price-b.price),picks=affordable.slice(-3);state.pendingChoice={playerId:p.id,type:'property',returnTo,title:'物件購入チャンス',text:'物件は収入マスで利益を生み、最後に資産価値も加算されます。',options:[...picks.map(x=>({label:x.name,value:x.id,desc:`価格 ${money(x.price)} / 資産 ${money(x.value)} / 収入 ${money(x.income)}`,tags:{asset:2}})),{label:'買わない',value:'skip',desc:'今回は見送る',tags:{asset:.6}}]}}
