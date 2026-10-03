@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.49</title>
+<title>みんなの人生ロード Deluxe v0.51</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -825,8 +825,8 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 .map-node.bigbad{--nodeColor:#9b2548!important}
 .map-node.current{box-shadow:0 0 0 2px #fff,0 0 0 6px var(--nodeColor),0 0 0 10px #ffd84c,0 0 0 15px rgba(255,216,76,.28),0 9px 20px rgba(0,0,0,.32)!important}
 .node-icon{object-fit:contain!important;filter:drop-shadow(0 1px 1px rgba(0,0,0,.12))}
-.branch-route-shadow{stroke:rgba(104,67,21,.66);stroke-width:9;vector-effect:non-scaling-stroke;stroke-linecap:round}
-.branch-route-main{stroke:#fff0b0;stroke-width:5.5;vector-effect:non-scaling-stroke;stroke-linecap:round;filter:drop-shadow(0 1px 0 #fff)}
+.branch-route-shadow{stroke:rgba(104,67,21,.66);stroke-width:10;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.branch-route-main{stroke:#fff0b0;stroke-width:6;vector-effect:non-scaling-stroke;stroke-linecap:round;filter:drop-shadow(0 1px 0 #fff)}
 .branch-choice-layer{position:absolute;inset:0;z-index:18;pointer-events:none}
 .branch-choice-caption{position:absolute;left:50%;top:5.5%;transform:translateX(-50%);padding:9px 18px;border-radius:999px;background:rgba(34,31,31,.88);color:#fff;font-weight:900;font-size:16px;letter-spacing:.02em;box-shadow:0 8px 20px rgba(0,0,0,.24);white-space:nowrap}
 .branch-arrow-choice{position:absolute;transform:translate(-50%,-50%);width:150px;min-height:80px;padding:8px 10px;border:2px solid #fff;border-radius:18px;background:rgba(255,253,246,.97);box-shadow:0 0 0 4px rgba(229,178,68,.88),0 10px 24px rgba(0,0,0,.28);pointer-events:auto;cursor:pointer;color:#4b3a2c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;touch-action:manipulation;user-select:none}
@@ -873,6 +873,18 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 .map-overview-btn:disabled{opacity:.48;cursor:not-allowed}
 .board-panel.map-overview .turn-direction-arrow{display:none!important}
 @media(max-width:900px){.map-overview-btn{right:9px;top:9px;font-size:11px;padding:7px 10px;min-height:34px}}
+
+/* v0.51: branch remaining count / equal route weight / shared choice reveal */
+.branch-choice-caption{display:flex;align-items:center;gap:10px;justify-content:center}
+.branch-remaining-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:999px;background:#ffe58e;color:#443719;font-size:13px;line-height:1;box-shadow:inset 0 0 0 1px rgba(120,83,18,.22);white-space:nowrap}
+.choicebtn.choice-selected-reveal{position:relative;z-index:2;border-color:#e3aa28!important;background:linear-gradient(180deg,#fffbe6,#ffe8a4)!important;box-shadow:0 0 0 5px rgba(255,207,61,.30),0 5px 0 #d3a536!important;animation:choicePickedFlash .28s ease-in-out 4 alternate}
+.choicebtn.choice-selected-reveal strong{color:#7a4c00}
+@keyframes choicePickedFlash{from{transform:scale(1);filter:brightness(1)}to{transform:scale(1.035);filter:brightness(1.15)}}
+@media(max-width:900px){
+ .branch-route-shadow{stroke-width:6!important}.branch-route-main{stroke-width:3.4!important}
+ .branch-mobile-title{line-height:1.35}
+}
+@media(max-width:600px){.branch-route-shadow{stroke-width:5!important}.branch-route-main{stroke-width:2.8!important}}
 </style>
 
 </head>
@@ -880,14 +892,14 @@ body[data-life-variant="toga"] .round-dot.now{background:#bd7de1!important;borde
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.49 カード＆MAP表示版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.51 選択メッセージ整理版</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.49</strong><div class="note" style="margin-top:5px">カードを大幅追加。分岐地点を通常の出来事マス化し、MAP全体表示ボタンも追加しました。</div></div>
+    <div class="card" style="grid-column:1/-1"><strong>v0.51</strong><div class="note" style="margin-top:5px">選択内容の発表後に同じ行動を言い直さないよう、結果メッセージを整理しました。</div></div>
   </section>
 
   <section id="lobbyScreen" class="hidden stack">
