@@ -7,7 +7,7 @@ const COLORS=['#5577a8','#b45f5f','#5b8c62','#936aa2'];
 const AVATAR_OPTIONS=[{id:'akane',name:'あかね',cat:'girl',src:'assets/avatar5.webp'},{id:'kotoha',name:'ことは',cat:'girl',src:'assets/avatar6.webp'},{id:'momoka',name:'ももか',cat:'girl',src:'assets/avatar7.webp'},{id:'ruri',name:'るり',cat:'girl',src:'assets/avatar8.webp'},{id:'yukari',name:'ゆかり',cat:'girl',src:'assets/avatar9.webp'},{id:'dino_girl',name:'恐竜ガール',cat:'quirky',src:'assets/avatar15.webp'},{id:'mushroom_girl',name:'きのこガール',cat:'quirky',src:'assets/avatar16.webp'},{id:'ghost_girl',name:'おばけガール',cat:'quirky',src:'assets/avatar18.webp'},{id:'robot_girl',name:'メカガール',cat:'quirky',src:'assets/avatar19.webp'},{id:'penguin_girl',name:'ペンギンガール',cat:'quirky',src:'assets/avatar21.webp'},{id:'panda_girl',name:'パンダガール',cat:'quirky',src:'assets/avatar23.webp'},{id:'street_boy',name:'やんちゃ少年',cat:'boy',src:'assets/avatar24.webp'},{id:'adventure_boy',name:'冒険少年',cat:'boy',src:'assets/avatar25.webp'},{id:'office_boy',name:'会社員くん',cat:'boy',src:'assets/avatar26.webp'},{id:'hamster',name:'ハムスター',cat:'animal',src:'assets/avatar28.webp'},{id:'penguin',name:'ペンギン',cat:'animal',src:'assets/avatar30.webp'},{id:'dino',name:'ちび恐竜',cat:'quirky',src:'assets/avatar31.webp'},{id:'panda_odd',name:'ブサカワパンダ',cat:'animal',src:'assets/avatar33.webp'},{id:'hamster_odd',name:'ぽっちゃりハム',cat:'animal',src:'assets/avatar34.webp'},{id:'alien_odd',name:'脱力宇宙人',cat:'quirky',src:'assets/avatar35.webp'}];
 const AVATARS=AVATAR_OPTIONS.map(v=>v.src);
 const TOKENS=['assets/token1.webp','assets/token2.webp','assets/token3.webp','assets/token4.webp'];
-const SPACE_ICONS={event:'assets/icon_new_event.webp',plus:'assets/icon_new_plus.webp',minus:'assets/icon_new_minus.webp',grow:'assets/icon_new_grow.webp',social:'assets/icon_new_social.webp',chance:'assets/icon_new_chance.webp',card:'assets/icon_new_card.webp',start:'assets/icon_new_start.webp',career:'assets/icon_new_career.webp',romance:'assets/icon_new_romance.webp',payday:'assets/icon_new_payday.webp',property:'assets/icon_new_property.webp',family:'assets/icon_new_family.webp',treasure:'assets/icon_new_treasure.webp',submap:'assets/icon_new_branch.webp',branch:'assets/icon_new_branch.webp',special:'assets/icon_new_chance.webp',bigluck:'assets/icon_new_bigluck.webp',bigbad:'assets/icon_new_bigbad.webp'};
+const SPACE_ICONS={event:'assets/icon_new_event.webp',plus:'assets/icon_new_plus.webp',minus:'assets/icon_new_minus.webp',grow:'assets/icon_new_grow.webp',social:'assets/icon_new_social.webp',chance:'assets/icon_new_chance.webp',gamble:'assets/icon_new_chance.webp',card:'assets/icon_new_card.webp',start:'assets/icon_new_start.webp',career:'assets/icon_new_career.webp',romance:'assets/icon_new_romance.webp',payday:'assets/icon_new_payday.webp',property:'assets/icon_new_property.webp',family:'assets/icon_new_family.webp',treasure:'assets/icon_new_treasure.webp',submap:'assets/icon_new_branch.webp',branch:'assets/icon_new_branch.webp',special:'assets/icon_new_chance.webp',bigluck:'assets/icon_new_bigluck.webp',bigbad:'assets/icon_new_bigbad.webp'};
 const STAGE_BACKGROUNDS={baby:'assets/map_baby.webp',elementary:'assets/map_elementary.webp',middle:'assets/map_middle.webp',high:'assets/map_high.webp',young:'assets/map_young.webp',mature:'assets/map_mature.webp',senior:'assets/map_senior.webp'};
 const STAGES=[
  {id:'baby',name:'幼少期',icon:'🍼'},{id:'elementary',name:'小学生',icon:'🎒'},{id:'middle',name:'中学生',icon:'📘'},{id:'high',name:'高校生',icon:'🏫'},
@@ -657,49 +657,71 @@ function v58PrimaryStat(e,def='knowledge'){
 }
 function v58SecondaryStat(primary){return ['knowledge','fitness','charm','communication'].find(k=>k!==primary)||'communication'}
 function v58AutoChoice(type,stageId,e,idx){
- const labels=V58_OPTION_LABELS[type][idx%V58_OPTION_LABELS[type].length],primary=v58PrimaryStat(e,type==='social'?'communication':'knowledge'),secondary=v58SecondaryStat(primary),base=V58_STAGE_CASH[stageId]||50000,id=`v58_${type}_${stageId}_${idx}`;
- const premise=/[。！？!?]$/.test(e.text)?e.text:`${e.text}。`;
+ const labels=V58_OPTION_LABELS[type][idx%V58_OPTION_LABELS[type].length],primary=v58PrimaryStat(e,type==='social'?'communication':'knowledge'),secondary=v58SecondaryStat(primary),base=V58_STAGE_CASH[stageId]||50000,id=`v60_${type}_${stageId}_${idx}`;
+ const premise=/[。！？!?]$/.test(e.text)?e.text:`${e.text}。`,sourceText=`choice:${e.text}`;
  if(type==='plus'){
-  const reward=Math.max(base,Math.max(0,e.cash||0));
-  return{id,sourceText:e.text,title:['うれしい余裕ができた','ごほうびをどう活かす？','好調な流れの使い道','思わぬプラスのあと','せっかくの幸運を活かす'][idx%5],text:`${premise} せっかくのプラスをどう活かそう？`,options:[
-   {label:labels[0],out:{text:'必要な分だけ使い、残りはしっかり手元に残した。',cash:Math.round(reward*.9),memory:2}},
-   {label:labels[1],out:{text:'得た余裕を次の挑戦へ回し、できることが一つ増えた。',cash:Math.round(reward*.45),stats:{[primary]:2},memory:3}},
-   {label:labels[2],out:{text:'嬉しい出来事を周囲と分かち合い、良い思い出まで増えた。',cash:Math.round(reward*.25),stats:{communication:1,[secondary]:1},memory:5}}
+  const hasCash=(e.cash||0)>0,reward=Math.max(base,Math.max(0,e.cash||0));
+  if(!hasCash)return{id,sourceText,title:['うれしい出来事のあと','この好調をどう伸ばす？','せっかくの成功を活かす','良い流れが来ている','次に何をする？'][idx%5],text:`${premise} この良い流れをどう活かそう？`,options:[
+   {label:labels[0],out:{text:'結果に満足しつつ、得意な部分をさらに伸ばした。',stats:{[primary]:2},memory:3}},
+   {label:labels[1],out:{text:'勢いのあるうちにもう一段難しいことへ挑戦した。',stats:{[primary]:3},memory:4}},
+   {label:labels[2],out:{text:'周囲と喜びを分かち合い、新しいつながりまで生まれた。',stats:{communication:2,[secondary]:1},memory:5}}
+  ]};
+  return{id,sourceText,title:['うれしい余裕ができた','ごほうびをどう活かす？','好調な流れの使い道','思わぬプラスのあと','せっかくの幸運を活かす'][idx%5],text:`${premise} せっかくのプラスをどう活かそう？`,options:[
+   {label:labels[0],out:{text:'大半を手元に残して、次の機会へ備えた。',cash:Math.round(reward*.9),memory:2}},
+   {label:labels[1],out:{text:'一部を自分への投資へ回し、能力も伸ばした。',cash:Math.round(reward*.4),stats:{[primary]:2},memory:3}},
+   {label:labels[2],out:{text:'周囲と楽しむことを選び、お金以上の思い出を残した。',cash:Math.round(reward*.2),stats:{communication:1,[secondary]:1},memory:5}}
   ]};
  }
  if(type==='minus'){
-  const loss=Math.max(base,Math.abs(Math.min(0,e.cash||0))||base),neg=Object.entries(e?.stats||{}).find(([,v])=>v<0)?.[0]||'fitness';
-  return{id,sourceText:e.text,title:['急なトラブルへの対応','困った出来事が起きた','予定外の出費をどうする？','その場で判断が必要になった','被害をどう抑える？'][idx%5],text:`${premise} どの対応を選んでも少し痛手は出そうだ。`,options:[
-   {label:labels[0],out:{text:'急ぎの手配で悪化は防げたが、まとまった費用が出ていった。',cash:-Math.round(loss*1.0)}},
-   {label:labels[1],out:{text:'出費は少し抑えられたものの、手間と疲れが残った。',cash:-Math.round(loss*.7),stats:{[neg]:-1}}},
-   {label:labels[2],out:{text:'周囲の助けで何とか収まったが、予定外の負担は避けられなかった。',cash:-Math.round(loss*.5),stats:{communication:-1}}}
+  const hasCash=(e.cash||0)<0,neg=Object.entries(e?.stats||{}).find(([,v])=>v<0)?.[0]||'fitness';
+  if(!hasCash)return{id,sourceText,title:['調子を崩した日の立て直し','気まずい出来事のあと','失敗をどう受け止める？','少しつまずいてしまった','ここから立て直そう'][idx%5],text:`${premise} お金では解決しない。どう立て直す？`,options:[
+   {label:labels[0],out:{text:'無理に取り返そうとせず、一度落ち着いて受け止めた。',stats:{[neg]:-1},memory:1}},
+   {label:labels[1],out:{text:'少し無理をしてでも早く立て直そうと動いた。',stats:{[neg]:-1,fitness:-1},memory:2}},
+   {label:labels[2],out:{text:'周囲へ事情を話し、助けてもらいながら整理した。',stats:{[neg]:-1,communication:1},memory:2}}
+  ]};
+  const loss=Math.max(base,Math.abs(e.cash||0));
+  return{id,sourceText,title:['急なトラブルへの対応','困った出来事が起きた','予定外の出費をどうする？','その場で判断が必要になった','被害をどう抑える？'][idx%5],text:`${premise} どの対応を選んでも少し痛手は出そうだ。`,options:[
+   {label:labels[0],out:{text:'費用はかかったが、すぐ対処して被害を広げずに済んだ。',cash:-Math.round(loss*1.0)}},
+   {label:labels[1],out:{text:'安い方法を探して出費を抑えたが、そのぶん手間がかかった。',cash:-Math.round(loss*.65),stats:{knowledge:1},memory:1}},
+   {label:labels[2],out:{text:'周囲にも頼りながら最低限の負担で収めた。',cash:-Math.round(loss*.45),stats:{communication:1},memory:1}}
   ]};
  }
  if(type==='grow'){
   const cost=Math.min(0,e.cash||0),smallCost=Math.round(cost*.6);
-  return{id,sourceText:e.text,title:['伸ばし方を決める','もう一段成長するには？','練習方法を選ぶ','次の目標を決める','上達のための一工夫'][idx%5],text:`${premise} ここから、どんな取り組み方をする？`,options:[
-   {label:labels[0],out:{text:'基本を繰り返した成果が出て、以前より安定してできるようになった。',cash:smallCost,stats:{[primary]:2},memory:2}},
-   {label:labels[1],out:{text:'少し背伸びした課題に挑み、失敗も含めて大きな経験になった。',cash:cost,stats:{[primary]:3},memory:3}},
-   {label:labels[2],out:{text:'人に見てもらったことで改善点が分かり、取り組み方がぐっと具体的になった。',cash:smallCost,stats:{[primary]:1,communication:1},memory:4}}
+  return{id,sourceText,title:['伸ばし方を決める','もう一段成長するには？','練習方法を選ぶ','次の目標を決める','上達のための一工夫'][idx%5],text:`${premise} ここから、どんな取り組み方をする？`,options:[
+   {label:labels[0],out:{text:'基本を繰り返した成果が出て、以前より安定してできるようになった。',...(smallCost?{cash:smallCost}:{}),stats:{[primary]:2},memory:2}},
+   {label:labels[1],out:{text:'少し背伸びした課題に挑み、失敗も含めて大きな経験になった。',...(cost?{cash:cost}:{}),stats:{[primary]:3},memory:3}},
+   {label:labels[2],out:{text:'人に見てもらったことで改善点が分かり、取り組み方がぐっと具体的になった。',...(smallCost?{cash:smallCost}:{}),stats:{[primary]:1,communication:1},memory:4}}
   ]};
  }
  const socialCost=Math.min(0,e.cash||0);
- return{id,sourceText:e.text,title:['人との関わり方を選ぶ','この時間をどう過ごす？','せっかくの交流の機会','一緒に何をする？','話の輪が広がりそうだ'][idx%5],text:`${premise} この機会をどう過ごそう？`,options:[
-  {label:labels[0],out:{text:'自分から動いたことで会話が自然に続き、距離が少し縮まった。',cash:Math.round(socialCost*.6),stats:{communication:2},memory:4}},
-  {label:labels[1],out:{text:'相手の話を丁寧に聞くうち、今まで知らなかった一面まで知ることができた。',cash:Math.round(socialCost*.4),stats:{communication:2,knowledge:1},memory:4}},
-  {label:labels[2],out:{text:'人数が増えてにぎやかな時間になり、新しいつながりもできた。',cash:socialCost,stats:{communication:2,charm:1},memory:5}}
+ return{id,sourceText,title:['人との関わり方を選ぶ','この時間をどう過ごす？','せっかくの交流の機会','一緒に何をする？','話の輪が広がりそうだ'][idx%5],text:`${premise} この機会をどう過ごそう？`,options:[
+  {label:labels[0],out:{text:'自分から動いたことで会話が自然に続き、距離が少し縮まった。',...(socialCost?{cash:Math.round(socialCost*.6)}:{}),stats:{communication:2},memory:4}},
+  {label:labels[1],out:{text:'相手の話を丁寧に聞くうち、今まで知らなかった一面まで知ることができた。',...(socialCost?{cash:Math.round(socialCost*.4)}:{}),stats:{communication:2,knowledge:1},memory:4}},
+  {label:labels[2],out:{text:'人数が増えてにぎやかな時間になり、新しいつながりもできた。',...(socialCost?{cash:socialCost}:{}),stats:{communication:2,charm:1},memory:5}}
  ]};
 }
+
+// v0.60: additional era-specific events. Money only moves when the story calls for it.
+const V60_EXTRA_NORMAL_RAW={"baby":{"plus":[["町の読み聞かせ会でお気に入りの絵本を最後まで聞き、帰りに小さなシール帳をもらった",0,{"knowledge":2},3],["初めてのおつかいごっこで上手にでき、家族みんなから大げさなくらい褒められた",0,{"charm":1,"communication":2},3]],"minus":[["楽しみにしていた公園の日に大雨が降り、一日中ふてくされてしまった",0,{"charm":-1},1],["夜ふかしして翌朝ずっと眠く、せっかくのお出かけでも元気が出なかった",0,{"fitness":-1},1]],"grow":[["家族と毎日少しずつひらがなカードで遊び、読める文字が一気に増えた",0,{"knowledge":3},3],["公園の低い遊具に何度も挑戦し、一人で最後まで渡り切れるようになった",0,{"fitness":3},3]],"social":[["近所の子と毎朝あいさつするうち、顔を見るだけで一緒に遊ぶ仲になった",0,{"communication":3},4],["親戚の集まりで覚えたばかりの歌を披露し、拍手喝采で何度もアンコールされた",0,{"charm":2,"communication":1},4]]},"elementary":{"plus":[["校内の読書スタンプを全部集め、先生から特製しおりと表彰カードをもらった",0,{"knowledge":2},3],["給食の献立アイデア募集で自分の案が採用され、全校放送で名前を呼ばれた",0,{"charm":2,"communication":1},4]],"minus":[["発表の順番を勘違いして準備不足のまま前に出てしまい、頭が真っ白になった",0,{"charm":-1},2],["友達との言い合いで意地を張りすぎ、仲直りまで数日かかってしまった",0,{"communication":-1},2]],"grow":[["毎朝10分だけ計算ドリルを続け、苦手だった割り算が急に得意になった",0,{"knowledge":3},3],["放課後に鉄棒の練習を続け、ついに逆上がりを連続で成功させた",0,{"fitness":3},4]],"social":[["転校してきた子へ校内を案内し、そのまま休み時間も一緒に遊ぶようになった",0,{"communication":3},4],["クラスで困っている子の係を自然に手伝い、先生にも友達にも感謝された",0,{"communication":2,"charm":1},4]]},"middle":{"plus":[["文化祭のポスターが来場者投票で一位になり、クラス全員で大騒ぎした",0,{"charm":3},5],["苦手科目の小テストで初めて満点を取り、先生から答案を見本として紹介された",0,{"knowledge":3},4]],"minus":[["部活のレギュラー争いに負け、しばらく練習へ行く気が起きなかった",0,{"fitness":-1,"charm":-1},2],["グループチャットで言葉足らずの返信をしてしまい、ちょっとした誤解が広がった",0,{"communication":-1},2]],"grow":[["放課後の補習へ真面目に通い、苦手だった英語の長文が読めるようになってきた",0,{"knowledge":3},3],["部活で基礎メニューを一か月続け、以前より最後まで動けるようになった",0,{"fitness":3},4]],"social":[["クラス替えで離れた友達とも毎週昼休みに集まり、関係が途切れず続いた",0,{"communication":3},5],["後輩から悩み相談を受け、放課後の教室で一時間じっくり話を聞いた",0,{"communication":2,"knowledge":1},4]]},"high":{"plus":[["推薦候補の校内選考に通り、担任から「ここからが本番だ」と背中を押された",0,{"knowledge":2,"charm":1},5],["文化祭ライブで予想以上に盛り上がり、終了後に知らない生徒からまで声をかけられた",0,{"charm":3,"communication":1},6]],"minus":[["模試で得意科目まで大きく崩れ、志望校判定が一段落ちてしまった",0,{"knowledge":-1},2],["友人関係の板挟みになり、どちらにも気を遣ってしばらく疲れ切ってしまった",0,{"communication":-1,"fitness":-1},2]],"grow":[["毎日一時間だけ受験勉強の時間を固定し、数か月後には模試の偏差値が大きく伸びた",0,{"knowledge":4},4],["体育祭へ向けて朝練を続け、短距離走のタイムを自己ベストまで縮めた",0,{"fitness":3},4]],"social":[["進路が違う友達とも卒業後に会う約束をし、連絡先を改めて交換した",0,{"communication":3},5],["文化祭準備で普段話さないクラスメイトと組み、意外な共通趣味で一気に仲良くなった",0,{"communication":3,"charm":1},5]]},"young":{"plus":[["社内の改善提案が採用され、全社共有の場で名前を挙げて評価された",0,{"knowledge":2,"charm":1},4],["休日に作った小さなアプリがSNSで話題になり、広告収入がまとまって入った",180000,{},4],["取引先への丁寧な対応が評価され、次の大きな案件も指名で任された",0,{"communication":3},4],["昔応募した懸賞の特賞が忘れた頃に届き、旅行券を現金化した",120000,{},4],["資格試験で上位成績を取り、社内でも専門分野を任される機会が増えた",0,{"knowledge":3},4],["副業で作った作品がまとめ買いされ、月収を超える売上になった",260000,{"charm":1},5],["趣味の大会で地区優勝し、賞金よりも周囲からの祝福がうれしかった",60000,{"fitness":2,"communication":1},6],["仕事の繁忙期をチーム全員で乗り切り、特別休暇をまとめて取れた",0,{"fitness":2,"communication":2},5],["古い保険契約の精算で返戻金が入り、口座残高が思った以上に増えた",220000,{},3],["行きつけの店で知り合った人から趣味仲間を紹介され、新しいコミュニティが広がった",0,{"communication":3,"charm":1},5]],"minus":[["大事なプレゼンで資料の数字を一か所間違え、信用回復のため何度も説明に回った",0,{"communication":-1,"knowledge":-1},2],["寝不足のまま働き続けて体調を崩し、週末を丸ごと寝て過ごした",0,{"fitness":-2},1],["勢いで買った高級家電がほとんど使わず、数か月後に安く手放した",-140000,{},2],["友人との旅行予約を勘違いし、変更手数料と追加宿泊費がまとめて発生した",-110000,{},2],["仕事の締切を抱え込みすぎて周囲への連絡が遅れ、チームの空気が少し悪くなった",0,{"communication":-2},2],["駐車場で車をこすってしまい、保険を使わず修理したため痛い出費になった",-180000,{},1],["投資先の決算悪化で含み損が膨らみ、迷った末に損切りした",-240000,{"knowledge":-1},2],["スマホと財布を同時に落とし、再発行や買い直しで一日中走り回った",-90000,{"fitness":-1},2],["職場の人間関係の仲裁に入り、どちらからも不満をぶつけられて疲れ切った",0,{"communication":-1,"fitness":-1},2],["更新を忘れていたサービスが年払いで自動継続され、まとめて請求が来た",-80000,{},1]],"grow":[["仕事で使う専門知識を学び直し、社内で質問されても即答できる範囲が広がった",0,{"knowledge":4},4],["三か月の筋トレを習慣化し、階段を上っても息切れしなくなった",0,{"fitness":4},4],["人前で話す練習会へ参加し、緊張しても最後まで話し切れるようになった",-20000,{"charm":3,"communication":1},4],["料理を一から覚え直し、平日の夕食をほぼ自炊で回せるようになった",-30000,{"knowledge":2,"charm":2},5],["朝の30分を読書に固定し、一年でかなりの冊数を読み切った",0,{"knowledge":3},4],["週末のランニングを続け、初めてハーフマラソンを完走した",-15000,{"fitness":4},6],["仕事のために動画編集を覚え、簡単なPR映像なら一人で作れるようになった",-60000,{"knowledge":2,"charm":2},5],["異業種交流会で発表役を引き受け、知らない人へ話しかける抵抗がかなり減った",-10000,{"communication":3,"charm":1},5],["毎月の家計を記録する習慣をつけ、無駄な固定費を自分で見つけられるようになった",0,{"knowledge":3},3],["休日にDIYへ挑戦し、棚や机を自分で直せる程度まで工具の扱いに慣れた",-40000,{"knowledge":2,"fitness":2},5]],"social":[["学生時代の友人と月一回だけ集まる習慣ができ、仕事の愚痴から将来の話まで続く関係になった",0,{"communication":3},6],["同僚の引っ越しを一日手伝い、その後ずっと家族ぐるみで付き合う仲になった",0,{"fitness":1,"communication":3},5],["趣味のオンラインコミュニティでオフ会を企画し、初対面同士をうまくまとめた",-20000,{"communication":3,"charm":1},6],["昔の恩師へ久しぶりに連絡し、近況報告だけのつもりが二時間話し込んだ",0,{"communication":2},5],["近所のイベントへ顔を出すうち、道で挨拶する知り合いが一気に増えた",-5000,{"communication":3},5],["友人の結婚式で受付を任され、知らない人とも自然に話せるようになった",-30000,{"communication":2,"charm":2},6],["職場の後輩の相談に乗り、数か月後に「あの時助かった」と改めて礼を言われた",0,{"communication":3},5],["旅行先の相席で意気投合した人と連絡先を交換し、その後も交流が続いた",-40000,{"communication":2,"charm":1},6],["友人同士の誕生日会を企画し、店選びから連絡まで全部まとめて成功させた",-25000,{"communication":3,"charm":1},6],["仕事つながりの知人から別業界の友人を紹介され、視野がかなり広がった",0,{"communication":2,"knowledge":1},5]]},"mature":{"plus":[["長年担当した顧客から感謝状を受け、社内でも改めて実績を評価された",0,{"communication":3,"charm":1},5],["昔買って忘れていた限定品がプレミア化し、専門店で高値がついた",320000,{},4],["子どもや親戚から旅行をプレゼントされ、費用を気にせず久しぶりに遠出できた",0,{"communication":2},8],["社内の大型改善プロジェクトが成功し、まとまった特別賞与が入った",420000,{"knowledge":1},5],["健康診断の結果が前年より大きく改善し、医師からこの調子でと褒められた",0,{"fitness":3},4],["昔から続けていた趣味の作品が雑誌で特集され、依頼が一気に増えた",180000,{"charm":2},6],["保有していた小さな土地が再開発対象になり、予想以上の価格で売却できた",600000,{},5],["部下が大きく成長してチーム表彰につながり、自分まで誇らしい気持ちになった",0,{"communication":3},6],["住宅ローンの借り換えがうまくいき、まとまった返金と今後の支払い減につながった",260000,{"knowledge":1},4],["地域活動で長年の貢献を表彰され、知り合いから次々と祝福された",80000,{"communication":2,"charm":1},7]],"minus":[["重要な会議で判断を急ぎすぎ、後から条件を見直す大きな手戻りが出た",0,{"knowledge":-1,"communication":-1},2],["無理な働き方が続いて体力が落ち、休日に何もする気が起きない日が増えた",0,{"fitness":-2},2],["自宅のエアコンと冷蔵庫が同じ月に壊れ、まとめて買い替える羽目になった",-320000,{},2],["親族の急な用事で遠方を何度も往復し、交通費と宿泊費が大きく膨らんだ",-240000,{"fitness":-1},3],["昔の友人との金銭トラブルが再燃し、関係までぎくしゃくしてしまった",-100000,{"communication":-1},2],["車検で予想外の故障が次々見つかり、見積額を見て言葉を失った",-360000,{},1],["投資先企業の不祥事で株価が急落し、長く持っていた分を大きく損切りした",-520000,{},2],["腰を痛めてしばらく運動できず、回復まで想像以上に時間がかかった",0,{"fitness":-2},2],["仕事で部下との認識違いが続き、チームの立て直しにかなり苦労した",0,{"communication":-2},3],["住宅設備の水漏れが床まで広がり、修繕と清掃で大きな請求が来た",-450000,{},2]],"grow":[["若手向け研修の講師を引き受け、教えるために自分の知識を一から整理し直した",0,{"knowledge":3,"communication":1},5],["毎朝のストレッチと散歩を一年続け、以前より体が軽く感じられるようになった",0,{"fitness":4},5],["長年避けていた英会話へ挑戦し、旅行先なら困らない程度まで話せるようになった",-80000,{"knowledge":3,"communication":1},6],["写真講座へ通い直し、構図や光を意識して撮れるようになった",-60000,{"charm":3},5],["家計と資産を整理するため金融知識を学び、契約内容を自分で比較できるようになった",0,{"knowledge":4},4],["市民大会へ向けて半年練習し、年齢別部門で自己ベストを出した",-30000,{"fitness":4},6],["地域の司会を何度か頼まれ、人前で話すことにほとんど緊張しなくなった",0,{"charm":2,"communication":2},6],["昔の趣味を基礎からやり直し、若い頃より丁寧な作品を作れるようになった",-50000,{"charm":3,"knowledge":1},6],["パソコンの新しいツールを覚え、面倒だった作業をかなり自動化できるようになった",-40000,{"knowledge":4},4],["ボランティアで新人をまとめる役を続け、世代の違う人とも話しやすくなった",0,{"communication":4},6]],"social":[["昔の同僚と定例の昼食会を始め、仕事を離れても相談し合える関係が続いた",-15000,{"communication":3},7],["近所の自治会イベントを手伝い、顔と名前が一致する知り合いが一気に増えた",0,{"communication":3},6],["子どもの昔の友達家族と再会し、十年以上ぶりに家族ぐるみで食事した",-50000,{"communication":2},8],["職場の若手から人生相談を受け、帰りの喫茶店で長く話を聞いた",-3000,{"communication":3,"knowledge":1},6],["趣味の集まりで幹事を引き受け、年代の違うメンバーをうまくまとめた",-20000,{"communication":3,"charm":1},7],["昔の親友と旅行へ出かけ、学生時代と同じようにくだらない話で笑い続けた",-120000,{"communication":2},10],["地域の子どもへ仕事の話をする機会があり、質問攻めにされながら楽しく答えた",0,{"communication":3,"charm":1},7],["兄弟姉妹や親戚が久しぶりに集まり、昔の写真を見ながら夜まで話し込んだ",-40000,{"communication":2},9],["オンラインで昔の仲間と定期通話を始め、遠方でも交流が続くようになった",0,{"communication":3},6],["仕事関係の知人を趣味仲間へ紹介したら意気投合し、自分を中心に新しい輪ができた",0,{"communication":3,"charm":1},7]]},"senior":{"plus":[["昔書いた文章が地域誌で再掲載され、思いがけず多くの人から感想が届いた",0,{"charm":2,"communication":1},8],["家族が企画したサプライズ旅行へ招かれ、財布をほとんど開かずに贅沢な時間を過ごした",0,{"communication":2},10]],"minus":[["昔の友人との約束の日を完全に勘違いし、後から何度も謝ることになった",0,{"communication":-1},2],["張り切って庭仕事をしすぎて翌日動けなくなり、数日ゆっくり休むことになった",0,{"fitness":-1},2]],"grow":[["毎週の囲碁教室で若い参加者とも対局し、読みの幅が少しずつ広がった",0,{"knowledge":3},6],["朝のラジオ体操へ欠かさず参加し、近所の坂道も以前より楽に歩けるようになった",0,{"fitness":3},6]],"social":[["昔の同級生へ一人ずつ電話をかけ、小さな同窓会を自分で企画した",-20000,{"communication":3},9],["近所の子どもに昔の遊びを教えているうち、毎週遊びに来るようになった",0,{"communication":3,"charm":1},8]]}};
+const V60_EXTRA_NORMAL={};for(const st in V60_EXTRA_NORMAL_RAW){V60_EXTRA_NORMAL[st]={};for(const type in V60_EXTRA_NORMAL_RAW[st])V60_EXTRA_NORMAL[st][type]=V60_EXTRA_NORMAL_RAW[st][type].map(x=>({text:x[0],cash:x[1],stats:x[2],memory:x[3]}));}
+
 (function rebalanceV58SpaceEvents(){
  const types=['plus','minus','grow','social'],stages=['baby','elementary','middle','high','young','mature','senior'];
  for(const type of types)for(const stageId of stages){
-  const adult=stageId==='young'||stageId==='mature',normalTarget=adult?10:5,choiceTarget=adult?10:5;
+  const adult=stageId==='young'||stageId==='mature',normalTarget=adult?20:10,choiceTarget=adult?20:10;
   const source=[...(SPACE_EVENTS[type]?.[stageId]||[])];
   if(adult)source.push(...(V58_ADULT_EXTRA_NORMAL[type]?.[stageId]||[]));
+  source.push(...(V60_EXTRA_NORMAL[stageId]?.[type]||[]));
+  // Existing raw pools contain 8 events in the other eras and 10 in adult eras;
+  // v0.60 fills them to 10 / 20 without forcing a money change into every story.
   SPACE_EVENTS[type][stageId]=source.slice(0,normalTarget);
   const choices=[...(SPACE_CHOICE_EVENTS[type]?.[stageId]||[])];
-  const need=Math.max(0,choiceTarget-choices.length),autoSource=adult?source.slice(0,need):source.slice(normalTarget,normalTarget+need);
-  for(let i=0;i<need;i++)choices.push(v58AutoChoice(type,stageId,autoSource[i]||source[i%source.length],choices.length+i));
+  let cursor=0;
+  while(choices.length<choiceTarget){
+   const src=source[(cursor*3+choices.length)%source.length]||source[cursor%source.length];
+   choices.push(v58AutoChoice(type,stageId,src,choices.length));cursor++;
+  }
   SPACE_CHOICE_EVENTS[type][stageId]=choices.slice(0,choiceTarget);
  }
 })();
@@ -725,7 +747,7 @@ const MILESTONES={baby:'幼少期が始まった',elementary:'小学校生活が
 
 const STAGE_FLAVOR={baby:'家族に見守られながら、はじめての世界へ。',elementary:'遊びも勉強も、毎日が新発見。',middle:'得意なことや人間関係が少しずつ形になる。',high:'進路を考えながら、自分らしさを伸ばす。',young:'仕事・恋愛・資産形成。選択肢が一気に広がる。',mature:'仕事も家庭も人生の大きな節目へ。',senior:'積み重ねた人生を楽しみ、最後の総決算へ。'};
 const STAGE_THEME={baby:['#e7f2e5','#fff0d5'],elementary:['#e1f1dc','#fff1bd'],middle:['#dce8f5','#eadff4'],high:['#e8e3f7','#f8dfdc'],young:['#dcefe8','#dce7f6'],mature:['#e0e8ee','#f0decf'],senior:['#f2e6d7','#f1dcae']};
-const SPACE_META={start:['🏁','スタート'],event:['📜','出来事'],plus:['🍀','プラス'],minus:['💥','マイナス'],grow:['📖','成長'],social:['💌','交流'],chance:['🌟','チャンス'],payday:['💰','収入'],card:['🃏','カード'],treasure:['💎','お宝'],submap:['↪️','寄り道'],branch:['↗️','分岐点'],romance:['💗','恋愛'],property:['🔑','物件'],career:['💼','仕事'],family:['🏠','家族'],bigluck:['🌈','大ラッキー'],bigbad:['⛈️','大不幸']};
+const SPACE_META={start:['🏁','スタート'],event:['📜','出来事'],plus:['🍀','プラス'],minus:['💥','マイナス'],grow:['📖','成長'],social:['💌','交流'],chance:['🌟','チャンス'],gamble:['🎰','大勝負'],payday:['💰','収入'],card:['🃏','カード'],treasure:['💎','お宝'],submap:['↪️','寄り道'],branch:['↗️','分岐点'],romance:['💗','恋愛'],property:['🔑','物件'],career:['💼','仕事'],family:['🏠','家族'],bigluck:['🌈','大ラッキー'],bigbad:['⛈️','大不幸']};
 let peer=null,hostConn=null,isHost=false,roomCode='',localPlayerId='',state=null,cpuTimer=null,hostTimers=[];const connections=new Map();
 let bgmOn=localStorage.getItem('lifeRoadBgmOn')!=='0',sfxOn=localStorage.getItem('lifeRoadSfxOn')!=='0',audioCtx=null,bgmTimer=null,bgmStep=0,bgmStage=-1,bgmThemeKey='',lastFx={roulette:null,move:'',stage:null,message:''},rollVisualTimer=null,mobileBoardFocusTimer=null,boardRollPopTimer=null;
 let typewriterTimer=null,typewriterKey='',typewriterFullText='',typewriterDone=true,typewriterPos=0,messageSceneKey='',landingPopKey='';
@@ -951,7 +973,7 @@ function routePoints(stageId,count=42){
  const a=ROUTE_ANCHORS[stageId]||ROUTE_ANCHORS.young;if(a.length===count)return a;
  const out=[];for(let i=0;i<count;i++){const t=i*(a.length-1)/(count-1),j=Math.floor(t),f=t-j,p=a[j],q=a[Math.min(a.length-1,j+1)];out.push([p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f])}return out
 }
-function spacePalette(type){return({start:'#e3ad2f',plus:'#2387e8',minus:'#e33d48',grow:'#43a862',social:'#d96aaf',event:'#ed893c',chance:'#9565dd',card:'#6671cc',payday:'#dba321',career:'#8a5b41',romance:'#e86d9b',property:'#41a8b5',treasure:'#d1a119',submap:'#e2822d',branch:'#f08b24',family:'#df865b',bigluck:'#f2b300',bigbad:'#9b2548'}[type]||'#7aa9df')}
+function spacePalette(type){return({start:'#e3ad2f',plus:'#2387e8',minus:'#e33d48',grow:'#43a862',social:'#d96aaf',event:'#ed893c',chance:'#9565dd',gamble:'#b24a88',card:'#6671cc',payday:'#dba321',career:'#8a5b41',romance:'#e86d9b',property:'#41a8b5',treasure:'#d1a119',submap:'#e2822d',branch:'#f08b24',family:'#df865b',bigluck:'#f2b300',bigbad:'#9b2548'}[type]||'#7aa9df')}
 // Each era has one meaningful fork. The normal route keeps a big-luck square in reach,
 // but a big-bad square waits just before the merge. The shortcut skips the whole 6-square segment.
 const BRANCH_CONFIG={
@@ -986,6 +1008,7 @@ function buildStageBoard(si,size){
   if(i>0&&i%23===0)type='submap';
   if(si>=1&&i>0&&i%29===0)type='treasure';
   if(si>=4&&i>0&&i%14===0)type='payday';
+  if(si===6&&[9,18,29,36].includes(i))type='gamble';
   const bigPos=BIG_SPACE_POSITIONS[si]||BIG_SPACE_POSITIONS[4];
   if(bigPos.luck.includes(i))type='bigluck';
   else if(bigPos.bad.includes(i))type='bigbad';
@@ -1175,6 +1198,7 @@ function spaceDescription(type){
   grow:'知力・体力・魅力・交流など、能力が伸びる出来事が起こりやすいマスです。',
   social:'他のプレイヤーとの交流や、人付き合いに関する出来事が起こりやすいマスです。',
   chance:'何が起こるか分からない特別なマス。大きな幸運や珍しい出来事が起こることがあります。',
+  gamble:'円熟期限定の大勝負マス。小さく遊ぶか、大きく張るか、一発逆転を狙うかを選び、最後は運で結果が決まります。',
   payday:'通過すると給料・家族収入・物件収入を受け取り、仕事経験と昇格チャンスも得られます。止まる必要はありません。',
   card:'役立つカードを1枚手に入れます。カード枠がいっぱいの場合は入手できません。',
   treasure:'価値の分からないお宝を買うかどうか選べます。最終的な価値はあとで分かります。',
@@ -1536,6 +1560,7 @@ function resolveLandingEffect(p,wraps=0,sOverride=null){state.busy=false;const s
   finish([...eventStoryLines(p,e,sid,amt),...(detail.length?[{text:detail.join('　'),tone}]:[]),...interactions],speaker);
   maybeAwardEventCard(p,category,spaceType,state.message?.lines||[]);
   return}
+ if(s.type==='gamble'){setMessage(p.id,'大勝負マス',[...lines,{text:'勝負の場が開いている。張り方を選び、あとは運に任せる。'}],{type:'openChoice',choice:'bigGamble',playerId:p.id,returnTo:'completeTurn'});broadcast();return}
  if(s.type==='chance'){resolveChance(p,lines);return}
  if(s.type==='payday'){finish([{text:'収入マスに到着。定期収入は通過時に受け取ります。'}],'収入マス');return}
  if(s.type==='card'){if(p.cards.length>=5)finish([{text:'カード枠がいっぱいで、新しいカードを持てなかった。'}],'カード');else{const c=pick(CARDS);p.cards.push(c.id);{const cv=cardDisplay(c);finish([{text:`「${cv.name}」を手に入れた！`,tone:'good'},{text:cv.desc}],'カード')}}return}
@@ -1628,11 +1653,13 @@ function majorFinanceStory(p,kind){
 }
 function shouldTriggerMajorFinance(spaceType){if(state.stageIndex<4)return false;if(!['event','plus','minus'].includes(spaceType))return false;return Math.random()<(state.stageIndex>=6 ? .22 : state.stageIndex>=5 ? .18 : .14)}
 function createBigGambleChoice(p,returnTo){
- state.pendingChoice={playerId:p.id,type:'bigGamble',returnTo,title:'一発逆転の大勝負',text:'大きく状況を変えられる話が舞い込んだ。乗るか、見送るか。',options:[
-  {label:'大勝負に出る',value:'go',desc:'成功すれば大きい。失敗すれば借金もあり得る。',tags:{risk:3,asset:1}},
-  {label:'小さく挑戦する',value:'small',desc:'リスクとリターンを抑えて参加する。',tags:{risk:1.5,asset:1}},
+ const options=[
+  {label:'小さく挑戦する',value:'small',desc:'勝ちやすいが配当も控えめ。',tags:{risk:1.4,asset:1}},
+  {label:'大勝負に出る',value:'go',desc:'成功すれば大金、失敗すれば借金もあり得る。',tags:{risk:3,asset:1}},
+  ...(state.stageIndex>=6?[{label:'一発逆転に全部賭ける',value:'allin',desc:'勝率は低い。成功すれば数百万円級、失敗も最大級。',tags:{risk:5,asset:.5}}]:[]),
   {label:'見送る',value:'skip',desc:'今の資産を守る。',tags:{asset:1.2}}
- ]};
+ ];
+ state.pendingChoice={playerId:p.id,type:'bigGamble',returnTo,title:state.stageIndex>=6?'老後の大勝負':'一発逆転の大勝負',text:state.stageIndex>=6?'ここからでも順位はひっくり返せる。どこまで張る？':'大きく状況を変えられる話が舞い込んだ。乗るか、見送るか。',options};
 }
 function resolveChance(p,prefix=[]){if(state.stageIndex>=4&&Math.random()<.52){setMessage(p.id,'チャンスマス',[...prefix,{text:'後半戦らしい、大きな勝負の話が舞い込んだ。'}],{type:'openChoice',choice:'bigGamble',playerId:p.id,returnTo:'completeTurn'});broadcast();return}const n=rnd(6),a=[...prefix,{text:'何が起こるか分からない、特別な流れがやってきた。'}];if(n===0){const g=100000+rnd(180000);p.cash+=g;a.push({text:isToga()?`妙に羽振りのいい研究アンケートの謝礼が届いた。 +${money(g)}`:`臨時ボーナス！ +${money(g)}`,tone:'good'})}else if(n===1){applyStats(p,{knowledge:2,communication:2});a.push({text:isToga()?'深夜の電波越しに妙に話の合う相手と長話をした。知力+2・交流+2':'良い出会いから大きく成長。知力+2・交流+2',tone:'good'})}else if(n===2){const t=pick(TREASURES);p.treasures.push({id:t.id,appraised:0});a.push({text:isToga()?`フリーマーケットの隅で妙に気になる「${t.name}」を手に入れた！`:`お宝「${t.name}」を手に入れた！`,tone:'good'})}else if(n===3||n===4){if(p.cards.length<5){const c=pick(CARDS),cv=cardDisplay(c);p.cards.push(c.id);a.push({text:`「${cv.name}」を手に入れた！`,tone:'good'})}else a.push({text:'カード枠がいっぱいだった。'})}else{p.memory+=8;a.push({text:isToga()?'記憶に残りすぎる体験。思い出+8（詳細は語らない）':'忘れられない体験！ 思い出+8',tone:'good'})}if(Math.random()<.26)a.push(...maybePlayerInteraction(p));messageResult(p.id,'チャンス！',a)}
 function resolveFamily(p,prefix=[]){ensureFamilyData(p);const a=[...prefix,{text:isToga()?'家族にまつわる普通の時間。たまに変な話題が混ざるくらいだ。':'家族にまつわる時間は、資産では測れない大きな影響を残していく。'}];if(p.married&&Math.random()<.55&&totalChildrenCount()<15){const c=makeChildProfile(p);p.childProfiles.push(c);p.children=p.childProfiles.length;p.cash-=80000;p.memory+=10;a.push({text:`${p.partner?.name||'パートナー'}との間に ${c.name} が誕生！ 子ども${p.children}人 / -${money(80000)} / 思い出+10`,tone:'good'})}else if(childCount(p)){const g=childCount(p)*(30000+rnd(30000));p.cash+=g;p.memory+=4;a.push({text:`家族から嬉しい知らせ。 +${money(g)} / 思い出+4`,tone:'good'});if(totalChildrenCount()>=15)a.push({text:'家族みんなで穏やかな時間を過ごした。'})}else{p.memory+=5;a.push({text:'穏やかな休日を満喫。思い出+5',tone:'good'})}if(Math.random()<.2)a.push(...maybePlayerInteraction(p));messageResult(p.id,'家族イベント',a)}
@@ -1656,11 +1683,22 @@ function applyChoice(p,c,o){const lines=[];
  if(c.type==='cardJealousy'){const target=state.players.find(x=>x.id===o.value);if(!target){lines.push({text:'対象を選べなかった。'});return lines}const stat=pick(['knowledge','fitness','charm']),take=Math.min(2,target.stats[stat]||0);applyStats(target,{[stat]:-take});applyStats(p,{[stat]:take,communication:-1});lines.push({text:`${paramLabel(stat)}を${take}奪うことに成功した。`,tone:'good'},{text:`${p.name}：${paramLabel(stat)}+${take} / 交流-1　${target.name}：${paramLabel(stat)}-${take}`,tone:'normal'});return lines}
  if(c.type==='event3')return applyHiddenEventChoice(p,o,c);
  if(c.type==='bigGamble'){
-  if(o.value==='skip'){p.memory+=1;lines.push({text:'大きな損得は発生せず、資産を守った。思い出+1'});return lines}
-  const sc=financeScale(),big=o.value==='go',roll=1+rnd(10),successMax=big?5:7,ok=roll<=successMax;
-  lines.push({text:`勝負のルーレットは「${roll}」！`,tone:ok?'good':'bad'});
-  if(ok){const gain=big?(sc.winMin+rnd(sc.winRange)):sc.smallWin+rnd(Math.max(50001,Math.floor(sc.winRange*.22)));p.cash+=gain;p.memory+=big?8:4;lines.push({text:big?`一気に +${money(gain)} / 思い出+8`:`+${money(gain)} / 思い出+4`,tone:'good'});}
-  else{const loss=big?(sc.lossMin+rnd(sc.lossRange)):sc.smallLoss+rnd(Math.max(40001,Math.floor(sc.lossRange*.18)));const actual=cashChange(p,-loss);p.memory+=big?6:3;lines.push({text:big?`${money(actual)} / 思い出+6`:`${money(actual)} / 思い出+3`,tone:'bad'});const d=debtLine(p);if(d)lines.push(d);}
+  if(o.value==='skip'){p.memory+=1;lines.push({text:'今回は見送った。大きな損得は発生せず、資産を守った。思い出+1'});return lines}
+  const sc=financeScale(),allin=o.value==='allin',big=o.value==='go'||allin,roll=1+rnd(10),successMax=allin?3:(big?5:7),ok=roll<=successMax;
+  lines.push({text:`勝負のルーレットは「${roll}」！ ${ok?'当たり！':'外れ…'}`,tone:ok?'good':'bad'});
+  if(ok){
+   let gain;
+   if(allin)gain=2500000+rnd(2000001);
+   else gain=big?(sc.winMin+rnd(sc.winRange)):sc.smallWin+rnd(Math.max(50001,Math.floor(sc.winRange*.22)));
+   p.cash+=gain;p.memory+=allin?12:(big?8:4);
+   lines.push({text:allin?`一発逆転成功！ +${money(gain)} / 思い出+12`:big?`大勝負成功！ +${money(gain)} / 思い出+8`:`手堅く勝利！ +${money(gain)} / 思い出+4`,tone:'good'});
+  }else{
+   let loss;
+   if(allin)loss=900000+rnd(1200001);
+   else loss=big?(sc.lossMin+rnd(sc.lossRange)):sc.smallLoss+rnd(Math.max(40001,Math.floor(sc.lossRange*.18)));
+   const actual=cashChange(p,-loss);p.memory+=allin?8:(big?6:3);
+   lines.push({text:allin?`一発逆転は失敗… ${money(actual)} / 思い出+8`:big?`大勝負は失敗… ${money(actual)} / 思い出+6`:`小さな勝負は外れ… ${money(actual)} / 思い出+3`,tone:'bad'});const d=debtLine(p);if(d)lines.push(d);
+  }
   return lines;
  }
  if(c.type==='education'){
