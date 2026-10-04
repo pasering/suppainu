@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.83</title>
+<title>みんなの人生ロード Deluxe v0.84</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -1049,14 +1049,13 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.83 思い出倍率調整版</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.84</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
     <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
     <div class="card stack"><h2 style="margin:0">部屋に入る</h2><div class="field"><label>あなたの名前</label><input id="joinName" maxlength="12" value="プレイヤー2"></div><div class="field"><label>6桁の部屋コード</label><input id="roomInput" maxlength="6" inputmode="numeric" placeholder="123456"></div><button class="btn" id="joinBtn">参加する</button><div class="note">同じURLを開き、ホストの部屋コードを入力します。</div></div>
     <div class="card resume-card hidden" id="resumeCard" style="grid-column:1/-1"><div class="resume-main"><div><strong>前回の対戦があります</strong><div class="note" id="resumeInfo">保存された対戦へ戻れます。</div></div><div class="resume-actions"><button class="btn primary" id="resumeBtn">前回の対戦に復帰</button><button class="btn small" id="discardResumeBtn">保存を破棄</button></div></div></div>
-    <div class="card" style="grid-column:1/-1"><strong>v0.83</strong><div class="note" style="margin-top:5px">イベント金額計算を単純化。「共通基本額 × (1 + 思い出pt×0.1) × 時代倍率」で計算します。思い出倍率は上限なしで、0pt=×1.0 / 10pt=×2.0 / 100pt=×11.0 / 120pt=×13.0。時代倍率は幼少・小学生・中学生・高校生が×0.75、大人前半・大人後半・円熟期が×1.00です。</div></div>
     <div class="card" style="grid-column:1/-1"><strong>v0.81</strong><div class="note" style="margin-top:5px">プラス・マイナス・出来事マスの金額バランスを再調整。時代による金額上昇を抑え、思い出0pt=×1、50pt=約×3.16、100pt=×10となる思い出倍率へ変更しました。100pt以降は×10で上限です。安心カードの自動半減仕様は継続します。</div></div>
   </section>
 
