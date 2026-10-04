@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>遊び方｜みんなのライフロード</title>
+<style>
+:root{--bg:#f3eee5;--paper:#fffdf8;--ink:#3e3329;--muted:#7a6d60;--line:#ead7b5;--pink:#ee7396;--gold:#d5a840;--green:#4f8d6d;--blue:#588ebd;--shadow:0 10px 28px rgba(74,50,27,.10)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:radial-gradient(circle at 50% 0,#fff 0,#f7f0e3 40%,var(--bg) 100%);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;line-height:1.7}
+a{color:inherit}.wrap{width:min(980px,calc(100% - 28px));margin:auto;padding:22px 0 56px}.hero{background:linear-gradient(135deg,#fffefb,#fff2de 56%,#ffe8f1);border:2px solid #ead2a5;border-radius:26px;padding:24px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"★  ♥  ◆  ★";position:absolute;right:20px;top:10px;color:#eacb85;opacity:.34;font-size:28px;letter-spacing:8px}.title{font-size:clamp(27px,6vw,46px);font-weight:1000;line-height:1.15;color:#65431f}.subtitle{color:var(--muted);margin-top:8px;font-size:14px}.back{display:inline-flex;margin-top:16px;text-decoration:none;background:#fff;border:1px solid #dcc8a1;border-radius:12px;padding:8px 13px;font-weight:800;font-size:13px}.toc{display:flex;gap:7px;flex-wrap:wrap;margin:18px 0}.toc a{text-decoration:none;background:#fff;border:1px solid #e6d6bc;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800}.section{margin-top:16px;background:rgba(255,253,248,.97);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 5px 15px rgba(60,43,29,.05)}h2{font-size:21px;margin:0 0 13px;border-bottom:3px solid #f3d99e;padding-bottom:7px}h3{font-size:16px;margin:17px 0 7px}.lead{font-size:16px;font-weight:800}.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.flow>div{background:#fff6e8;border:1px solid #ecd5ad;border-radius:14px;padding:12px;text-align:center;font-size:13px;font-weight:800}.flow strong{display:block;font-size:20px;color:#d78058}.note{padding:11px 13px;border-radius:13px;background:#f7f2e8;color:#6c5e51;font-size:13px}.memory{background:linear-gradient(135deg,#fff7da,#fff1ef);border:2px solid #edcc78;border-radius:18px;padding:16px}.formula{text-align:center;font-size:clamp(17px,4vw,23px);font-weight:1000;padding:12px;margin:10px 0;background:#fff;border-radius:14px;border:1px dashed #d8b55f}.examples{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.examples div{text-align:center;background:#fff;border-radius:11px;padding:8px 4px;border:1px solid #eadab8;font-size:12px}.examples b{display:block;font-size:16px}.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.tile{padding:11px 12px;border:1px solid #eadcc7;border-radius:13px;background:#fff}.tile b{display:block;margin-bottom:2px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat{border-radius:14px;padding:12px;background:#f8f3eb;text-align:center}.stat b{display:block;font-size:16px}.cards{display:grid;gap:8px}.cardrow{display:grid;grid-template-columns:minmax(120px,180px) 1fr auto;gap:10px;align-items:center;padding:10px 12px;background:#fff;border:1px solid #eadcc9;border-radius:12px}.cardname{font-weight:900}.tag{font-size:10px;padding:4px 7px;border-radius:999px;background:#efe7da;white-space:nowrap}.tag.end{background:#ffe0e3;color:#8c3640}.tag.free{background:#e2f2e7;color:#32684b}.tag.auto{background:#fff1bc;color:#796020}.warn{background:#fff0ef;border:1px solid #ecc1bd;border-radius:13px;padding:11px 13px}.small{font-size:12px;color:var(--muted)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #eadfce;text-align:left}th{background:#faf5ed}@media(max-width:720px){.wrap{width:min(100% - 18px,980px);padding-top:10px}.hero,.section{padding:15px;border-radius:16px}.flow{grid-template-columns:repeat(2,1fr)}.examples{grid-template-columns:repeat(3,1fr)}.tiles{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.cardrow{grid-template-columns:1fr auto}.cardrow .effect{grid-column:1/-1;grid-row:2}.hero:after{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="title">みんなのライフロード<br>遊び方</div>
+    <div class="subtitle">全部覚えなくても遊べます。迷ったときにここを確認してください。</div>
+    <a class="back" href="index.html">← ゲーム画面へ</a>
+  </header>
+
+  <nav class="toc">
+    <a href="#basic">基本</a><a href="#memory">思い出</a><a href="#spaces">マス</a><a href="#work">仕事</a><a href="#love">恋愛・家族</a><a href="#cards">カード</a><a href="#other">その他</a>
+  </nav>
+
+  <section class="section" id="basic">
+    <h2>まずはこれだけ</h2>
+    <p class="lead">ルーレットを回して人生を進み、最後にいちばん多くの「総資産」を持っていた人が1位です。</p>
+    <div class="flow"><div><strong>1</strong>ルーレットを回す</div><div><strong>2</strong>マスのイベント</div><div><strong>3</strong>進学・仕事・恋愛などを選ぶ</div><div><strong>4</strong>円熟期の最後に総決算</div></div>
+    <h3>最終順位</h3>
+    <div class="note"><b>総資産 ＝ 現金 ＋ 住居価値 ＋ 物件価値 ＋ お宝鑑定額 ＋ 特別賞</b><br>お金だけでなく、物件やお宝も最後の順位に影響します。</div>
+    <h3>ゲーム時間</h3>
+    <table><tr><th></th><th>幼少</th><th>小</th><th>中</th><th>高</th><th>大人前半</th><th>大人後半</th><th>円熟</th></tr><tr><td>さっくり</td><td>3</td><td>3</td><td>3</td><td>5</td><td>9</td><td>9</td><td>5</td></tr><tr><td>普通</td><td>3</td><td>4</td><td>4</td><td>6</td><td>12</td><td>12</td><td>8</td></tr><tr><td>ロング</td><td>3</td><td>4</td><td>4</td><td>8</td><td>15</td><td>15</td><td>10</td></tr></table>
+  </section>
+
+  <section class="section" id="memory">
+    <h2>思い出を集める意味</h2>
+    <div class="memory">
+      <p style="margin-top:0"><b>思い出が多いほど、プラス・マイナス・出来事マスなどの金額の振れ幅が大きくなります。</b></p>
+      <div class="formula">思い出倍率 ＝ 1 ＋（思い出pt × 0.1）</div>
+      <div class="examples"><div>0pt<b>×1.0</b></div><div>10pt<b>×2.0</b></div><div>50pt<b>×6.0</b></div><div>100pt<b>×11.0</b></div><div>120pt<b>×13.0</b></div></div>
+      <p class="small">倍率に上限はありません。幼少期～高校生はさらに時代補正×0.75、大人前半以降は×1.00です。</p>
+    </div>
+    <p><b>重要：</b>思い出は純粋な「お得ポイント」ではありません。良いイベントの収入も増えますが、悪いイベントの損失も大きくなります。人生の金額がだんだん派手になるためのステータスです。</p>
+    <p>最後には「思い出王」の特別賞もあります。判定は <b>思い出＋子ども1人につき5pt</b>。同点なら賞金を分けます。</p>
+  </section>
+
+  <section class="section" id="spaces">
+    <h2>主なマス</h2>
+    <div class="tiles">
+      <div class="tile"><b>🔵 プラスマス</b>収入や良い出来事。思い出が多いほど金額が大きくなりやすい。</div>
+      <div class="tile"><b>🔴 マイナスマス</b>出費やトラブル。安心カードがあれば金銭損失を半減。</div>
+      <div class="tile"><b>🟠 出来事マス</b>その時代に応じたイベント。3択イベントが出ることもあります。</div>
+      <div class="tile"><b>🟢 成長マス</b>知力・体力・魅力・交流などの能力アップ。</div>
+      <div class="tile"><b>💗 恋愛マス</b>出会い・デート・プロポーズ。結婚後は夫婦や子どものイベントにもつながります。</div>
+      <div class="tile"><b>💼 お仕事マス</b>就職後は現在の職業専用イベント。仕事経験も獲得できます。</div>
+      <div class="tile"><b>💴 収入マス</b>本人の給料、物件収入、家族収入などを受け取ります。</div>
+      <div class="tile"><b>🎴 カードマス</b>便利なカードを入手。カードは最大5枚。</div>
+      <div class="tile"><b>🏠 物件マス</b>物件を購入。収入と最終資産の両方に影響します。</div>
+      <div class="tile"><b>✨ 大ラッキー / 大不幸</b>通常より大きな幸運・損失が発生する特別マス。</div>
+    </div>
+    <p class="small">分岐ではMAP全体表示やドラッグで周囲を確認してからルートを選べます。</p>
+  </section>
+
+  <section class="section" id="work">
+    <h2>能力と仕事</h2>
+    <div class="stats"><div class="stat">🧠<b>知力</b>学業・専門職</div><div class="stat">💪<b>体力</b>スポーツ・現場系</div><div class="stat">✨<b>魅力</b>芸能・恋愛補助</div><div class="stat">🗣<b>交流</b>営業・管理・人間関係</div></div>
+    <p>職業ごとに就職条件があります。就職後は給料だけでなく、<b>その職業専用のお仕事イベント</b>が発生します。</p>
+    <p><b>仕事経験</b>は昇格や上位職への転職に使います。仕事マスでの仕事経験はルーレット判定で、<b>1～6＝+1、7～9＝+2、10＝+3</b>。</p>
+    <p>転職すると、前職の仕事経験の<b>50%</b>を新しい職業へ引き継ぎます。一部の上位職は特定職業で下積みしていないと選べません。</p>
+  </section>
+
+  <section class="section" id="love">
+    <h2>恋愛・結婚・家族</h2>
+    <p>恋人候補にはそれぞれ「家庭派」「キャリア派」「冒険派」などのタイプがあります。タイプによって結婚後の夫婦イベントや配偶者の人生が変わります。</p>
+    <div class="warn"><b>一度恋人になると、そのプレイ中は別の相手へ変更できません。</b></div>
+    <p>魅力が高いほどデートで好感度が追加上昇しやすくなります。ただし<b>プロポーズ成功率は好感度だけ</b>で決まります。好感度6なら60%、9なら90%、10以上なら成功確定です。</p>
+    <p>結婚後は子どもが生まれることがあります。恋愛マスでは特に発生しやすく、家族は思い出や家計にも影響します。</p>
+  </section>
+
+  <section class="section" id="cards">
+    <h2>カード効果一覧</h2>
+    <div class="note" style="margin-bottom:10px">基本は<b>1ターンに1枚まで</b>。ただし安心カードは手動使用せず、条件を満たすと自動発動します。「手番終了」のカードは使用するとそのターンが終わります。</div>
+    <div class="cards">
+      <div class="cardrow"><div class="cardname">追い風カード</div><div class="effect">次のルーレット結果に+5して進む</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">安心カード</div><div class="effect">金銭損失イベント時に自動で1枚消費し、損失を半減</div><span class="tag auto">自動発動</span></div>
+      <div class="cardrow"><div class="cardname">集中カード</div><div class="effect">知力+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">イメチェンカード</div><div class="effect">魅力+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">交流カード</div><div class="effect">交流+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">元気カード</div><div class="effect">体力+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">臨時収入カード</div><div class="effect">その場で8万円を獲得</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">恋愛応援カード</div><div class="effect">交際中なら好感度+2（魅力による追加ボーナスあり）</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">1～10の目カード</div><div class="effect">対応した数字を次のルーレットの出目に固定。10種類あります</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">泥沼カード</div><div class="effect">自分を含むランダムな1人の次のルーレットを1にする</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">横取りカード</div><div class="effect">自分以外の1人を選び、1万～100万円をランダムに奪う</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">嫉妬カード</div><div class="effect">相手の知力・体力・魅力のどれかを2奪う。使用者は交流-1</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">自由気ままカード</div><div class="effect">次のルーレットの出目を1～10から自由に選ぶ</div><span class="tag free">手番継続</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="other">
+    <h2>覚えておくと便利</h2>
+    <h3>借金</h3><p>現金がマイナスになると借金状態です。借金中は<b>魅力・交流の有効値が一時的に-5</b>。現金が0以上に戻れば自動で解除されます。</p>
+    <h3>運が絡む判定</h3><p>昇格、プロポーズ、ギャンブルなどの重要な運判定は、基本的にプレイヤー自身がルーレットを回して決めます。</p>
+    <h3>CPU</h3><p>CPUは空いているキャラクターからランダムに選ばれ、ルーレット・メッセージ送り・選択などを自動で進めます。</p>
+    <h3>オンライン</h3><p>ホスト端末がゲーム進行を管理します。リザルトもホストの「次へ」操作に全員が連動します。</p>
+  </section>
+</div>
+</body>
+</html>
