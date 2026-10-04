@@ -1090,6 +1090,7 @@ function leaveCurrentGame(ask=true){
 function avatarOption(id){return AVATAR_OPTIONS.find(v=>v.id===id)||AVATAR_OPTIONS[0]}
 function usedAvatarIds(exceptPlayerId=null){return new Set((state?.players||[]).filter(p=>p.id!==exceptPlayerId).map(p=>p.avatarId).filter(Boolean))}
 function firstAvailableAvatarId(exceptPlayerId=null){const used=usedAvatarIds(exceptPlayerId);const free=AVATAR_OPTIONS.find(v=>!used.has(v.id));return (free||AVATAR_OPTIONS[0]).id}
+function randomAvailableAvatarId(exceptPlayerId=null){const used=usedAvatarIds(exceptPlayerId);const free=AVATAR_OPTIONS.filter(v=>!used.has(v.id));return pick(free||AVATAR_OPTIONS)?.id||(AVATAR_OPTIONS[0]?.id||'')}
 function setPlayerAvatar(p,id){const opt=avatarOption(id);if(!opt||!p)return false;p.avatarId=opt.id;p.avatar=opt.src;return true}
 let avatarPickerTargetId=null;
 function avatarPickerCanEdit(p){return !!(p&&state?.phase==='lobby'&&(p.id===localPlayerId||(isHost&&p.cpu)))}
@@ -1112,7 +1113,7 @@ function renderAvatarPicker(){
  }))
 }
 function makePlayer(name,cpu=false,cpuType='balanced'){
- const idx=state?state.players.length:0;const avatarId=firstAvailableAvatarId();return{id:uuid(),name,color:COLORS[idx%COLORS.length],avatarId,avatar:avatarOption(avatarId).src,token:TOKENS[idx%TOKENS.length],cpu,cpuType,cash:120000,job:null,jobRank:0,jobExp:0,jobHistory:{},education:'高校',educationChosen:false,educationWaitTurns:0,careerReviewDone:false,retireDone:false,stats:{knowledge:1,fitness:1,charm:1,communication:1},memory:0,pos:0,laps:0,partner:null,affection:0,married:false,children:0,childProfiles:[],home:null,properties:[],treasures:[],cards:[],cardUsedThisTurn:false,nextRollBonus:0,nextRollFixed:null,guard:false,awards:0};
+ const idx=state?state.players.length:0;const avatarId=cpu?randomAvailableAvatarId():firstAvailableAvatarId();return{id:uuid(),name,color:COLORS[idx%COLORS.length],avatarId,avatar:avatarOption(avatarId).src,token:TOKENS[idx%TOKENS.length],cpu,cpuType,cash:120000,job:null,jobRank:0,jobExp:0,jobHistory:{},education:'高校',educationChosen:false,educationWaitTurns:0,careerReviewDone:false,retireDone:false,stats:{knowledge:1,fitness:1,charm:1,communication:1},memory:0,pos:0,laps:0,partner:null,affection:0,married:false,children:0,childProfiles:[],home:null,properties:[],treasures:[],cards:[],cardUsedThisTurn:false,nextRollBonus:0,nextRollFixed:null,guard:false,awards:0};
 }
 function newState(){return{phase:'lobby',players:[],turnIndex:0,stageIndex:0,stageTurnCount:0,pendingChoice:null,pendingBranch:null,message:null,pendingRollAdvance:null,pendingPromotion:null,pendingGamble:null,pendingCheck:null,busy:false,turnReady:false,lastRoll:null,log:['部屋を作成しました。'],settings:{variant:'normal',mode:'standard',speed:'normal',messageSpeed:'normal'},boards:[],version:1,fx:{roulette:null,move:null,stage:null,turn:null,landing:null,lastTurn:null},awards:[],resultPrepared:false,finalRoundAnnounced:false,recentContentKeys:[]};}
 function modeDescription(m){const d=MODES[m];if(!d)return'';return`${d.desc}　ターン数：${d.rounds.join(' / ')}`}
