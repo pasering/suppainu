@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなの人生ロード Deluxe v0.94</title>
+<title>みんなの人生ロード Deluxe v0.95</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -836,6 +836,29 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
   .branch-mobile-btn small{display:block!important;font-size:11px!important;line-height:1.3!important;color:#78685c!important;font-weight:800!important}
 }
 
+
+/* v0.95: keep player car pieces crisp while the desktop map camera is zoomed */
+@media(min-width:1201px){
+  .map-token{position:relative!important;overflow:visible!important}
+  .map-token img{
+    position:absolute!important;left:50%!important;top:50%!important;
+    width:120px!important;height:120px!important;max-width:none!important;max-height:none!important;
+    object-fit:contain!important;transform:translate(-50%,-50%) scale(.35) translateZ(0)!important;
+    transform-origin:center center!important;backface-visibility:hidden!important;
+    -webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important;
+  }
+}
+@media(min-width:901px) and (max-width:1200px){
+  .map-token{position:relative!important;overflow:visible!important}
+  .map-token img{
+    position:absolute!important;left:50%!important;top:50%!important;
+    width:112px!important;height:112px!important;max-width:none!important;max-height:none!important;
+    object-fit:contain!important;transform:translate(-50%,-50%) scale(.34) translateZ(0)!important;
+    transform-origin:center center!important;backface-visibility:hidden!important;
+    -webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important;
+  }
+}
+
 </style>
 
 <style>
@@ -1042,6 +1065,29 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
   .branch-mobile-btn small{display:block!important;font-size:11px!important;line-height:1.3!important;color:#78685c!important;font-weight:800!important}
 }
 
+
+/* v0.95: keep player car pieces crisp while the desktop map camera is zoomed */
+@media(min-width:1201px){
+  .map-token{position:relative!important;overflow:visible!important}
+  .map-token img{
+    position:absolute!important;left:50%!important;top:50%!important;
+    width:120px!important;height:120px!important;max-width:none!important;max-height:none!important;
+    object-fit:contain!important;transform:translate(-50%,-50%) scale(.35) translateZ(0)!important;
+    transform-origin:center center!important;backface-visibility:hidden!important;
+    -webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important;
+  }
+}
+@media(min-width:901px) and (max-width:1200px){
+  .map-token{position:relative!important;overflow:visible!important}
+  .map-token img{
+    position:absolute!important;left:50%!important;top:50%!important;
+    width:112px!important;height:112px!important;max-width:none!important;max-height:none!important;
+    object-fit:contain!important;transform:translate(-50%,-50%) scale(.34) translateZ(0)!important;
+    transform-origin:center center!important;backface-visibility:hidden!important;
+    -webkit-backface-visibility:hidden!important;image-rendering:-webkit-optimize-contrast!important;
+  }
+}
+
 </style>
 
 </head>
@@ -1049,7 +1095,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなの人生ロード Deluxe</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><button class="btn small sound-btn audio-fix-btn" id="audioFixBtn" title="スマホなどで音が出ない時に音声機能を再起動します">🔊 音が鳴らない時に押す</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.94</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><button class="btn small sound-btn audio-fix-btn" id="audioFixBtn" title="スマホなどで音が出ない時に音声機能を再起動します">🔊 音が鳴らない時に押す</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><span class="pill">v0.95</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
