@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>みんなのライフロード v0.101</title>
+<title>みんなのライフロード v0.103</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#efece4;--panel:#fffdf8;--ink:#282723;--muted:#746f66;--line:#d8d0c5;--accent:#47705a;--accent2:#b86550;--gold:#c8952d;--shadow:0 10px 30px rgba(42,35,28,.12);--tile:#fff;--stageA:#dce9df;--stageB:#f6e9c7}
@@ -863,6 +863,14 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 .howto-link{text-decoration:none!important;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#f5ead7)!important;color:#604b32!important;border:1px solid rgba(171,128,64,.30)!important;white-space:nowrap}
 .howto-link:hover{filter:brightness(1.02)}
 
+
+/* v0.103 in-game how-to overlay */
+.howto-overlay{position:fixed;inset:0;z-index:220;background:rgba(35,28,23,.58);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+.howto-overlay.hidden{display:none!important}.howto-panel{width:min(1040px,100%);max-height:min(90vh,920px);background:#f7f1e8;border:2px solid #e0bd72;border-radius:24px;box-shadow:0 28px 80px rgba(0,0,0,.38);overflow:hidden;display:flex;flex-direction:column;color:#3e3329}
+.howto-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 18px;background:linear-gradient(135deg,#fffefb,#fff1dd 58%,#ffe8f1);border-bottom:1px solid #e5d1ad}.howto-title{font-size:clamp(19px,3vw,28px);font-weight:1000;color:#65431f}.howto-subtitle{font-size:12px;color:#7a6d60;margin-top:2px}.howto-close{width:42px;height:42px;flex:0 0 42px;border:0;border-radius:50%;background:#fff;color:#6a5643;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}.howto-scroll{overflow:auto;overscroll-behavior:contain;padding:0 18px 24px;scroll-behavior:smooth}.howto-scroll .toc{position:sticky;top:0;z-index:2;display:flex;gap:7px;flex-wrap:wrap;margin:0 -18px 14px;padding:10px 18px;background:rgba(247,241,232,.96);border-bottom:1px solid #ead7b5;backdrop-filter:blur(5px)}.howto-scroll .toc a{text-decoration:none;color:#604b32;background:#fff;border:1px solid #e6d6bc;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800}.howto-scroll .section{scroll-margin-top:64px;margin-top:14px;background:rgba(255,253,248,.98);border:1px solid #ead7b5;border-radius:18px;padding:18px;box-shadow:0 5px 15px rgba(60,43,29,.05)}.howto-scroll h2{font-size:20px;margin:0 0 12px;border-bottom:3px solid #f3d99e;padding-bottom:7px}.howto-scroll h3{font-size:16px;margin:16px 0 7px}.howto-scroll p{line-height:1.7}.howto-scroll .lead{font-size:16px;font-weight:800}.howto-scroll .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.howto-scroll .flow>div{background:#fff6e8;border:1px solid #ecd5ad;border-radius:14px;padding:12px;text-align:center;font-size:13px;font-weight:800}.howto-scroll .flow strong{display:block;font-size:20px;color:#d78058}.howto-scroll .note{padding:11px 13px;border-radius:13px;background:#f7f2e8;color:#6c5e51;font-size:13px}.howto-scroll .memory{background:linear-gradient(135deg,#fff7da,#fff1ef);border:2px solid #edcc78;border-radius:18px;padding:16px}.howto-scroll .formula{text-align:center;font-size:clamp(17px,4vw,23px);font-weight:1000;padding:12px;margin:10px 0;background:#fff;border-radius:14px;border:1px dashed #d8b55f}.howto-scroll .examples{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.howto-scroll .examples div{text-align:center;background:#fff;border-radius:11px;padding:8px 4px;border:1px solid #eadab8;font-size:12px}.howto-scroll .examples b{display:block;font-size:16px}.howto-scroll .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.howto-scroll .tile{padding:11px 12px;border:1px solid #eadcc7;border-radius:13px;background:#fff}.howto-scroll .tile b{display:block;margin-bottom:2px}.howto-scroll .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.howto-scroll .stat{border-radius:14px;padding:12px;background:#f8f3eb;text-align:center}.howto-scroll .stat b{display:block;font-size:16px}.howto-scroll .cards{display:grid;gap:8px}.howto-scroll .cardrow{display:grid;grid-template-columns:minmax(120px,180px) 1fr auto;gap:10px;align-items:center;padding:10px 12px;background:#fff;border:1px solid #eadcc9;border-radius:12px}.howto-scroll .cardname{font-weight:900}.howto-scroll .tag{font-size:10px;padding:4px 7px;border-radius:999px;background:#efe7da;white-space:nowrap}.howto-scroll .tag.end{background:#ffe0e3;color:#8c3640}.howto-scroll .tag.free{background:#e2f2e7;color:#32684b}.howto-scroll .tag.auto{background:#fff1bc;color:#796020}.howto-scroll .warn{background:#fff0ef;border:1px solid #ecc1bd;border-radius:13px;padding:11px 13px}.howto-scroll .small{font-size:12px;color:#7a6d60}.howto-scroll table{width:100%;border-collapse:collapse;font-size:13px}.howto-scroll th,.howto-scroll td{padding:9px;border-bottom:1px solid #eadfce;text-align:left}.howto-scroll th{background:#faf5ed}
+body.howto-open{overflow:hidden}
+@media(max-width:720px){.howto-overlay{padding:7px}.howto-panel{max-height:94vh;border-radius:16px}.howto-head{padding:11px 12px}.howto-close{width:38px;height:38px;flex-basis:38px}.howto-scroll{padding:0 10px 18px}.howto-scroll .toc{margin:0 -10px 10px;padding:8px 10px}.howto-scroll .section{padding:13px;border-radius:14px}.howto-scroll .flow{grid-template-columns:repeat(2,1fr)}.howto-scroll .examples{grid-template-columns:repeat(3,1fr)}.howto-scroll .tiles{grid-template-columns:1fr}.howto-scroll .stats{grid-template-columns:repeat(2,1fr)}.howto-scroll .cardrow{grid-template-columns:1fr auto}.howto-scroll .cardrow .effect{grid-column:1/-1;grid-row:2}.howto-scroll table{display:block;overflow-x:auto;white-space:nowrap}}
+
 </style>
 
 <style>
@@ -1103,7 +1111,7 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
 <div class="wrap" id="app">
   <div class="topbar">
     <div><div class="brand">みんなのライフロード</div><div class="sub">最大4人・オンライン / CPU対応 / 時代ごとの周回式ボード</div></div>
-    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><button class="btn small sound-btn audio-fix-btn" id="audioFixBtn" title="スマホなどで音が出ない時に音声機能を再起動します">🔊 音が鳴らない時に押す</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><a class="btn small howto-link" href="howto.html" target="_blank" rel="noopener">📘 遊び方</a><span class="pill">v0.101</span></div>
+    <div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><button class="btn small sound-btn audio-fix-btn" id="audioFixBtn" title="スマホなどで音が出ない時に音声機能を再起動します">🔊 音が鳴らない時に押す</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" type="range" min="0" max="100" value="100"><span id="volumeValue">100%</span></label><button class="btn small howto-link" id="howtoBtn" type="button">📘 遊び方</button><span class="pill">v0.103</span></div>
   </div>
 
   <section id="homeScreen" class="grid2">
@@ -1168,6 +1176,108 @@ body{font-family:"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif!im
       <button class="btn primary" id="backBtn">リザルトを終了してトップへ</button>
     </div>
   </section>
+</div>
+
+
+<div id="howtoOverlay" class="howto-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="howtoOverlayTitle">
+  <div class="howto-panel" role="document">
+    <div class="howto-head">
+      <div>
+        <div class="howto-title" id="howtoOverlayTitle">📘 みんなのライフロード　遊び方</div>
+        <div class="howto-subtitle">迷ったときにいつでも確認できます。</div>
+      </div>
+      <button id="howtoClose" class="howto-close" type="button" aria-label="遊び方を閉じる">×</button>
+    </div>
+    <div class="howto-scroll">
+      <nav class="toc">
+    <a href="#basic">基本</a><a href="#memory">思い出</a><a href="#spaces">マス</a><a href="#work">仕事</a><a href="#love">恋愛・家族</a><a href="#cards">カード</a><a href="#other">その他</a>
+  </nav>
+
+  <section class="section" id="basic">
+    <h2>まずはこれだけ</h2>
+    <p class="lead">ルーレットを回して人生を進み、最後にいちばん多くの「総資産」を持っていた人が1位です。</p>
+    <div class="flow"><div><strong>1</strong>ルーレットを回す</div><div><strong>2</strong>マスのイベント</div><div><strong>3</strong>進学・仕事・恋愛などを選ぶ</div><div><strong>4</strong>円熟期の最後に総決算</div></div>
+    <h3>最終順位</h3>
+    <div class="note"><b>総資産 ＝ 現金 ＋ 住居価値 ＋ 物件価値 ＋ お宝鑑定額 ＋ 特別賞</b><br>お金だけでなく、物件やお宝も最後の順位に影響します。</div>
+    <h3>ゲーム時間</h3>
+    <table><tr><th></th><th>幼少</th><th>小</th><th>中</th><th>高</th><th>大人前半</th><th>大人後半</th><th>円熟</th></tr><tr><td>さっくり</td><td>3</td><td>3</td><td>3</td><td>5</td><td>9</td><td>9</td><td>5</td></tr><tr><td>普通</td><td>3</td><td>4</td><td>4</td><td>6</td><td>12</td><td>12</td><td>8</td></tr><tr><td>ロング</td><td>3</td><td>4</td><td>4</td><td>8</td><td>15</td><td>15</td><td>10</td></tr></table>
+  </section>
+
+  <section class="section" id="memory">
+    <h2>思い出を集める意味</h2>
+    <div class="memory">
+      <p style="margin-top:0"><b>思い出が多いほど、プラス・マイナス・出来事マスなどの金額の振れ幅が大きくなります。</b></p>
+      <div class="formula">思い出倍率 ＝ 1 ＋（思い出pt × 0.1）</div>
+      <div class="examples"><div>0pt<b>×1.0</b></div><div>10pt<b>×2.0</b></div><div>50pt<b>×6.0</b></div><div>100pt<b>×11.0</b></div><div>120pt<b>×13.0</b></div></div>
+      <p class="small">倍率に上限はありません。幼少期～高校生はさらに時代補正×0.75、大人前半以降は×1.00です。</p>
+    </div>
+    <p><b>重要：</b>思い出は純粋な「お得ポイント」ではありません。良いイベントの収入も増えますが、悪いイベントの損失も大きくなります。人生の金額がだんだん派手になるためのステータスです。</p>
+    <p>最後には「思い出王」の特別賞もあります。判定は <b>思い出＋子ども1人につき5pt</b>。同点なら賞金を分けます。</p>
+  </section>
+
+  <section class="section" id="spaces">
+    <h2>主なマス</h2>
+    <div class="tiles">
+      <div class="tile"><b>🔵 プラスマス</b>収入や良い出来事。思い出が多いほど金額が大きくなりやすい。</div>
+      <div class="tile"><b>🔴 マイナスマス</b>出費やトラブル。安心カードがあれば金銭損失を半減。</div>
+      <div class="tile"><b>🟠 出来事マス</b>その時代に応じたイベント。3択イベントが出ることもあります。</div>
+      <div class="tile"><b>🟢 成長マス</b>知力・体力・魅力・交流などの能力アップ。</div>
+      <div class="tile"><b>💗 恋愛マス</b>出会い・デート・プロポーズ。結婚後は夫婦や子どものイベントにもつながります。</div>
+      <div class="tile"><b>💼 お仕事マス</b>就職後は現在の職業専用イベント。仕事経験も獲得できます。</div>
+      <div class="tile"><b>💴 収入マス</b>本人の給料、物件収入、家族収入などを受け取ります。</div>
+      <div class="tile"><b>🎴 カードマス</b>便利なカードを入手。カードは最大5枚。</div>
+      <div class="tile"><b>🏠 物件マス</b>物件を購入。収入と最終資産の両方に影響します。</div>
+      <div class="tile"><b>✨ 大ラッキー / 大不幸</b>通常より大きな幸運・損失が発生する特別マス。</div>
+    </div>
+    <p class="small">分岐ではMAP全体表示やドラッグで周囲を確認してからルートを選べます。</p>
+  </section>
+
+  <section class="section" id="work">
+    <h2>能力と仕事</h2>
+    <div class="stats"><div class="stat">🧠<b>知力</b>学業・専門職</div><div class="stat">💪<b>体力</b>スポーツ・現場系</div><div class="stat">✨<b>魅力</b>芸能・恋愛補助</div><div class="stat">🗣<b>交流</b>営業・管理・人間関係</div></div>
+    <p>職業ごとに就職条件があります。就職後は給料だけでなく、<b>その職業専用のお仕事イベント</b>が発生します。</p>
+    <p><b>仕事経験</b>は昇格や上位職への転職に使います。仕事マスでの仕事経験はルーレット判定で、<b>1～6＝+1、7～9＝+2、10＝+3</b>。</p>
+    <p>転職すると、前職の仕事経験の<b>50%</b>を新しい職業へ引き継ぎます。一部の上位職は特定職業で下積みしていないと選べません。</p>
+  </section>
+
+  <section class="section" id="love">
+    <h2>恋愛・結婚・家族</h2>
+    <p>恋人候補にはそれぞれ「家庭派」「キャリア派」「冒険派」などのタイプがあります。タイプによって結婚後の夫婦イベントや配偶者の人生が変わります。</p>
+    <div class="warn"><b>一度恋人になると、そのプレイ中は別の相手へ変更できません。</b></div>
+    <p>魅力が高いほどデートで好感度が追加上昇しやすくなります。ただし<b>プロポーズ成功率は好感度だけ</b>で決まります。好感度6なら60%、9なら90%、10以上なら成功確定です。</p>
+    <p>プロポーズに成功して結婚すると、ほかのプレイヤー全員からご祝儀を受け取ります。1人あたり1万～30万円で、渡した側の現金から結婚したプレイヤーへ移動します。</p><p>結婚後は子どもが生まれることがあります。恋愛マスでは特に発生しやすく、家族は思い出や家計にも影響します。</p>
+  </section>
+
+  <section class="section" id="cards">
+    <h2>カード効果一覧</h2>
+    <div class="note" style="margin-bottom:10px">基本は<b>1ターンに1枚まで</b>。ただし安心カードは手動使用せず、条件を満たすと自動発動します。「手番終了」のカードは使用するとそのターンが終わります。</div>
+    <div class="cards">
+      <div class="cardrow"><div class="cardname">追い風カード</div><div class="effect">次のルーレット結果に+5して進む</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">安心カード</div><div class="effect">金銭損失イベント時に自動で1枚消費し、損失を半減</div><span class="tag auto">自動発動</span></div>
+      <div class="cardrow"><div class="cardname">集中カード</div><div class="effect">知力+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">イメチェンカード</div><div class="effect">魅力+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">交流カード</div><div class="effect">交流+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">元気カード</div><div class="effect">体力+4</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">臨時収入カード</div><div class="effect">その場で8万円を獲得</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">恋愛応援カード</div><div class="effect">交際中なら好感度+2（魅力による追加ボーナスあり）</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">1～10の目カード</div><div class="effect">対応した数字を次のルーレットの出目に固定。10種類あります</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">泥沼カード</div><div class="effect">自分を含むランダムな1人の次のルーレットを1にする</div><span class="tag free">手番継続</span></div>
+      <div class="cardrow"><div class="cardname">横取りカード</div><div class="effect">自分以外の1人を選び、1万～100万円をランダムに奪う</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">嫉妬カード</div><div class="effect">相手の知力・体力・魅力のどれかを2奪う。使用者は交流-1</div><span class="tag end">手番終了</span></div>
+      <div class="cardrow"><div class="cardname">自由気ままカード</div><div class="effect">次のルーレットの出目を1～10から自由に選ぶ</div><span class="tag free">手番継続</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="other">
+    <h2>覚えておくと便利</h2>
+    <h3>借金</h3><p>現金がマイナスになると借金状態です。借金中は<b>魅力・交流の有効値が一時的に-5</b>。現金が0以上に戻れば自動で解除されます。</p>
+    <h3>運が絡む判定</h3><p>昇格、プロポーズ、ギャンブルなどの重要な運判定は、基本的にプレイヤー自身がルーレットを回して決めます。</p>
+    <h3>CPU</h3><p>CPUは空いているキャラクターからランダムに選ばれ、ルーレット・メッセージ送り・選択などを自動で進めます。</p>
+    <h3>オンライン</h3><p>ホスト端末がゲーム進行を管理します。リザルトもホストの「次へ」操作に全員が連動します。</p>
+  </section>
+
+    </div>
+  </div>
 </div>
 
 <div id="choiceOverlay" class="choice-overlay hidden" role="dialog" aria-modal="true"><div class="choice-box"><div class="choice-title" id="choiceTitle"></div><div class="note" id="choiceText"></div><div class="status" id="choiceStatus" style="margin-top:9px"></div><div class="choices" id="choiceList"></div></div></div>
