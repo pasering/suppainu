@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>クトゥルフ100 - SCENARIO 001 月桂号、五度鳴る v8.12</title>
+<title>クトゥルフ100 SCENARIO 001-005 v9.4 チャットフェード</title>
 <style>
 :root{--bg:#090d12;--panel:#171d24;--line:#3b4754;--text:#edf1f4;--muted:#9ba8b4;--gold:#d6b878;--blue:#91b6df;--green:#98c8aa;--red:#df9090}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -12%,#293640 0,#10161c 37%,#080b0f 78%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif}button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.shell{max-width:1480px;margin:auto;padding:14px}header{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:13px}h1{font-family:Georgia,serif;margin:0;letter-spacing:.09em;font-size:30px;color:#f1e4d1}small,.muted{color:var(--muted)}.muted{font-size:12px;line-height:1.55}.panel{background:linear-gradient(165deg,#1b222a,#131920);border:1px solid var(--line);border-radius:13px;padding:14px;box-shadow:0 12px 35px #0004}h2{font-size:18px;margin:0 0 11px}h3{font-size:13px;color:var(--gold);letter-spacing:.08em;margin:0 0 9px}.btn{border:1px solid #556270;background:#28333e;color:#f4f6f7;border-radius:8px;padding:8px 11px}.btn:hover:not(:disabled){filter:brightness(1.16)}.btn:disabled{opacity:.38;cursor:not-allowed}.primary{background:#8b744e;border-color:#bea16c}.ghost{background:#151c23}.small{font-size:12px;padding:5px 8px}input,select{background:#0d1319;border:1px solid #485562;border-radius:7px;padding:8px;color:#fff;min-width:0}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.note{background:#111820;border:1px solid #374550;border-radius:9px;padding:11px;font-size:13px;line-height:1.6;color:#c9d1d8}.stepbar{display:flex;gap:7px;margin-bottom:12px}.step{flex:1;padding:8px;border:1px solid #34414d;border-radius:7px;text-align:center;color:#7f8b96;font-size:12px}.step.on{border-color:#a78e61;color:#ecd7b2;background:#27241e}.setupgrid{display:grid;grid-template-columns:1fr .88fr;gap:13px}.person{display:grid;grid-template-columns:34px 64px 1.2fr 90px 145px;gap:8px;align-items:center;margin:8px 0}.personPortrait{width:58px;height:58px;border-radius:8px;overflow:hidden;border:1px solid #566371;background:#0d141a;padding:0}.personPortrait img{width:100%;height:100%;object-fit:contain;object-position:center bottom}.portraitGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.portraitOption{position:relative;aspect-ratio:1/1;border:1px solid #4b5864;border-radius:9px;overflow:hidden;background:#10171e;padding:0}.portraitOption img{width:100%;height:100%;object-fit:contain;object-position:center bottom}.portraitOption.used{opacity:.28}.portraitOption.selected{outline:3px solid var(--gold)}.portraitOption span{position:absolute;left:3px;right:3px;bottom:3px;background:#081016d9;border-radius:5px;padding:3px;font-size:9px;color:#e4e9ed}.jobgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.job{border:1px solid #394652;border-radius:8px;padding:10px;background:#151d25}.job b{color:#e4c895}.job div{font-size:11px;color:#a5b0bb;margin-top:3px}.statplayers{display:grid;gap:11px}.statcard{border:1px solid #394651;border-radius:10px;padding:12px;background:#141b22}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}.statbox{padding:7px;border:1px solid #34414d;border-radius:7px;background:#0e151c;text-align:center}.statbox b{display:block;color:#ead7b2;font-size:18px}.statbox span{font-size:10px;color:#8f9ba6}.skillpreview{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}.skillmini{font-size:10px;border:1px solid #34404a;border-radius:6px;padding:5px;background:#11171d}.skillmini b{color:#d9e1e8}.deckgrid{display:grid;grid-template-columns:1.25fr .75fr;gap:13px}.pool{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;max-height:590px;overflow:auto}.card{border:1px solid #4a5865;border-radius:9px;background:linear-gradient(165deg,#28343e,#182029);color:#eaf0f4;padding:9px;text-align:left;min-height:105px}.card.job{border-left:4px solid var(--gold)}.card.common{border-left:4px solid var(--blue)}.card strong{display:block}.card .bonus{font-weight:800;color:#f0d8a8;margin-top:5px}.card .meta{font-size:10px;color:#9ba7b2;margin-top:4px}.pills{display:flex;gap:5px;flex-wrap:wrap}.pill{font-size:11px;padding:5px 7px;border-radius:7px;border:1px solid #465564;background:#202a34;color:#e1e8ed}.topmeta{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px}.metric b{font-size:17px;color:#eedbb7;display:block;margin-top:2px}.label{font-size:9px;color:#b8a37e;letter-spacing:.11em}.gamegrid{display:grid;grid-template-columns:275px minmax(0,1fr) 280px;gap:11px}.map{position:relative;height:305px;border:1px solid #3c4855;border-radius:10px;background:radial-gradient(circle,#27323d,#0f151b);overflow:hidden}.map svg{position:absolute;inset:0;width:100%;height:100%}.node{position:absolute;transform:translate(-50%,-50%);width:64px;height:54px;border-radius:8px;border:1px solid #687583;background:#202a34;color:#dce3e9;font-size:9px;line-height:1.15}.node b{display:block;font-size:15px}.node.current{outline:2px solid var(--gold);background:#65543b}.node.selected{box-shadow:0 0 0 3px #86aeda inset}.node.reachable{border-color:#92bf9e}.node.unknown{opacity:.4}.node.locked{filter:grayscale(1)}.targetlist{display:grid;gap:7px}.target{width:100%;text-align:left;padding:9px;border:1px solid #44515e;border-radius:8px;background:#19222b;color:#e8edf1}.target.selected{outline:2px solid #a88d5f}.target.done{opacity:.52}.target b{display:block}.target span{font-size:10px;color:#9ca9b4}.scene{height:505px;border:1px solid #485562;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(155deg,#283847,#111a24 68%);box-shadow:inset 0 -130px 120px #05090d;isolation:isolate}.scene.city{background:linear-gradient(155deg,#263a4b,#101a25 70%)}.scene.village{background:linear-gradient(160deg,#263b36,#111b1c 68%)}.scene.island{background:linear-gradient(155deg,#16404c,#0d2431 68%)}.scene.train{background:linear-gradient(155deg,#49382f,#1b2028 68%)}.scene.ship{background:linear-gradient(155deg,#294657,#102330 68%)}.scene.white{background:linear-gradient(155deg,#6b7882,#35444e 68%)}.scene:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,#f1d79e14,transparent 32%),repeating-linear-gradient(90deg,#0000 0 72px,#e8edf106 73px 74px)}.scenetitle{position:absolute;top:16px;left:18px;font-size:25px;font-weight:800;text-shadow:0 2px 12px #000}.scenesub{position:absolute;top:49px;left:19px;font-size:11px;color:#c0c8ce}.sceneicon{position:absolute;top:95px;left:50%;transform:translateX(-50%);font-size:120px;opacity:.25;filter:grayscale(.8)}.adv{position:absolute;left:12px;right:12px;bottom:11px;min-height:186px;max-height:310px;background:#071017ef;border:1px solid #9b8767a0;border-radius:10px;padding:13px 15px;box-shadow:0 18px 45px #0009;display:flex;flex-direction:column}.speaker{font-size:12px;color:#dfbd80;font-weight:800;letter-spacing:.08em}.advtext{white-space:pre-wrap;line-height:1.75;font-size:14px;min-height:80px;max-height:155px;overflow:auto;margin-top:6px}.advactions{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-top:auto}.skillselect{margin-top:10px}.skillchoices{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.skillchoice{min-width:122px;text-align:left}.skillchoice.selected{outline:2px solid var(--gold);background:#5d5038}.fixedcard{border-left:4px solid var(--green)!important;background:linear-gradient(165deg,#26382f,#17231d)!important}.flexcard{border-left:4px solid #b49cda!important}.wildcard{border-left:4px solid #d5a0bf!important}.infoflash{margin-top:8px;border-left:3px solid var(--gold);padding-left:9px;color:#e6dccb;font-size:12px;line-height:1.55}.handwrap{margin-top:10px}.hand{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.hand .card{min-height:100px;padding:7px}.hand .card strong{font-size:12px}.hand .card .bonus{font-size:12px}.hand .card.off{opacity:.37}.info{font-size:12px;line-height:1.6;color:#c7d0d7}.section{margin-bottom:14px}.progress{height:5px;background:#0a1016;border-radius:4px;overflow:hidden;margin-top:5px}.progress div{height:100%;background:#ac8d58}.overlay{position:fixed;inset:0;background:#020609c7;z-index:100;display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(3px)}.overlaybox{width:min(900px,96vw);max-height:88vh;overflow:auto;background:#171d24e8;border:1px solid #707b84;border-radius:5px;padding:21px 24px;box-shadow:0 25px 80px #000}.overlaybox h2{font-family:Georgia,serif;color:#f0debd;letter-spacing:.05em}.overlayclose{position:sticky;top:0;float:right}.logentry{border-bottom:1px solid #35404a;padding:9px 0}.logentry b{color:#dbbd84}.logentry p{margin:4px 0;font-size:13px;line-height:1.65;color:#d4dbe0}.fact{padding:11px;border:1px solid #44515c;background:#10171e;border-radius:8px;margin:8px 0}.fact.infer{border-color:#937a50;background:#211d16}.fact b{color:#ead4a9}.fact p{font-size:13px;line-height:1.65;margin:5px 0 0}.diceLayer{position:absolute;inset:0;z-index:15;background:#030608aa;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:15px;backdrop-filter:blur(2px)}.diceRow{display:flex;gap:35px}.d10{width:92px;height:105px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#d9c6a1,#78623d);color:#10151a;font-size:38px;font-weight:900;clip-path:polygon(50% 0,80% 14%,100% 50%,80% 86%,50% 100%,20% 86%,0 50%,20% 14%);filter:drop-shadow(0 15px 15px #000);transform:none}.diceCaption{font-size:15px;color:#ead7b1;font-weight:700;text-shadow:0 2px 7px #000}
 .scene{outline:none}.sceneBg{position:absolute;inset:0;z-index:-3;background-size:cover;background-position:center;filter:saturate(.9) brightness(.58);transform:scale(1.015)}
@@ -2202,6 +2202,143 @@ const V91_RENDER_BASE=render;
 render=function(){V91_RENDER_BASE();if(game?.ended){v91AutoSaveEnded();setTimeout(()=>renderAdvActions(),0)}};
 
 window.addEventListener('load',()=>{v91Init();setTimeout(()=>{let e=$('onlineCreator');if(e&&!game&&NET.mode!=='local')v88RenderCreator()},350)});
+</script>
+
+
+<style id="v93chatcss">
+/* ===== v9.3: independent player-chat overlay ===== */
+.v93ChatLayer{position:absolute;left:12px;right:12px;top:74px;bottom:198px;z-index:35;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;gap:7px}
+.v93ChatStream{display:flex;flex-direction:column;justify-content:flex-end;gap:5px;min-height:0;flex:1}
+.v93ChatRow{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:9px;min-height:52px;padding:4px 12px 4px 6px;overflow:hidden;animation:v93chatIn .18s ease-out;background:linear-gradient(90deg,#f5f7fa10 0%,#f5f7fa1e 18%,#f5f7fa10 72%,transparent 100%);border-top:1px solid #ffffff44;border-bottom:1px solid #ffffff26;filter:drop-shadow(0 5px 9px #0007)}
+.v93ChatRow::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:12px 12px;mask-image:linear-gradient(90deg,#000 0%,#000 75%,transparent 100%)}
+.v93ChatAvatar{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;border:1px solid #f6f0dfaa;object-fit:cover;object-position:center 20%;background:#0b1116;box-shadow:0 3px 9px #0009}
+.v93ChatBubble{position:relative;z-index:1;min-width:0;width:max-content;max-width:min(680px,92%);padding:6px 11px 7px;border-radius:5px 13px 13px 13px;background:#0a1118dd;border:1px solid #dfe6eb45;box-shadow:0 4px 13px #0008;backdrop-filter:blur(3px)}
+.v93ChatBubble::before{content:"";position:absolute;left:-7px;top:10px;width:12px;height:12px;background:#0a1118dd;border-left:1px solid #dfe6eb45;border-bottom:1px solid #dfe6eb45;transform:rotate(45deg)}
+.v93ChatName{font-size:10px;font-weight:800;color:#e5ca98;letter-spacing:.05em;margin-bottom:2px}.v93ChatText{font-size:13px;line-height:1.45;color:#f4f6f7;white-space:pre-wrap;overflow-wrap:anywhere}
+.v93ChatComposer{pointer-events:auto;align-self:flex-end;width:min(520px,78%);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:6px;background:#071017d9;border:1px solid #ffffff35;border-radius:9px;box-shadow:0 6px 18px #0008;backdrop-filter:blur(5px)}
+.v93ChatComposer input{width:100%;min-width:0;background:#10171ed9;border:1px solid #66717b;color:#fff;padding:7px 9px;border-radius:6px;font-size:12px}.v93ChatComposer input:disabled{opacity:.45}.v93ChatHint{grid-column:1/-1;font-size:9px;color:#9eabb5;line-height:1.2;padding-left:2px}
+.v93ChatLogEntry{display:grid;grid-template-columns:42px minmax(0,1fr);gap:10px;padding:9px 0;border-bottom:1px solid #35404a}.v93ChatLogEntry img{width:40px;height:40px;border-radius:50%;object-fit:cover;object-position:center 20%;background:#0d141a;border:1px solid #586675}.v93ChatLogEntry b{font-size:11px;color:#dfc28e}.v93ChatLogEntry p{margin:3px 0 0;font-size:13px;line-height:1.55;color:#e2e7eb;white-space:pre-wrap;overflow-wrap:anywhere}.v93ChatLogTime{font-size:9px;color:#7f8b96;margin-left:6px}
+@keyframes v93chatIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@media(max-width:760px){.v93ChatLayer{left:7px;right:7px;top:70px;bottom:192px;gap:5px}.v93ChatRow{grid-template-columns:43px minmax(0,1fr);min-height:44px;padding:3px 6px}.v93ChatAvatar{width:39px;height:39px}.v93ChatBubble{max-width:96%;padding:5px 8px}.v93ChatText{font-size:12px}.v93ChatComposer{width:100%}}
+</style>
+<script id="v93chat">
+/* ===== v9.3: host-authoritative LINE-like overlay chat ===== */
+var V93_CHAT={maxVisible:4,lastSignature:''};
+function v93CanChat(){return !!game&&!!chars?.length&&!game.ended&&(NET.mode==='host'||NET.mode==='join')}
+function v93ChatPortrait(actor){let c=chars?.[actor];if(!c)return'';try{return playerPortrait(c)||''}catch(e){return''}}
+function v93EnsureChatDom(){
+ const scene=$('scene');if(!scene)return;
+ if(!$('v93ChatLayer')){
+  const layer=document.createElement('div');layer.id='v93ChatLayer';layer.className='v93ChatLayer';
+  layer.innerHTML='<div id="v93ChatStream" class="v93ChatStream"></div><div id="v93ChatComposer" class="v93ChatComposer"><input id="v93ChatInput" maxlength="160" autocomplete="off" placeholder="プレイヤーチャット…（最大160文字）"><button id="v93ChatSend" class="btn small" type="button">送信</button><div class="v93ChatHint">プレイヤーチャットはゲーム進行とは別表示です。発言による操作待機時間はありません。</div></div>';
+  scene.appendChild(layer);
+  layer.addEventListener('click',e=>e.stopPropagation());layer.addEventListener('pointerdown',e=>e.stopPropagation());
+  $('v93ChatSend').addEventListener('click',v93SubmitChat);
+  $('v93ChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();v93SubmitChat()}})
+ }
+ const historyBtn=[...document.querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='openHistory()');
+ if(historyBtn&&!$('v93ChatLogBtn')){const b=document.createElement('button');b.id='v93ChatLogBtn';b.className='btn ghost small';b.textContent='チャットログ';b.onclick=v93OpenChatLog;historyBtn.insertAdjacentElement('afterend',b)}
+}
+function v93NormalizeChats(){if(!game)return[];game.playerChats=Array.isArray(game.playerChats)?game.playerChats:[];return game.playerChats}
+function v93ChatSignature(list){return list.map(x=>x.id).join('|')}
+function v93RenderChat(){
+ v93EnsureChatDom();if(!$('v93ChatStream'))return;
+ const all=v93NormalizeChats(),shown=all.slice(-V93_CHAT.maxVisible),sig=v93ChatSignature(shown),stream=$('v93ChatStream');
+ if(sig!==V93_CHAT.lastSignature){stream.innerHTML=shown.map(m=>{let c=chars?.[m.actor],name=m.name||c?.name||`P${m.actor+1}`,img=v93ChatPortrait(m.actor);return `<div class="v93ChatRow" data-chat-id="${esc(m.id)}"><img class="v93ChatAvatar" src="${img}" alt=""><div class="v93ChatBubble"><div class="v93ChatName">P${m.actor+1} ${esc(name)}</div><div class="v93ChatText">${esc(m.text)}</div></div></div>`}).join('');V93_CHAT.lastSignature=sig}
+ const input=$('v93ChatInput'),send=$('v93ChatSend'),enabled=v93CanChat();if(input)input.disabled=!enabled;if(send)send.disabled=!enabled;
+}
+function v93HostAcceptChat(actor,raw){
+ if(NET.mode!=='host'||!game||!chars?.[actor])return false;
+ let text=String(raw||'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').trim().slice(0,160);if(!text)return false;
+ let list=v93NormalizeChats(),m={id:`chat_${Date.now()}_${actor}_${Math.random().toString(36).slice(2,7)}`,actor,name:chars[actor].name,text,at:Date.now(),round:game.round||0};list.push(m);if(list.length>500)list.splice(0,list.length-500);
+ try{playSE('click')}catch(e){}v93RenderChat();netBroadcastSoon?.();v88PersistHost?.();return true
+}
+function v93SubmitChat(){
+ if(!v93CanChat())return;let inp=$('v93ChatInput'),text=String(inp?.value||'').trim();if(!text)return;
+ if(NET.mode==='host'){if(v93HostAcceptChat(0,text))inp.value=''}
+ else if(NET.mode==='join'&&NET.conn?.open){NET.conn.send({type:'v93chatIntent',text});inp.value=''}
+}
+function v93OpenChatLog(){
+ let list=v93NormalizeChats();let body=list.length?list.map(m=>{let c=chars?.[m.actor],img=v93ChatPortrait(m.actor),name=m.name||c?.name||`P${m.actor+1}`,time=m.at?new Date(m.at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';return `<div class="v93ChatLogEntry"><img src="${img}" alt=""><div><b>P${m.actor+1} ${esc(name)}<span class="v93ChatLogTime">ROUND ${m.round||'-'} / ${esc(time)}</span></b><p>${esc(m.text)}</p></div></div>`}).join(''):'<p class="muted">まだプレイヤーチャットはありません。</p>';
+ $('overlaycontent').innerHTML=`<h2>プレイヤーチャットログ</h2><p class="muted">メイン画面から押し出されて消えた発言も含め、このセッション中のプレイヤーチャットをすべて表示します。</p>${body}`;$('overlay').classList.remove('hidden')
+}
+/* Guest chat intent is received only by the host. */
+if(typeof v88AttachHostConnection==='function'){
+ const V93_ATTACH_BASE=v88AttachHostConnection;
+ v88AttachHostConnection=function(conn){
+  conn.on('data',m=>{if(m?.type!=='v93chatIntent')return;let slot=null;for(const [i,c] of NET.conns.entries())if(c===conn){slot=i;break}if(slot!=null)v93HostAcceptChat(slot,m.text)});
+  return V93_ATTACH_BASE(conn)
+ }
+}
+/* Player-chat data is part of the normal authoritative game snapshot. */
+if(typeof v86ApplySnapshot==='function'){
+ const V93_SNAPSHOT_BASE=v86ApplySnapshot;
+ v86ApplySnapshot=function(payload){V93_SNAPSHOT_BASE(payload);V93_CHAT.lastSignature='';v93RenderChat()}
+}
+if(typeof render==='function'){
+ const V93_RENDER_BASE=render;
+ render=function(){V93_RENDER_BASE();v93RenderChat()}
+}
+window.addEventListener('load',()=>{v93EnsureChatDom();v93RenderChat()});
+</script>
+
+<style id="v94chatcss">
+/* ===== v9.4: chat composer below main scene + 5s inactivity fade ===== */
+.v93ChatLayer{bottom:198px}
+.v93ChatStream{transition:opacity .7s ease,transform .7s ease;will-change:opacity,transform}
+.v93ChatStream.v94ChatFaded{opacity:0;transform:translateY(8px)}
+#v93ChatLayer .v93ChatComposer{display:none!important}
+.v94ChatComposerWrap{margin:8px 0 10px;padding:7px 8px;background:linear-gradient(180deg,#111922e8,#0a1118e8);border:1px solid #44515d;border-radius:9px;box-shadow:0 7px 18px #0005;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center}
+.v94ChatComposerWrap input{width:100%;min-width:0;background:#0b1219;border:1px solid #596774;color:#fff;padding:9px 11px;border-radius:7px;font-size:13px}
+.v94ChatComposerWrap input:focus{outline:1px solid #b59a68;border-color:#8d7a58}
+.v94ChatComposerWrap .v94ChatMini{grid-column:1/-1;font-size:9px;color:#87949f;padding-left:2px;line-height:1.3}
+@media(max-width:760px){.v94ChatComposerWrap{margin:6px 0 8px;padding:6px}.v94ChatComposerWrap input{font-size:12px;padding:8px 9px}}
+</style>
+<script id="v94chat">
+/* ===== v9.4: recent-chat redisplay + fade after 5 seconds ===== */
+var V94_CHAT={fadeTimer:null,lastNewestId:null};
+function v94ArmFade(){
+ const stream=$('v93ChatStream');if(!stream)return;
+ stream.classList.remove('v94ChatFaded');
+ if(V94_CHAT.fadeTimer)clearTimeout(V94_CHAT.fadeTimer);
+ V94_CHAT.fadeTimer=setTimeout(()=>{let s=$('v93ChatStream');if(s)s.classList.add('v94ChatFaded')},5000);
+}
+function v93EnsureChatDom(){
+ const scene=$('scene');if(!scene)return;
+ let layer=$('v93ChatLayer');
+ if(!layer){
+  layer=document.createElement('div');layer.id='v93ChatLayer';layer.className='v93ChatLayer';
+  layer.innerHTML='<div id="v93ChatStream" class="v93ChatStream v94ChatFaded"></div>';
+  scene.appendChild(layer);
+ }else{
+  const oldComposer=layer.querySelector('.v93ChatComposer');if(oldComposer)oldComposer.remove();
+  if(!$('v93ChatStream')){const s=document.createElement('div');s.id='v93ChatStream';s.className='v93ChatStream v94ChatFaded';layer.appendChild(s)}
+ }
+ layer.addEventListener('click',e=>e.stopPropagation());layer.addEventListener('pointerdown',e=>e.stopPropagation());
+ let wrap=$('v94ChatComposerWrap');
+ if(!wrap){
+  wrap=document.createElement('div');wrap.id='v94ChatComposerWrap';wrap.className='v94ChatComposerWrap';
+  wrap.innerHTML='<input id="v93ChatInput" maxlength="160" autocomplete="off" placeholder="プレイヤーチャット…"><button id="v93ChatSend" class="btn small" type="button">送信</button><div class="v94ChatMini">最新発言から5秒で画面上の吹き出しは消えます。新しい発言が来ると直前数件も再表示されます。</div>';
+  scene.insertAdjacentElement('afterend',wrap);
+  $('v93ChatSend').addEventListener('click',v93SubmitChat);
+  $('v93ChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();v93SubmitChat()}});
+ }
+ const historyBtn=[...document.querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='openHistory()');
+ if(historyBtn&&!$('v93ChatLogBtn')){const b=document.createElement('button');b.id='v93ChatLogBtn';b.className='btn ghost small';b.textContent='チャットログ';b.onclick=v93OpenChatLog;historyBtn.insertAdjacentElement('afterend',b)}
+}
+function v93RenderChat(){
+ v93EnsureChatDom();const stream=$('v93ChatStream');if(!stream)return;
+ const all=v93NormalizeChats(),shown=all.slice(-V93_CHAT.maxVisible),newest=all.length?all[all.length-1].id:null;
+ const visibleSig=shown.map(x=>x.id).join('|');
+ if(stream.dataset.sig!==visibleSig){
+  stream.innerHTML=shown.map(m=>{let c=chars?.[m.actor],name=m.name||c?.name||`P${m.actor+1}`,img=v93ChatPortrait(m.actor);return `<div class="v93ChatRow" data-chat-id="${esc(m.id)}"><img class="v93ChatAvatar" src="${img}" alt=""><div class="v93ChatBubble"><div class="v93ChatName">P${m.actor+1} ${esc(name)}</div><div class="v93ChatText">${esc(m.text)}</div></div></div>`}).join('');
+  stream.dataset.sig=visibleSig;
+ }
+ if(newest&&newest!==V94_CHAT.lastNewestId){V94_CHAT.lastNewestId=newest;v94ArmFade()}
+ if(!newest){stream.classList.add('v94ChatFaded');V94_CHAT.lastNewestId=null}
+ const input=$('v93ChatInput'),send=$('v93ChatSend'),enabled=v93CanChat();if(input)input.disabled=!enabled;if(send)send.disabled=!enabled;
+}
+window.addEventListener('load',()=>{setTimeout(()=>{v93EnsureChatDom();v93RenderChat()},40)});
 </script>
 
 </body></html>
