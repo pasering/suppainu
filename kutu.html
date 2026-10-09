@@ -53,8 +53,15 @@
 .npcPortrait img{object-position:center 18%!important;}
 .npcMini img,.clienttab img,.partyRow img{object-position:center 20%!important;}
 </style>
+
+<style id="v98BgmVolumeStyle">
+.bgmVolControl{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.035);font-size:11px;color:#cfd5df;white-space:nowrap}
+.bgmVolControl span{width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.bgmVolControl input[type=range]{width:92px;height:18px;accent-color:#d4b46f;cursor:pointer}
+@media(max-width:760px){.bgmVolControl input[type=range]{width:68px}.bgmVolControl{padding:3px 5px;gap:4px}}
+</style>
 </head><body>
-<div class="shell"><header><div><h1>クトゥルフ100</h1><small>SCENARIO COLLECTION — 001 / 月桂号、五度鳴る / v8.12 ONLINE LOBBY + NOVEL</small></div><div class="row"><button id="bgmBtn" class="btn ghost small audioOn" onclick="toggleBGM()">♪ BGM ON</button><button id="seBtn" class="btn ghost small" onclick="toggleSE()">🔊 SE ON</button><button class="btn ghost small" onclick="openScenarioInfo()">シナリオ情報</button><button id="netBtn" class="btn ghost small" onclick="openNetwork()">🌐 ONLINE</button><span id="netStatus" class="netStatus">LOCAL</span><button id="restartBtn" class="btn ghost small" onclick="requestRestart()">最初から</button></div></header>
+<div class="shell"><header><div><h1>クトゥルフ100</h1><small>SCENARIO COLLECTION — 001 / 月桂号、五度鳴る / v8.12 ONLINE LOBBY + NOVEL</small></div><div class="row"><button id="bgmBtn" class="btn ghost small audioOn" onclick="toggleBGM()">♪ BGM ON</button><label class="bgmVolControl" title="BGM音量"><span id="bgmVolLabel">100%</span><input id="bgmVolSlider" type="range" min="0" max="100" step="1" value="100" oninput="setBGMVolume(this.value)"></label><button id="seBtn" class="btn ghost small" onclick="toggleSE()">🔊 SE ON</button><button class="btn ghost small" onclick="openScenarioInfo()">シナリオ情報</button><button id="netBtn" class="btn ghost small" onclick="openNetwork()">🌐 ONLINE</button><span id="netStatus" class="netStatus">LOCAL</span><button id="restartBtn" class="btn ghost small" onclick="requestRestart()">最初から</button></div></header>
 <div id="stepbar" class="stepbar"><div class="step on">1. パーソナルデータ</div><div class="step">2. 能力値</div><div class="step">3. デッキ</div><div class="step">4. シナリオ</div></div>
 <section id="setup" class="setupgrid"><div class="panel"><h2>探索者を作成</h2><div class="note">名前・年齢・職業を決めたあと、能力値をダイスで生成します。技能の初期値には職業補正を入れません。年齢変更時は能力値補正のみ再計算します。</div><div class="row" style="margin-top:12px"><label>人数 <select id="count" onchange="renderPersons()"><option>1</option><option>2</option><option>3</option><option selected>4</option></select></label><span class="pill">SCENARIO 001</span><b style="color:var(--gold)">月桂号、五度鳴る</b></div><div class="muted" style="margin-top:7px">基本4人向け。3人は判定+5%、2人は+10%、1人は+15%の少人数補正。</div><div id="persons" style="margin-top:10px"></div><div class="muted" style="margin:7px 0 11px">各探索者の顔画像もここで選択。使用された画像はNPC配役候補から除外されます。追加ポートレートも収録済み。</div><button class="btn primary" onclick="makeCharacters()">能力値を決める →</button></div><div class="panel"><h2>職業8種</h2><div id="jobgrid" class="jobgrid"></div><div class="note" style="margin-top:10px">技能の基礎成功率は探索者本人が持ちます。カードは《目星 +25%》のように、その判定だけ成功率を上乗せします。</div></div></section>
 <section id="statscreen" class="hidden"><div class="panel"><div class="between"><div><h2>能力値生成</h2><div class="muted">6版ベースの試作用自動生成。年齢補正もこの画面で再計算。振り直しは探索者1人につき3回まで。</div></div><button id="rerollAllBtn" class="btn ghost" onclick="rerollAll()">全員振り直す（各1回消費）</button></div><div id="statplayers" class="statplayers"></div><div class="row" style="margin-top:13px"><button class="btn ghost" onclick="backSetup()">戻る</button><button class="btn primary" onclick="goDeck()">デッキ構築へ →</button></div></div></section>
@@ -2341,4 +2348,433 @@ function v93RenderChat(){
 window.addEventListener('load',()=>{setTimeout(()=>{v93EnsureChatDom();v93RenderChat()},40)});
 </script>
 
+
+<style id="v95css">
+/* ===== v9.5: operator paging / SAN & insanity / compact deck ===== */
+.v95Insane{border-color:#934f63!important;background:linear-gradient(160deg,#24141b,#111820)!important;box-shadow:inset 3px 0 #b75e78}
+.v95InsaneBadge{display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border-radius:999px;border:1px solid #a6546d;background:#341622;color:#ffc6d5;font-size:9px;font-weight:800;margin-top:4px}
+.v95PsyBtn{grid-column:1/-1;width:100%;padding:5px 7px;font-size:10px;border:1px solid #88596b;border-radius:7px;background:#2a1720;color:#f5c2d1}
+.v95PsyBtn:hover:not(:disabled){filter:brightness(1.2)}.v95PsyBtn:disabled{opacity:.35}
+.v95SanWarn{margin-top:6px;color:#e5b4c0;font-size:10px;line-height:1.45}
+.v95PsyChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.v95PsyChoice{position:relative;padding:10px;border:1px solid #4b5965;border-radius:9px;background:#121a21;color:#e8eef2;text-align:left;min-height:86px}
+.v95PsyChoice b{display:block;color:#eed7aa;margin-bottom:5px}.v95PsyChoice small{color:#a9b5be;line-height:1.45}
+.v95OperatorWait{color:#bea876!important}
+/* deck construction: show more cards at once */
+.v812BuildOnly .ocPool{grid-template-columns:repeat(5,minmax(86px,1fr))!important;gap:5px!important;max-height:560px!important}
+.v812BuildOnly .ocPool .card.visualCard{min-height:112px!important;filter:drop-shadow(0 3px 4px #0006)}
+.v812BuildOnly .ocPool .cardTitleV{font-size:9px!important;left:8%!important;right:8%!important}
+.v812BuildOnly .ocPool .cardApBadge{font-size:8px!important;min-width:29px!important;padding:2px 3px!important}
+.v812BuildOnly .ocPool .cardBonusV{font-size:10px!important}.v812BuildOnly .ocPool .cardRateV{font-size:9px!important}.v812BuildOnly .ocPool .cardMetaV{font-size:7px!important}
+.v812BuildOnly .ocPool .cardIconV{width:48%!important;height:29%!important;top:21%!important}
+@media(max-width:1150px){.v812BuildOnly .ocPool{grid-template-columns:repeat(4,minmax(82px,1fr))!important}}
+@media(max-width:760px){.v812BuildOnly .ocPool{grid-template-columns:repeat(3,minmax(78px,1fr))!important}.v95PsyChoices{grid-template-columns:1fr}}
+</style>
+<script id="v95script">
+/* ===== v9.5 ===== */
+const V95_HORROR={
+ '船底からの打音':{ok:0,bad:1,label:'船底から規則的に返る、自然現象とは思えない打音'},
+ '扉の向こうの音':{ok:0,bad:1,label:'人の救難音とは異なる五度の打音'},
+ '石棺状遺物':{ok:1,bad:'1d4',label:'石棺状遺物が自ら脈打つように振動する光景'},
+ '遠くの鐘音':{ok:0,bad:1,label:'鐘ではなく地面の下から響く十三回目の音'},
+ '換気孔の声':{ok:0,bad:1,label:'閉鎖坑道の奥から返る人声に似た音'},
+ '鳴石の地層':{ok:1,bad:'1d4',label:'岩盤そのものが生物のように共鳴する光景'},
+ '繰り返す駅名標':{ok:0,bad:1,label:'同じ廃駅を何度も通過している事実'},
+ '扉の向こうの声':{ok:0,bad:1,label:'存在しない車両から聞こえる声'},
+ '旧式検札器と黒い券':{ok:0,bad:'1d3',label:'現実の編成に存在しない零号車の乗車記録'},
+ '共鳴体':{ok:1,bad:'1d6',label:'人間の認識へ干渉する共鳴体の実物'},
+ 'E-05':{ok:0,bad:'1d3',label:'存在しないはずの第五被験者の痕跡'},
+ '事故ログ':{ok:0,bad:1,label:'施設が五人目を検出し続けた事故記録'},
+ 'ORPHEUS制御AI':{ok:0,bad:1,label:'AIが人間とは別の「五人目」を認識している事実'},
+ '海から続く足跡':{ok:0,bad:1,label:'海中から陸へ続き、戻っていない足跡'},
+ '壁の粘液':{ok:0,bad:1,label:'洞窟壁に残る未知生物由来の粘液'},
+ '水音の向こうの声':{ok:0,bad:1,label:'海水の奥から人声に似た音が返る現象'},
+ '青錆色の共鳴殻':{ok:1,bad:'1d4',label:'多数の生物を引き寄せる巨大な共鳴殻'}
+};
+const V95_THRESHOLDS=[30,20,10];
+function v95RollLoss(v){if(typeof v==='number')return v;let m=String(v||0).match(/^(\d+)d(\d+)(?:\+(\d+))?$/i);if(!m)return Number(v)||0;let n=+m[1],s=+m[2],z=+(m[3]||0);for(let i=0;i<n;i++)z+=rnd(1,s);return z}
+function v95OwnSlot(){return NET?.mode==='join'?NET.slot:0}
+function v95MessageOwner(){return Number.isInteger(game?.message?.pageOwner)?game.message.pageOwner:(game?.actionActor??0)}
+function v95CanPage(){return !game?.message||v95OwnSlot()===v95MessageOwner()}
+
+/* authoritative page owner + page index */
+const V95_SET_ADV_BASE=setAdv;
+setAdv=function(speaker,text,buttons=[],record=true){
+ const owner=game?.actionActor!=null?game.actionActor:viewIndex();
+ V95_SET_ADV_BASE(speaker,text,buttons,record);
+ if(game?.message){game.message.pageOwner=owner;game.message.pageIndex=0;V811_ADV.index=0}
+ if(NET?.mode==='host')netBroadcastSoon?.()
+};
+const V95_SYNC_BASE=v811SyncLocal;
+v811SyncLocal=function(force=false){let ok=V95_SYNC_BASE(force);if(ok&&game?.message&&Number.isInteger(game.message.pageIndex)){V811_ADV.index=Math.max(0,Math.min(game.message.pageIndex,V811_ADV.pages.length-1))}return ok};
+const V95_IND_BASE=v811UpdateIndicator;
+v811UpdateIndicator=function(){V95_IND_BASE();let ind=$('advPageIndicator');if(!ind||!game?.message)return;v811SyncLocal(false);if(V811_ADV.index<V811_ADV.pages.length-1&&!v95CanPage()){ind.textContent=`${V811_ADV.index+1} / ${V811_ADV.pages.length}　P${v95MessageOwner()+1} のページ送り待ち`;ind.classList.add('v95OperatorWait');ind.classList.remove('more')}else ind.classList.remove('v95OperatorWait')};
+function v95HostAdvancePage(slot){
+ if(!game?.message||v95MessageOwner()!==slot)return false;
+ v811SyncLocal(false);if((game.message.pageIndex||0)>=V811_ADV.pages.length-1)return false;
+ game.message.pageIndex=(game.message.pageIndex||0)+1;V811_ADV.index=game.message.pageIndex;v811ShowPage(true);netBroadcastSnapshot?.(true);return true
+}
+v811AdvancePage=function(){
+ if(!game?.message)return false;v811SyncLocal(false);
+ if(!game.typeDone){v811FinishTyping();return true}
+ if(V811_ADV.index>=V811_ADV.pages.length-1)return false;
+ if(!v95CanPage()){v811UpdateIndicator();return true}
+ if(NET?.mode==='join'){
+  if(!game.globalLock){game.message.pageIndex=(game.message.pageIndex||0)+1;V811_ADV.index=game.message.pageIndex;v811ShowPage(true);return true}
+  netSendIntent('pageAdvance');return true
+ }
+ return v95HostAdvancePage(v95OwnSlot())
+};
+
+/* SAN / insanity */
+function v95ThresholdReason(c,before,after,loss){
+ c.sanThresholds=c.sanThresholds||{};let reasons=[];
+ if(loss>=5)reasons.push(`一度にSANを${loss}失った`);
+ for(const th of V95_THRESHOLDS){if(before>th&&after<=th&&!c.sanThresholds[th]){c.sanThresholds[th]=true;reasons.push(`SANが${th}以下になった`)}}
+ return reasons
+}
+function v95InsanityFromRoll(roll){
+ if(roll<=30)return{type:'panic',label:'恐慌',desc:'精神分析に成功するまで、自分から移動・調査・作業を行えない。'};
+ if(roll<=55)return{type:'flight',label:'逃走衝動',desc:'各ラウンド開始時、AP1を消費して隣接地点へ勝手に移動する。通常の調査はできない。'};
+ if(roll<=75)return{type:'compulsion',label:'強迫行動',desc:'各ラウンド開始時、AP1を消費して勝手な行動をする。通常の調査はできない。'};
+ return{type:'paranoia',label:'被害妄想',desc:'各ラウンド開始時、ほかの探索者1人からAP1を奪う。通常の調査はできない。'}
+}
+function v95IdeaSequence(actor,before,loss,done){
+ const c=chars[actor];if(!c||c.insanity){done('');return}
+ const reasons=v95ThresholdReason(c,before,c.san,loss);if(!reasons.length){done('');return}
+ const rate=Math.min(99,(c.stats?.INT||0)*5),roll=rnd(1,100);
+ game.lockReason=`P${actor+1} アイデアロール`;renderClientBar?.();
+ animateDice(roll,()=>{
+  if(roll>rate){done(`\nアイデアロール ${roll}/${rate}：失敗。恐怖を完全には理解できず、発狂は免れた。`);return}
+  const ir=rnd(1,100);game.lockReason=`P${actor+1} 発狂ロール`;renderClientBar?.();
+  animateDice(ir,()=>{let ins=v95InsanityFromRoll(ir);c.insanity={...ins,roll:ir,startedRound:game.round};playSE('horror');done(`\nアイデアロール ${roll}/${rate}：成功。\n発狂ロール ${ir} → 【${ins.label}】\n${ins.desc}`)},'発狂ロール')
+ },`アイデア ${rate}%`)
+}
+function v95HorrorSpec(t,outcome,actor){let s=V95_HORROR[t?.name];if(!s||!['success','critical'].includes(outcome))return null;let c=chars[actor];c.sanSeen=c.sanSeen||{};if(c.sanSeen[t.name])return null;return s}
+function v95ContinueButtons(actor,finalReady){return finalReady?[{label:'最終判断へ',primary:true,actorOnly:true,fn:finale},{label:'探索を続ける',actorOnly:true,fn:unlockGlobal}]:[{label:'次へ ▶',primary:true,actorOnly:true,fn:unlockGlobal}]}
+function v95PersonalSan(actor){
+ let p=game?.pendingPersonalSan;if(!p||p.actor!==actor||!chars[actor])return;let c=chars[actor],before=c.san,roll=rnd(1,100),ok=roll<=before;
+ c.sanSeen=c.sanSeen||{};c.sanSeen[p.targetName]=true;game.lockReason=`P${actor+1} SANチェック`;renderClientBar?.();
+ animateDice(roll,()=>{let loss=v95RollLoss(ok?p.spec.ok:p.spec.bad);c.san=Math.max(0,c.san-loss);let base=`${p.spec.label}\n\nSANチェック ${roll}/${before}：${ok?'成功':'失敗'}${loss?`（SAN -${loss}）`:'（SAN減少なし）'}`;
+  v95IdeaSequence(actor,before,loss,extra=>{game.pendingPersonalSan=null;render();setAdv('SANチェック',base+extra,v95ContinueButtons(actor,p.finalReady),true);netBroadcastSoon?.()})
+ },`SAN ${before}`)
+}
+function v95InsanityRoundEffects(){
+ if(!game)return[];let logs=[];
+ chars.forEach((c,i)=>{let ins=c.insanity;if(!ins)return;
+  if(ins.type==='panic'){logs.push(`P${i+1} ${c.name}：恐慌状態が続いている。`);return}
+  if(ins.type==='flight'){
+   if(c.ap>0){let ns=EDGES.filter(e=>e.includes(c.at)).map(e=>e[0]===c.at?e[1]:e[0]);if(ns.length){let to=rand(ns);c.at=to;c.selected=null;c.target=null;c.selectedSkill=null;c.ap--;logs.push(`P${i+1} ${c.name}：逃走衝動で「${game.rooms[to]?.title||'別の場所'}」へ勝手に移動し、AP1を消費した。`)}}
+  }else if(ins.type==='compulsion'){
+   if(c.ap>0){c.ap--;if(c.hand.length){let idx=rnd(0,c.hand.length-1);let nm=cardTitle(c.hand[idx]);v813DrawOneReplacement(c,idx);logs.push(`P${i+1} ${c.name}：強迫行動でAP1を消費し、手札「${nm}」を勝手に引き直した。`)}else logs.push(`P${i+1} ${c.name}：強迫行動でAP1を消費した。`)}
+  }else if(ins.type==='paranoia'){
+   let opts=chars.map((x,j)=>({x,j})).filter(o=>o.j!==i&&o.x.ap>0);if(opts.length){let o=rand(opts);o.x.ap--;c.ap=Math.min(game.apMax,c.ap+1);logs.push(`P${i+1} ${c.name}：被害妄想によりP${o.j+1} ${o.x.name}からAP1を奪った。`)}
+  }
+ });return logs
+}
+
+/* Round SAN checks now also run Idea / insanity when conditions are met. */
+runSanChecks=function(ev){
+ if(!game)return;let st=game.sanCheckState;if(!st)st=game.sanCheckState={loss:ev.loss,index:0,results:[]};game.globalLock=true;
+ const next=()=>{let i=st.index;if(i>=chars.length){let rs=st.results.slice();game.sanCheckState=null;chars.forEach(c=>{c.ready=false;c.ap=game.apMax;c.target=null;c.selectedSkill=null;c.selected=null;draw(c,game.handMax)});let auto=v95InsanityRoundEffects();if(auto.length)rs.push('', '【発狂による自動行動】',...auto);game.actionActor=null;game.lockReason='SANチェック結果';syncViewState();render();setAdv('SANチェック',rs.join('\n'),[{label:'次のラウンドへ',primary:true,fn:()=>{game.globalLock=false;game.lockReason='';render();idleMessage();netBroadcastSoon?.()}}]);netBroadcastSoon?.();return}
+  let c=chars[i],before=c.san,roll=rnd(1,100),ok=roll<=before;game.lockReason=`SANチェック P${i+1} ${c.name}`;renderClientBar?.();netBroadcastSoon?.();
+  animateDice(roll,()=>{let loss=ok?0:v95RollLoss(st.loss);c.san=Math.max(0,c.san-loss);let line=`P${i+1} ${c.name}：${roll} / SAN ${before} → ${ok?'成功':`失敗（SAN -${loss}）`}`;v95IdeaSequence(i,before,loss,extra=>{st.results.push(line+extra);st.index++;netBroadcastSoon?.();setTimeout(next,140)})},`P${i+1} SAN ${before}`)
+ };next()
+};
+
+/* Investigation: disturbing discoveries can trigger SAN even without a fumble. */
+investigate=function(skill,cardIndex){
+ let g=game,actor=viewIndex(),c=chars[actor],r=g.rooms[c.at],t=r.targets[c.target];if(actionBlocked()||!t||!v810CanAttempt(t,actor,skill))return;
+ if(c.insanity)return;
+ let base=c.skills[skill]||0,pb=g.partySkillBonus||0,card=cardIndex>=0?c.hand[cardIndex]:null,cost=card?card.ap:1,rate=clamp(base+pb+(card?card.bonus:0),0,95);
+ if(c.ap<cost){setAdv('システム','APが足りない。',[{label:'戻る',primary:true,fn:idleMessage}],false);return}
+ c.ap-=cost;if(card){c.hand.splice(cardIndex,1);c.discard.push(card)}lockGlobal(actor,`${c.name}が${t.name}を${v810Mode(skill)==='work'?'作業':'調査'}中`);let roll=rnd(1,100);
+ animateDice(roll,()=>{let outcome=roll<=5?'critical':roll>=96?'fumble':roll<=rate?'success':'failure',resolved=resolveScenarioResult(t,outcome,c);v810MarkOutcome(t,actor,skill,outcome);
+  if(outcome==='critical')playSE('critical');else if(outcome==='fumble')playSE('fumble');else if(outcome==='success'&&resolved.result?.fact)playSE('discover');
+  if(outcome==='success'||outcome==='critical')t.done=resolved.complete!==false;
+  let d=v9Scenario(g.scenarioNo),finalCount=g.facts.filter(x=>(d.finalFactIds||[]).includes(x.id)).length,finalReady=r.role==='final'&&finalCount>=(d.finalTriggerMin||2);
+  let spec=v95HorrorSpec(t,outcome,actor),buttons=v95ContinueButtons(actor,finalReady);
+  if(spec){game.pendingPersonalSan={actor,targetName:t.name,spec,finalReady};buttons=[{label:'SANチェック',primary:true,actorOnly:true,fn:()=>v95PersonalSan(actor)}]}
+  let msg=buildInvestigationMessage(c,t,skill,outcome,resolved,rate,roll,base,pb,card);if((outcome==='failure'||outcome==='fumble')&&v810Mode(skill)==='inspect')msg+=`\n\n【再調査】\nこの探索者はROUND ${game.round+3}から、この対象をもう一度調査できます。`;
+  let speaker=getNpc(t.name)?.name||'ナレーション';setAdv(speaker,msg,buttons);render();checkNoAP();netBroadcastSoon?.()
+ },`${skill}判定`)
+};
+
+/* Deliberate actions are blocked while insane, but ending the round remains possible. */
+const V95_ACTION_BLOCK_BASE=actionBlocked;
+actionBlocked=function(){if(V95_ACTION_BLOCK_BASE())return true;return !!viewChar()?.insanity};
+finishTurn=function(){
+ if(!game||game.phase!=='investigation'||game.ended||game.globalLock)return;let i=viewIndex(),c=viewChar();if(c.ready)return;
+ if(NET?.mode==='join'){netSendIntent('ready');return}markReady(i,false);netBroadcastSoon?.()
+};
+
+/* Party sidebar + Psychoanalysis */
+const V95_RENDER_SIDE_BASE=renderSide;
+renderSide=function(){
+ V95_RENDER_SIDE_BASE();if(!game)return;let actor=viewIndex(),me=chars[actor];
+ $('party').innerHTML=chars.map((p,i)=>{let ins=p.insanity,can=!!ins&&!game.globalLock&&!game.ended&&me?.ap>0&&(!me?.insanity||chars.length===1);return `<div class="partyRow ${ins?'v95Insane':''}"><img src="${playerPortrait(p)}" alt=""><span>${i===actor?'▶ ':''}P${i+1} ${esc(p.name)}<br><span class="muted">${esc(game.rooms[p.at]?.title||'')}${p.ready?' / 行動終了':''}</span>${ins?`<br><span class="v95InsaneBadge">発狂：${esc(ins.label)}</span>`:''}</span><span>AP ${p.ap}<br>SAN ${p.san}</span>${ins?`<button class="v95PsyBtn" ${can?'':'disabled'} onclick="v95OpenPsycho(${i})">精神分析する</button>`:''}</div>`}).join('')
+};
+function v95OpenPsycho(target){
+ if(!game||!chars[target]?.insanity)return;let actor=viewIndex(),c=chars[actor];if(game.globalLock||game.ended||c.ap<1)return;if(c.insanity&&chars.length>1)return alert('発狂中の探索者は、ほかの探索者へ精神分析を行えません。');
+ let pb=game.partySkillBonus||0,base=c.skills?.['精神分析']||1,cards=c.hand.map((x,i)=>({x,i})).filter(o=>cardApplies(o.x,'精神分析'));
+ $('overlaycontent').innerHTML=`<h2>精神分析：P${target+1} ${esc(chars[target].name)}</h2><div class="note">${esc(chars[target].insanity.label)}：${esc(chars[target].insanity.desc)}<br>失敗しても、APがあれば何度でも再挑戦できます。</div><div class="v95PsyChoices"><button class="v95PsyChoice" onclick="v95PsychoAttempt(${target},null)"><b>技能なしで実行</b><small>精神分析 ${Math.min(95,base+pb)}%<br>消費AP 1</small></button>${cards.map(o=>`<button class="v95PsyChoice" onclick="v95PsychoAttempt(${target},'${o.x.uid||''}')"><b>${esc(cardTitle(o.x))}</b><small>補正 +${o.x.bonus}% / 最終 ${Math.min(95,base+pb+o.x.bonus)}%<br>消費AP ${o.x.ap}</small></button>`).join('')}</div><button class="btn ghost" style="margin-top:12px" onclick="closeOverlay()">閉じる</button>`;$('overlay').classList.remove('hidden')
+}
+function v95PsychoAttempt(target,uid){if(NET?.mode==='join'){closeOverlay();netSendIntent('psycho',{target,cardUid:uid});return}closeOverlay();v95PsychoAttemptHost(viewIndex(),target,uid)}
+function v95PsychoAttemptHost(actor,target,uid){
+ let c=chars[actor],p=chars[target];if(!c||!p?.insanity||game.globalLock||c.ap<1)return;let idx=uid?c.hand.findIndex(x=>x.uid===uid):-1,card=idx>=0?c.hand[idx]:null,cost=card?card.ap:1;if(c.ap<cost)return;
+ let rate=Math.min(95,(c.skills?.['精神分析']||1)+(game.partySkillBonus||0)+(card?.bonus||0));c.ap-=cost;if(card){c.hand.splice(idx,1);c.discard.push(card)};if(c.ready)c.ready=false;lockGlobal(actor,`${c.name}が${p.name}へ精神分析中`);let roll=rnd(1,100);
+ animateDice(roll,()=>{let out=roll<=5?'critical':roll>=96?'fumble':roll<=rate?'success':'failure',txt=`P${actor+1} ${c.name}がP${target+1} ${p.name}へ《精神分析》を行った。\n\n出目 ${roll} / 成功率 ${rate}%`;
+  if(out==='critical'||out==='success'){let old=p.insanity.label;p.insanity=null;if(out==='critical')p.san=Math.min(99,p.san+1);playSE(out==='critical'?'critical':'discover');txt+=`\n\n【${out==='critical'?'クリティカル':'成功'}】\n${old}は収まり、通常行動へ戻れる。${out==='critical'?' SANも1回復した。':''}`}
+  else if(out==='fumble'){playSE('fumble');let before=c.san;c.san=Math.max(0,c.san-1);txt+=`\n\n【ファンブル】\n相手の混乱に引きずられ、分析者のSANが1減少した。`}
+  else txt+=`\n\n【失敗】\n症状は収まらない。APがあれば再び精神分析を試みられる。`;
+  setAdv('精神分析',txt,[{label:'次へ ▶',primary:true,actorOnly:true,fn:unlockGlobal}]);render();netBroadcastSoon?.()
+ },'精神分析')
+}
+
+/* online intents for page advance, personal SAN and psychoanalysis */
+const V95_NET_HOST_BASE=netHandleHostData;
+netHandleHostData=function(slot,m){
+ if(m?.type==='intent'){
+  if(m.action==='pageAdvance'){v95HostAdvancePage(slot);return}
+  if(m.action==='personalSan'){if(game?.actionActor===slot)v95PersonalSan(slot);return}
+  if(m.action==='psycho'){let x=m.args||{};netWithSlot(slot,()=>v95PsychoAttemptHost(slot,+x.target,x.cardUid||null));return}
+ }
+ return V95_NET_HOST_BASE(slot,m)
+};
+const V95_GUEST_ADV_BASE=advAction;
+advAction=function(i){
+ if(NET?.mode!=='join')return V95_GUEST_ADV_BASE(i);
+ if(v811AdvancePage())return;
+ if(!game?.typeDone)return;let b=game.message?.buttons?.[i];if(!b)return;
+ if(b.actorOnly&&game.actionActor!==NET.slot)return;
+ if(!b.actorOnly&&!game.globalLock&&v95MessageOwner()===NET.slot&&typeof b.fn==='function')return b.fn();
+ let label=String(b.label||'');if(label.includes('SANチェック'))return netSendIntent('personalSan');
+ if(label.includes('最終判断'))return netSendIntent('finale');
+ if(label.includes('次へ')||label.includes('探索を続ける'))return netSendIntent('unlock')
+};
+
+/* keep guest ADV controls visible only for the operator */
+const V95_RENDER_ADV_BASE=renderAdvActions;
+renderAdvActions=function(){
+ if(!game?.message){$('advactions').innerHTML='';return}v811SyncLocal(false);
+ if(!game.typeDone||V811_ADV.index<V811_ADV.pages.length-1){$('advactions').innerHTML='';v811UpdateIndicator();return}
+ if(NET?.mode!=='join'){V95_RENDER_ADV_BASE();return}
+ let buttons=game.message.buttons||[],owner=v95MessageOwner();$('advactions').innerHTML=buttons.map((b,i)=>{let allowed=owner===NET.slot&&(b.actorOnly||owner===NET.slot);let label=allowed?b.label:`P${owner+1} の操作待ち`;return `<button class="btn ${b.primary?'primary':'ghost'}" ${allowed?'':'disabled'} onclick="advAction(${i})">${esc(label)}</button>`}).join('')
+};
+
+window.addEventListener('load',()=>{setTimeout(()=>{if(game)renderSide()},250)});
+</script>
+
+<script>
+/* v9.6: distinctive critical / fumble result SFX */
+(function(){
+  function audioCtx(){ return (typeof ensureAudio==='function') ? ensureAudio() : null; }
+
+  window.v96CriticalSE=function(){
+    if(typeof seOn!=='undefined' && !seOn) return;
+    const a=audioCtx(); if(!a) return;
+    const t=a.currentTime;
+
+    // Bright bell-like ascending arpeggio: "kirakira".
+    const notes=[1046.5,1318.5,1568.0,2093.0,2637.0];
+    notes.forEach((f,i)=>{
+      const start=t+i*0.055;
+      const o=a.createOscillator(), g=a.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(f,start);
+      g.gain.setValueAtTime(0.0001,start);
+      g.gain.exponentialRampToValueAtTime(i<3?0.075:0.055,start+0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001,start+0.32+i*0.018);
+      o.connect(g); g.connect(a.destination);
+      o.start(start); o.stop(start+0.38+i*0.018);
+
+      // A quieter upper partial gives a small glass/chime shimmer.
+      const o2=a.createOscillator(), g2=a.createGain();
+      o2.type='sine'; o2.frequency.setValueAtTime(f*2.01,start);
+      g2.gain.setValueAtTime(0.0001,start);
+      g2.gain.exponentialRampToValueAtTime(0.018,start+0.005);
+      g2.gain.exponentialRampToValueAtTime(0.0001,start+0.18);
+      o2.connect(g2); g2.connect(a.destination);
+      o2.start(start); o2.stop(start+0.2);
+    });
+
+    // Short sparkling tail.
+    const dur=0.34, len=Math.floor(a.sampleRate*dur), buf=a.createBuffer(1,len,a.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<len;i++){
+      const x=i/len, env=Math.pow(1-x,2.4);
+      d[i]=(Math.random()*2-1)*env*(Math.random()<0.15?1:0.22);
+    }
+    const src=a.createBufferSource(), hp=a.createBiquadFilter(), g=a.createGain();
+    src.buffer=buf; hp.type='highpass'; hp.frequency.value=5200;
+    g.gain.setValueAtTime(0.026,t+0.11); g.gain.exponentialRampToValueAtTime(0.0001,t+0.46);
+    src.connect(hp); hp.connect(g); g.connect(a.destination); src.start(t+0.11);
+  };
+
+  window.v96FumbleSE=function(){
+    if(typeof seOn!=='undefined' && !seOn) return;
+    const a=audioCtx(); if(!a) return;
+    const t=a.currentTime;
+
+    // Initial hard metallic impact.
+    const impactDur=0.075, len=Math.floor(a.sampleRate*impactDur), buf=a.createBuffer(1,len,a.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<len;i++){
+      const env=Math.pow(1-i/len,3.2);
+      d[i]=(Math.random()*2-1)*env;
+    }
+    const src=a.createBufferSource(), bp=a.createBiquadFilter(), ig=a.createGain();
+    src.buffer=buf; bp.type='bandpass'; bp.frequency.value=950; bp.Q.value=0.8;
+    ig.gain.setValueAtTime(0.16,t); ig.gain.exponentialRampToValueAtTime(0.0001,t+impactDur);
+    src.connect(bp); bp.connect(ig); ig.connect(a.destination); src.start(t);
+
+    // Deep falling "gaaaan..." body.
+    const o=a.createOscillator(), g=a.createGain();
+    o.type='sawtooth';
+    o.frequency.setValueAtTime(190,t);
+    o.frequency.exponentialRampToValueAtTime(54,t+0.9);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.105,t+0.018);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+1.15);
+    const lp=a.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=720;
+    o.connect(lp); lp.connect(g); g.connect(a.destination); o.start(t); o.stop(t+1.2);
+
+    // Metallic resonance, slightly dissonant.
+    [238,317,473].forEach((f,i)=>{
+      const oo=a.createOscillator(), gg=a.createGain();
+      oo.type=i===0?'triangle':'sine';
+      oo.frequency.setValueAtTime(f,t+0.015);
+      oo.frequency.exponentialRampToValueAtTime(f*0.82,t+0.95);
+      gg.gain.setValueAtTime(0.038/(i+1),t+0.015);
+      gg.gain.exponentialRampToValueAtTime(0.0001,t+1.05+i*0.08);
+      oo.connect(gg); gg.connect(a.destination); oo.start(t+0.015); oo.stop(t+1.18);
+    });
+  };
+
+  // Override only the special result sounds; all other SE remain unchanged.
+  if(typeof playSE==='function'){
+    const v96BasePlaySE=playSE;
+    window.playSE=function(type){
+      if(type==='critical') return window.v96CriticalSE();
+      if(type==='fumble') return window.v96FumbleSE();
+      return v96BasePlaySE(type);
+    };
+  }
+})();
+</script>
+
+<script>
+/* v9.7: special-event actor ownership
+   Shared key items remain party-wide, but the player who starts an interaction
+   owns that event's ADV paging/actions until it is completed. */
+(function(){
+  const V97_USE_SPECIAL_BASE = v810UseSpecial;
+
+  v810UseSpecial = function(targetIndex,id){
+    if(game?.scenarioNo===1 && id==='useB3Code'){
+      if(NET?.mode==='join'){
+        netSendIntent('specialAction',{target:targetIndex,id});
+        return;
+      }
+      if(!game || !game.items?.includes('B3保安コード') || game.gateOpen) return;
+
+      const actor=viewIndex();
+      const c=chars?.[actor];
+      const r=c ? game.rooms?.[c.at] : null;
+      const t=r?.targets?.[targetIndex];
+      if(!c || !t || t.name!=='B3保安扉') return;
+
+      // IMPORTANT: establish the actor before creating the ADV message.
+      // setAdv() records pageOwner from game.actionActor.
+      lockGlobal(actor,'B3保安扉 解錠');
+
+      game.gateOpen=true;
+      t.done=true;
+      c.target=null;
+      c.selectedSkill=null;
+      syncViewState();
+      playSE('discover');
+
+      setAdv(
+        'ナレーション',
+        'B3保安コードを入力すると、端末の表示が赤から緑へ変わる。\n\n「認証完了。B3保安扉を解錠します」\n\nロックが外れ、最下層貨物室へ続く扉がゆっくり開いた。',
+        [{label:'次へ ▶',primary:true,actorOnly:true,fn:unlockGlobal}],
+        false
+      );
+
+      // Explicitly preserve ownership even after restore/snapshot serialization.
+      if(game.message){
+        game.message.pageOwner=actor;
+        game.message.pageIndex=0;
+      }
+      render();
+      netBroadcastSoon?.();
+      return;
+    }
+    return V97_USE_SPECIAL_BASE(targetIndex,id);
+  };
+
+  // Legacy helper is not normally used by the current UI, but keep its behavior
+  // consistent in case an old/restored state invokes it.
+  openGate = function(){
+    const actor=viewIndex();
+    if(!game?.items?.includes('B3保安コード')){
+      setAdv('ナレーション','B3保安扉には非常用認証コードが必要だ。船内資料室の保安記録を調べる必要がある。',[{label:'戻る',primary:true,fn:idleMessage}],false);
+      return;
+    }
+    if(game.gateOpen) return;
+    lockGlobal(actor,'B3保安扉 解錠');
+    game.gateOpen=true;
+    setAdv('ナレーション','非常用認証コードを入力すると、B3保安扉のロックが解除された。',[{label:'次へ ▶',primary:true,actorOnly:true,fn:unlockGlobal}],false);
+    if(game.message){game.message.pageOwner=actor;game.message.pageIndex=0}
+    render();
+    netBroadcastSoon?.();
+  };
+})();
+</script>
+
+
+<script>
+/* v9.8: persistent independent BGM volume control */
+(function(){
+  const KEY='cthulhu100_bgm_volume_v1';
+  const BASE_GAIN=.08;
+  function loadVol(){
+    try{
+      const v=Number(localStorage.getItem(KEY));
+      return Number.isFinite(v)&&v>=0&&v<=100?v:100;
+    }catch(e){return 100}
+  }
+  window.bgmVolumePercent=loadVol();
+  window.applyBGMVolume=function(){
+    const v=Math.max(0,Math.min(100,Number(window.bgmVolumePercent)||0));
+    if(window.bgmMaster&&window.bgmMaster.gain){
+      const a=(typeof audioCtx!=='undefined'&&audioCtx)?audioCtx:null;
+      try{
+        if(a) window.bgmMaster.gain.setTargetAtTime(BASE_GAIN*(v/100),a.currentTime,.025);
+        else window.bgmMaster.gain.value=BASE_GAIN*(v/100);
+      }catch(e){window.bgmMaster.gain.value=BASE_GAIN*(v/100)}
+    }
+    const slider=document.getElementById('bgmVolSlider');
+    const label=document.getElementById('bgmVolLabel');
+    if(slider&&String(slider.value)!==String(v))slider.value=v;
+    if(label)label.textContent=Math.round(v)+'%';
+  };
+  window.setBGMVolume=function(value){
+    const v=Math.max(0,Math.min(100,Number(value)||0));
+    window.bgmVolumePercent=v;
+    try{localStorage.setItem(KEY,String(v))}catch(e){}
+    window.applyBGMVolume();
+  };
+  if(typeof startBGM==='function'){
+    const baseStart=startBGM;
+    startBGM=function(){const r=baseStart.apply(this,arguments);window.applyBGMVolume();return r};
+  }
+  if(typeof syncAudioButtons==='function'){
+    const baseSync=syncAudioButtons;
+    syncAudioButtons=function(){const r=baseSync.apply(this,arguments);window.applyBGMVolume();return r};
+  }
+  window.addEventListener('load',()=>setTimeout(window.applyBGMVolume,0));
+})();
+</script>
 </body></html>
