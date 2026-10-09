@@ -2835,4 +2835,82 @@ window.addEventListener('load',()=>{setTimeout(()=>{if(game)renderSide()},250)})
   };
 })();
 </script>
+
+<script>
+/* v9.10: guest -> host gameplay transport fix
+   v8.8's connection handler captured an old netHandleHostData in
+   `v88GameplayHostData`. Later intents (pageAdvance, SAN, psychoanalysis,
+   scenario special actions, etc.) therefore never reached their current
+   handlers when sent by a guest. Route gameplay packets through the CURRENT
+   netHandleHostData instead. */
+(function(){
+  v88AttachHostConnection=function(conn){
+    let assigned=null;
+
+    conn.on('data',m=>{
+      if(!m)return;
+
+      if(m.type==='hello'){
+        const token=String(m.token||'');
+        if(!token){
+          conn.send({type:'reject',reason:'再接続トークンがありません。'});
+          return;
+        }
+
+        let slot=V88.tokens.findIndex((t,i)=>i>0&&i<V88.expectedPlayers&&t===token);
+        if(slot<0){
+          slot=Array.from({length:V88.expectedPlayers-1},(_,k)=>k+1).find(i=>!V88.tokens[i]);
+          if(slot==null){
+            conn.send({type:'reject',reason:'ルームが満員です。'});
+            return;
+          }
+          V88.tokens[slot]=token;
+        }
+
+        assigned=slot;
+        const old=NET.conns.get(slot);
+        if(old&&old!==conn){try{old.close()}catch(e){}}
+        NET.conns.set(slot,conn);
+
+        if(m.profile)v88HostApplyProfile(slot,m.profile,!!m.ready,conn);
+        conn.send({type:'welcome',slot,roomId:NET.roomId,lobby:v88LobbyPayload(),gameStarted:!!game});
+        try{conn.send({type:'portraitLibrary',items:[...V91.portraits.values()]})}catch(e){}
+        v88BroadcastLobby();
+        if(game)netBroadcastSnapshot(true);
+        v88PersistHost();
+        v88RenderCreator();
+        return;
+      }
+
+      if(assigned==null)return;
+
+      if(m.type==='portraitUpload'){
+        v91AcceptPortrait(m.portrait,false).then(()=>{
+          v91BroadcastPortrait(m.portrait,conn);
+          v88RenderCreator();
+        });
+        return;
+      }
+
+      if(m.type==='profileUpdate'){
+        v88HostApplyProfile(assigned,m.profile,!!m.ready,conn);
+        return;
+      }
+
+      // IMPORTANT: do not use the old captured v88GameplayHostData here.
+      // The live handler includes pageAdvance and every subsequently-added intent.
+      netHandleHostData(assigned,m);
+    });
+
+    conn.on('close',()=>{
+      if(assigned!=null&&NET.conns.get(assigned)===conn)NET.conns.delete(assigned);
+      v88BroadcastLobby();
+      v88PersistHost();
+      v88RenderCreator();
+    });
+    conn.on('error',()=>{});
+  };
+})();
+</script>
+
 </body></html>
