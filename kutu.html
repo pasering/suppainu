@@ -2777,4 +2777,62 @@ window.addEventListener('load',()=>{setTimeout(()=>{if(game)renderSide()},250)})
   window.addEventListener('load',()=>setTimeout(window.applyBGMVolume,0));
 })();
 </script>
+
+<script>
+/* v9.9: authoritative operator paging fix
+   During a locked event, game.actionActor is the source of truth.
+   This prevents the acting investigator from being locked out when a stale pageOwner exists. */
+(function(){
+  function v99EffectiveSlot(){
+    if(typeof NET!=='undefined' && (NET?.mode==='join' || NET?.mode==='host')) return Number.isInteger(NET.slot)?NET.slot:0;
+    try{return viewIndex()}catch(e){return Number.isInteger(game?.viewPlayer)?game.viewPlayer:0}
+  }
+  function v99AuthoritativeOwner(){
+    if(game?.globalLock && Number.isInteger(game?.actionActor)) return game.actionActor;
+    if(Number.isInteger(game?.message?.pageOwner)) return game.message.pageOwner;
+    if(Number.isInteger(game?.actionActor)) return game.actionActor;
+    return 0;
+  }
+
+  // Existing v9.5 paging helpers are intentionally replaced rather than layered.
+  v95OwnSlot=function(){ return v99EffectiveSlot() };
+  v95MessageOwner=function(){ return v99AuthoritativeOwner() };
+  v95CanPage=function(){ return !game?.message || v99EffectiveSlot()===v99AuthoritativeOwner() };
+
+  v95HostAdvancePage=function(slot){
+    if(!game?.message) return false;
+    const owner=v99AuthoritativeOwner();
+    if(owner!==slot) return false;
+    // Heal stale ownership metadata so all clients converge on the same operator.
+    game.message.pageOwner=owner;
+    v811SyncLocal(false);
+    if((game.message.pageIndex||0)>=V811_ADV.pages.length-1) return false;
+    game.message.pageIndex=(game.message.pageIndex||0)+1;
+    V811_ADV.index=game.message.pageIndex;
+    v811ShowPage(true);
+    netBroadcastSnapshot?.(true);
+    return true;
+  };
+
+  // Repair an already-open locked message after a snapshot/render.
+  function v99RepairOwner(){
+    if(!game?.message) return;
+    const owner=v99AuthoritativeOwner();
+    if(game.globalLock && Number.isInteger(game.actionActor) && game.message.pageOwner!==owner){
+      game.message.pageOwner=owner;
+    }
+  }
+  const V99_RENDER_ADV_BASE=renderAdvActions;
+  renderAdvActions=function(){
+    v99RepairOwner();
+    return V99_RENDER_ADV_BASE();
+  };
+
+  const V99_IND_BASE=v811UpdateIndicator;
+  v811UpdateIndicator=function(){
+    v99RepairOwner();
+    V99_IND_BASE();
+  };
+})();
+</script>
 </body></html>
