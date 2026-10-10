@@ -2913,4 +2913,1003 @@ window.addEventListener('load',()=>{setTimeout(()=>{if(game)renderSide()},250)})
 })();
 </script>
 
+
+
+<script>
+/* v9.11: BGM volume control hotfix
+   bgmMaster/audioCtx are top-level lexical bindings (let), not window properties. */
+(function(){
+  const KEY='cthulhu100_bgm_volume_v1';
+  const BASE_GAIN=.08;
+
+  function clampVol(v){
+    v=Number(v);
+    return Number.isFinite(v)?Math.max(0,Math.min(100,v)):100;
+  }
+
+  function currentVol(){
+    let v=window.bgmVolumePercent;
+    if(!Number.isFinite(Number(v))){
+      try{v=localStorage.getItem(KEY)}catch(e){v=100}
+    }
+    return clampVol(v);
+  }
+
+  window.applyBGMVolume=function(){
+    const v=currentVol();
+    window.bgmVolumePercent=v;
+    const gain=BASE_GAIN*(v/100);
+
+    try{
+      if(typeof bgmMaster!=='undefined' && bgmMaster && bgmMaster.gain){
+        if(typeof audioCtx!=='undefined' && audioCtx){
+          bgmMaster.gain.cancelScheduledValues(audioCtx.currentTime);
+          bgmMaster.gain.setTargetAtTime(gain,audioCtx.currentTime,.025);
+        }else{
+          bgmMaster.gain.value=gain;
+        }
+      }
+    }catch(e){
+      try{ if(typeof bgmMaster!=='undefined' && bgmMaster?.gain) bgmMaster.gain.value=gain; }catch(_){}
+    }
+
+    const slider=document.getElementById('bgmVolSlider');
+    const label=document.getElementById('bgmVolLabel');
+    if(slider && String(slider.value)!==String(v)) slider.value=String(v);
+    if(label) label.textContent=Math.round(v)+'%';
+  };
+
+  window.setBGMVolume=function(value){
+    const v=clampVol(value);
+    window.bgmVolumePercent=v;
+    try{localStorage.setItem(KEY,String(v))}catch(e){}
+    window.applyBGMVolume();
+  };
+
+  /* Ensure newly-created BGM nodes immediately receive the saved volume. */
+  if(typeof startBGM==='function' && !startBGM.__v911VolumeWrapped){
+    const oldStart=startBGM;
+    const wrapped=function(){
+      const r=oldStart.apply(this,arguments);
+      window.applyBGMVolume();
+      return r;
+    };
+    wrapped.__v911VolumeWrapped=true;
+    startBGM=wrapped;
+  }
+
+  /* Apply immediately and once more after load/UI setup. */
+  window.applyBGMVolume();
+  window.addEventListener('load',()=>setTimeout(window.applyBGMVolume,50));
+})();
+</script>
+
 </body></html>
+<style id="v100css">
+/* ===== v10.0: initiative turn flow / round transition / tighter deck builder ===== */
+.v100RoundOverlay{position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle at center,#05090da8 0,#05090d66 38%,transparent 72%);opacity:0;transition:opacity .34s ease}
+.v100RoundOverlay.show{opacity:1}.v100RoundOverlay.out{opacity:0}
+.v100RoundPlate{padding:22px 38px;border-top:1px solid #dfc58e;border-bottom:1px solid #dfc58e;background:#070d12e8;box-shadow:0 18px 60px #000b;text-align:center;transform:scale(.94);transition:transform .38s ease;min-width:min(520px,78vw)}
+.v100RoundOverlay.show .v100RoundPlate{transform:scale(1)}
+.v100RoundPlate small{display:block;color:#bba67f;letter-spacing:.28em;font-size:11px;margin-bottom:7px}.v100RoundPlate b{display:block;font-family:Georgia,serif;font-size:34px;letter-spacing:.11em;color:#f0e1c4;text-shadow:0 3px 18px #000}
+.partyRow.v100TurnNow{border-color:#c3a46a!important;background:linear-gradient(160deg,#2b251b,#151b21)!important;box-shadow:inset 3px 0 #d2b16f,0 0 18px #c29f4d22}
+.v100InitBadge{display:inline-block;margin-right:5px;padding:2px 5px;border:1px solid #586572;border-radius:999px;background:#10171d;color:#aeb9c2;font-size:8px;font-weight:800}.v100TurnNow .v100InitBadge{border-color:#a98b56;color:#f0d39c;background:#251f16}
+.clienttab.v100TurnNow{box-shadow:inset 0 -3px #d0ad69}.v100TurnLabel{color:#ead19f!important;font-weight:800}
+/* deck construction: selected cards disappear from the candidate pool, so make the remaining pool denser */
+.v812BuildOnly .ocPool{grid-template-columns:repeat(6,minmax(72px,1fr))!important;gap:4px!important;max-height:535px!important}
+.v812BuildOnly .ocPool .card.visualCard{min-height:94px!important;border-radius:7px!important;filter:drop-shadow(0 2px 3px #0005)}
+.v812BuildOnly .ocPool .cardTitleV{font-size:8px!important;left:7%!important;right:7%!important;top:5%!important;line-height:1.15!important}
+.v812BuildOnly .ocPool .cardApBadge{font-size:7px!important;min-width:25px!important;padding:1px 3px!important;right:4%!important;top:4%!important}
+.v812BuildOnly .ocPool .cardBonusV{font-size:9px!important}.v812BuildOnly .ocPool .cardRateV{font-size:8px!important}.v812BuildOnly .ocPool .cardMetaV{font-size:6px!important}
+.v812BuildOnly .ocPool .cardIconV{width:43%!important;height:26%!important;top:23%!important}
+.v812BuildOnly .ocPool .cardInfoV{bottom:4%!important;left:6%!important;right:6%!important}
+@media(max-width:1180px){.v812BuildOnly .ocPool{grid-template-columns:repeat(5,minmax(72px,1fr))!important}}
+@media(max-width:820px){.v812BuildOnly .ocPool{grid-template-columns:repeat(3,minmax(74px,1fr))!important}.v100RoundPlate b{font-size:27px}.v100RoundPlate{min-width:78vw;padding:18px 20px}}
+</style>
+
+<script id="v100script">
+/* ===== v10.0: initiative turn based investigation ===== */
+(function(){
+  const V100={lastRoundFx:null};
+  window.V100=V100;
+
+  function v100Order(){
+    return chars.map((c,i)=>i).sort((a,b)=>{
+      const ad=chars[a]?.stats?.DEX||0,bd=chars[b]?.stats?.DEX||0;if(bd!==ad)return bd-ad;
+      const ai=chars[a]?.stats?.INT||0,bi=chars[b]?.stats?.INT||0;if(bi!==ai)return bi-ai;
+      return a-b;
+    });
+  }
+  function v100ValidOrder(o){return Array.isArray(o)&&o.length===chars.length&&new Set(o).size===chars.length&&o.every(i=>Number.isInteger(i)&&i>=0&&i<chars.length)}
+  function v100EnsureTurnState(){
+    if(!game||game.phase!=='investigation'||game.ended)return;
+    if(!v100ValidOrder(game.turnOrder))game.turnOrder=v100Order();
+    if(game.globalLock)return;
+    if(Number.isInteger(game.activeTurnActor)&&chars[game.activeTurnActor]&&!chars[game.activeTurnActor].ready)return;
+    let pos=game.turnOrder.findIndex(i=>!chars[i]?.ready);
+    if(pos>=0){game.turnPos=pos;game.activeTurnActor=game.turnOrder[pos]}
+    else{game.turnPos=-1;game.activeTurnActor=null}
+  }
+  function v100IsTurn(actor=viewIndex()){
+    v100EnsureTurnState();return !!game&&game.phase==='investigation'&&!game.ended&&Number.isInteger(game.activeTurnActor)&&game.activeTurnActor===actor&&!chars[actor]?.ready
+  }
+  function v100TurnText(actor,changed=false){
+    const c=chars[actor];if(!c)return '次の行動を決めよう。';
+    return `${changed?`P${actor+1} ${c.name} の手番。\n\n`:''}次の行動を決めよう。\n残りAP ${c.ap}/${game.apMax}\n\nMAP・調査対象・技能などを選ぶと、その情報に切り替わります。`;
+  }
+  function v100ShowTurnPrompt(actor,changed=false){
+    if(!game||game.ended||!Number.isInteger(actor))return;
+    setAdv('TURN',v100TurnText(actor,changed),[],false)
+  }
+  function v100NextActorAfter(actor){
+    const order=game.turnOrder||v100Order(),start=Math.max(-1,order.indexOf(actor));
+    for(let k=1;k<=order.length;k++){let p=(start+k)%order.length,i=order[p];if(!chars[i]?.ready)return{actor:i,pos:p}}
+    return null
+  }
+  function v100EndTurn(actor,auto=false){
+    if(!game||game.phase!=='investigation'||game.ended||game.v100RoundTransition)return false;
+    v100EnsureTurnState();if(actor!==game.activeTurnActor||!chars[actor]||chars[actor].ready)return false;
+    const c=chars[actor];c.ready=true;c.selected=null;c.target=null;c.selectedSkill=null;
+    game.actionActor=null;game.globalLock=false;game.lockReason='';
+    const next=v100NextActorAfter(actor);
+    if(next){
+      game.turnPos=next.pos;game.activeTurnActor=next.actor;syncViewState();render();v100ShowTurnPrompt(next.actor,true);netBroadcastSoon?.();return true
+    }
+    game.activeTurnActor=null;game.turnPos=-1;game.globalLock=true;game.lockReason=`ROUND ${game.round} 終了`;syncViewState();render();netBroadcastSoon?.();roundEvent();return true
+  }
+  window.v100EndTurn=v100EndTurn;
+
+  /* Only the active investigator may perform AP-consuming actions. */
+  const V100_ACTION_BLOCK_BASE=actionBlocked;
+  actionBlocked=function(){
+    if(V100_ACTION_BLOCK_BASE())return true;
+    if(!game||game.phase!=='investigation'||game.ended)return true;
+    return !v100IsTurn(viewIndex())
+  };
+
+  /* Old simultaneous-ready logic becomes end-current-turn. */
+  markReady=function(i,auto=false){return v100EndTurn(i,auto)};
+  finishTurn=function(){
+    if(!game||game.phase!=='investigation'||game.ended||game.globalLock)return;
+    v100EnsureTurnState();let i=viewIndex();if(i!==game.activeTurnActor||chars[i]?.ready)return;
+    if(NET?.mode==='join'){netSendIntent('ready');return}
+    v100EndTurn(i,false);netBroadcastSoon?.()
+  };
+
+  /* AP0 during a locked result waits until that result has been read. AP0 outside a lock ends immediately. */
+  checkNoAP=function(){
+    if(!game||game.phase!=='investigation'||game.ended)return;
+    const i=game.globalLock&&Number.isInteger(game.actionActor)?game.actionActor:viewIndex(),c=chars[i];if(!c||c.ap>0)return;
+    if(game.globalLock){game.v100AutoEndActor=i;return}
+    v100EndTurn(i,true)
+  };
+
+  /* Results no longer snap back to the room description. */
+  unlockGlobal=function(){
+    if(!game)return;const actor=game.actionActor;
+    game.globalLock=false;game.actionActor=null;game.lockReason='';game.v100AutoEndActor=null;
+    if(Number.isInteger(actor)&&chars[actor]&&chars[actor].ap<=0&&actor===game.activeTurnActor){v100EndTurn(actor,true);return}
+    render();v100EnsureTurnState();
+    if(game.phase==='investigation'&&!game.ended&&Number.isInteger(game.activeTurnActor))v100ShowTurnPrompt(game.activeTurnActor,false);else idleMessage();
+    netBroadcastSoon?.()
+  };
+
+  const V100_IDLE_BASE=idleMessage;
+  idleMessage=function(){
+    if(game?.phase==='investigation'&&!game.ended&&!game.globalLock){v100EnsureTurnState();if(Number.isInteger(game.activeTurnActor)){v100ShowTurnPrompt(game.activeTurnActor,false);return}}
+    V100_IDLE_BASE()
+  };
+
+  /* Initialize initiative when the prologue hands control to investigation. */
+  const V100_SCRIPT_BASE=scriptStep;
+  scriptStep=function(){
+    const was=game?.phase;V100_SCRIPT_BASE();
+    if(game?.phase==='investigation'&&!game.ended){
+      if(was!=='investigation'){game.turnOrder=v100Order();game.turnPos=0;game.activeTurnActor=game.turnOrder[0]??0;chars.forEach(c=>c.ready=false);render();v100ShowTurnPrompt(game.activeTurnActor,true);netBroadcastSoon?.()}
+      else v100EnsureTurnState()
+    }
+  };
+
+  /* Round transition animation is synchronized before the existing SAN/event flow starts. */
+  function v100PlayRoundFx(state){
+    if(!state||V100.lastRoundFx===state.id)return;V100.lastRoundFx=state.id;
+    const scene=$('scene');if(!scene)return;scene.querySelector('.v100RoundOverlay')?.remove();
+    const el=document.createElement('div');el.className='v100RoundOverlay';el.innerHTML=`<div class="v100RoundPlate"><small>INVESTIGATION PHASE</small><b>ROUND ${state.round} 終了</b></div>`;scene.appendChild(el);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+    setTimeout(()=>el.classList.add('out'),1050);setTimeout(()=>el.remove(),1550)
+  }
+  const V100_ROUND_BASE=roundEvent;
+  roundEvent=function(){
+    if(!game||game.ended)return;if(game.v100RoundTransition)return;
+    const state={id:`r${game.round}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`,round:game.round};
+    game.v100RoundTransition=state;game.activeTurnActor=null;game.turnPos=-1;game.globalLock=true;game.lockReason=`ROUND ${state.round} 終了`;render();v100PlayRoundFx(state);netBroadcastSnapshot?.(true);
+    setTimeout(()=>{
+      if(!game||game.ended||game.v100RoundTransition?.id!==state.id)return;
+      game.v100RoundTransition=null;V100_ROUND_BASE();netBroadcastSoon?.()
+    },1580)
+  };
+
+  /* When a room is clicked after the neutral prompt, show room information again. */
+  const V100_SELECT_ROOM_BASE=selectRoom;
+  selectRoom=function(id){
+    V100_SELECT_ROOM_BASE(id);if(!game||game.phase!=='investigation'||game.ended||game.globalLock)return;
+    if(viewIndex()!==game.activeTurnActor)return;const c=viewChar(),r=game.rooms[id];if(!r)return;
+    const here=id===c.at;setAdv('ナレーション',here?sceneArrivalText(r.role,c,false):`${r.title}を移動先として選択した。\n\n${roomFlavour(r.role)}\n\n移動するなら左の「この場所へ移動」を押してください。`,[],false)
+  };
+
+  /* Host also rejects out-of-turn special/manual actions sent by a guest. */
+  const V100_REDRAW_BASE=v813RedrawCardLocal;
+  v813RedrawCardLocal=function(index,actor=viewIndex(),uid=null){v100EnsureTurnState();if(actor!==game?.activeTurnActor)return false;return V100_REDRAW_BASE(index,actor,uid)};
+  const V100_PSY_OPEN_BASE=v95OpenPsycho;
+  v95OpenPsycho=function(target){v100EnsureTurnState();if(viewIndex()!==game?.activeTurnActor)return;return V100_PSY_OPEN_BASE(target)};
+  const V100_PSY_HOST_BASE=v95PsychoAttemptHost;
+  v95PsychoAttemptHost=function(actor,target,uid){v100EnsureTurnState();if(actor!==game?.activeTurnActor)return;return V100_PSY_HOST_BASE(actor,target,uid)};
+  const V100_PUZZLE_RESOLVE_BASE=v9ResolvePuzzle;
+  v9ResolvePuzzle=function(actor,id,choice){v100EnsureTurnState();if(actor!==game?.activeTurnActor)return;return V100_PUZZLE_RESOLVE_BASE(actor,id,choice)};
+  const V100_SPECIAL_BASE=v810UseSpecial;
+  v810UseSpecial=function(targetIndex,id){v100EnsureTurnState();if(game?.phase==='investigation'&&!game.globalLock&&viewIndex()!==game.activeTurnActor)return;return V100_SPECIAL_BASE(targetIndex,id)};
+
+  /* Selected deck cards disappear from the available list and return when removed. */
+  const V100_DECK_POOL_BASE=v88DeckPool;
+  v88DeckPool=function(){
+    const all=V100_DECK_POOL_BASE();const used=new Set((V88.draft?.deck||[]).map(x=>key(x)));return all.filter(x=>!used.has(key(x)))
+  };
+
+  function v100TweakCreator(){
+    const e=$('onlineCreator');if(!e)return;
+    e.querySelectorAll('.muted').forEach(n=>{if(n.textContent.includes('同一カード2枚まで'))n.textContent=n.textContent.replace(' / 同一カード2枚まで',' / 選択済みカードは候補から外れます')});
+  }
+  const V100_CREATOR_BASE=v88RenderCreator;
+  v88RenderCreator=function(){V100_CREATOR_BASE();v100TweakCreator()};
+
+  function v100Decorate(){
+    if(!game)return;v100EnsureTurnState();const a=game.activeTurnActor,order=game.turnOrder||[];
+    document.querySelectorAll('#party .partyRow').forEach((row,i)=>{
+      row.classList.toggle('v100TurnNow',i===a);row.querySelector('.v100InitBadge')?.remove();const rank=order.indexOf(i);
+      const badge=document.createElement('span');badge.className='v100InitBadge';badge.textContent=rank>=0?`INI ${rank+1}`:'INI -';const text=row.querySelector('span');if(text)text.prepend(badge);
+      const psy=row.querySelector('.v95PsyBtn');if(psy&&viewIndex()!==a)psy.disabled=true
+    });
+    document.querySelectorAll('#clientBar .clienttab').forEach((x,i)=>x.classList.toggle('v100TurnNow',i===a));
+    const lock=document.querySelector('#clientBar .globalLock');if(lock&&!game.globalLock&&Number.isInteger(a)){lock.classList.add('free');lock.innerHTML=`<span class="v100TurnLabel">▶ TURN：P${a+1} ${esc(chars[a].name)}</span> / AP ${chars[a].ap}`}
+    const ti=$('turninfo');if(ti&&Number.isInteger(a)){const mine=viewIndex()===a?' / あなたの手番':' / 待機中';ti.textContent=`${viewChar().job} / AP ${viewChar().ap}/${game.apMax} / SAN ${viewChar().san}${mine}`}
+    if(game.v100RoundTransition)v100PlayRoundFx(game.v100RoundTransition)
+  }
+  const V100_RENDER_BASE=render;
+  render=function(){if(game?.phase==='investigation'&&!game.globalLock)v100EnsureTurnState();V100_RENDER_BASE();v100Decorate()};
+  const V100_RENDER_SIDE_BASE=renderSide;
+  renderSide=function(){V100_RENDER_SIDE_BASE();v100Decorate()};
+  const V100_RENDER_MAP_BASE=renderMap;
+  renderMap=function(){V100_RENDER_MAP_BASE();if(!game||game.globalLock)return;v100EnsureTurnState();if(viewIndex()!==game.activeTurnActor){$('movedesc').textContent=`P${game.activeTurnActor+1} ${chars[game.activeTurnActor].name} の手番です。`; $('movebtn').disabled=true}}
+  const V100_CLIENT_BASE=renderClientBar;
+  renderClientBar=function(){V100_CLIENT_BASE();v100Decorate()};
+
+  function v100UpdateStaticUI(){
+    const end=[...document.querySelectorAll('button')].find(b=>b.getAttribute('onclick')==='finishTurn()');if(end)end.textContent='手番を終了 ✓（AP残り可）';
+    const sec=[...document.querySelectorAll('.right .section')].find(s=>s.querySelector('h3')?.textContent.trim()==='操作');if(sec){const info=sec.querySelector('.info');if(info)info.innerHTML='場所 → 調査対象 → 中央で技能を選択 → 画面下で補正カードを選択。固定の「技能なしで実行」なら基礎値だけでも判定できます。<br><br><b>進行はDEXの高い順のターン制です。</b> 自分の手番ではAPを使い切るか「手番を終了」するまで続けて行動し、その後に次の探索者へ移ります。判定結果やイベントのメッセージは、その行動を開始した探索者が最後まで送ります。<br><br>全員の手番が終了するとROUND終了演出の後に時間が進み、怪異イベントやSANチェックが発生します。未使用の手札は次ROUNDへ持ち越し、使った分だけ補充されます。'}
+  }
+  window.addEventListener('load',()=>setTimeout(()=>{v100UpdateStaticUI();v100TweakCreator();if(game)render()},120));
+})();
+</script>
+
+<script id="v100versionpatch">
+(function(){
+  const base=v9UpdateHeader;
+  v9UpdateHeader=function(){base();let s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v9\.0/g,'v10.0');document.title=document.title.replace(/v9\.0/g,'v10.0')};
+  window.addEventListener('load',()=>setTimeout(()=>v9UpdateHeader(),80));
+})();
+</script>
+
+<style id="v101choicecss">
+/* v10.1: all players can see shared ADV choices; only the operator can decide */
+.v101ChoiceWait{opacity:.58;cursor:not-allowed!important;filter:saturate(.72)}
+.v101ChoiceOwnerNote{width:100%;margin-top:7px;text-align:center;color:#aeb7bf;font-size:10px;letter-spacing:.04em}
+.v101ChoiceOwnerNote b{color:#e3c98f}
+</style>
+<script id="v101choicescript">
+(function(){
+  function ownSlot(){
+    if(typeof NET!=='undefined' && NET?.mode==='join') return NET.slot;
+    return typeof viewIndex==='function' ? viewIndex() : 0;
+  }
+  function ownerSlot(){
+    if(!game) return 0;
+    if(game.globalLock && Number.isInteger(game.actionActor)) return game.actionActor;
+    if(game.message && Number.isInteger(game.message.pageOwner)) return game.message.pageOwner;
+    return 0;
+  }
+  function canOperateButton(b,owner){
+    const me=ownSlot();
+    if(b?.actorOnly) return me===owner;
+    // Shared story/event choices are still decided by the message owner.
+    if(game?.globalLock) return me===owner;
+    // Outside a global event, preserve ordinary local controls.
+    return me===owner || (typeof NET!=='undefined' && NET?.mode==='local');
+  }
+
+  renderAdvActions=function(){
+    const box=$('advactions');
+    if(!box) return;
+    if(!game?.message){box.innerHTML='';return}
+    if(typeof v811SyncLocal==='function') v811SyncLocal(false);
+    if(!game.typeDone || (typeof V811_ADV!=='undefined' && V811_ADV.index<V811_ADV.pages.length-1)){
+      box.innerHTML='';
+      if(typeof v811UpdateIndicator==='function') v811UpdateIndicator();
+      return;
+    }
+    const buttons=game.message.buttons||[];
+    const owner=ownerSlot();
+    box.innerHTML=buttons.map((b,i)=>{
+      const allowed=canOperateButton(b,owner);
+      return `<button class="btn ${b.primary?'primary':'ghost'} ${allowed?'':'v101ChoiceWait'}" ${allowed?'':'disabled'} onclick="advAction(${i})">${esc(b.label)}</button>`;
+    }).join('');
+    if(buttons.length && buttons.some(b=>!canOperateButton(b,owner))){
+      const c=chars?.[owner];
+      box.insertAdjacentHTML('beforeend',`<div class="v101ChoiceOwnerNote">決定：<b>P${owner+1} ${esc(c?.name||'探索者')}</b></div>`);
+    }
+    // Preserve the continuation/reward control from v9.1 after overriding the renderer.
+    if(game?.ended && typeof v91EndButton==='function' && !box.querySelector('.v91EndBtn')){
+      box.insertAdjacentHTML('beforeend','<button class="btn primary v91EndBtn" onclick="v91EndButton()">継続探索者 / クリア報酬</button>');
+    }
+    if(typeof v811UpdateIndicator==='function') v811UpdateIndicator();
+  };
+
+  // Snapshot application may finish by rendering the ADV controls through an older wrapper.
+  // Re-render once at the end so every client sees the real labels.
+  if(typeof v86ApplySnapshot==='function'){
+    const old=v86ApplySnapshot;
+    v86ApplySnapshot=function(payload){const r=old(payload);setTimeout(()=>{try{renderAdvActions()}catch(e){}},0);return r};
+  }
+})();
+</script>
+<script id="v101versionpatch">
+(function(){
+  const prev=v9UpdateHeader;
+  v9UpdateHeader=function(){prev();let s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v10\.0/g,'v10.1');document.title=document.title.replace(/v10\.0/g,'v10.1')};
+  window.addEventListener('load',()=>setTimeout(()=>v9UpdateHeader(),90));
+})();
+</script>
+
+<style id="v102s2fixcss">
+.v102PrepMissing{opacity:.52!important;filter:saturate(.65);cursor:not-allowed!important}
+</style>
+<script id="v102s2fixscript">
+(function(){
+  const V102_FINALE_BASE=finale;
+  const V102_ENDING_BASE=ending;
+  const V102_RENDER_ADV_BASE=renderAdvActions;
+
+  function s2State(){
+    const ids=new Set((game?.facts||[]).map(x=>x.id));
+    return {
+      mio:ids.has('mioFound'),
+      resonance:ids.has('resonance'),
+      stabilizer:ids.has('stabilizer'),
+      rope:!!game?.items?.includes('補修ロープ')
+    };
+  }
+
+  finale=function(){
+    if(game?.scenarioNo!==2) return V102_FINALE_BASE();
+    if(game.ended) return;
+    const actor=viewIndex();
+    const s=s2State();
+    const prepared=s.mio&&s.resonance&&s.stabilizer&&s.rope;
+    lockGlobal(actor,'最終判断');
+
+    const known=[];
+    if(s.mio) known.push('榊原澪は落盤の向こうで生存している。');
+    if(s.resonance) known.push('十三回目の音は、鐘ではなく坑道地層が返す共鳴だ。');
+    if(s.stabilizer) known.push('四鐘は共鳴を打ち消す鎮振機構を動かすための手順だった。');
+    if(s.rope) known.push('補修ロープを確保している。');
+    if(!known.length) known.push('旧坑道の異常は目前まで迫っているが、まだ全体像はつかめていない。');
+
+    const buttons=[
+      {
+        label:prepared?'鎮振機構を復旧してから澪を救出':'鎮振機構を復旧してから澪を救出（準備不足）',
+        primary:true,
+        actorOnly:true,
+        disabled:!prepared,
+        fn:()=>ending('best',true)
+      },
+      {
+        label:s.mio?'澪を先に救出する':'澪を先に救出する（所在未確認）',
+        actorOnly:true,
+        disabled:!s.mio,
+        fn:()=>ending('rescue',true)
+      },
+      {
+        label:'坑道入口を崩して封鎖する',
+        actorOnly:true,
+        fn:()=>ending('seal',true)
+      },
+      {
+        label:'探索を続ける',
+        actorOnly:true,
+        fn:unlockGlobal
+      }
+    ];
+
+    setAdv('最終局面',`${known.join('\n')}\n\n現時点の情報と装備で、どうする？`,buttons,false);
+    if(game.message){game.message.pageOwner=actor;game.message.pageIndex=0}
+    render();
+    netBroadcastSoon?.();
+  };
+
+  ending=function(kind,prepared){
+    if(game?.scenarioNo===2 && kind==='best' && !prepared){
+      const actor=Number.isInteger(game.actionActor)?game.actionActor:viewIndex();
+      setAdv('最終局面','鎮振機構を復旧するには、まだ必要な情報か装備が揃っていない。\n\nこれは時間切れではない。探索を続けて準備を整えられる。',[{label:'探索を続ける',primary:true,actorOnly:true,fn:unlockGlobal}],false);
+      if(game.message){game.message.pageOwner=actor;game.message.pageIndex=0}
+      render();netBroadcastSoon?.();return;
+    }
+    return V102_ENDING_BASE(kind,prepared);
+  };
+
+  renderAdvActions=function(){
+    V102_RENDER_ADV_BASE();
+    const buttons=game?.message?.buttons||[];
+    const els=[...document.querySelectorAll('#advactions button')];
+    buttons.forEach((b,i)=>{
+      if(b?.disabled && els[i]){
+        els[i].disabled=true;
+        els[i].classList.add('v102PrepMissing');
+      }
+    });
+  };
+
+  const prev=v9UpdateHeader;
+  v9UpdateHeader=function(){prev();let s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v10\.1/g,'v10.2');document.title=document.title.replace(/v10\.1/g,'v10.2')};
+  window.addEventListener('load',()=>setTimeout(()=>v9UpdateHeader(),100));
+})();
+</script>
+
+<style id="v103css">
+.v103EndSaveBar{display:none;margin:10px 0 0;padding:10px 12px;border:1px solid #7d6843;border-radius:9px;background:linear-gradient(135deg,#201b13,#11181e);align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.v103EndSaveBar.show{display:flex}.v103EndSaveBar .muted{font-size:10px}.v103EndSaveBar b{color:#efd29a}
+.v103ProfileMark{color:#dec48e}
+</style>
+<script id="v103script">
+(function(){
+  /* ===== v10.3: narrative pacing / coherent outcome branches / per-client continuation save ===== */
+
+  /* 1) Opening pacing. Keep proper nouns from appearing before the table knows what they mean. */
+  if(typeof V9_SCENARIOS!=='undefined'){
+    if(V9_SCENARIOS[2]){
+      V9_SCENARIOS[2].cast[1].role='神社宮司／澪の姉';
+      V9_SCENARIOS[2].cast[2].role='民俗研究者／真琴の妹／失踪者';
+      V9_SCENARIOS[2].script=[
+        ['ナレーション','山間部を移動していた探索者たちは、豪雨で県道の石橋が落ちたため、山奥の霧守村で足止めされていた。外へ出る道はなく、今夜だけ村内で雨をしのぐことになる。'],
+        ['ナレーション','折悪しく、今夜は村で年に一度の祭礼が行われる日だった。雨の中でも祭礼そのものは中止されず、午後九時、山の祠から鐘が鳴り始める。'],
+        ['ナレーション','一回。二回。やがて十二回目が鳴り、村人たちはほっと息をつく。\n\nその直後――祠とは違う、地面の下から響くような低い音が十三回目を告げた。'],
+        ['榊原真琴','『お願いがあります。妹の澪が、まだ戻ってこないんです』\n\n真琴は雨に濡れたまま探索者たちの前へ現れる。\n『祭礼が始まる前から鐘のことを調べに出て、それきりで……』'],
+        ['ナレーション','【人物情報】榊原澪（29）\n民俗研究者。真琴の妹で、この村の祭礼と旧坑道について調べていた。今夜、調査に出たまま行方が分からなくなっている。'],
+        ['榊原真琴','『澪は最近、“十三回目は鐘じゃないかもしれない”って言っていました。それと、旧坑道のことも……。橋も落ちています。村の外へ助けを呼ぶこともできません』']
+      ];
+    }
+    if(V9_SCENARIOS[3]){
+      V9_SCENARIOS[3].script=[
+        ['ナレーション','探索者たちは夜行寝台特急「夜霧号」に乗り合わせていた。日付が変わるころには大半の乗客が寝台へ戻り、車内には走行音だけが続いている。'],
+        ['ナレーション','午前零時十三分。列車が長いトンネルへ入った瞬間、照明が十三秒だけ消えた。明かりが戻ると、窓の外を「夜坂」と書かれた廃駅のホームが流れていく。'],
+        ['ナレーション','十三分後。列車は走り続けているはずなのに、同じ欠け方をした「夜坂」の駅名標がもう一度、同じ方向へ流れていった。'],
+        ['江崎修','『失礼します。乗客の方を一人、探しています』\n車掌が探索者たちへ声を掛ける。\n『水城澄人さんが見当たりません。寝台には荷物も残ったままです』'],
+        ['ナレーション','【人物情報】水城澄人（37）\n夜霧号の乗客。乗客名簿には通常どおり登録されているが、零時すぎから所在不明。所持品は寝台7号に残されている。'],
+        ['ナレーション','その時、車内の非常通報器が鳴った。表示された送信元は「CAR-0」。\n\n現在の夜霧号の編成表に、0号車は存在しない。']
+      ];
+    }
+    if(V9_SCENARIOS[4]){
+      V9_SCENARIOS[4].script=[
+        ['ナレーション','目を覚ますと、白い部屋に四つのベッドが並んでいた。探索者たちは自分の名前と経歴を覚えている。しかし、この施設へ来た経緯だけが不自然なほど曖昧だ。'],
+        ['ナレーション','室内にいるのは探索者たち四人だけ。腕にはP1からP4までのID。使われた形跡のあるベッドも、目で確認できる限り四つしかない。'],
+        ['ORPHEUS','『被験者五名の覚醒を確認しました』\n天井スピーカーから、抑揚のない機械音声が流れる。'],
+        ['ナレーション','もう一度、部屋を見回す。人間は四人。隠れられる場所もほとんどない。それでも人数センサーは「5」を表示したままだ。'],
+        ['ORPHEUS','『注意。五名のうち一名は登録外個体です。他者へ個人情報を開示しないでください』'],
+        ['ナレーション','直後、それぞれの端末から別々の警告文と声が流れ始める。隣にいる誰かの声に似ている。だが、本人の口は動いていない。']
+      ];
+    }
+    if(V9_SCENARIOS[5]){
+      V9_SCENARIOS[5].script=[
+        ['ナレーション','青錆島の海洋観測所から、二日間にわたって定時通信が途絶えた。探索者たちは設備故障と職員の安否を確認するため、小型艇で島へ向かった調査班である。'],
+        ['ナレーション','事前資料によれば、観測所には主任を中心に海洋・洞窟調査の研究員が滞在している。最後の通信には異常を訴える内容はなく、突然連絡だけが途絶えていた。'],
+        ['ナレーション','午後四時過ぎ、青錆島へ到着する。無人の桟橋の横では調査艇が岩礁へ乗り上げ、砂浜には人の足に似ているが指の長い濡れた足跡が、海から陸へ続いている。'],
+        ['森下葵','『……助けてください』\n宿舎から、脚を負傷した女性が現れる。\n『洞窟に、まだ三人います。潮が上がる前に戻らないと……』'],
+        ['ナレーション','【人物情報】久住岳（41）\n洞窟調査員。洞窟へ入った調査班の一人で、森下が最後に連絡を取った時点では海蝕洞の奥にいた。現在は行方不明。'],
+        ['ナレーション','沖合で黒いものが一つ、水面から頭を出す。続いて二つ、三つ。どれも探索者たちではなく、海蝕洞の方向をじっと見ている。']
+      ];
+    }
+  }
+
+  /* 001 is legacy/hard-coded. Replace the not-yet-shown opening steps after it starts. */
+  const V103_START_BASE=startScenario;
+  startScenario=function(){
+    const r=V103_START_BASE.apply(this,arguments);
+    if(game?.scenarioNo===1 && Array.isArray(game.script)){
+      if(game.script[1]) game.script[1]=['九条美沙','『……少し、力を貸してもらえませんか』\n二等航海士の九条美沙が、周囲の船員を気にしながら探索者たちへ声を落とす。\n『乗客の遠野修司さんが見当たりません。さっきまで、確かに船内にいたはずなんです』'];
+      if(game.script[2]) game.script[2]=['ナレーション','【人物情報】遠野修司（42）\n元船舶技術者。現在は月桂号の乗客として乗船している。失踪直前、「この船には存在しないはずの区画がある」と九条へ話していた。'];
+      if(game.script[3]) game.script[3]=['九条美沙','『遠野さんが言っていたのは、“旧月桂号のB3”です。私は現行の船内図で、そんな区画を見たことがありません』\n\nその時、足元より遥か下――船底の方角から、機関音とは違う硬い音が五度、等間隔に響いた。'];
+      if(game.script[4]) game.script[4]=['九条美沙','『船長は乗客を混乱させたくないと言っています。でも、遠野さんの失踪と今の音が無関係だとは思えません。何か分かったら、私にも教えてください』'];
+    }
+    return r;
+  };
+
+  /* 2) One short, non-spoilery profile the first time a named NPC actually speaks. */
+  const V103_PROFILE={
+    1:{
+      '九条美沙':'月桂号の二等航海士。乗客・遠野修司の失踪を内密に調べようとしている。',
+      '藤堂和真':'月桂号の乗客で、船会社の大株主。',
+      '佐伯蓮':'月桂号の甲板部船員。',
+      '遠野修司':'元船舶技術者。現在は乗客として乗船しており、事件発生後に行方不明。'
+    },
+    2:{
+      '葛城宗一':'霧守村の村長。祭礼と旧坑道の事情を知る立場にある。',
+      '榊原真琴':'村の神社を預かる宮司。民俗研究者・榊原澪の姉。',
+      '榊原澪':'民俗研究者。真琴の妹。祭礼と旧坑道を調査中に行方不明となった。'
+    },
+    3:{
+      '江崎修':'夜霧号の車掌。現在の編成と乗客状況を管理している。',
+      '立花由衣':'夜霧号の乗客。零時十三分ごろ、後方車両で異音を聞いている。',
+      '水城澄人':'夜霧号の乗客。荷物を残したまま所在不明。'
+    },
+    4:{
+      '香坂理緒':'施設の研究員。負傷しているが、施設の実験について説明できる立場にある。',
+      'E-05':'施設が「第五被験体」として扱っている身元不明の女性。'
+    },
+    5:{
+      '三枝直人':'青錆島海洋観測所の主任。現地研究チームの責任者。',
+      '森下葵':'海洋研究員。脚を負傷しており、洞窟班が島に残っていると訴えている。',
+      '久住岳':'洞窟調査員。海蝕洞へ入った後、行方が分からなくなっている。'
+    }
+  };
+  const V103_SETADV_BASE=setAdv;
+  setAdv=function(speaker,text,buttons=[],record=true){
+    try{
+      const n=game?.npcs?.find(x=>x.name===speaker);
+      if(n){
+        game.v103IntroducedNpcs=game.v103IntroducedNpcs||{};
+        if(!game.v103IntroducedNpcs[speaker]){
+          game.v103IntroducedNpcs[speaker]=true;
+          const desc=V103_PROFILE[game.scenarioNo]?.[speaker]||n.role||'';
+          text=`【人物情報】${n.name}（${n.age}歳） / ${n.role}\n${desc}\n\n${text}`;
+        }
+      }
+    }catch(e){}
+    return V103_SETADV_BASE(speaker,text,buttons,record);
+  };
+
+  /* 3) Ending consistency. Only a real round-limit collapse is allowed to claim 'time ran out'. */
+  function facts(){return new Set((game?.facts||[]).map(x=>x.id))}
+  function v103EndNow(kind,title,text,clear=false){
+    if(!game||game.ended)return;
+    game.ended=true;game.phase='ending';game.globalLock=true;
+    game.endingKind=kind;game.endingPrepared=false;
+    game.lockReason='エンディング';
+    playSE(kind==='best'?'critical':'ending');
+    setAdv('エンディング',`${title}\n\n${text}`,[],true);
+    render();netBroadcastSoon?.();
+    setTimeout(()=>{try{v91AutoSaveEnded?.()}catch(e){};try{v103EnsureEndSaveBar()}catch(e){}},120);
+  }
+  function v103IncompleteBest(){
+    const no=game?.scenarioNo,ids=facts();
+    if(no===2){
+      const hasMechanism=ids.has('stabilizer'),rope=game.items?.includes('補修ロープ'),mio=ids.has('mioFound');
+      if(hasMechanism&&!rope){
+        return v103EndNow('rescue','ENDING 02-B2「ほどけた鎮め」',`鎮振機構の動かし方は分かっていた。探索者たちは機構を再起動し、一度は十三回目の共鳴を弱める。\n\nしかし、破損した機構を固定する張力材がない。応急固定は数分で外れ始めた。その短い静穏の間に${mio?'澪を落盤から引き出し':'落盤の奥に澪を発見し、そのまま救出し'}、全員で坑道を離脱する。\n\n澪は救えたが、山の奥では再び低い十三回目が響き始めた。村は翌朝、旧坑道一帯を封鎖することになる。`,true);
+      }
+      if(!hasMechanism&&rope){
+        return v103EndNow('rescue','ENDING 02-B3「知らない機構」',`補修ロープは確保していたが、古い機構が何をしているのか十分に把握しないまま復旧を試みた。\n\n固定そのものには成功したものの、鐘から伝わる振動の位相が合わず、坑道全体の揺れが強くなる。探索者たちは操作を中断し、ロープを救助へ転用。${mio?'澪を引き出して':'落盤の奥で澪を見つけて救出し'}退避した。\n\n人命は守れたが、共鳴を止めることはできなかった。`,true);
+      }
+      return v103EndNow('failure','ENDING 02-E「逆鳴り」',`鎮振機構の構造も、固定に使える装備も十分に揃わないまま復旧を試みた。古い機構は途中まで動いたが、金属棒が逆に地層の振動を拾い、十三回目の共鳴を増幅してしまう。\n\n追加の落盤が起き、これ以上の作業は不可能になる。探索者たちは坑道から退避した。これは時間切れではなく、準備不足の状態で機構へ手を加えた結果だった。`,false);
+    }
+    if(no===3){
+      const mizuki=ids.has('mizukiFound');
+      return v103EndNow(mizuki?'rescue':'failure',mizuki?'ENDING 03-B2「十三分の傷」':'ENDING 03-E「空席の帰還」',mizuki
+        ?'黒い券と後部回路の関係を完全には特定できないまま、探索者たちは零号車の復帰操作を実行した。位相は一瞬だけ重なり、その隙に水城を本編成へ移すことには成功する。だが零号車は再び十三分ずれ、非常連結器が自動的に切断された。水城は救えたものの、異常の根は残った。'
+        :'同期源と遮断すべき回路を特定しきれないまま復帰操作を行った。車内は十三秒停電し、本編成だけが通常時刻へ弾き戻される。零号車は水城ごと視界から消えた。失敗の原因は経過時間ではなく、復帰手順に必要な情報が欠けたまま操作したことだった。',mizuki);
+    }
+    if(no===4){
+      const tech=ids.has('aiCore')&&ids.has('thoughtform')&&ids.has('splitPower');
+      if(tech){
+        return v103EndNow('rescue','ENDING 04-A2「名前のない第五被験体」','共鳴体を接地し、ORPHEUSの停止にも成功した。施設は沈黙し、探索者たちは脱出できる。\n\nただしE-05と英真冬を結ぶ記録を確認していなかったため、消えていく彼女が何者だったのかは最後まで分からない。安全確保には成功したが、彼女の由来を示す記録は施設とともに失われた。',true);
+      }
+      return v103EndNow('failure','ENDING 04-E「停止順序」','共鳴体・ORPHEUS・電源系統の関係を十分に切り分けないまま停止操作を実行した。ORPHEUSだけが先に沈黙し、制御を失った共鳴体は施設中の監視系へE-05の像を拡散させる。\n\n非常電源で脱出路は開いたが、人数センサーは最後まで「5」のままだった。時間切れではなく、停止順序を判断するための情報不足が原因である。',false);
+    }
+    if(no===5){
+      if(!game.items?.includes('青錆色の共鳴殻')){
+        const actor=Number.isInteger(game.actionActor)?game.actionActor:viewIndex();
+        setAdv('最終局面','共鳴殻を海へ返そうとしたが、まだ共鳴殻そのものを確保していない。手元にない物を返すことはできない。\n\n探索を続ければ、まだ別の行動を選べる。',[{label:'探索を続ける',primary:true,actorOnly:true,fn:unlockGlobal}],false);
+        if(game.message){game.message.pageOwner=actor;game.message.pageIndex=0}render();netBroadcastSoon?.();return;
+      }
+      const pump=game.items?.includes('排水ポンプ稼働'),survivors=ids.has('survivorsReady');
+      if(pump&&!survivors){
+        return v103EndNow('rescue','ENDING 05-A2「静まった海、残った洞窟」','共鳴殻を元の海水溜まりへ戻すと、沖合の生物は争うことなく洞窟側へ引いていった。排水ポンプも稼働しており、探索者たちは島を離脱できる。\n\nしかし洞窟班全員の位置と退避経路を確認しきっておらず、救出できたのは所在を把握できた者だけだった。怪異への対処は成功したが、人命救助は完全ではなかった。',true);
+      }
+      return v103EndNow('failure','ENDING 05-E「返したあと」','共鳴殻を海へ戻すと沖合の影は静かに引いていった。だが排水経路を確保しないまま退避を始めたため、満ちてきた海水が海蝕洞の帰路を塞ぐ。\n\n怪異の原因への判断は正しかった。それでも、退路を整えずに実行したことで全員を安全に帰すことはできなかった。',false);
+    }
+    return null;
+  }
+
+  const V103_ENDING_BASE=ending;
+  ending=function(kind,prepared){
+    if(game?.scenarioNo>=2 && game?.scenarioNo<=5 && kind==='best' && !prepared){
+      return v103IncompleteBest();
+    }
+    return V103_ENDING_BASE(kind,prepared);
+  };
+
+  /* Scenario 002: choices remain executable. Knowledge/equipment changes the outcome, not whether a button exists. */
+  const V103_FINALE_BASE=finale;
+  finale=function(){
+    if(game?.scenarioNo!==2) return V103_FINALE_BASE.apply(this,arguments);
+    if(game.ended)return;
+    const actor=viewIndex(),ids=facts();
+    const hasMechanism=ids.has('stabilizer'),rope=game.items?.includes('補修ロープ');
+    const prepared=!!(hasMechanism&&rope);
+    const known=[];
+    if(ids.has('mioFound'))known.push('澪は落盤の向こうで生存している。');
+    if(ids.has('resonance'))known.push('十三回目は鐘ではなく、坑道地層が返す共鳴だと分かっている。');
+    if(hasMechanism)known.push('四鐘と鎮振機構の役割を把握している。');
+    if(rope)known.push('坑道用の補修ロープを確保している。');
+    if(!known.length)known.push('坑道最深部まで到達したが、異常の全体像はまだ整理できていない。');
+    lockGlobal(actor,'最終判断');
+    setAdv('最終局面',`${known.join('\n')}\n\nここからは、選んだ行動を実際に試みることになる。結果は、ここまでに得た情報と装備で変わる。`,[
+      {label:'鎮振機構を復旧してから澪を救出',primary:true,actorOnly:true,fn:()=>ending('best',prepared)},
+      {label:'澪を先に救出する',actorOnly:true,fn:()=>ending('rescue',true)},
+      {label:'坑道入口を崩して封鎖する',actorOnly:true,fn:()=>ending('seal',true)},
+      {label:'探索を続ける',actorOnly:true,fn:unlockGlobal}
+    ],false);
+    if(game.message){game.message.pageOwner=actor;game.message.pageIndex=0}render();netBroadcastSoon?.();
+  };
+
+  /* New bad endings must not accidentally receive a clear-growth reward. */
+  if(typeof v91RewardPlan==='function'){
+    const V103_REWARD_BASE=v91RewardPlan;
+    v91RewardPlan=function(c){
+      const p=V103_REWARD_BASE(c);
+      if(['failure','bad'].includes(game?.endingKind))return{...p,clear:false,best:false,sanGain:0,gains:[]};
+      return p;
+    };
+  }
+
+  /* 4) End-of-scenario continuation controls belong to EACH client, not to the host's ADV ownership. */
+  window.v103EnsureEndSaveBar=function(){
+    const play=$('play');if(!play)return;
+    let bar=$('v103EndSaveBar');
+    if(!bar){
+      bar=document.createElement('div');bar.id='v103EndSaveBar';bar.className='v103EndSaveBar';
+      const handwrap=document.querySelector('#play .handwrap');
+      (handwrap||play).insertAdjacentElement('afterend',bar);
+    }
+    if(!game?.ended){bar.classList.remove('show');return}
+    const slot=NET?.mode==='join'?NET.slot:0,c=chars?.[slot]||chars?.[0];
+    bar.innerHTML=`<div><b>この端末の探索者：P${slot+1} ${esc(c?.name||'探索者')}</b><div class="muted">保存・クリア報酬は各プレイヤー自身のブラウザへ入ります。ホストの操作権とは無関係です。</div></div><button class="btn primary" type="button" onclick="v91OpenEndRewards()">自分の探索者を保存 / 報酬</button>`;
+    bar.classList.add('show');
+  };
+
+  const V103_RENDER_BASE=render;
+  render=function(){
+    const r=V103_RENDER_BASE.apply(this,arguments);
+    try{v103EnsureEndSaveBar()}catch(e){}
+    if(game?.ended)setTimeout(()=>{try{v91AutoSaveEnded?.()}catch(e){}},0);
+    return r;
+  };
+
+  if(typeof v86ApplySnapshot==='function'){
+    const V103_SNAPSHOT_BASE=v86ApplySnapshot;
+    v86ApplySnapshot=function(payload){
+      const r=V103_SNAPSHOT_BASE(payload);
+      if(game?.ended)setTimeout(()=>{try{v91AutoSaveEnded?.()}catch(e){};try{v103EnsureEndSaveBar()}catch(e){}},0);
+      return r;
+    };
+  }
+
+  /* Even while another player's ending page is being advanced, the local save button stays available. */
+  const V103_ADV_BASE=renderAdvActions;
+  renderAdvActions=function(){const r=V103_ADV_BASE.apply(this,arguments);try{v103EnsureEndSaveBar()}catch(e){};return r};
+
+  const V103_HEADER_BASE=v9UpdateHeader;
+  v9UpdateHeader=function(){V103_HEADER_BASE();let s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v10\.2/g,'v10.3');document.title=document.title.replace(/v10\.2/g,'v10.3')};
+  window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader();v103EnsureEndSaveBar()}catch(e){}},120));
+})();
+</script>
+
+<script id="v104script">
+/* v10.4: relationship context for first NPC encounters */
+(function(){
+  const REL_PROFILE={
+    1:{
+      '九条美沙':'月桂号の二等航海士。乗船初日の避難経路案内を担当したため、探索者たちとは顔と名前が一致する程度の面識がある。乗客・遠野修司の失踪を内密に調べようとしている。'
+    },
+    2:{
+      '榊原真琴':'霧守村の神社を預かる宮司で、民俗研究者・榊原澪の姉。今日の午後、橋の崩落で足止めされた探索者たちへ社務所の離れを雨宿り先として手配し、毛布や湯を用意してくれた。数時間前に名乗り合ったばかりの顔見知り。'
+    },
+    5:{
+      '森下葵':'青錆島海洋観測所の海洋研究員。探索者たちは派遣前の職員資料で名前と顔写真を確認していた人物。脚を負傷しており、洞窟班が島に残っていると訴えている。'
+    }
+  };
+
+  /* Rewrite current openings so the relationship is understood before an NPC suddenly asks for help. */
+  if(typeof V9_SCENARIOS!=='undefined'){
+    if(V9_SCENARIOS[2]){
+      V9_SCENARIOS[2].script=[
+        ['ナレーション','山間部を移動していた探索者たちは、豪雨で県道の石橋が落ちたため、山奥の霧守村で足止めされていた。外へ出る道はなく、今夜だけ村内で雨をしのぐことになる。'],
+        ['ナレーション','橋が落ちた直後、探索者たちへ雨宿り場所を手配してくれたのが、この村の神社を預かる宮司・榊原真琴だった。社務所の離れに毛布と湯まで用意してくれ、探索者たちはその時に互いの名前を知っている。'],
+        ['ナレーション','折悪しく、今夜は村で年に一度の祭礼が行われる日だった。雨の中でも祭礼そのものは中止されず、午後九時、山の祠から鐘が鳴り始める。'],
+        ['ナレーション','一回。二回。やがて十二回目が鳴り、村人たちはほっと息をつく。\n\nその直後――祠とは違う、地面の下から響くような低い音が十三回目を告げた。'],
+        ['榊原真琴','『……さっきは、こんな村で足止めになって大変でしたよね。そのうえでお願いするのも、本当に申し訳ないんですが』\n\n数時間前、探索者たちを世話してくれた真琴が、今度は雨に濡れたまま駆け込んでくる。\n『妹の澪が、まだ戻ってこないんです。祭礼が始まる前から鐘のことを調べに出て、それきりで……』'],
+        ['ナレーション','【人物情報】榊原澪（29）\n民俗研究者。真琴の妹で、この村の祭礼と旧坑道について調べていた。今夜、調査に出たまま行方が分からなくなっている。'],
+        ['榊原真琴','『村の人たちは、崩れた橋と増水した川の対応で手が離せません。こんな時に村の外から来た皆さんを頼るのは勝手だと分かっています。でも……澪は最近、“十三回目は鐘じゃないかもしれない”って言っていたんです。それと、旧坑道のことも』']
+      ];
+    }
+    if(V9_SCENARIOS[3]){
+      V9_SCENARIOS[3].script=[
+        ['ナレーション','探索者たちは夜行寝台特急「夜霧号」に乗り合わせていた。日付が変わるころには大半の乗客が寝台へ戻り、車内には走行音だけが続いている。'],
+        ['ナレーション','午前零時十三分。列車が長いトンネルへ入った瞬間、照明が十三秒だけ消れた。明かりが戻ると、窓の外を「夜坂」と書かれた廃駅のホームが流れていく。'],
+        ['ナレーション','十三分後。列車は走り続けているはずなのに、同じ欠け方をした「夜坂」の駅名標がもう一度、同じ方向へ流れていった。'],
+        ['ナレーション','ほどなく、制服姿の車掌が客室を一つずつ回り、乗客へ同じ質問をしているのが見える。探索者たちの席にも、その車掌がやって来た。'],
+        ['江崎修','『失礼します。乗客の方を一人、探しています。水城澄人さんという方を見ませんでしたか？』\n『寝台には荷物も残ったままなんです』'],
+        ['ナレーション','【人物情報】水城澄人（37）\n夜霧号の乗客。乗客名簿には通常どおり登録されているが、零時すぎから所在不明。所持品は寝台7号に残されている。'],
+        ['ナレーション','その時、車内の非常通報器が鳴った。表示された送信元は「CAR-0」。\n\n現在の夜霧号の編成表に、0号車は存在しない。']
+      ];
+    }
+    if(V9_SCENARIOS[5]){
+      V9_SCENARIOS[5].script=[
+        ['ナレーション','青錆島の海洋観測所から、二日間にわたって定時通信が途絶えた。探索者たちは設備故障と職員の安否を確認するため、小型艇で島へ向かった調査班である。'],
+        ['ナレーション','派遣前の資料には、観測所主任・三枝直人をはじめとする現地職員の氏名と顔写真が載っていた。探索者たちは少なくとも、誰がこの島の職員なのかは見分けられる。'],
+        ['ナレーション','午後四時過ぎ、青錆島へ到着する。無人の桟橋の横では調査艇が岩礁へ乗り上げ、砂浜には人の足に似ているが指の長い濡れた足跡が、海から陸へ続いている。'],
+        ['ナレーション','宿舎の戸口から、脚を引きずる女性が現れる。派遣前の職員資料にあった顔だ。海洋研究員・森下葵。'],
+        ['森下葵','『……助けてください。洞窟に、まだ三人います。潮が上がる前に戻らないと……』'],
+        ['ナレーション','【人物情報】久住岳（41）\n洞窟調査員。洞窟へ入った調査班の一人で、森下が最後に連絡を取った時点では海蝕洞の奥にいた。現在は行方不明。'],
+        ['ナレーション','沖合で黒いものが一つ、水面から頭を出す。続いて二つ、三つ。どれも探索者たちではなく、海蝕洞の方向をじっと見ている。']
+      ];
+    }
+  }
+
+  /* 001 is legacy and builds its opening only after startScenario(). */
+  const START_BASE=startScenario;
+  startScenario=function(){
+    const r=START_BASE.apply(this,arguments);
+    if(game?.scenarioNo===1 && Array.isArray(game.script)){
+      if(game.script[1]) game.script[1]=['ナレーション','乗船初日の避難経路案内で、探索者たちは二等航海士・九条美沙から説明を受けていた。親しいわけではないが、互いに顔と名前は分かる。'];
+      if(game.script[2]) game.script[2]=['九条美沙','『昨日ご案内した皆さんですよね。少し、力を貸してもらえませんか』\n\n九条は周囲の船員を気にしながら声を落とす。\n『乗客の遠野修司さんが見当たりません。さっきまで、確かに船内にいたはずなんです』'];
+      if(game.script[3]) game.script[3]=['ナレーション','【人物情報】遠野修司（42）\n元船舶技術者。現在は月桂号の乗客として乗船している。失踪直前、「この船には存在しないはずの区画がある」と九条へ話していた。'];
+      if(game.script[4]) game.script[4]=['九条美沙','『遠野さんが言っていたのは、“旧月桂号のB3”です。私は現行の船内図で、そんな区画を見たことがありません』\n\nその時、足元より遥か下――船底の方角から、機関音とは違う硬い音が五度、等間隔に響いた。'];
+    }
+    return r;
+  };
+
+  /* Relation-aware profile. Suppress v10.3's shorter profile only where a stronger one exists. */
+  const SETADV_BASE=setAdv;
+  setAdv=function(speaker,text,buttons=[],record=true){
+    try{
+      const rel=REL_PROFILE[game?.scenarioNo]?.[speaker];
+      const n=game?.npcs?.find(x=>x.name===speaker);
+      if(rel&&n){
+        game.v103IntroducedNpcs=game.v103IntroducedNpcs||{};
+        if(!game.v103IntroducedNpcs[speaker]){
+          game.v103IntroducedNpcs[speaker]=true;
+          text=`【人物情報】${n.name}（${n.age}歳） / ${n.role}\n${rel}\n\n${text}`;
+        }
+      }
+    }catch(e){}
+    return SETADV_BASE(speaker,text,buttons,record);
+  };
+
+  const HEADER_BASE=v9UpdateHeader;
+  v9UpdateHeader=function(){
+    HEADER_BASE();
+    const s=document.querySelector('header small');
+    if(s)s.textContent=s.textContent.replace(/v10\.3/g,'v10.4');
+    document.title=document.title.replace(/v10\.3/g,'v10.4');
+  };
+  window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader()}catch(e){}},150));
+})();
+
+</script>
+
+<style id="v105css">
+/* v10.5: NPC personality / relationship presentation */
+.v105Personality{color:#d8cdbd;font-size:11px;line-height:1.65}
+</style>
+<script id="v105script">
+/* v10.5: NPCs speak and react as people, not information terminals. */
+(function(){
+  const PROFILES={
+    '九条美沙':'月桂号の二等航海士。乗船初日の避難経路案内で探索者たちと顔と名前を交わしている。几帳面で責任感が強く、勤務中は感情を抑えるが、異常事態を放置できない性格。',
+    '藤堂和真':'船会社の大株主として乗船している高齢の実業家。探索者とは同じ船の乗客という以上の関係はない。自尊心が強く、質問されるより自分が場を支配することに慣れている。',
+    '佐伯蓮':'月桂号の若い甲板部船員。探索者とは船内で見かける程度の関係。口は少し荒いが根は小心で、自分の私生活を職場に知られることをひどく嫌う。',
+    '遠野修司':'元船舶技術者で月桂号の乗客。探索者とは事件以前に面識はない。技術屋らしく要点を短く話すが、危機の最中でも乾いた冗談を挟む余裕がある。',
+    '榊原真琴':'霧守村の神社を預かる宮司で榊原澪の姉。今日の午後、足止めされた探索者たちへ雨宿り先と毛布、湯を用意してくれた顔見知り。世話好きで礼儀正しい一方、妹のことになると平静を保ちきれない。',
+    '葛城宗一':'霧守村の村長。探索者が橋の崩落で足止めされた外来客だと知っている。人当たりは穏やかだが、村の問題は村の中で収めるべきだという考えが強い。',
+    '榊原澪':'29歳の民俗研究者。真琴の妹。探索者とは失踪前に直接の面識はない。好奇心が強く、危険な状況でも発見したことを説明したくなる研究者気質。',
+    '江崎修':'夜霧号の車掌。探索者とはこの列車で初めて会話する。乗客を不安にさせないことを職務上の最優先にしており、異常を前にしてもまず通常手順で処理しようとする。',
+    '立花由衣':'夜霧号の乗客。探索者とは同じ列車に乗り合わせただけ。緊張すると余計なことまで話してしまうタイプで、自分の記憶に自信がなくなると急に早口になる。',
+    '水城澄人':'夜霧号の乗客。探索者とは事件以前に面識はない。古い鉄道用品を見るとつい手に取ってしまう程度の鉄道好きで、今回の異常を起こした行動をかなり後悔している。',
+    '香坂理緒':'研究施設の研究員。探索者たちとは目覚める以前の記憶上に接点がない。理屈で状況を整理しようとするが、E-05を見ると過去の事故への恐怖が表に出る。',
+    'E-05':'施設内で現れた身元不明の女性。探索者たちが覚醒してから形成されたらしく、彼らとの過去の関係はない。自分自身が何者か分からない不安を抱えながらも、他者を怖がらせまいと静かに振る舞う。',
+    '三枝直人':'青錆島海洋観測所の主任。探索者は派遣資料で顔と役職を把握しているが、本人とは初めて会う。研究成果への執着と責任者としての自負が強く、自分の判断ミスを「必要な判断だった」と理屈で固める癖がある。',
+    '森下葵':'青錆島海洋観測所の海洋研究員。探索者は派遣資料で顔と名前を把握している。普段は明るくよく喋るが、現在は負傷と恐怖に加えて仲間を置いて逃げた罪悪感を抱えている。',
+    '久住岳':'青錆島の洞窟調査員。探索者は派遣資料で名前と顔を知っている。現場経験が長く、危険時ほど冗談で周囲を落ち着かせるタイプ。'
+  };
+
+  const D={
+    '藤堂和真':{
+      success:'『嵐が強くなってからは、ずっとラウンジにいたよ。こういう晩は部屋に戻るより、ここで酒でも飲んでいる方がまだましだ』\n藤堂は肩をすくめる。\n『遠野君？　顔は知っているが、ほとんど話していない。昔の船の話をしたがる男は、船会社にはいくらでもいるのでね』',
+      critical:'『……機関室？　なぜ、その話を私にする』\n藤堂は言い終えてから、自分でも気づかないほど短く右靴へ視線を落とした。\n『いや。質問を続けたまえ。退屈しのぎにはなる』',
+      failure:'『同じことを聞かれても答えは変わらんよ』\nグラスを傾けてから、少しだけ眉を上げる。\n『それより君たち、船酔いは平気なのかね。若い人ほど妙に我慢する』',
+      fumble:'『人を嘘つき扱いするにも作法というものがある』\n藤堂の声から愛想が消える。\n『次は弁護士を通してくれ。少なくとも彼は質問の値段を知っている』'
+    },
+    '九条美沙':{
+      success:'『一時間くらい前です。遠野さん、“旧月桂号のB3を調べている。この船にも同じ区画があるはずだ”って』\n九条は一度そこで言葉を切る。\n『正直、その時はまた船好きの昔話だと思ってしまいました。ちゃんと聞いておけばよかった』',
+      critical:'『待って。もう一つ言ってました』\n九条はこめかみを押さえ、記憶を辿る。\n『“五回鳴るものを止めるんじゃない。止まっている方を動かす”……です。意味が分からなくて、私、“謎かけなら勤務後にしてください”って返したんです』',
+      failure:'『ごめんなさい。嵐対応と欠員連絡が重なっていて、頭の中がぐちゃぐちゃで……』\n苦笑して手帳を見返す。\n『今夜だけでコーヒー三杯目です。思い出したら必ず伝えます』',
+      fumble:'『……ここでは、これ以上話せません』\n近くを通る船員に気づき、九条は仕事用の表情へ戻る。\n『後で。私から声を掛けます』'
+    },
+    '佐伯蓮':{
+      success:'『22時以降は持ち場を離れてません。遠野さんを最後に見たのは……21時50分くらいです』\n早口で言い切ってから、佐伯は腕時計を見る。\n『時間に細かいんですよ、俺。遅刻すると主任がうるさいんで』',
+      critical:'『……22時半？』\n佐伯は反射的に腕時計を見る。しかも二度。\n『いや、その時間も持ち場です。……何ですか、その顔。仕事以外で船員が誰と会おうが、事件とは関係ないでしょう』',
+      failure:'『覚えてませんよ。こんな嵐で、時計ばっか見てられないって』\nそう言った直後にまた腕時計へ目をやり、本人も気まずそうに舌打ちする。',
+      fumble:'『しつこいんだよ！　俺は関係ない！』\n怒鳴ったあと、周囲の視線に気づいて急に声を落とす。\n『……すみません。でも、本当に勘弁してください』'
+    },
+    '遠野修司':{
+      success:'『脚は挟まれたが、まだ一本は言うことを聞く。上等だろ』\n遠野は痛みに顔をしかめて笑う。\n『俺より先に制御装置を見てくれ。ここで俺だけ引っ張り出しても、船ごとおかしくなったら笑えない』',
+      critical:'『三回ずつ叩いてたのは俺だ。五回の音とは別物だよ』\n息を整え、隔壁の奥を睨む。\n『五回の方を俺の救難信号だと思ったなら……まあ、紛らわしくて悪かったな』',
+      failure:'『聞こえてる。生きてるよ』\n遠野は隔壁の向こうから返す。\n『長話はあとだ。今は喉も脚も機嫌が悪い』',
+      fumble:'遠野が何かを言いかける。\nその声とまったく同じ声が、探索者の背後から名前を呼ぶ。\n遠野本人は沈黙し、『……今の、俺じゃないぞ』と低く言った。'
+    },
+    '葛城宗一':{
+      success:'『十三回目などありません。祭礼は十二で終わる。それが昔からの決まりです』\n葛城は湯呑みを探索者の前へ押す。\n『雨で冷えたでしょう。まず飲みなさい。山の話は、身体を温めてからでも遅くない』',
+      critical:'『旧坑道……？』\n濡れた袖口を隠すように腕を組み直す。\n『あそこは何十年も前に閉じた場所です。私が子どものころでも、大人に近づくなと叱られた』\n少し間を置き、『……子どもは、言われるほど行きたがるものですがね』と付け足す。',
+      failure:'『若い者は怖い話を作るのが好きでね。私らの頃も同じでしたよ』\n葛城は笑うが、山の方角だけは見ようとしない。',
+      fumble:'『村の古い傷を、面白半分に掘り返されるのは困ります』\n湯呑みを置く音が少し強い。\n『……真琴さんに世話になった客人だ。これ以上、険悪にはしたくない』'
+    },
+    '榊原真琴':{
+      success:'『澪、今年は鐘の順番が昔と違うってずっと言ってたんです。十三回目はそのせいじゃないかって』\n真琴は濡れた髪を耳へ掛ける。\n『あの子、気になることがあるとご飯も忘れるんです。今日も昼のおにぎり、手を付けてなくて……そういうの、今思い出さなくていいのに』',
+      critical:'『それと……“十三回目は祠じゃなくて旧坑道から返ってくる”とも』\n言い終えてから、真琴は自分の言葉に怯えたように黙る。\n『私、そんな所へ行くなって怒ったんです。澪は笑って、“お姉ちゃんは昔から心配しすぎ”って』',
+      failure:'『祭礼の細かいことは澪の方が詳しいんです。私は毎年やることを覚えてるだけで……』\n申し訳なさそうに笑う。\n『姉なのに、研究の話になると半分も分からなくて』',
+      fumble:'『ごめんなさい、今は……少しだけ待ってください』\n真琴は両手で口元を押さえ、呼吸を整える。\n『澪が怪我してる想像ばかり浮かんで、ちゃんと話せない』'
+    },
+    '榊原澪':{
+      success:'『ああ……やっぱり来てくれた。姉に頼まれました？　怒ってましたよね』\n岩に挟まれた脚を見て、澪は乾いた笑いを漏らす。\n『十三回目は鐘じゃない。地面が返してる音です。私を引っ張る前に、あの機構を見てください』',
+      critical:'『四つの鐘、封印じゃないんです。周波数をずらして振動を打ち消すための手順』\n痛みで息を止めながら、それでも説明する声には妙な熱がある。\n『……こういう時まで研究の話すると、また姉に怒られるな』',
+      failure:'『生きてます。たぶん、見た目ほどひどくないです』\n少し間を置く。\n『“たぶん”って研究者が言うと信用なくしますね。すみません』',
+      fumble:'澪の声に重なって、坑道の別方向から同じ声が返る。\n本人は顔をしかめる。\n『……それ、私じゃないです。さすがに自分の声くらい分かります』'
+    },
+    '江崎修':{
+      success:'『水城さんなら、零時十分ごろに7号寝台の後ろへ歩いていくのを見ました』\n江崎は胸ポケットの運行表へ目を落とす。\n『0号車はありません。少なくとも、私が二十二年この仕事をしてきた中ではね。……今夜だけ例外だ、と言われると困りますが』',
+      critical:'『0号車？』\n視線が一瞬だけ旧編成図の棚へ動く。\n『昔の資料にそういう番号があった気はします。鉄道会社というのは、捨てていい紙ほど捨てないんですよ』',
+      failure:'『運行は正常です――と言うのが私の仕事なんですが』\n窓の外を同じ駅名標が流れるのを見て、江崎は小さくため息をつく。\n『今夜は、その言葉に自信がなくなってきました』',
+      fumble:'『これ以上乗務を妨げるなら、いったん席へ戻っていただきます』\n厳しい声のあと、少しだけ表情を緩める。\n『……すみません。私も余裕がない』'
+    },
+    '立花由衣':{
+      success:'『零時十三分くらいです。後ろで、車両を繋いだみたいな凄い音がして』\n立花は両手で音の大きさを示そうとして、途中でやめる。\n『私、寝る時は耳栓するんですよ。それでも聞こえたから、本当に大きかったんです。……耳栓の話、要らないですね』',
+      critical:'『その直後、後ろの窓だけ真っ白になったんです。トンネルの照明じゃない』\n少し早口になる。\n『写真を撮ればよかった。でもああいう時って、スマホ探してる間に終わるんですよね。ほんと役に立たない』',
+      failure:'『音は聞きました。でも時間までは……たぶん十三分。いや、時計を見たのはその後かも』\n自信をなくし、何度も言い直す。',
+      fumble:'『ごめんなさい。もうその音のこと考えたくないです』\n立花は耳を塞ぎ、しばらく窓から目を逸らす。'
+    },
+    '水城澄人':{
+      success:'『黒い券の本券を拾ったんです。古い硬券、好きで……つい』\n水城は額を押さえる。\n『置いてあった検札器に通したら、00時13分って印字されて、その瞬間に車両が変わった。今なら分かります。知らない機械を触るなって話ですよね』',
+      critical:'『券を検札器から抜くと、窓の外が少し揺らぐんです』\n乾いた唇を舐める。\n『戻れたら、古切符集めはしばらくやめます。……たぶん』',
+      failure:'『すみません、水を少し……』\n水城は応答できるが、疲労で話が途切れる。\n『説明はします。だから、ここから出てからにさせてください』',
+      fumble:'水城の言葉が一拍遅れて、車両の反対側から同じ声で繰り返される。\n本人は青ざめる。\n『あれ、俺じゃない。……今のは、絶対に俺じゃない』'
+    },
+    '香坂理緒':{
+      success:'『今回の正規被験者は四人です。ここは、人同士の“認識の食い違い”を測る施設でした』\n香坂は額の傷を押さえながら苦笑する。\n『本当は、アンケート取ってモニター眺めて、冷めたコーヒー飲んで終わる実験だったんです。少なくとも私はそう聞いていました』',
+      critical:'『以前……共鳴体が、事故で亡くなった英真冬の声を再現したことがあります』\n研究者らしい口調を保とうとするが、最後の名前だけ声が掠れる。\n『真冬は同僚でした。だから私は、E-05を“ただの現象”って簡単には呼べない』',
+      failure:'『頭を打っていて、記憶が少し混乱しています』\nポケットを探り、空の飴袋を見つけて妙に困った顔をする。\n『こういう時に糖分があれば、って思うあたり、我ながら現実逃避ですね』',
+      fumble:'香坂はE-05を視界に入れた瞬間、呼吸を乱す。\n『ごめんなさい……顔が、真冬に似すぎてる。少しだけ、見ないでいさせて』'
+    },
+    'E-05':{
+      success:'『私は真冬だと思っていました。でも、覚えてるのは映像みたいな断片だけ。目が覚めたのは、あなたたちの声を聞いたあとです』\n自分の手を見つめる。\n『寒いって感じるんです。これも誰かの記録を真似してるだけなのかな』',
+      critical:'『本物の真冬じゃないかもしれない。それは、もう分かってます』\n少しだけ笑う。\n『でもORPHEUSが嘘をついてることまで偽物になるわけじゃないでしょう？　そこだけは信じてほしい』',
+      failure:'『ごめんなさい。思い出そうとすると、私の記憶なのか、さっき誰かが話したことなのか分からなくなる』\nE-05は答えを作らず、正直に首を振る。',
+      fumble:'E-05の声が一瞬、探索者全員の声を重ねた音へ変わる。\n本人も驚いて口を押さえる。\n『……今の、怖かったですよね。私も怖いです』'
+    },
+    '三枝直人':{
+      success:'『洞窟班は観測艇で島外へ退避しました。洞窟へ行く必要はありません』\n三枝は荷造りの手を止めない。\n『ここは観光地じゃない。救援で来たなら、主任である私の安全判断に従ってください。……報告書なら後でいくらでも書きます』',
+      critical:'『共鳴殻？』\n持ち出し用ケースへ視線が走る。\n『現場では俗称で呼ぶ者もいます。正式にはA-17です。名前を付けると、研究対象に妙な愛着を持つ人間が出るのでね』',
+      failure:'『安全管理はこちらでやっています。あなた方は待機してください』\n苛立ちを隠すように眼鏡を拭く。\n『外部の人間が一番危険なのは、“何かしなければ”と焦って動く時です』',
+      fumble:'三枝は資料端末へ手を伸ばし、アクセスを切ろうとする。\n『もう十分です。事故現場で責任者の指示を無視する人間を、私は信用しない』'
+    },
+    '森下葵':{
+      success:'『久住さんたち三人、まだ洞窟にいます。主任は“試料を返すな”って……』\n森下は痛む脚を押さえ、唇を噛む。\n『私だけ途中で転んで、戻ってきちゃった。久住さん、“先に行け、晩飯のカレー残しとけ”って笑ってたのに』',
+      critical:'『海の生き物、私たちを追ってたんじゃないと思います。あの青い殻の方をずっと見てた』\n声に少し勢いが戻る。\n『怖かったけど……あれ、怒ってるというより、取り返しに来てるみたいでした』',
+      failure:'『ごめんなさい、脚が……ちょっと待って』\n呼吸を整えてから、無理に笑う。\n『普段はもっと喋るんです。今だけ省エネさせてください』',
+      fumble:'遠くで水を掻く音がし、森下の顔色が変わる。\n『あの音……洞窟でも聞いた。ごめんなさい、今は話せない。少しだけ、静かにして』'
+    },
+    '久住岳':{
+      success:'『来てくれたか。助かった』\n久住は濡れた服のまま笑う。\n『三人ともまだ歩ける。俺は帰ったらまず熱い飯だ。森下にカレーを残せって言った手前、残ってなかったら揉める』',
+      critical:'『あの連中、人間にはほとんど興味がない。殻だよ。殻を元の海水溜まりへ戻せば、たぶん道を空ける』\nそこで真顔になる。\n『“たぶん”で人を動かすのは嫌いだが、今は観測した限りそう言える』',
+      failure:'『三人とも生きてる。細かい話は外でしよう』\n久住は震える手を隠すように腕を組む。',
+      fumble:'洞窟の奥から久住と同じ声が先に返事をする。\n本人が顔をしかめる。\n『……俺、まだ何も言ってないぞ。あれは数に入れるな』'
+    }
+  };
+
+  const APPROACH={
+    '藤堂和真':'『今度は何かな』\n藤堂は座ったまま顎で向かいの椅子を示す。断るほどではないが、質問される立場そのものが気に入らないらしい。',
+    '九条美沙':'『何か分かりました？　……いえ、その前に私への質問ですね』\n九条は手帳を閉じる。勤務中らしい硬さの奥に、遠野を心配する焦りが見える。',
+    '佐伯蓮':'『また俺ですか』\n佐伯は露骨に嫌そうな顔をするが、その場から逃げはしない。腕時計だけは相変わらず気にしている。',
+    '遠野修司':'『質問なら手短にな。脚より喉の方が先に限界きそうだ』\n負傷している割に口調は落ち着いている。',
+    '葛城宗一':'『外はひどい雨でしょう。まあ、座ってください』\n葛城はまず茶を勧める。親切にも見えるし、話の主導権を握ろうとしているようにも見える。',
+    '榊原真琴':'『何でも聞いてください。私が知ってることなら』\nそう言いながらも、真琴の視線は何度も戸口へ向かう。妹が帰ってくる可能性をまだ捨てていない。',
+    '榊原澪':'『姉から聞いて来たんですか？　……なら、帰ったら一緒に謝ってください』\n状況に似合わない軽口を挟むが、額には汗が浮いている。',
+    '江崎修':'『お話は伺います。ただし、乗客の安全に関わることからお願いします』\n江崎は職務口調を崩さない。ポケットの運行表は何度も開かれた跡がある。',
+    '立花由衣':'『私で分かることなら。……あ、先に言いますけど、記憶力には自信ないです』\n立花はそう前置きしてから、逆に細かなことまで話し始めそうな気配を見せる。',
+    '水城澄人':'『助けに来てくれたんですよね。……先に謝っておきます。たぶん、俺が余計なもの触りました』\n疲労しているが、意識ははっきりしている。',
+    '香坂理緒':'『説明はします。私も状況を整理したい』\n香坂は研究者らしく落ち着こうとしているが、ガラスの向こうへ視線を向けるたび表情が硬くなる。',
+    'E-05':'『聞きたいこと、ありますよね』\nE-05は少し距離を取ったまま立つ。警戒というより、自分が近づくことで相手を怖がらせないよう気を遣っている。',
+    '三枝直人':'『救援なら到着を歓迎します。調査なら、まず私を通してください』\n三枝は名乗るより先に立場を確認する。荷造りの手は止めない。',
+    '森下葵':'『話します。だから……洞窟の三人を後回しにしないでください』\n森下は痛みを堪えながら姿勢を直す。必死さの方が恐怖より前に出ている。',
+    '久住岳':'『質問は歩きながらでもいいぞ。ここ、長居して景色を楽しむ場所じゃない』\n久住は冗談めかすが、周囲の水位を絶えず確認している。'
+  };
+
+  /* Make the first profile richer and suppress the older, flatter profile wrappers. */
+  const SETADV_BASE=setAdv;
+  setAdv=function(speaker,text,buttons=[],record=true){
+    try{
+      const n=game?.npcs?.find(x=>x.name===speaker);
+      if(n && PROFILES[speaker]){
+        game.v103IntroducedNpcs=game.v103IntroducedNpcs||{};
+        if(!game.v103IntroducedNpcs[speaker]){
+          game.v103IntroducedNpcs[speaker]=true;
+          text=`【人物情報】${n.name}（${n.age}歳） / ${n.role}\n${PROFILES[speaker]}\n\n${text}`;
+        }
+      }
+    }catch(e){}
+    return SETADV_BASE(speaker,text,buttons,record);
+  };
+
+  npcResultDialogue=function(name,outcome){return D[name]?.[outcome]||''};
+  investigationSceneLead=function(t,c,skill,outcome){
+    let name=getNpc(t?.name)?.name;
+    if(!name && t?.name==='扉越しのE-05')name='E-05';
+    if(!name && t?.name==='避難研究員')name='久住岳';
+    return name?npcResultDialogue(name,outcome):'';
+  };
+
+  /* NPC selection itself now gives a characterful beat before the skill buttons. */
+  selectTarget=function(i){
+    if(actionBlocked())return;
+    let c=viewChar(),r=game.rooms[c.at],t=r.targets[i],actor=viewIndex(),avail=v810AvailableSkills(t,actor),special=v810SpecialAction(t);
+    if(!t||(!special&&(t.done||!avail.length)))return;
+    c.target=i;c.selectedSkill=null;if(typeof v86SaveLocalUi==='function')v86SaveLocalUi();syncViewState();renderTargets();renderSide();renderSkillChoices();renderHand();
+    let n=getNpc(t.name),buttons=[];
+    if(special)buttons.push({label:special.label,primary:true,fn:()=>v810UseSpecial(i,special.id)});
+    buttons.push(...avail.map((s,idx)=>({label:(v810Mode(s)==='work'?'🛠 ':'🔎 ')+approachLabel(s),primary:!special&&idx===0,fn:()=>selectSkillFromAdv(s)})));
+    let alias=t.name==='扉越しのE-05'?'E-05':t.name==='避難研究員'?'久住岳':null;
+    let nn=n?.name||alias;
+    if(nn){
+      let intro=APPROACH[nn]||'相手は探索者の言葉を待っている。';
+      setAdv(nn,`${intro}\n\nどう切り込む？`,buttons,false);
+    }else{
+      let hint=v810RequirementHint(t);setAdv('ナレーション',`${targetApproachText(t,c)}${hint?`\n\n${hint}`:''}`,buttons,false);
+    }
+  };
+
+  /* A few openings benefit from one ordinary human line before the mystery accelerates. */
+  if(typeof V9_SCENARIOS!=='undefined'){
+    if(V9_SCENARIOS[2]){
+      V9_SCENARIOS[2].script[4]=['榊原真琴','『……さっき、お湯は足りました？』\n駆け込んできた真琴は、場違いなことを口にしてから、自分でもそれどころではないと気づいたように息を呑む。\n『すみません。そのうえでお願いするのも、本当に申し訳ないんですが……妹の澪が、まだ戻ってこないんです』'];
+      V9_SCENARIOS[2].script[6]=['榊原真琴','『村の人たちは崩れた橋と増水した川の対応で手が離せません。こんな時に、今日知り合ったばかりの皆さんを頼るなんて勝手ですよね』\n真琴は一度頭を下げ、それから顔を上げる。\n『でも澪は、“十三回目は鐘じゃないかもしれない”って言っていました。それと、旧坑道のことも。どうか、一緒に探してください』'];
+    }
+    if(V9_SCENARIOS[3]){
+      V9_SCENARIOS[3].script[4]=['江崎修','『失礼します。お休みのところ申し訳ありません』\n車掌は同じ謝罪を何度も繰り返してきたらしく、声に少し疲れが混じる。\n『水城澄人さんという乗客を探しています。寝台に荷物を残したまま見当たらないんです。何か見ていませんか？』'];
+    }
+    if(V9_SCENARIOS[5]){
+      V9_SCENARIOS[5].script[4]=['森下葵','『……助けてください』\n森下は脚を引きずりながら、それでも探索者たちの人数を確認するように一人ずつ顔を見る。\n『よかった、外から人が来た……洞窟にまだ三人います。久住さんたちが。潮が上がる前に戻らないと』'];
+    }
+  }
+
+  /* Legacy 001 builds its script after start; add a little character without changing facts. */
+  const START_BASE=startScenario;
+  startScenario=function(){
+    const r=START_BASE.apply(this,arguments);
+    if(game?.scenarioNo===1&&Array.isArray(game.script)){
+      if(game.script[2])game.script[2]=['九条美沙','『昨日ご案内した皆さんですよね。……こんな形でまた声を掛けるとは思いませんでした』\n九条は困ったように一度笑うが、すぐ業務の表情へ戻る。\n『少し、力を貸してもらえませんか。乗客の遠野修司さんが見当たらないんです』'];
+    }
+    return r;
+  };
+
+  const HEADER_BASE=v9UpdateHeader;
+  v9UpdateHeader=function(){HEADER_BASE();let s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v10\.4/g,'v10.5');document.title=document.title.replace(/v10\.4/g,'v10.5')};
+  window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader()}catch(e){}},140));
+})();
+</script>
