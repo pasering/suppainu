@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>異世界ライフロード ～転生すごろくRPG～ v007</title>
+<title>異世界ライフロード ～転生すごろくRPG～ v009</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 body{background:linear-gradient(135deg,#eee7d3,#e4f1ec)!important}
@@ -927,6 +927,10 @@ body.howto-open{overflow:hidden}
 .asset-skill-popover{appearance:none;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px;margin:8px 0 7px 0;padding:10px 12px;background:#fffbeb;border:2px solid #b48a3a;border-radius:10px;box-shadow:0 5px 14px #60401833;color:#433015;width:min(260px,73vw);white-space:normal;line-height:1.5;position:relative;z-index:20}
 .asset-skill-popover:before{content:"";position:absolute;top:-8px;left:15px;width:12px;height:12px;transform:rotate(45deg);background:#fffbeb;border-left:2px solid #b48a3a;border-top:2px solid #b48a3a}
 .asset-skill-popover strong{font-size:13px}.asset-skill-popover span{font-size:12px}.asset-skill-popover small{font-size:10px;color:#8b744e}
+
+.choicebtn.choice-locked{background:#d8d8d8!important;border-color:#a9a9a9!important;box-shadow:none!important;filter:grayscale(1);opacity:.64;cursor:not-allowed}
+.choicebtn.choice-locked strong,.choicebtn.choice-locked .note{color:#555!important}
+.choicebtn.choice-locked .choice-stat-hint{display:none}
 </style>
 <style>
 /* v0.45 board readability */
@@ -1265,7 +1269,7 @@ body{background:radial-gradient(circle at 24% 0,#fff8e9,#ebdfc5 63%,#c6b6a0);col
 <div class="wrap" id="app">
 <div class="topbar">
 <div><div class="brand">異世界ライフロード</div><div class="sub">転生すごろくRPG｜最大4人・オンライン / CPU対応</div></div>
-<div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><button class="btn small sound-btn audio-fix-btn" id="audioFixBtn" title="スマホなどで音が出ない時に音声機能を再起動します">🔊 音が鳴らない時に押す</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" max="100" min="0" type="range" value="100"/><span id="volumeValue">100%</span></label><button class="btn small howto-link" id="howtoBtn" type="button">📘 遊び方</button><span class="pill">v007</span></div>
+<div class="sound-controls"><button class="btn small sound-btn audio-toggle" id="bgmBtn">🎵 BGM ON</button><button class="btn small sound-btn audio-toggle" id="sfxBtn">🔔 効果音 ON</button><button class="btn small sound-btn audio-fix-btn" id="audioFixBtn" title="スマホなどで音が出ない時に音声機能を再起動します">🔊 音が鳴らない時に押す</button><label class="volume-control" title="BGM・効果音の全体音量"><span>音量</span><input id="volumeSlider" max="100" min="0" type="range" value="100"/><span id="volumeValue">100%</span></label><button class="btn small howto-link" id="howtoBtn" type="button">📘 遊び方</button><span class="pill">v009</span></div>
 </div>
 <section class="grid2" id="homeScreen">
 <div class="card stack"><h2 style="margin:0">部屋をつくる</h2><div class="field"><label>あなたの名前</label><input id="hostName" maxlength="12" value="プレイヤー1"/></div><button class="btn primary" id="createBtn">部屋を作成</button><div class="note">ホストの端末がゲーム進行を管理します。誤って更新・タブを閉じても、同じ端末なら前回の対戦へ復帰できます。</div></div>
