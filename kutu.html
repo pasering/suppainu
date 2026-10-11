@@ -3913,3 +3913,174 @@ window.addEventListener('load',()=>{setTimeout(()=>{if(game)renderSide()},250)})
   window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader()}catch(e){}},140));
 })();
 </script>
+
+
+<style id="v106css">
+/* ===== v10.6: present NPC first-introduction bubble ===== */
+.v106ProfileBubble{
+  position:absolute;
+  left:248px;
+  bottom:306px;
+  z-index:9;
+  width:min(430px,calc(100% - 275px));
+  padding:13px 15px 14px;
+  border:1px solid #c0a36f;
+  border-radius:14px;
+  background:linear-gradient(145deg,#111a22f2,#0a1118f5);
+  box-shadow:0 14px 34px #000b,inset 0 0 0 1px #ffffff0a;
+  color:#edf1f4;
+  pointer-events:none;
+  opacity:1;
+  transform:translateY(0) scale(1);
+  transition:opacity .38s ease,transform .38s ease;
+  filter:drop-shadow(0 5px 10px #0008);
+}
+.v106ProfileBubble::before{
+  content:"";
+  position:absolute;
+  left:-13px;
+  bottom:34px;
+  width:24px;
+  height:24px;
+  background:#0d151df5;
+  border-left:1px solid #c0a36f;
+  border-bottom:1px solid #c0a36f;
+  transform:rotate(45deg);
+}
+.v106ProfileBubble.v106Leaving{opacity:0;transform:translateY(7px) scale(.985)}
+.v106ProfileKicker{position:relative;z-index:1;font-size:10px;letter-spacing:.16em;color:#c9aa73;font-weight:800;margin-bottom:5px}
+.v106ProfileName{position:relative;z-index:1;font-size:18px;font-weight:900;color:#f2dfbb;line-height:1.25;text-shadow:0 2px 5px #000}
+.v106ProfileMeta{position:relative;z-index:1;margin-top:3px;font-size:11px;color:#b6c0c8;line-height:1.5}
+.v106ProfileDesc{position:relative;z-index:1;margin-top:8px;padding-top:8px;border-top:1px solid #ffffff1c;font-size:12px;line-height:1.65;color:#d9dfe4}
+.v106ProfileHint{position:relative;z-index:1;margin-top:7px;font-size:9px;color:#82909b;text-align:right}
+@media(max-width:760px){
+  .v106ProfileBubble{left:148px;bottom:318px;width:calc(100% - 166px);padding:10px 11px 11px;border-radius:11px}
+  .v106ProfileBubble::before{left:-10px;bottom:27px;width:18px;height:18px}
+  .v106ProfileName{font-size:15px}.v106ProfileMeta{font-size:10px}.v106ProfileDesc{font-size:10.5px;line-height:1.55}
+}
+</style>
+<script id="v106script">
+/* ===== v10.6: keep first-appearance character info out of ADV text ===== */
+(function(){
+  const PROFILE={
+    '九条美沙':'月桂号の二等航海士。乗船初日の避難経路案内で探索者たちと顔と名前を交わしている。几帳面で責任感が強く、勤務中は感情を抑えるが、異常事態を放置できない性格。',
+    '藤堂和真':'船会社の大株主として乗船している高齢の実業家。探索者とは同じ船の乗客という以上の関係はない。自尊心が強く、質問されるより自分が場を支配することに慣れている。',
+    '佐伯蓮':'月桂号の若い甲板部船員。探索者とは船内で見かける程度の関係。口は少し荒いが根は小心で、自分の私生活を職場に知られることをひどく嫌う。',
+    '遠野修司':'元船舶技術者で月桂号の乗客。探索者とは事件以前に面識はない。技術屋らしく要点を短く話すが、危機の最中でも乾いた冗談を挟む余裕がある。',
+    '榊原真琴':'霧守村の神社を預かる宮司で榊原澪の姉。今日の午後、足止めされた探索者たちへ雨宿り先と毛布、湯を用意してくれた顔見知り。世話好きで礼儀正しい一方、妹のことになると平静を保ちきれない。',
+    '葛城宗一':'霧守村の村長。探索者が橋の崩落で足止めされた外来客だと知っている。人当たりは穏やかだが、村の問題は村の中で収めるべきだという考えが強い。',
+    '榊原澪':'29歳の民俗研究者。真琴の妹。探索者とは失踪前に直接の面識はない。好奇心が強く、危険な状況でも発見したことを説明したくなる研究者気質。',
+    '江崎修':'夜霧号の車掌。探索者とはこの列車で初めて会話する。乗客を不安にさせないことを職務上の最優先にしており、異常を前にしてもまず通常手順で処理しようとする。',
+    '立花由衣':'夜霧号の乗客。探索者とは同じ列車に乗り合わせただけ。緊張すると余計なことまで話してしまうタイプで、自分の記憶に自信がなくなると急に早口になる。',
+    '水城澄人':'夜霧号の乗客。探索者とは事件以前に面識はない。古い鉄道用品を見るとつい手に取ってしまう程度の鉄道好きで、今回の異常を起こした行動をかなり後悔している。',
+    '香坂理緒':'研究施設の研究員。探索者たちとは目覚める以前の記憶上に接点がない。理屈で状況を整理しようとするが、E-05を見ると過去の事故への恐怖が表に出る。',
+    'E-05':'施設内で現れた身元不明の女性。探索者たちが覚醒してから形成されたらしく、彼らとの過去の関係はない。自分自身が何者か分からない不安を抱えながらも、他者を怖がらせまいと静かに振る舞う。',
+    '三枝直人':'青錆島海洋観測所の主任。探索者は派遣資料で顔と役職を把握しているが、本人とは初めて会う。研究成果への執着と責任者としての自負が強く、自分の判断ミスを「必要な判断だった」と理屈で固める癖がある。',
+    '森下葵':'青錆島海洋観測所の海洋研究員。探索者は派遣資料で顔と名前を把握している。普段は明るくよく喋るが、現在は負傷と恐怖に加えて仲間を置いて逃げた罪悪感を抱えている。',
+    '久住岳':'青錆島の洞窟調査員。探索者は派遣資料で名前と顔を知っている。現場経験が長く、危険時ほど冗談で周囲を落ち着かせるタイプ。'
+  };
+  const UI={key:'',shownAt:0,visible:false,hideTimer:null};
+
+  function esc106(s){
+    return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function ensureBubble(){
+    let e=document.getElementById('v106ProfileBubble');
+    if(e)return e;
+    const scene=document.getElementById('scene');
+    if(!scene)return null;
+    e=document.createElement('div');
+    e.id='v106ProfileBubble';e.className='v106ProfileBubble hidden';
+    scene.appendChild(e);return e;
+  }
+  function showBubble(p){
+    if(!p)return;
+    const key=String(p.key||`${p.scenarioNo||''}|${p.name||''}`);
+    if(UI.key===key)return;
+    const e=ensureBubble();if(!e)return;
+    clearTimeout(UI.hideTimer);UI.key=key;UI.shownAt=performance.now();UI.visible=true;
+    e.classList.remove('hidden','v106Leaving');
+    e.innerHTML=`<div class="v106ProfileKicker">CHARACTER / 人物情報</div><div class="v106ProfileName">${esc106(p.name)}</div><div class="v106ProfileMeta">${esc106(p.age)}歳　/　${esc106(p.role)}</div><div class="v106ProfileDesc">${esc106(p.desc)}</div><div class="v106ProfileHint">7秒間は固定表示</div>`;
+  }
+  function hideBubble(){
+    if(!UI.visible)return;
+    const e=ensureBubble();if(!e)return;
+    UI.visible=false;e.classList.add('v106Leaving');
+    clearTimeout(UI.hideTimer);UI.hideTimer=setTimeout(()=>e.classList.add('hidden'),390);
+  }
+  function syncBubble(){
+    const p=game?.message?.v106Profile;
+    if(p)showBubble(p);
+  }
+  function stripLegacyProfilePrefix(text){
+    const s=String(text??'');
+    if(!s.startsWith('【人物情報】'))return s;
+    const cut=s.indexOf('\n\n');
+    return cut>=0?s.slice(cut+2):s;
+  }
+
+  const BASE_SET_ADV=setAdv;
+  setAdv=function(speaker,text,buttons=[],record=true){
+    let profile=null,presentNpc=null;
+    try{
+      const n=game?.npcs?.find(x=>x.name===speaker);
+      presentNpc=n||null;
+      if(n){
+        game.v106IntroducedNpcs=game.v106IntroducedNpcs||{};
+        if(!game.v106IntroducedNpcs[speaker]){
+          game.v106IntroducedNpcs[speaker]=true;
+          /* Older v10.3-v10.5 wrappers use this same flag. Mark it first so they do not inject profile text into ADV. */
+          game.v103IntroducedNpcs=game.v103IntroducedNpcs||{};
+          game.v103IntroducedNpcs[speaker]=true;
+          profile={
+            key:`${game.scenarioNo||0}|${speaker}`,
+            scenarioNo:game.scenarioNo||0,
+            name:n.name,age:n.age,role:n.role,
+            desc:PROFILE[speaker]||n.role||''
+          };
+        }
+      }
+    }catch(e){}
+    const r=BASE_SET_ADV(speaker,presentNpc?stripLegacyProfilePrefix(text):text,buttons,record);
+    if(profile&&game?.message){
+      game.message.v106Profile=profile;
+      showBubble(profile);
+      try{netBroadcastSoon?.()}catch(e){}
+    }
+    return r;
+  };
+
+  /* Guests receive setAdv through snapshots rather than executing it locally. */
+  if(typeof v86ApplySnapshot==='function'){
+    const BASE_SNAPSHOT=v86ApplySnapshot;
+    v86ApplySnapshot=function(payload){
+      const r=BASE_SNAPSHOT(payload);syncBubble();return r;
+    };
+  }
+
+  /* Dismiss only on a dialogue-advance click, and never before seven seconds have elapsed. */
+  document.addEventListener('click',e=>{
+    if(!UI.visible||!e.target.closest('.adv'))return;
+    if(performance.now()-UI.shownAt<7000)return;
+    hideBubble();
+  },true);
+
+  /* Keyboard page advance follows the same seven-second protection. */
+  document.addEventListener('keydown',e=>{
+    if(!UI.visible||e.repeat||(e.key!=='Enter'&&e.key!==' '))return;
+    const tag=(document.activeElement?.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='select'||tag==='textarea')return;
+    if(performance.now()-UI.shownAt>=7000)hideBubble();
+  },true);
+
+  const HEADER_BASE=typeof v9UpdateHeader==='function'?v9UpdateHeader:null;
+  if(HEADER_BASE){
+    v9UpdateHeader=function(){
+      HEADER_BASE();
+      const s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v10\.5/g,'v10.6');
+      document.title=document.title.replace(/v10\.5/g,'v10.6');
+    };
+  }
+  window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader?.();syncBubble()}catch(e){}},180));
+})();
+</script>
