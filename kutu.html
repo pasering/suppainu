@@ -4084,3 +4084,103 @@ window.addEventListener('load',()=>{setTimeout(()=>{if(game)renderSide()},250)})
   window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader?.();syncBubble()}catch(e){}},180));
 })();
 </script>
+
+<style id="v107css">
+/* ===== v10.7: deck skill checkbox filter ===== */
+.v107SkillFilter{margin:11px 0 10px;padding:10px;border:1px solid #3d4a56;border-radius:9px;background:#0e151c}
+.v107SkillFilterHead{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.v107SkillFilterHead b{font-size:12px;color:#e8d3ad}
+.v107SkillFilterHead .muted{font-size:10px}
+.v107SkillChecks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px 7px}
+.v107SkillCheck{display:flex;align-items:center;gap:5px;min-width:0;padding:4px 6px;border:1px solid #35424e;border-radius:6px;background:#141c23;font-size:10px;color:#cbd4db;cursor:pointer;user-select:none}
+.v107SkillCheck:has(input:checked){border-color:#a78e61;background:#28231b;color:#f0dbb4}
+.v107SkillCheck input{margin:0;min-width:0;accent-color:#b89b65}
+.v107SkillFilterCount{font-size:10px;color:#9ba8b4;margin-top:7px}
+@media(max-width:1180px){.v107SkillChecks{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){.v107SkillChecks{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.v107SkillChecks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script id="v107script">
+/* ===== v10.7: skill checkbox filtering + automatic first stat roll ===== */
+(function(){
+  const V107={filters:new Set(),autoGenerating:false};
+  window.V107=V107;
+
+  function esc107(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function v107MatchesCard(card){
+    if(!V107.filters.size)return true;
+    const skills=Array.isArray(card?.skills)?card.skills:(card?.skill?[card.skill]:[]);
+    for(const s of skills)if(V107.filters.has(s))return true;
+    return false;
+  }
+
+  /* Apply the same filter to both the current online builder and the legacy local builder. */
+  const V107_POOL_FOR_BASE=poolFor;
+  poolFor=function(c){return V107_POOL_FOR_BASE(c).filter(v107MatchesCard)};
+
+  function v107FilterHtml(){
+    const count=V107.filters.size;
+    return `<div class="v107SkillFilter"><div class="v107SkillFilterHead"><div><b>技能で絞り込み</b><div class="muted">チェックした技能を1つでも含むカードだけ表示</div></div><button class="btn ghost small" ${count?'':'disabled'} onclick="v107ClearSkillFilters()">全解除</button></div><div class="v107SkillChecks">${SKILLS.map(s=>`<label class="v107SkillCheck"><input type="checkbox" ${V107.filters.has(s)?'checked':''} onchange="v107ToggleSkillFilter('${esc107(s)}',this.checked)"><span>${esc107(s)}</span></label>`).join('')}</div><div class="v107SkillFilterCount">${count?`${count}技能でフィルタ中`:'フィルタなし：すべてのカードを表示'}</div></div>`;
+  }
+
+  window.v107ToggleSkillFilter=function(skill,on){
+    if(on)V107.filters.add(skill);else V107.filters.delete(skill);
+    if(typeof v88RenderCreator==='function'&&document.getElementById('onlineCreator')&&!game)v88RenderCreator();
+    else if(typeof renderDeck==='function'&&document.getElementById('deckscreen')&&!document.getElementById('deckscreen').classList.contains('hidden'))renderDeck();
+  };
+  window.v107ClearSkillFilters=function(){
+    V107.filters.clear();
+    if(typeof v88RenderCreator==='function'&&document.getElementById('onlineCreator')&&!game)v88RenderCreator();
+    else if(typeof renderDeck==='function'&&document.getElementById('deckscreen')&&!document.getElementById('deckscreen').classList.contains('hidden'))renderDeck();
+  };
+
+  function v107InjectOnlineFilter(){
+    if(game||typeof V812==='undefined'||V812.phase!=='build')return;
+    const deck=document.querySelector('#onlineCreator .ocDeck');if(!deck||deck.querySelector('.v107SkillFilter'))return;
+    const pool=deck.querySelector('.ocPool');if(!pool)return;
+    pool.insertAdjacentHTML('beforebegin',v107FilterHtml());
+  }
+
+  function v107InjectLocalFilter(){
+    const pool=document.getElementById('pool');if(!pool||document.querySelector('#deckscreen .v107SkillFilter'))return;
+    pool.insertAdjacentHTML('beforebegin',v107FilterHtml());
+  }
+
+  /* Fresh investigators get their first roll automatically on entering STEP 2.
+     Continuing investigators keep their saved abilities untouched. */
+  function v107EnsureInitialStats(){
+    if(V107.autoGenerating||game||typeof V812==='undefined'||V812.phase!=='build'||!V88?.draft)return false;
+    const p=V88.draft;
+    if(p.baseStats||p.isContinuing)return false;
+    V107.autoGenerating=true;
+    try{
+      v88InvalidateReady?.();
+      p.baseStats=rollStats();
+      p.rerollsLeft=3;
+      v88RecalcDraft(p);
+      v88PushDraft(false);
+      return true;
+    }finally{V107.autoGenerating=false}
+  }
+
+  const V107_RENDER_CREATOR_BASE=v88RenderCreator;
+  v88RenderCreator=function(){
+    v107EnsureInitialStats();
+    V107_RENDER_CREATOR_BASE();
+    v107InjectOnlineFilter();
+  };
+
+  const V107_RENDER_DECK_BASE=renderDeck;
+  renderDeck=function(){V107_RENDER_DECK_BASE();v107InjectLocalFilter()};
+
+  const V107_HEADER_BASE=typeof v9UpdateHeader==='function'?v9UpdateHeader:null;
+  if(V107_HEADER_BASE){
+    v9UpdateHeader=function(){
+      V107_HEADER_BASE();
+      const s=document.querySelector('header small');if(s)s.textContent=s.textContent.replace(/v10\.6/g,'v10.7');
+      document.title=document.title.replace(/v10\.6/g,'v10.7');
+    };
+  }
+  window.addEventListener('load',()=>setTimeout(()=>{try{v9UpdateHeader?.()}catch(e){}},220));
+})();
+</script>
