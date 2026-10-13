@@ -561,11 +561,18 @@ html,body{height:100%;height:100dvh;overflow:hidden}
 @media(min-width:1001px){#app[data-tab="craft"] .layout{grid-template-columns:minmax(380px,.76fr) minmax(0,1.24fr);}}
 @media(max-width:700px){#app[data-tab="craft"] .craft-matrix{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(min-width:701px) and (max-width:1000px){#app[data-tab="craft"] .craft-matrix{grid-template-columns:repeat(4,minmax(0,1fr));}}
+/* v0.9.8 emergency debug rescue dialog */
+.debug-dialog{max-width:520px}
+.debug-dialog p{font-size:12px;line-height:1.75;margin:8px 0 12px}
+.debug-current{padding:10px 12px;background:#142d27;border:1px solid #4b6957;border-radius:9px;color:#e2ebd7;font-size:12px;line-height:1.6;margin-bottom:13px}
+.debug-actions{display:grid;gap:9px;margin-bottom:15px}
+.debug-actions .btn{text-align:left;padding:12px 14px;white-space:normal}
+.debug-dialog .row{justify-content:flex-end}
 </style>
 </head>
 <body>
 <div id="app" data-view="field">
- <header class="top"><div class="brand"><div class="brandmark">🌿</div><div><h1>WILDSEED</h1><small>サバイバルクラフトRPG — 画像版 0.9.7（地続きMAP・仲間育成）</small></div></div><div class="toolbar"><button class="btn small subtle" data-act="help">？ 遊び方</button><button class="btn small subtle" data-act="newgame">↻ 新しい世界</button><div class="audio-controls"><button class="btn small subtle" id="musicToggle" data-act="music">♪ 音ON</button><label>音楽 <input type="range" id="bgmVolume" min="0" max="100" value="28"></label><label>効果音 <input type="range" id="seVolume" min="0" max="100" value="45"></label></div></div></header>
+ <header class="top"><div class="brand"><div class="brandmark">🌿</div><div><h1>WILDSEED</h1><small>サバイバルクラフトRPG — 画像版 0.9.8（緊急救出コマンド）</small></div></div><div class="toolbar"><button class="btn small subtle" data-act="help">？ 遊び方</button><button class="btn small subtle" data-act="debugopen">🛠 デバッグ</button><button class="btn small subtle" data-act="newgame">↻ 新しい世界</button><div class="audio-controls"><button class="btn small subtle" id="musicToggle" data-act="music">♪ 音ON</button><label>音楽 <input type="range" id="bgmVolume" min="0" max="100" value="28"></label><label>効果音 <input type="range" id="seVolume" min="0" max="100" value="45"></label></div></div></header>
  <div class="mobileHUD" id="mobileHUD" aria-label="サバイバル状態"></div>
  <nav class="mobileviewtabs" aria-label="表示切り替え"><button class="viewtab on" data-view="field">🗺 フィールド</button><button class="viewtab" data-view="side">🎒 所持品・製作</button></nav>
  <main class="layout">
@@ -588,6 +595,20 @@ html,body{height:100%;height:100dvh;overflow:hidden}
   <div id="worldmapDetail" class="worldmap-detail" aria-live="polite">訪問済みのマスをクリックすると地形情報が表示されます。</div>
   <p class="worldmap-footnote">※ 全体MAPから直接移動はできません。移動は通常のフィールドMAPで行ってください。</p>
  </section>
+</div>
+<div class="overlay hidden" id="debugOverlay" role="dialog" aria-modal="true" aria-labelledby="debugTitle">
+ <div class="modal debug-dialog">
+  <h2 id="debugTitle">🛠 デバッグ・緊急救出</h2>
+  <p>MAPに埋まった場合の救済コマンドです。死亡扱いにならず、持ち物・仲間・経験値・現在のセーブを保持します。</p>
+  <div class="debug-current" id="debugCurrent">現在位置を確認中</div>
+  <div class="debug-actions">
+   <button class="btn primary" data-act="debugrespawn">🛏 登録したベッドへ強制移動</button>
+   <button class="btn" data-act="debugsafe">🏝 今のMAPの安全な陸地へ移動</button>
+   <button class="btn subtle" data-act="debugstart">🏕 初期地点へ強制移動</button>
+  </div>
+  <p class="tiny">ベッドが未登録・撤去済みの場合は初期地点へ戻ります。移動による時間経過やペナルティはありません。</p>
+  <div class="row"><button class="btn subtle" data-act="debugclose">閉じる</button></div>
+ </div>
 </div>
 <div class="overlay hidden" id="modal"><div class="modal">
  <section id="welcomeIntro" class="welcome-intro">
@@ -1374,6 +1395,68 @@ function applyDeathRespawn(){
  }
  return !!location;
 }
+/* 緊急救出: 死亡・ドロップ・時間進行なし。セーブ地点への復帰を最優先。 */
+function findSafeRescueTile(f,origin={x:6,y:6},room=null){
+ if(!f?.ground)return null;
+ const width=S, height=S, available=[];
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const tile=f.ground[y]?.[x];
+  if(!tile||['water','ocean','cavewall','inwall','caverock'].includes(tile))continue;
+  if((f.placed||[]).some(o=>(o.room||null)===(room||null)&&o.type!=='river_bridge'&&o.type!=='grave'&&occupies(o,x,y)))continue;
+  if((f.creatures||[]).some(m=>m.x===x&&m.y===y))continue;
+  const danger=(f.creatures||[]).some(m=>enemyIsHostile(m)&&Math.abs(m.x-x)+Math.abs(m.y-y)<=2)?15:0;
+  available.push({x,y,score:Math.abs(x-origin.x)+Math.abs(y-origin.y)+danger});
+ }
+ available.sort((a,b)=>a.score-b.score);
+ return available[0]?{x:available[0].x,y:available[0].y}:null;
+}
+function closeDebug(){el('debugOverlay')?.classList.add('hidden');}
+function openDebug(){
+ if(!st)return;
+ const bed=findRespawnBed();
+ el('debugCurrent').textContent=`現在地：${currentRealm()==='demon'?'魔界':'現世'} ${st.wx+1},${st.wy+1} / ${st.pos.x+1},${st.pos.y+1}　｜　復帰先：${bed?'登録したベッド':'初期地点'}`;
+ el('debugOverlay').classList.remove('hidden');
+}
+function clearTravelForRescue(){
+ ui.moving=false;ui.route=[];ui.crossDirection=null;ui.inside=null;ui.selected=null;ui.storageId=null;ui.activeStation=null;ui.placing=null;ui.aim=false;ui.chosenItem=null;ui.battleSummary=null;st.combat=null;st.cave=null;
+}
+function applyForcedRescue(kind){
+ if(!st)return;
+ const snapshot={realm:st.realm,wx:st.wx,wy:st.wy,pos:{...st.pos},cave:st.cave,inside:ui.inside};
+ let usedBed=false,method='';
+ if(kind==='safe'&&!st.cave&&!ui.inside){
+  const landing=findSafeRescueTile(field(),st.pos);
+  if(landing){clearTravelForRescue();st.pos=landing;method='同じMAPの安全な陸地';}
+ }
+ if(!method){
+  clearTravelForRescue();
+  if(kind==='respawn'){
+   const dest=findRespawnBed();
+   if(dest){st.realm=dest.r.realm;st.wx=dest.r.wx;st.wy=dest.r.wy;st.pos=spawnNearBed(dest.f,dest.bed,dest.r.room?dest.f.placed.find(o=>o.id===dest.r.room):null);ui.inside=dest.r.room||null;usedBed=true;method='登録したベッド';}
+  }
+  if(!usedBed){st.realm='mortal';st.wx=4;st.wy=4;st.pos={x:6,y:6};ui.inside=null;method='初期地点';}
+  const landing=findSafeRescueTile(field(),st.pos);
+  if(landing&&!ui.inside)st.pos=landing;
+ }
+ if(!ui.inside&&['water','ocean','cavewall'].includes(field().ground[st.pos.y]?.[st.pos.x])){
+  st.realm=snapshot.realm;st.wx=snapshot.wx;st.wy=snapshot.wy;st.pos=snapshot.pos;st.cave=snapshot.cave;ui.inside=snapshot.inside;
+  toast('安全な着地点が見つかりませんでした');closeDebug();draw();return;
+ }
+ currentVisited()[key()]=true;
+ ui.view='field';el('worldmapOverlay')?.classList.add('hidden');closeDebug();
+ addLog('🛠 緊急救出：'+method+'に移動した。所持品・仲間・経験値はそのまま。');
+ toast('🛠 '+method+'へ移動しました');draw();
+}
+function rescueAfterTerrainUpdate(){
+ // v0.9.7以降の地形変化で旧セーブの足元が水になったときだけ救済。
+ // いかだを持っている場合は通常の水上移動が可能なため自動転送しない。
+ if(st.cave||ui.inside||has('raft'))return;
+ const f=field(),x=st.pos?.x,y=st.pos?.y;
+ if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=S||y>=S||!['water','ocean'].includes(f.ground[y]?.[x]))return;
+ const landing=findSafeRescueTile(f,st.pos);
+ if(landing){st.pos=landing;st.combat=null;addLog('🛠 地形更新により水中に埋まっていたため、近くの陸地へ救出した。');}
+ // エリア一面が水の場合も復帰できるようボタンは常時表示する。
+}
 function knockout(){
  // Grave is created at the place of death BEFORE moving the player.
  createDeathGrave();st.cave=null;st.deaths++;
@@ -1770,7 +1853,7 @@ function selectedTile(x,y){
 
 function showHelp(open,details=false){const modal=el('modal');modal.classList.toggle('hidden',!open);if(open){modal.classList.toggle('intro-mode',!details);el('welcomeIntro').classList.toggle('hidden',details);el('helpDetails').classList.toggle('hidden',!details);st.firstRun=false;}save();}
 function save(){try{localStorage.setItem(SAVEKEY,JSON.stringify(st))}catch(e){}}
-function init(){try{let saved=JSON.parse(localStorage.getItem(SAVEKEY)||'null');if(saved?.fields&&saved.inventory){st=saved;for(let f of Object.values(st.fields)){for(let n of (f.nodes||[]))if(n.type==='ore'&&!n.deposit)n.deposit='ore';for(let o of (f.placed||[])){let sz=placeSize(o.type,!!o.rotated);o.w=sz.w;o.h=sz.h;}}}else st=blankState();syncEquipment();ensureDura();ensureEnhancements();if(st.fields['4,4']){let g=st.fields['4,4'].ground;for(let [x,y] of [[6,5],[7,5],[7,6],[8,6],[8,5],[6,7],[6,8],[7,7],[8,7],[5,6],[4,6],[4,7],[4,8]])if(g?.[y]?.[x]==='water')g[y][x]='sand';}for(let [k,f]of Object.entries(st.fields)){let [x,y]=k.split(',').map(Number);if(caveEntrances(x,y)&&!f.placed.some(o=>o.type==='cave_entrance')){let xx=2+hash(x,y,st.seed)%8,yy=2+hash(y,x,st.seed)%8;f.nodes=f.nodes.filter(n=>n.x!==xx||n.y!==yy);f.placed.push({id:makeId(),type:'cave_entrance',x:xx,y:yy,room:null,w:1,h:1});}}if(!st.caves)st.caves={};for(const ff of Object.values(st.fields)){for(const o of ff.placed.filter(z=>BUILDS.some(b=>b.id===z.type))){/* indoor layouts will be normalized on entry */}}}catch(e){st=blankState();}loadAudioPrefs();progressInit();syncFoodFresh();if(st.combat&&!field().creatures.some(m=>m.id===st.combat.mobId))st.combat=null;field();graveSettings();expireGraves();if(!st.logs.length)addLog('🌱 目を覚ますと、見知らぬ川辺にいた。まずは木・石・草を集めよう。');draw();if(st.firstRun)showHelp(true);document.addEventListener('pointerdown',()=>{if(audio.enabled)setAudioEnabled(true);else ensureAudio();},{once:true});}
+function init(){try{let saved=JSON.parse(localStorage.getItem(SAVEKEY)||'null');if(saved?.fields&&saved.inventory){st=saved;for(let f of Object.values(st.fields)){for(let n of (f.nodes||[]))if(n.type==='ore'&&!n.deposit)n.deposit='ore';for(let o of (f.placed||[])){let sz=placeSize(o.type,!!o.rotated);o.w=sz.w;o.h=sz.h;}}}else st=blankState();syncEquipment();ensureDura();ensureEnhancements();if(st.fields['4,4']){let g=st.fields['4,4'].ground;for(let [x,y] of [[6,5],[7,5],[7,6],[8,6],[8,5],[6,7],[6,8],[7,7],[8,7],[5,6],[4,6],[4,7],[4,8]])if(g?.[y]?.[x]==='water')g[y][x]='sand';}for(let [k,f]of Object.entries(st.fields)){let [x,y]=k.split(',').map(Number);if(caveEntrances(x,y)&&!f.placed.some(o=>o.type==='cave_entrance')){let xx=2+hash(x,y,st.seed)%8,yy=2+hash(y,x,st.seed)%8;f.nodes=f.nodes.filter(n=>n.x!==xx||n.y!==yy);f.placed.push({id:makeId(),type:'cave_entrance',x:xx,y:yy,room:null,w:1,h:1});}}if(!st.caves)st.caves={};for(const ff of Object.values(st.fields)){for(const o of ff.placed.filter(z=>BUILDS.some(b=>b.id===z.type))){/* indoor layouts will be normalized on entry */}}}catch(e){st=blankState();}loadAudioPrefs();progressInit();syncFoodFresh();if(st.combat&&!field().creatures.some(m=>m.id===st.combat.mobId))st.combat=null;field();rescueAfterTerrainUpdate();graveSettings();expireGraves();if(!st.logs.length)addLog('🌱 目を覚ますと、見知らぬ川辺にいた。まずは木・石・草を集めよう。');draw();if(st.firstRun)showHelp(true);document.addEventListener('pointerdown',()=>{if(audio.enabled)setAudioEnabled(true);else ensureAudio();},{once:true});}
 function newGame(){if(ui.moving)ui.moving=false;if(!confirm('現在の世界と自動セーブを消して、新しい世界を始めますか？'))return;st=blankState();ui={tab:'items',view:'field',page:0,storageMode:'in',journalMode:'goals',selected:null,chosenItem:null,craftFilter:'全部',showCraftable:false,placing:null,inside:null,storageId:null,moving:false,route:[],storePages:{in:0,out:0},storeAmount:1,transferFlash:null,battleSummary:null};field();addLog('🌱 新しい世界が始まった。');draw();showHelp(true);}
 function renderStats(){progressInit();const arr=[['HP','hp','#e7928a',hpMax()],['空腹','hunger','#f0ca7e',100],['水分','thirst','#87c6de',100],['スタミナ','stamina','#9acba1',staminaMax()]];
  el('stats').innerHTML=arr.map(([name,k,c,max])=>`<div class="stat"><div class="statlabel"><span>${name}</span><b>${Math.round(st[k])}/${max}</b></div><div class="meter"><i style="width:${clamp(st[k]/max*100)}%;background:${c}"></i></div></div>`).join('');
@@ -2089,13 +2172,13 @@ document.addEventListener('click',e=>{let target=e.target.closest('button');if(!
  if(target.dataset.box){ui.storageId=target.dataset.box;ui.page=0;draw();return;}
  if(target.dataset.transfer){let[dir,id,n]=target.dataset.transfer.split(',');transfer(id,Number(n),dir);return;}
  let act=target.dataset.act;if(!act)return;
- switch(act){case'worldmap':openWorldMap();break;case'closeworldmap':closeWorldMap();break;case'music':setAudioEnabled(!audio.enabled);break;case'aim':beginAiming();break;case'shoot':rangedAttack();break;case'clearstation':ui.activeStation=null;draw();break;case'collectpasture':collectPasture();break;case'recovergrave':recoverGrave();break;case'gentle':toggleGentle();break;case'petwater':petWater();break;case'resumebattle':resumeCombat();break;case'round':attackRound();break;case'removemedal':removeMedal();break;case'applystoreamount':{let v=Math.max(1,Math.floor(Number(el('storeAmountCustom')?.value||1)));ui.storeAmount=v;draw();break;}case'dismissbattle':ui.battleSummary=null;draw();break;case'closeitem':ui.chosenItem=null;draw();break;case'rest':rest();break;case'help':showHelp(true,true);break;case'showhelpdetails':showHelp(true,true);break;case'showintro':showHelp(true,false);break;case'closehelp':showHelp(false);break;case'newgame':newGame();break;case'gather':gather(Number(target.dataset.num)||1);break;case'attack':attack();break;case'drinkriver':drinkAt();break;case'fish':catchFish();break;case'fillwater':fillWater();break;case'drinkstored':drinkStored();break;case'eat':eatItem(target.dataset.itemid);break;case'placeitem':placeSelection(target.dataset.itemid);break;case'discard':discard(target.dataset.itemid);break;case'walkselected':{let e1=selectedEntity();if(!e1)break;const dest=ui.selected;
+ switch(act){case'debugopen':openDebug();break;case'debugclose':closeDebug();break;case'debugrespawn':applyForcedRescue('respawn');break;case'debugsafe':applyForcedRescue('safe');break;case'debugstart':applyForcedRescue('start');break;case'worldmap':openWorldMap();break;case'closeworldmap':closeWorldMap();break;case'music':setAudioEnabled(!audio.enabled);break;case'aim':beginAiming();break;case'shoot':rangedAttack();break;case'clearstation':ui.activeStation=null;draw();break;case'collectpasture':collectPasture();break;case'recovergrave':recoverGrave();break;case'gentle':toggleGentle();break;case'petwater':petWater();break;case'resumebattle':resumeCombat();break;case'round':attackRound();break;case'removemedal':removeMedal();break;case'applystoreamount':{let v=Math.max(1,Math.floor(Number(el('storeAmountCustom')?.value||1)));ui.storeAmount=v;draw();break;}case'dismissbattle':ui.battleSummary=null;draw();break;case'closeitem':ui.chosenItem=null;draw();break;case'rest':rest();break;case'help':showHelp(true,true);break;case'showhelpdetails':showHelp(true,true);break;case'showintro':showHelp(true,false);break;case'closehelp':showHelp(false);break;case'newgame':newGame();break;case'gather':gather(Number(target.dataset.num)||1);break;case'attack':attack();break;case'drinkriver':drinkAt();break;case'fish':catchFish();break;case'fillwater':fillWater();break;case'drinkstored':drinkStored();break;case'eat':eatItem(target.dataset.itemid);break;case'placeitem':placeSelection(target.dataset.itemid);break;case'discard':discard(target.dataset.itemid);break;case'walkselected':{let e1=selectedEntity();if(!e1)break;const dest=ui.selected;
     if(e1.kind==='object'&&e1.obj.type==='river_bridge'){walkTo(dest.x,dest.y,false,true);}else if(e1.kind==='object'){let o=e1.obj;if(adjacentToObject(st.pos,o)){toast('すでに設備の近くにいます');draw();}else walkTo(o.x,o.y,true,true);}
     else walkTo(dest.x,dest.y,false,true);
     break;}case'interact':inspectPlace();break;case'setrespawn':setRespawnBed();break;case'caveinteract':interactCave();break;case'waterhome':waterHome();break;case'farmharvest':farmHarvest();break;case'farmwater':farmWater();break;case'pickup':pickupFixture();break;case'demolish':demolishBuilding();break;case'exit':exitBuilding();break;case'confirmplace':confirmPlacement();break;case'rotateplace':if(ui.placing){ui.placing.rotated=!ui.placing.rotated;draw();}break;case'cancelplace':ui.placing=null;draw();break;case'liftchest':liftChest();break;case'placecarry':ui.placing={type:'chest',kind:'carry',rotated:false,preview:null,hover:null};ui.view='field';toast('チェストの配置先を選び「ここに設置」で確定してください');draw();break;}
 });
 document.addEventListener('change',e=>{if(e.target.id==='craftCategoryAll'){ui.craftCategories=e.target.checked?[...new Set(RECIPES.map(r=>r.cat))]:[];draw();return;}if(e.target.dataset.craftCategory!==undefined){const c=e.target.dataset.craftCategory;let active=Array.isArray(ui.craftCategories)?ui.craftCategories.slice():[...new Set(RECIPES.map(r=>r.cat))];if(e.target.checked&&!active.includes(c))active.push(c);if(!e.target.checked)active=active.filter(v=>v!==c);ui.craftCategories=active;draw();return;}if(e.target.dataset.goalId){st.goalVisibility=st.goalVisibility||{};st.goalVisibility[e.target.dataset.goalId]=e.target.checked;draw();return;}if(e.target.id==='graveDays'){st.settings=st.settings||{};st.settings.graveDays=Number(e.target.value);expireGraves();draw();return;}if(e.target.dataset.equipselect){if(st.combat||ui.moving){toast('戦闘・移動中は装備を変更できません');draw();return;}if(e.target.value)equipItem(e.target.value);else unequipSlot(e.target.dataset.equipselect);return;}if(e.target.id==='itemCategory'){ui.itemFilter=e.target.value;draw();return;}if(e.target.id==='craftCategory'){ui.craftFilter=e.target.value;ui.page=0;draw();return;}if(e.target.id==='craftableOnly'){ui.showCraftable=e.target.checked;ui.page=0;draw();}});
-el('worldmapOverlay').addEventListener('click',e=>{if(e.target.id==='worldmapOverlay')closeWorldMap();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWorldMap();});window.addEventListener('resize',()=>{draw();if(!el('worldmapOverlay').classList.contains('hidden'))renderWorldMap();});init();
+el('worldmapOverlay').addEventListener('click',e=>{if(e.target.id==='worldmapOverlay')closeWorldMap();});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeWorldMap();closeDebug();}});el('debugOverlay').addEventListener('click',e=>{if(e.target.id==='debugOverlay')closeDebug();});window.addEventListener('resize',()=>{draw();if(!el('worldmapOverlay').classList.contains('hidden'))renderWorldMap();});init();
 })();
 </script>
 </body></html>
