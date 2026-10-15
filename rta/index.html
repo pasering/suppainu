@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>転生ライフRTA v9.4 — 異世界人生スコアアタック</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>転生ライフRTA v9.5 — 詳細リザルト版</title>
 <style>
 .skillCategory{font-size:10px;display:inline-block;padding:2px 6px;border-radius:14px;border:1px solid #846f51;background:#2b3a43;color:#f1d8a1;margin-bottom:4px;margin-right:4px}
 :root{--bg:#101727;--panel:#1b263a;--border:#33455d;--gold:#edc678;--txt:#f0f4f8;--muted:#a4b5c9;--green:#76d5a9;--red:#f08686}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 40% -15%,#283e62,var(--bg) 65%);color:var(--txt);font-family:system-ui,-apple-system,"Yu Gothic",Meiryo,sans-serif}button,input,select{font:inherit}button{border:1px solid #5c718e;background:#263b59;color:var(--txt);border-radius:9px;padding:9px 14px;cursor:pointer}button:hover:not(:disabled){background:#355477}button:disabled{opacity:.42;cursor:not-allowed}.primary{background:#8c6539;border-color:#c39a55;color:#fff7e8}.primary:hover:not(:disabled){background:#aa7e49}.secondary{background:transparent}.wrap{max-width:1200px;margin:auto;padding:18px}.hero{text-align:center;padding:24px 8px 16px}.hero h1{font-family:Georgia,"Yu Mincho",serif;font-size:clamp(26px,5vw,42px);margin:0;color:var(--gold);letter-spacing:.12em}.hero p,.sub{color:var(--muted)}.panel{background:#1c283bdc;border:1px solid var(--border);border-radius:14px;padding:16px;margin:12px 0}.columns{display:grid;grid-template-columns:1.5fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}h2{font-size:19px;margin:5px 0 14px;color:var(--gold)}h3{font-size:15px;margin:10px 0;color:#d5e3ef}.option{display:block;text-align:left;width:100%;padding:14px;background:#19273a;border:1px solid #344c68}.option strong{display:block;font-size:16px}.option small{display:block;margin-top:4px;color:var(--muted)}.option.selected{border-color:#d2ad66;background:#3c3440;box-shadow:inset 0 0 0 1px #99743e}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}.field input,.field select{width:100%;background:#101c2e;color:var(--txt);border:1px solid #43536c;border-radius:7px;padding:9px}.skill{display:flex;align-items:flex-start;gap:8px;padding:9px;border:1px solid #3e4e67;border-radius:9px;cursor:pointer}.skill input{margin-top:4px}.skill b{color:var(--gold)}.skill small{display:block;color:var(--muted);font-size:12px}.summary{color:#f1d197;font-weight:700}.hide{display:none!important}.topbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.statbar{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#17253a;border:1px solid #405270;border-radius:20px;padding:5px 10px;font-size:13px}.pill em{font-style:normal;color:var(--gold)}.canvaswrap{position:relative;border:1px solid #4f627b;border-radius:12px;overflow:hidden;background:#2d4e3c}canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}.hint{position:absolute;left:10px;bottom:10px;padding:7px 10px;background:#101b2ccf;border-radius:7px;color:#fff;font-size:12px;pointer-events:none}.log{height:164px;overflow:auto;background:#111c2b;border:1px solid #33455d;border-radius:9px;padding:9px}.log p{font-size:12px;line-height:1.6;margin:0 0 6px;color:#d1e0eb}.tag{color:#e3c37f}.actions{display:flex;flex-wrap:wrap;gap:7px}.actions button{font-size:13px}.columns>section{min-width:0}.notice{padding:12px;background:#33425b;border-radius:8px;border-left:3px solid #ddb873}.danger{color:var(--red)}.success{color:var(--green)}.muted{color:var(--muted)}.scores{width:100%;border-collapse:collapse}.scores th,.scores td{padding:8px 5px;text-align:left;border-bottom:1px solid #33455d;font-size:13px}.status{display:inline-block;width:8px;height:8px;border-radius:100%;background:#5ce3a4;margin-right:5px}.gamepad{display:none;gap:5px;grid-template-columns:repeat(3,44px);justify-content:center;margin:8px}.gamepad button{height:42px;padding:5px;touch-action:none}#overlay{position:fixed;inset:0;background:#071122dd;z-index:10;display:flex;align-items:center;justify-content:center;padding:18px}#overlay .modal{width:min(520px,100%);background:#26334a;border:1px solid #b18d54;border-radius:15px;padding:23px;box-shadow:0 24px 80px #000a}#toast{position:fixed;top:20px;right:20px;z-index:15;pointer-events:none;max-width:360px}.toastitem{background:#344a65;border-left:4px solid var(--gold);border-radius:9px;padding:12px;margin:7px 0;box-shadow:0 8px 25px #0008}.rightSmall{font-size:12px;color:var(--muted)}@media(max-width:850px){.columns{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.gamepad{display:grid}.wrap{padding:9px}.hero{padding:10px 4px}.panel{padding:12px}.hint{font-size:10px}}@media(max-width:470px){.grid3{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.hero h1{font-size:25px}}
@@ -160,6 +160,15 @@ canvas{image-rendering:auto}
 .syncGate{position:fixed;z-index:18;inset:0;background:#061320d8;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;color:#fff2d5;backdrop-filter:blur(6px)}
 .syncGate h2{font-size:clamp(23px,4vw,37px);margin:0 0 12px;color:#f5cf89}.syncGate p{margin:7px;max-width:520px;line-height:1.6}.syncGate .readyLine{font-size:13px;border-bottom:1px solid #8398a15c;padding:5px 20px}.syncGate .readyLine.ready{color:#87e6b3}.syncGate #syncCountdown{font-size:18px;color:#ffdd9f;font-weight:700}
 .interferenceAlert{position:fixed;z-index:11;top:10%;left:50%;transform:translateX(-50%);min-width:min(520px,92vw);max-width:92vw;text-align:center;padding:15px 22px;background:linear-gradient(115deg,#45242cfa,#15253afa);border:2px solid #e6a96e;border-radius:13px;box-shadow:0 0 35px #e4545450;color:#ffecca;font-size:clamp(14px,2.1vw,20px);font-weight:700;pointer-events:none}
+/* v9.5 results dashboard */
+:root{--score-color-0:#70bda8;--score-color-1:#d5ab65;--score-color-2:#8cadd2;--score-color-3:#c494b7;--score-color-4:#9dc67b;--score-color-5:#b9abdb;--score-color-6:#d89e85}
+#result{max-width:1200px;margin:10px auto 28px}#result .resultLead{display:flex;justify-content:space-between;align-items:stretch;gap:12px;background:linear-gradient(115deg,#263e4d,#162938);border:1px solid #af9162;border-radius:13px;padding:17px;margin:10px 0 15px}
+#result .resultLead span,#result .resultPlacement span{color:#b9cad0;font-size:12px}#result .resultLead h2{font-size:28px;margin:3px 0}#result .resultLead strong{font-size:clamp(26px,4vw,43px);color:#f7dda3;font-variant-numeric:tabular-nums}#result .resultLead strong small{font-size:15px}
+#result .resultPlacement{background:#0b1b2ca6;border-radius:9px;padding:12px;display:flex;flex-direction:column;min-width:160px;text-align:center;justify-content:center}#result .resultPlacement strong{font-size:27px}
+#result .resultPlayerPanel{padding:10px 0 14px}#result .resultHero{display:flex;justify-content:space-between;gap:12px;background:#152a3b;border:1px solid #516a78;border-radius:11px;padding:13px 17px;margin:4px 0 12px;align-items:center}#result .resultHero h3{font-size:21px;color:#f1dfb3;margin:2px 0}#result .resultHero p{color:#b9cad4;margin:3px 0;font-size:12px}#result .resultHero span{color:#a9bfc8;font-size:11px}#result .resultHero>strong{font-size:24px;color:#f4d795;white-space:nowrap}#result .resultHero>strong small{font-size:12px}
+#result .resultGroup{background:#102334;border:1px solid #4b6676;border-radius:10px;margin:9px 0;overflow:hidden}#result .resultGroup>summary{font-size:15px;font-weight:700;color:#f2dda8;cursor:pointer;padding:12px 15px;list-style-position:inside;background:#1e3445}#result .resultGroup>summary:hover{background:#29465a}#result .resultGroupBody{padding:12px 15px}#result .resultGroup h4{font-size:13px;color:#d8dfd7;margin:16px 0 7px}
+#result .resultStack{display:flex;width:100%;height:13px;overflow:hidden;border-radius:10px;background:#203444;margin:2px 0 14px;gap:1px}#result .resultStack div{height:100%;min-width:1px}#result .resultScoreTable td small{display:block;font-size:10px;color:#9ab3bf;line-height:1.4}#result .resultScoreTable td:last-child{text-align:right;white-space:nowrap;font-weight:650}#result .resultSum{background:#314156;font-weight:800;font-size:15px}#result .resultStatsGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}#result .resultStat{background:#192f43;border:1px solid #34546a;border-radius:8px;padding:9px 10px;min-width:0}#result .resultStat span{display:block;font-size:11px;color:#adc2cd;margin-bottom:5px}#result .resultStat b{font-size:15px;color:#f8e5b9;overflow-wrap:anywhere}#result .resultTable td:last-child{text-align:right;font-variant-numeric:tabular-nums}#result .resultRanking td,#result .resultRanking th{font-size:13px}#result .resultNotice,#result .resultWarning{background:#3a3540;border:1px solid #81677b;border-radius:9px;color:#f8d8c7;padding:9px 13px;font-size:12px;margin:9px 0}#result .resultWarning{background:#333b49;color:#e6d7b9}
+@media(max-width:720px){#result .resultStatsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#result .resultLead{padding:11px}#result .resultHero{padding:10px;display:block}#result .resultHero>strong{display:block;margin-top:7px}#result .resultPlacement{min-width:98px}#result .resultGroupBody{padding:9px}}
 /* v9.0: always-visible live standings. No position sync. */
 #game .liveScoresBar{position:sticky;top:0;z-index:7;margin:7px 0 9px;padding:7px 9px 9px;background:linear-gradient(105deg,#142638f5,#273748f5);border:1px solid #9a895f;border-radius:10px;box-shadow:0 3px 15px #071321a8}
 #game .liveScoresHead{display:flex;justify-content:space-between;gap:9px;align-items:center;font-size:12px;color:#f3dfac;margin-bottom:5px}
@@ -212,7 +221,7 @@ canvas{image-rendering:auto}
 .bossVictoryBanner.hide{display:none}
 #modalBody .topbar .actions{flex-wrap:wrap;justify-content:flex-end}
 </style></head><body>
-<div class="wrap"><header class="hero"><h1>転生ライフRTA <small style="font-size:.33em;color:#bd9f65">v9.3</small></h1><p>転生・探索・成長・競争 — 自由移動と人生の選択</p></header>
+<div class="wrap"><header class="hero"><h1>転生ライフRTA <small style="font-size:.33em;color:#bd9f65">v9.5</small></h1><p>転生・探索・成長・競争 — 自由移動と人生の選択</p></header>
 <div class="soundDock" id="soundDock">
  <details id="soundDetails"><summary id="soundSummary" title="BGM・効果音の設定">🔊 音量</summary>
  <div class="soundMixer"><div class="soundTitle">サウンド設定 <span id="soundState" aria-live="polite">待機中</span></div>
@@ -244,7 +253,7 @@ canvas{image-rendering:auto}
 <main id="game" class="hide"><div class="panel"><div class="topbar"><h2 style="margin:0">人生進行中 <span id="modeLabel" class="muted"></span></h2><div class="statbar"><span class="pill">年齢 <em id="age">0.0</em>歳</span><span class="pill">残り <em id="remaining">07:30</em></span><span class="pill">次の同期 <em id="nextSync">5歳</em></span><span class="pill"><span id="netStatus">ソロ</span></span></div></div></div>
 <div class="liveScoresBar" id="liveScoresBar" aria-label="参加者の現在スコア"><div class="liveScoresHead"><strong>🏆 現在スコア</strong><span id="scoreRefreshStatus">約2秒ごとに共有 / 通信が遅い場合は最終受信値を表示</span></div><div class="liveScoresGrid" id="liveScoresGrid"></div></div> <div class="columns"><section><div class="panel" id="mainFieldPanel" style="margin-top:0"><div class="topbar"><h2 id="mapName">王都</h2><div class="field"><select id="mapSelect" aria-label="行き先のMAP（移動はMAP端から）"></select></div></div><div class="mapDetail"><span id="mapRoutes"></span><span id="ageLimitText"></span></div><div class="canvaswrap"><canvas id="field" width="960" height="540"></canvas><div id="reincarnationCountdown" class="reincarnationCountdown hide" role="status" aria-live="off" aria-label="転生開始までのカウントダウン"><div class="countdownInner"><p class="countdownPre">異世界への転生</p><div id="countdownValue" class="countdownValue">3</div><div class="countdownSub">人生はここから始まる</div></div></div><div id="combatTop"><span id="hpLabel">HP 80 / 80</span><div class="hpTrack"><div id="hpFill"></div></div></div><div id="dropNotice"></div><div id="unlockBanner" class="unlockBanner hide" aria-live="polite"></div><div id="questBanner" class="questBanner hide" aria-live="polite"></div><div id="contextHint">近くの施設に寄ってみよう</div><div class="eventLayer"><div class="actionHUD hide" id="actionHUD"><div class="name"><span id="actionName">行動中</span><span id="actionLeft">0.0秒</span></div><div class="meter"><div id="actionFill"></div></div><small>作業中は足踏み。伐採・採掘は専用動作 / Escでキャンセル</small></div></div><div class="hint">WASD 移動 / E 会話・調査 / Space 攻撃専用 / Shift 回避</div></div><div class="fieldEquipment"><span>⚔ 現在の装備：<strong id="weaponLabel">木剣</strong></span><span id="killLabel">討伐 0</span></div><div id="missingAssetNotice" class="assetWarning hide"></div><div id="fieldInfo"><span>🧭 <strong>右上ミニマップ</strong>：緑＝利用可、灰＝年齢制限、黄＝出口（Mで拡大）</span><span>⛏ 採集は作業時間あり / ⚔ 魔物は直接攻撃・回避</span></div><div class="gamepad" id="gamepad"><span></span><button data-dir="up">▲</button><span></span><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div><details class="helpDetails"><summary>操作・行動の説明（クリックで展開）</summary><div id="actionNote"><b>行動について：</b> 施設へ近づいて行動を開始。作業中はタイムバーが進み、完了すると報酬・能力を獲得。乳幼児にはできない行動も多くあります。森・草原などでは魔物が出現し、Space連打ではなく距離・回避・装備が重要です。</div></details><div class="actions" id="gameActions"><button id="actE">E 調べる・話す</button><button id="actSpace">Space 攻撃専用</button><button id="dodgeBtn">Shift 回避</button><button id="healBtn">薬を飲む (H)</button><button id="cancelAction" disabled>作業をキャンセル</button><button id="openShop">商店</button><button id="openQuest">ギルド</button><button id="openMiniMap">🧭 全体MAP（M）</button></div></div><div class="panel"><h2>イベント・アナウンス</h2><div class="log" id="log"></div></div></section>
 <section><div class="panel" style="margin-top:0"><h2 id="charTitle">転生者</h2><div id="jobLine" class="sub"></div><div class="statbar" id="stats"></div><button id="statsHelp" class="secondary" type="button" style="font-size:11px;padding:4px 9px;margin:5px 0">？ 能力値の説明</button><div id="equipLine" class="equipLine"></div><h3>所持品 <small id="carryInfo" style="font-size:11px;color:#bfe9c9"></small></h3><div id="inventory" class="sub"></div><div style="display:flex;gap:5px;margin:7px 0"><button id="manageItems" class="secondary" style="font-size:11px;padding:4px 8px">荷物整理・廃棄</button></div><h3>転生スキル</h3><div id="ownedSkills" class="sub"></div></div><div class="panel" id="questPanel"><h2>📜 討伐クエスト</h2><div id="questTracker" class="questTracker">受注中の依頼はありません</div><button id="openQuestJournal" class="secondary" type="button">依頼内容・進捗を確認</button><p class="rightSmall">討伐後は受注した依頼所へ戻って報告</p></div><div class="panel"><h2>現在の成績</h2><div id="scoreNow"></div><h3>人生の節目</h3><div id="milestones" class="sub"></div></div><div class="panel"><h2>共有プレイヤー / 干渉</h2><div id="playersPanel" class="sub"></div><div id="attackPanel" class="actions"></div><h3>妨害アイテム</h3><button id="useCurse">妨害アイテムを使う（対象・効果を選ぶ）</button><p class="rightSmall">指定・ランダム・全員を選択。攻撃者は匿名／未着分は5年同期で減点に変換</p></div><div class="panel"><h2>対戦成績 / 中間記録</h2><div id="rankings"></div><button id="manualSave">今すぐ保存</button></div></section></div></main>
-<section id="result" class="panel hide"><h2>人生の結果</h2><div id="finalResult"></div><button id="backTitle" class="primary">タイトルに戻る</button></section>
+<section id="result" class="panel hide"><h2>最終リザルト</h2><div id="finalResult"></div><button id="backTitle" class="primary">タイトルに戻る</button></section>
 </div><div id="overlay" class="hide"><div class="modal" id="modalBody"></div></div><div id="toast"></div><div id="syncGate" class="syncGate hide" role="status"><h2 id="syncTitle">5年同期・待機中</h2><p id="syncDetail"></p><div id="syncRoster"></div><p id="syncCountdown"></p></div><div id="interferenceAlert" class="interferenceAlert hide" aria-live="assertive"></div>
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
@@ -508,18 +517,48 @@ function drawSkills(){let pt=selectedPoints();$('points').textContent=`残り ${
 function updateModeUI(){document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('selected',b.dataset.mode===setupMode));document.querySelectorAll('[data-years]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.years)===endAge));$('soloStart').classList.toggle('hide',setupMode!=='solo');$('multiStart').classList.toggle('hide',setupMode!=='multi')}
 function cfg(){return {id:randomId(),name:$('name').value.trim().slice(0,16)||'旅人',origin:selection.origin,skills:[...selection.skills]}}
 function randomId(){return Math.random().toString(36).slice(2,10).toUpperCase()}
-function createProfile(p){let o=original(p.origin);p.avatar=avatarForBirth(p.origin);return {id:p.id,name:p.name,origin:p.origin,skills:p.skills,avatar:(p.avatar||'boy'),map:o[3],x:(MAPS[o[3]].points[0][1]),y:(MAPS[o[3]].points[0][2]+78),action:null,hp:80,maxHp:80,weapon:{name:'旅立ちの木剣',attack:4,rarity:0},kills:0,combo:0,facing:1,anim:'idle',animAt:0,healthPotions:2,stats:{強さ:1,賢さ:1,素早さ:1,器用さ:1,魅力:1},money:o[4],inventory:{},visitedMaps:[o[3]],feats:0,deaths:0,penalties:0,career:null,events:[],milestones:[],lastAct:0,seen:{},tasks:[],questProgress:{},questDone:[],questHome:{},yearActions:{},updatedAt:Date.now()}}
+function createProfile(p){let o=original(p.origin);p.avatar=avatarForBirth(p.origin);return {id:p.id,name:p.name,origin:p.origin,skills:p.skills,avatar:(p.avatar||'boy'),map:o[3],x:(MAPS[o[3]].points[0][1]),y:(MAPS[o[3]].points[0][2]+78),action:null,hp:80,maxHp:80,weapon:{name:'旅立ちの木剣',attack:4,rarity:0},kills:0,combo:0,facing:1,anim:'idle',animAt:0,healthPotions:2,stats:{強さ:1,賢さ:1,素早さ:1,器用さ:1,魅力:1},money:o[4],inventory:{},visitedMaps:[o[3]],feats:0,deaths:0,penalties:0,career:null,events:[],milestones:[],lastAct:0,seen:{},tasks:[],questProgress:{},questDone:[],questHome:{},yearActions:{},updatedAt:Date.now(),lifeRecord:newLifeRecord()}}
 function defaultLedger(){return{products:Object.fromEntries(Object.entries(PRODUCTS).map(([k,v])=>[k,v.stock])),quests:Object.fromEntries(Object.entries(QUESTS).map(([k,v])=>[k,v.stock])),claims:[],badEvents:[],syncFailures:{},attackCd:{},history:[]}}
-function profilePublic(p){return {id:p.id,name:p.name,origin:p.origin,map:p.map,age:ageNow(),score:score(p),stats:p.stats,skills:p.skills,career:p.career,updatedAt:Date.now()}}
-function score(p){
- const kills=p.kills||0;
- const killScore=Math.min(kills,12)*5+Math.min(18,Math.max(0,kills-12))*2; // 通常討伐の加点は頭打ち
- const carryValue=Object.entries(p.inventory||{}).reduce((sum,[name,n])=>sum+Math.max(0,n)*sellValueFor(name,p)*.09,0);
- const trade=Math.min(850,Math.round(Math.sqrt(Math.max(0,p.tradeVolume||0))*11));
- return Math.max(0,Math.round(Object.values(p.stats||{}).reduce((a,b)=>a+(Number(b)||0),0)*18+
-  Math.max(0,p.money||0)*.35+(p.feats||0)*170+killScore+(p.weapon?.attack||0)*9+
-  carryValue+trade+(p.questScore||0)+(p.bossScore||0)+(p.researchScore||0)-
-  (p.deaths||0)*850-(p.penalties||0)));
+function profilePublic(p){return {id:p.id,name:p.name,origin:p.origin,map:p.map,age:ageNow(),score:score(p),stats:p.stats,skills:p.skills,career:p.career,resultData:resultSnapshot(p),updatedAt:Date.now()}}
+function scoreBreakdown(p){
+  const statTotal=Object.values(p.stats||{}).reduce((a,b)=>a+(Number(b)||0),0);
+  const kills=Math.max(0,Number(p.kills)||0);
+  const killScore=Math.min(kills,12)*5+Math.min(18,Math.max(0,kills-12))*2;
+  const carryValue=Object.entries(p.inventory||{}).reduce((sum,[name,n])=>sum+Math.max(0,n)*sellValueFor(name,p)*.09,0);
+  const trade=Math.min(850,Math.round(Math.sqrt(Math.max(0,p.tradeVolume||0))*11));
+  const entries=[
+   ['能力値',statTotal*18,'能力値合計 '+statTotal.toFixed(1)+' × 18pt'],
+   ['所持金',Math.max(0,p.money||0)*.35,Math.floor(p.money||0).toLocaleString()+'G × 0.35pt'],
+   ['偉業・実績',(p.feats||0)*170,(p.feats||0)+'実績カウント × 170pt'],
+   ['敵の討伐',killScore, kills+'体（ボス含む・直接加点は最大96pt）'],
+   ['装備武器',(p.weapon?.attack||0)*9,'攻撃力+'+(p.weapon?.attack||0)+' × 9pt'],
+   ['所持アイテム',carryValue,'所持品の売却価値の9%'],
+   ['交易実績',trade,'累計売却 '+Math.round(p.tradeVolume||0).toLocaleString()+'G（上限850pt）'],
+   ['クエスト報告',Number(p.questScore)||0,(p.questDone?.length||0)+'件の報告ボーナス'],
+   ['ボス撃破',Number(p.bossScore)||0,'初回撃破・再討伐の特別得点'],
+   ['研究・調査',Number(p.researchScore)||0,'学習成果・新地域調査'],
+   ['死亡ペナルティ',-(p.deaths||0)*850,(p.deaths||0)+'回 × -850pt'],
+   ['その他減点',-(Number(p.penalties)||0),'妨害の遅延精算・同期遅刻等']
+  ];
+  const raw=entries.reduce((sum,row)=>sum+row[1],0);
+  const total=Math.max(0,Math.round(raw));
+  const listed=entries.map(([name,value,note])=>({name,value:Math.round(value),note}));
+  const displayed=listed.reduce((sum,row)=>sum+row.value,0);
+  if(displayed!==total)listed.push({name:raw<0?'最低0点補正':'端数調整',value:total-displayed,note:raw<0?'合計スコアは0点未満になりません':'各項目の小数点丸めを調整'});
+  return {total,entries:listed};
+}
+function score(p){return scoreBreakdown(p).total;}
+// v9.5: リザルト用の履歴。旧セーブの集計は取得できた時点以降のみ記録。
+function newLifeRecord(){return {version:95,killsByName:{},bosses:{},actions:{},sales:{},research:{},questPoints:{},bossPoints:{},sabotageKindsSent:{},sabotageKindsReceived:{},money:{work:0,monster:0,quest:0,sales:0,sabotage:0},quests:{},sabotage:{used:0,targets:0,received:0,blocked:0,stuns:0,damage:0,slows:0,stolen:0,teleports:0,late:0},duels:{attacked:0,defended:0,fled:0,wins:0,losses:0},totalDamageTaken:0,firstSeenAt:Date.now()};}
+function resultRecord(p){if(!p)return null;if(!p.lifeRecord){p.lifeRecord=newLifeRecord();p.lifeRecord.partial=true;}return p.lifeRecord;}
+function countRecord(group,key,amount=1){const r=resultRecord(app.profile);if(!r)return;const o=r[group];if(o&&typeof o==='object'){o[key]=(Number(o[key])||0)+amount;app.saveNeeded=true;}}
+function resultSnapshot(p){
+ const details=scoreBreakdown(p),r=p.lifeRecord||null;
+ return {score:details.total,breakdown:details.entries,name:p.name,origin:p.origin,career:p.career||'未鑑定',
+  stats:p.stats||{},money:p.money||0,weapon:p.weapon?.name||'素手',
+  kills:p.kills||0,deaths:p.deaths||0,feats:p.feats||0,quests:(p.questDone||[]).length,
+  visitedMaps:(p.visitedMaps||[]).length,partial:!r||!!r.partial,
+  records:r?{killsByName:r.killsByName,bosses:r.bosses,actions:r.actions,sales:r.sales,research:r.research,questPoints:r.questPoints,bossPoints:r.bossPoints,sabotageKindsSent:r.sabotageKindsSent,sabotageKindsReceived:r.sabotageKindsReceived,money:r.money,quests:r.quests,sabotage:r.sabotage,duels:r.duels,totalDamageTaken:r.totalDamageTaken}:null};
 }
 // v9.1: スタート演出は全員共通の開始時刻を参照し、端末時刻のずれを補正する。
 const COUNTDOWN_MS=3900;
@@ -588,14 +627,14 @@ function acceptScoreBatch(d){
   const prior=app.players[r.id]||{},v=Number(r.score);
   if(!Number.isFinite(v))continue;
   if(Number(r.updatedAt||0)<Number(prior.updatedAt||0))continue;
-  app.players[r.id]={...prior,id:r.id,name:r.name||prior.name||'プレイヤー',score:Math.max(0,Math.round(v)),updatedAt:r.updatedAt||Date.now(),map:r.map||prior.map,age:r.age??prior.age};
+  app.players[r.id]={...prior,id:r.id,name:r.name||prior.name||'プレイヤー',score:Math.max(0,Math.round(v)),resultData:r.resultData||prior.resultData,updatedAt:r.updatedAt||Date.now(),map:r.map||prior.map,age:r.age??prior.age};
  }
- renderLiveScores();app.saveNeeded=true;
+ renderLiveScores();if(app.phase==='result')drawFinalResults();app.saveNeeded=true;
 }
 function broadcastScores(){
  if(app.kind!=='host'||app.phase!=='game'||!app.profile)return;
  app.players[app.profile.id]=profilePublic(app.profile);
- const rows=Object.values(publicRoster()).map(p=>({id:p.id,name:p.name,map:p.map,age:p.age,score:p.score,updatedAt:p.updatedAt}));
+ const rows=Object.values(publicRoster()).map(p=>({id:p.id,name:p.name,map:p.map,age:p.age,score:p.score,resultData:p.resultData,updatedAt:p.updatedAt}));
  broadcast({t:'scoreBatch',rows,hostTime:Date.now()});
  renderLiveScores();
 }
@@ -622,7 +661,7 @@ function hostSyncReady(id,age){const s=app.session;if(app.kind!=='host'||!s||s.m
 function applySyncPenalties(){if(!app.profile||!app.ledger)return;
  for(const [id,entries] of Object.entries(app.ledger.syncFailures||{})){
   if(id!==app.profile.id)continue;for(const entry of entries){const key='syncLate:'+entry.age;
-   if(app.profile.seen[key])continue;app.profile.seen[key]=true;app.profile.penalties+=(entry.points||120);
+   if(app.profile.seen[key])continue;app.profile.seen[key]=true;app.profile.penalties+=(entry.points||120);countRecord('actions','syncLate');
    msg(`【${entry.age}歳・遅刻】世界同期に間に合わず -${entry.points||120}pt`);
   }
  }
@@ -706,7 +745,7 @@ function startSiteAction(near,kind){
 function cancelAction(quiet=false){if(!app.profile?.action)return;let label=app.profile.action.label;app.profile.action=null;app.profile.anim='idle';$('actionHUD').classList.add('hide');$('cancelAction').disabled=true;if(!quiet)msg(`「${label}」を中断した。成果なし。`);app.saveNeeded=true}
 function finishAction(){
  let a=app.profile.action;if(!a)return;gameSound.sfx(['farm','forage','chop','mine','craft'].includes(a.type)?'collect':'success');app.profile.action=null;app.profile.anim='idle';$('actionHUD').classList.add('hide');$('cancelAction').disabled=true;
- const p=app.profile,t=a.type;let key=Math.floor(ageNow())+':'+t+':e';let count=p.yearActions[key]||0;p.yearActions[key]=count+1;
+ const p=app.profile,t=a.type;countRecord('actions',t);let key=Math.floor(ageNow())+':'+t+':e';let count=p.yearActions[key]||0;p.yearActions[key]=count+1;
  p.currentActionMultiplier=Math.max(.25,1-Math.max(0,count-2)*.15);
  if(count>=4&&count%3===1)msg('同じ作業の繰り返しで成長効率が落ちている。別の行動も試そう。');
  p.actionTypeForGrowth=t;
@@ -715,12 +754,12 @@ function finishAction(){
   growth('魅力',.95+(has('command')?.45:0));let gain=ageNow()<6?3:12+(has('business')?13:0)+(['商人','大商人'].includes(p.career)?p.career==='大商人'?25:12:0);
   if(t==='work')gain+=10;if(p.origin==='merchant')gain=Math.round(gain*1.18);
   if(has('command')&&['parent','work'].includes(t)){const era=Math.floor(ageNow()/5);if(p.seen.commandEra!==era){p.seen.commandEra=era;gain+=150;msg('【支配の言霊】交渉成功！ 追加報酬150Gを獲得')}}
-  p.money+=gain;msg(`${a.site}を手伝った。${gain}Gを獲得。`);
+  p.money+=gain;countRecord('money','work',gain);msg(`${a.site}を手伝った。${gain}Gを獲得。`);
  }
  else if(t==='study'||t==='academy'){
    growth('賢さ',t==='academy'?2:1.3);if(t==='academy')growth('器用さ',.25);
    p.studyRecords??={};const chapter=Math.floor(ageNow()/5),key=t+':'+chapter;
-   if(!p.studyRecords[key]){p.studyRecords[key]=true;p.researchScore=(p.researchScore||0)+(t==='academy'?230:150);
+   if(!p.studyRecords[key]){p.studyRecords[key]=true;p.researchScore=(p.researchScore||0)+(t==='academy'?230:150);countRecord('research',a.site,t==='academy'?230:150);
      msg(`【研究成果】${chapter*5}～${chapter*5+4}歳の学習を記録！ 研究スコア+${t==='academy'?230:150}pt`)}
    msg(`${a.site}で学び、知識を深めた。`)
   }
@@ -732,12 +771,12 @@ function finishAction(){
  else if(t==='mine'){let n=harvestAmount(1,'mine',p.map);addItem('鉱石',n);growth('強さ',.95);msg(`鉱石を採掘（見込み${n}個）。`)}
  else if(t==='monster'){growth('賢さ',.6);p.discoveries??={};if(!p.discoveries[p.map]){
    p.discoveries[p.map]=true;const points=150+regionRank(p.map)*40;
-   p.researchScore=(p.researchScore||0)+points;msg(`【生態調査】${p.map}で新たな知見を獲得！ 研究スコア+${points}pt`);
+   p.researchScore=(p.researchScore||0)+points;countRecord('research',p.map+'・生態調査',points);msg(`【生態調査】${p.map}で新たな知見を獲得！ 研究スコア+${points}pt`);
   }else msg('魔物の生態を追加観察した。');}
  else if(t==='craft'){
   const wood=has('smith')?1:2;
   if((p.inventory.木材||0)<wood||(p.inventory.鉱石||0)<1){msg(`材料不足（木材${wood}個・鉱石1個が必要）`)}
-  else {removeItem('木材',wood);removeItem('鉱石',1);let val=90+(has('smith')?90:0)+(['鍛冶師','天工師'].includes(p.career)?p.career==='天工師'?140:45:0);val=Math.floor(val*regionYield(p.map));p.money+=val;growth('器用さ',2);msg(`装備を鍛造し${val}G獲得`);if(has('smith')){
+  else {removeItem('木材',wood);removeItem('鉱石',1);let val=90+(has('smith')?90:0)+(['鍛冶師','天工師'].includes(p.career)?p.career==='天工師'?140:45:0);val=Math.floor(val*regionYield(p.map));p.money+=val;countRecord('money','work',val);growth('器用さ',2);msg(`装備を鍛造し${val}G獲得`);if(has('smith')){
     const era=Math.floor(ageNow()/5);
     if(p.seen.masterworkEra!==era){
       p.seen.masterworkEra=era;
@@ -882,7 +921,7 @@ function sellGoods(name,requested=1){
  if(amount<=0){toast('装備中の武器は売却できません。ほかの武器に変更してください');return}
  if(!removeItem(name,amount))return;
  const gain=sellValue(name)*amount;
- app.profile.money+=gain;app.profile.tradeVolume=(app.profile.tradeVolume||0)+gain;
+ app.profile.money+=gain;app.profile.tradeVolume=(app.profile.tradeVolume||0)+gain;countRecord('money','sales',gain);countRecord('sales',name,amount);
  gameSound.sfx('buy');app.saveNeeded=true;
  toast(`${name} ×${amount}を${gain}Gで売却！`);openShop();
 }
@@ -958,7 +997,7 @@ function claimQuest(k){ensureQuestData();if(isSyncWaiting())return toast('同期
 function commitQuestClaim(k,id,reqId){ensureQuestData();const found=app.ledger.claims.find(x=>x.id===id&&x.quest===k&&!x.claimed);if(!found){replyTo(id,{t:'questClaimResult',ok:false,quest:k,id:reqId});return}found.claimed=true;
  if(id===app.profile.id){applyQuestReward(k);openQuest()}else replyTo(id,{t:'questClaimResult',ok:true,quest:k,id:reqId});broadcast({t:'ledger',ledger:app.ledger});app.saveNeeded=true;
 }
-function applyQuestReward(k){if(!QUESTS[k])return;ensureQuestData();if(!app.profile.tasks.includes(k)||!questCompleted(k)||app.profile.questDone.includes(k))return;const q=QUESTS[k];app.profile.tasks=app.profile.tasks.filter(x=>x!==k);app.profile.questDone.push(k);app.profile.money+=q.reward;app.profile.feats++;const questBonus=Math.round(450+q.reward*.75);app.profile.questScore=(app.profile.questScore||0)+questBonus;gameSound.sfx('buy');showQuestNotice(`🏆 ${q.name} 報酬受取！ +${q.reward}G`);msg(`【クエスト報告完了】${q.name}：${q.reward}Gと実績、特別スコア+${questBonus}ptを獲得`);toast(`${q.reward}Gを受け取った！`);app.saveNeeded=true;renderQuestTracker();}
+function applyQuestReward(k){if(!QUESTS[k])return;ensureQuestData();if(!app.profile.tasks.includes(k)||!questCompleted(k)||app.profile.questDone.includes(k))return;const q=QUESTS[k];app.profile.tasks=app.profile.tasks.filter(x=>x!==k);app.profile.questDone.push(k);app.profile.money+=q.reward;countRecord('money','quest',q.reward);countRecord('quests',k);app.profile.feats++;const questBonus=Math.round(450+q.reward*.75);app.profile.questScore=(app.profile.questScore||0)+questBonus;countRecord('questPoints',q.name,questBonus);gameSound.sfx('buy');showQuestNotice(`🏆 ${q.name} 報酬受取！ +${q.reward}G`);msg(`【クエスト報告完了】${q.name}：${q.reward}Gと実績、特別スコア+${questBonus}ptを獲得`);toast(`${q.reward}Gを受け取った！`);app.saveNeeded=true;renderQuestTracker();}
 function completeTasks(){renderQuestTracker()}
 function showStatHelp(){passiveModal(`<h2>能力値の説明</h2><p class="sub">行動を重ねると成長し、最終スコアにも反映されます。</p><div class="questDetail"><strong>💪 強さ</strong><p>武器攻撃の威力・荷物を持てる重量・伐採／採掘や訓練の効率に影響。</p></div><div class="questDetail"><strong>📚 賢さ</strong><p>読書・学園・魔物の観察などの作業時間を短縮。適職にも成長傾向が反映されます。</p></div><div class="questDetail"><strong>💨 素早さ</strong><p>歩く速度、回避・攻撃の間隔、遊び・身体訓練の効率に影響します。</p></div><div class="questDetail"><strong>🛠 器用さ</strong><p>農業・採集・鍛冶などの作業時間を短縮。神匠の武器品質にも影響します。</p></div><div class="questDetail"><strong>✨ 魅力</strong><p>家族や住民の手伝い、祈り、アルバイトなどの作業時間を短縮。職業・成長とともにスコアへ加算されます。</p></div><p class="sub">すべての能力値はスコアにも加点。作業速度の短縮には上限があります。</p><button id="closeStatsHelp">閉じる</button>`);$('closeStatsHelp').onclick=hideModal;}
 function benefitText(type){if(type==='shop')return '商品購入・素材売却';if(type==='guild')return '討伐依頼・報告・報酬受取';if(type==='monster')return '魔物の調査';let b=ACTIONS[type]?.e?.[2]||'';const danger=HOSTILE_AREAS[app.profile?.map]||0;const regionNote=danger>0&&['farm','forage','chop','mine'].includes(type)?` ／ 危険度${Math.min(5,Math.max(1,Math.ceil(danger/2)))}`:'';return '効果：'+b+regionNote}
@@ -1007,40 +1046,94 @@ function startSabotage(d,source){if(app.kind!=='host'||!app.session||app.session
   app.ledger.badEvents.push(record);
   replyTo(target,{t:'sabotageHit',id,kind,power:rule.power,all:d.mode==='all'});
  }
- replyTo(source,{t:'sabotageResult',text:`${rule.item}：${targets.length}人を対象に発動（受信確認待ち）`});
+ replyTo(source,{t:'sabotageResult',id:d.id,kind,targets:targets.length,text:`${rule.item}：${targets.length}人を対象に発動（受信確認待ち）`});
  app.saveNeeded=true;
+}
+function registerSabotageResult(d){
+ if(!d?.id||!app.profile)return;
+ const mark='sabotageSent:'+d.id;app.profile.seen??={};if(app.profile.seen[mark])return;
+ app.profile.seen[mark]=true;countRecord('sabotage','used');countRecord('sabotage','targets',d.targets||0);if(d.kind)countRecord('sabotageKindsSent',SABOTAGE[d.kind]?.item||d.kind);
 }
 function applySabotage(d){if(app.profile.seen[d.id])return;
  const p=app.profile,rule=SABOTAGE[d.kind];if(!rule)return;
  const now=Date.now();let result='',gain=0;
   if(activateWard('匿名妨害')){
-   p.seen[d.id]=true;showSabotageAlert('結界で妨害を無効化！',true);
+   p.seen[d.id]=true;countRecord('sabotage','received');countRecord('sabotage','blocked');countRecord('sabotageKindsReceived',rule.item);showSabotageAlert('結界で妨害を無効化！',true);
    sendHost({t:'sabotageAck',id:d.id,gain:0});return;
   }
   if(rule.effect==='stun'){
   const seconds=d.all?Math.min(3,d.power):d.power;p.stunnedUntil=now+seconds*1000;
-  if(p.action)cancelAction(true);result=`${seconds}秒間スタン！ 作業は中断された`;
+  if(p.action)cancelAction(true);countRecord('sabotage','stuns');result=`${seconds}秒間スタン！ 作業は中断された`;
  }else if(rule.effect==='damage'){
-  const dmg=d.all?14:d.power;p.hp=Math.max(1,(p.hp||80)-dmg);result=`HP -${dmg}！`; // 匿名遠隔妨害は死亡ではなくHP1まで
+  const dmg=d.all?14:d.power;p.hp=Math.max(1,(p.hp||80)-dmg);countRecord('sabotage','damage',dmg);result=`HP -${dmg}！`; // 匿名遠隔妨害は死亡ではなくHP1まで
  }else if(rule.effect==='slow'){
-  p.slowUntil=Math.max(p.slowUntil||0,now+(d.all?10:d.power)*1000);result='移動速度が一時的に低下！';
+  p.slowUntil=Math.max(p.slowUntil||0,now+(d.all?10:d.power)*1000);countRecord('sabotage','slows');result='移動速度が一時的に低下！';
  }else if(rule.effect==='steal'){
-  const amount=Math.min(d.all?60:180,Math.max(0,Math.floor(p.money*.18)));p.money-=amount;gain=amount;result=`${amount}Gが奪われた！`;
+  const amount=Math.min(d.all?60:180,Math.max(0,Math.floor(p.money*.18)));p.money-=amount;gain=amount;countRecord('sabotage','stolen',amount);result=`${amount}Gが奪われた！`;
  }else if(rule.effect==='teleport'){
   const allowed=Object.keys(MAPS).filter(map=>map!==p.map&&gateMinAge(map)<=ageNow());
   if(allowed.length){p.map=allowed[Math.floor(Math.random()*allowed.length)];const point=MAPS[p.map].points?.[0];p.x=point?.[1]||WORLD_W/2;p.y=(point?.[2]||WORLD_H/2)+80;
-   if(p.action)cancelAction(true);result=`突然${p.map}へ転送された！`;gameSound.refresh();}
+   if(p.action)cancelAction(true);countRecord('sabotage','teleports');result=`突然${p.map}へ転送された！`;gameSound.refresh();}
   else result='転移先がなく、妨害を免れた';
  }
- p.seen[d.id]=true;app.saveNeeded=true;gameSound.sfx('fail');
+ p.seen[d.id]=true;countRecord('sabotage','received');countRecord('sabotageKindsReceived',rule.item);app.saveNeeded=true;gameSound.sfx('fail');
  showSabotageAlert(result,true);msg(`【匿名妨害】${result}`);
  sendHost({t:'sabotageAck',id:d.id,gain});
 }
-function applyCurse(id){gameSound.sfx('fail');if(app.profile.seen[id])return;app.profile.seen[id]=true;app.profile.stunnedUntil=Date.now()+5000;msg('何者かの呪符を受けて5秒間スタン！');toast('麻痺の呪符を受けた！');app.saveNeeded=true;sendHost({t:'curseAck',id,from:app.profile.id})}
+function applyCurse(id){gameSound.sfx('fail');if(app.profile.seen[id])return;app.profile.seen[id]=true;app.profile.stunnedUntil=Date.now()+5000;countRecord('sabotage','received');countRecord('sabotage','stuns');countRecord('sabotageKindsReceived','麻痺の呪符');msg('何者かの呪符を受けて5秒間スタン！');toast('麻痺の呪符を受けた！');app.saveNeeded=true;sendHost({t:'curseAck',id,from:app.profile.id})}
 function processTimeoutPenalties(){if(!app.ledger)return;for(let bad of app.ledger.badEvents){if(bad.status==='pending'&&Date.now()>=bad.timeout){bad.status='late'}if(bad.status==='late'&&ageNow()>=bad.checkpoint){bad.status='penalty';replyTo(bad.target,{t:'penalty',id:bad.id,amount:75});msg('配送不能の妨害を同期時の減点に切り替えた。')}}}
-function attack(id){if(isSyncWaiting())return toast('世界同期待機中は対決できません');let other=app.players[id];if(!other||other.map!==app.profile.map){toast('同じMAPにいません');return}if(app.kind==='guest'&&!app.hostConn?.open){toast('対決には通信が必要です');return}if(app.kind==='solo')return;sendHost({t:'attack',attacker:app.profile.id,target:id,stats:app.profile.stats,id:randomId()});toast('対決を申し込みました')}
-function duelChoice(d){modal(`<h2>プレイヤーからの襲撃</h2><p>相手：${esc(d.attackerName||'不明')}。どうしますか？</p><div class="actions"><button id="fight">応戦する</button><button id="flee">逃走する</button></div>`);$('fight').onclick=()=>{sendHost({t:'duelChoice',id:d.id,choice:'fight',stats:app.profile.stats});hideModal()};$('flee').onclick=()=>{sendHost({t:'duelChoice',id:d.id,choice:'flee',stats:app.profile.stats});hideModal()}}
-function finish(){if(app.phase!=='game'||(app.session?.mode==='multi'&&!app.session.finished))return;$('syncGate')?.classList.add('hide');gameSound.setOverride(null);gameSound.sfx('ceremony');if(app.kind==='guest')sendHost({t:'state',player:profilePublic(app.profile),full:app.profile});if(app.kind==='solo'){let best=bestScores(),s=score(app.profile),y=app.session.endAge;if(!best[y]||s>best[y].score){best[y]={score:s,at:new Date().toISOString(),name:app.profile.name};localStorage.setItem(BEST,JSON.stringify(best))}}let ranks=[profilePublic(app.profile),...Object.values(app.players).filter(x=>!x.virtual&&x.id!==app.profile.id)].sort((a,b)=>b.score-a.score);setPhase('result');$('finalResult').innerHTML=`<p>人生終了：${app.session.endAge}歳 / ${app.session.mode==='solo'?'スコアアタック':'マルチ対戦'}</p><p><strong style="font-size:28px;color:var(--gold)">${score(app.profile).toLocaleString()} pt</strong></p><p>適職：${esc(app.profile.career||'未鑑定')}　死亡：${app.profile.deaths}回　偉業：${app.profile.feats}</p>${app.kind==='solo'?`<p class="success">このモードの自己ベスト：${(bestScores()[app.session.endAge]?.score||0).toLocaleString()} pt</p>`:''}<h3>順位</h3><table class="scores">${ranks.map((r,i)=>`<tr><td>${i+1}位</td><td>${esc(r.name)}</td><td>${Number(r.score||0).toLocaleString()} pt</td></tr>`).join('')}</table>`;app.saveNeeded=true;save()}
+function attack(id){if(isSyncWaiting())return toast('世界同期待機中は対決できません');let other=app.players[id];if(!other||other.map!==app.profile.map){toast('同じMAPにいません');return}if(app.kind==='guest'&&!app.hostConn?.open){toast('対決には通信が必要です');return}if(app.kind==='solo')return;countRecord('duels','attacked');sendHost({t:'attack',attacker:app.profile.id,target:id,stats:app.profile.stats,id:randomId()});toast('対決を申し込みました')}
+function duelChoice(d){countRecord('duels','defended');modal(`<h2>プレイヤーからの襲撃</h2><p>相手：${esc(d.attackerName||'不明')}。どうしますか？</p><div class="actions"><button id="fight">応戦する</button><button id="flee">逃走する</button></div>`);$('fight').onclick=()=>{sendHost({t:'duelChoice',id:d.id,choice:'fight',stats:app.profile.stats});hideModal()};$('flee').onclick=()=>{countRecord('duels','fled');sendHost({t:'duelChoice',id:d.id,choice:'flee',stats:app.profile.stats});hideModal()}}
+function readableInt(n){return Math.round(Number(n)||0).toLocaleString('ja-JP')}
+function formatScoreSigned(n){return (n>0?'+':'')+readableInt(n)+' pt'}
+function resultRows(data){return Object.entries(data||{}).filter(([,n])=>Number(n)>0).sort((a,b)=>Number(b[1])-Number(a[1]));}
+function resultSection(title,content,open=false){return `<details class="resultGroup" ${open?'open':''}><summary>${title}</summary><div class="resultGroupBody">${content}</div></details>`;}
+function resultKV(rows){return `<div class="resultStatsGrid">${rows.map(([k,v])=>`<div class="resultStat"><span>${esc(k)}</span><b>${esc(String(v))}</b></div>`).join('')}</div>`;}
+const ACTION_LABELS={play:'遊び',parent:'家族の手伝い',work:'仕事',study:'読書・学習',academy:'学園での学習',train:'訓練',church:'祈り',farm:'農作業',forage:'採集',chop:'伐採',mine:'採掘',monster:'調査',craft:'製作',syncLate:'同期待機の遅刻'};
+function resultTable(entries,suffix=''){return entries.length?`<table class="scores resultTable"><thead><tr><th>項目</th><th>回数・数量</th></tr></thead><tbody>${entries.map(([k,v])=>`<tr><td>${esc(ACTION_LABELS[k]||k)}</td><td>${readableInt(v)}${suffix}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">記録なし</p>';}
+function resultPlayerCard(pdata,self=false){
+ const d=pdata.resultData||pdata,rec=d.records||null;
+ const scoreParts=d.breakdown||[],positive=scoreParts.filter(x=>x.value>0),negative=scoreParts.filter(x=>x.value<0);
+ const totalPlus=positive.reduce((a,x)=>a+x.value,0)||1;
+ const trophy=rec?.bosses||{};
+ const partialNote=d.partial?'<p class="resultWarning">旧セーブからの記録、または相手の最終記録が未受信のため、一部の詳細履歴は不完全です。総スコアは最新受信値を優先します。</p>':'';
+ const intro=`<div class="resultHero"><div><span>${self?'自分の人生':'参加者の人生'}</span><h3>${esc(d.name||pdata.name||'旅人')}</h3><p>${esc(original(d.origin||'common')[1])} ／ 適職：${esc(d.career||'未鑑定')}</p></div><strong>${readableInt(d.score??pdata.score)} <small>pt</small></strong></div>${partialNote}`;
+ const bars=positive.length?`<div class="resultStack">${positive.map((e,i)=>`<div title="${esc(e.name)} ${formatScoreSigned(e.value)}" style="width:${Math.max(.15,100*e.value/totalPlus)}%;background:var(--score-color-${i%7})"></div>`).join('')}</div>`:'';
+ const scoreHtml=bars+`<table class="scores resultScoreTable"><thead><tr><th>得点項目</th><th>獲得スコア</th></tr></thead><tbody>${scoreParts.map(x=>`<tr><td>${esc(x.name)}<small>${esc(x.note||'')}</small></td><td class="${x.value<0?'danger':x.value>0?'success':''}">${formatScoreSigned(x.value)}</td></tr>`).join('')}<tr class="resultSum"><td>合計</td><td>${readableInt(d.score??pdata.score)} pt</td></tr></tbody></table>`;
+ const fighting=resultKV([['討伐した敵',readableInt(d.kills)+'体'],['死亡',readableInt(d.deaths)+'回'],['ボス討伐',rec?readableInt(Object.values(trophy).reduce((a,n)=>a+Number(n||0),0))+'体':'記録なし'],['探索したMAP',readableInt(d.visitedMaps)+'か所'],['被ダメージ累計',rec?readableInt(rec.totalDamageTaken):'記録なし']])+
+  '<h4>討伐した敵の内訳</h4>'+resultTable(resultRows(rec?.killsByName),'体')+'<h4>ボスの討伐履歴</h4>'+resultTable(resultRows(trophy),'回')+'<h4>ボス別の獲得スコア</h4>'+resultTable(resultRows(rec?.bossPoints),'pt');
+ const actions=resultKV([['達成したクエスト',readableInt(d.quests)+'件'],['偉業・実績',readableInt(d.feats)],['現在の所持金',readableInt(d.money)+'G'],['武器',d.weapon||'素手']])+
+  '<h4>完了した作業</h4>'+resultTable(resultRows(rec?.actions),'回')+'<h4>報告したクエスト</h4>'+resultTable(resultRows(rec?.quests),'回')+'<h4>クエスト別の獲得スコア</h4>'+resultTable(resultRows(rec?.questPoints),'pt')+'<h4>研究・調査別の獲得スコア</h4>'+resultTable(resultRows(rec?.research),'pt');
+ const finance=resultKV([['累計売却金',readableInt(rec?.money?.sales)+'G'],['討伐獲得金',readableInt(rec?.money?.monster)+'G'],['仕事・制作の獲得金',readableInt(rec?.money?.work)+'G'],['依頼報酬',readableInt(rec?.money?.quest)+'G']])+
+  '<h4>売却アイテム</h4>'+resultTable(resultRows(rec?.sales),'個');
+ const sb=rec?.sabotage||{},du=rec?.duels||{};
+ const multi=resultKV([['妨害アイテム使用',readableInt(sb.used)+'回'],['妨害対象にした人数（延べ）',readableInt(sb.targets)+'人'],['妨害を受けた回数',readableInt(sb.received)+'回'],['妨害を結界で防御',readableInt(sb.blocked)+'回'],['スタン被害',readableInt(sb.stuns)+'回'],['鈍足被害',readableInt(sb.slows)+'回'],['転移被害',readableInt(sb.teleports)+'回'],['妨害によるHP損失',readableInt(sb.damage)],['盗まれたお金',readableInt(sb.stolen)+'G'],['届かなかった妨害の減点',readableInt(sb.late)+'回'],['PvPを仕掛けた',readableInt(du.attacked)+'回'],['PvPを受けた',readableInt(du.defended)+'回'],['逃走を選択',readableInt(du.fled)+'回'],['対決勝利／敗北',readableInt(du.wins)+' / '+readableInt(du.losses)] ])+'<h4>使用した妨害の種類</h4>'+resultTable(resultRows(rec?.sabotageKindsSent),'回')+'<h4>受けた妨害の種類</h4>'+resultTable(resultRows(rec?.sabotageKindsReceived),'回');
+ return `<div class="resultPlayerPanel">${intro}${resultSection('📊 何で何点稼いだ？ スコア内訳',scoreHtml,true)}${resultSection('⚔ 冒険・討伐・死亡の記録',fighting,true)}${resultSection('📜 クエスト・成長・作業の記録',actions)}${resultSection('💰 商売・収入の記録',finance)}${app.session?.mode==='multi'?resultSection('🪄 妨害・プレイヤー対決の記録',multi,true):''}</div>`;
+}
+function drawFinalResults(){
+ if(app.phase!=='result'||!app.profile)return;
+ const my={...profilePublic(app.profile)},members=app.session?.mode==='multi'?(app.session.members||[]):[my];
+ let candidates=members.map(m=>m.id===my.id?my:(app.players[m.id]||{id:m.id,name:m.name,score:null}));
+ // 順位は他人の最新受信スコアを利用する。未受信は推定しない。
+ const ranked=candidates.slice().sort((a,b)=>(Number.isFinite(Number(b.score))?Number(b.score):-1)-(Number.isFinite(Number(a.score))?Number(a.score):-1));
+ const previous=bestScores()[app.session.endAge]?.score||0;
+ const header=`<div class="resultLead"><div><span>${app.session.endAge}歳まで / ${app.session.mode==='solo'?'スコアアタック':'マルチ対戦'}</span><h2>人生の成績表</h2><strong>${readableInt(my.score)} <small>pt</small></strong></div><div class="resultPlacement">${app.session.mode==='multi'?`<span>総合順位</span><strong>${ranked.findIndex(x=>x.id===my.id)+1}<small> / ${ranked.length}位</small></strong>`:`<span>自己ベスト</span><strong>${readableInt(previous)} <small>pt</small></strong>`}</div></div>`;
+ const rankTable=`<h3>最終順位</h3><table class="scores resultRanking"><thead><tr><th>順位</th><th>プレイヤー</th><th>スコア</th><th>記録状況</th></tr></thead><tbody>${ranked.map((r,i)=>`<tr><td>${i+1}位</td><td>${esc(r.name||'旅人')}${r.id===my.id?' ★':''}</td><td>${r.score==null?'未受信':readableInt(r.score)+' pt'}</td><td>${r.id===my.id?'本人・確定':r.resultData?'受信済み':'詳細未受信'}</td></tr>`).join('')}</tbody></table>`;
+ const others=ranked.filter(r=>r.id!==my.id);
+ const otherHtml=others.length?`<h3>ほかのプレイヤーの人生</h3><p class="sub">受信した最新の集計で表示します。通信が止まっている人は最後の記録を保持します。</p>${others.map(r=>r.resultData?resultSection('👤 '+esc(r.name||'参加者')+' — '+readableInt(r.score)+' pt',resultPlayerCard(r.resultData),false):`<div class="resultNotice">${esc(r.name||'参加者')}：スコア ${r.score==null?'未受信':readableInt(r.score)+'pt'} ／ 詳細記録の受信待ち</div>`).join('')}`:'';
+ $('finalResult').innerHTML=header+rankTable+'<h3>あなたの人生</h3>'+resultPlayerCard(my,true)+otherHtml;
+}
+function finish(){
+ if(app.phase!=='game'||(app.session?.mode==='multi'&&!app.session.finished))return;
+ $('syncGate')?.classList.add('hide');gameSound.setOverride(null);gameSound.sfx('ceremony');
+ const p=app.profile;
+ if(app.kind==='guest')sendHost({t:'state',player:profilePublic(p),full:p});
+ if(app.kind==='solo'){
+  const best=bestScores(),s=score(p),y=app.session.endAge;
+  if(!best[y]||s>best[y].score){best[y]={score:s,at:new Date().toISOString(),name:p.name};localStorage.setItem(BEST,JSON.stringify(best));}
+ }
+ setPhase('result');drawFinalResults();app.saveNeeded=true;save();
+}
 function save(){if(!app.session||!app.profile)return;try{localStorage.setItem(SAVE,JSON.stringify({session:app.session,kind:app.kind,room:app.room,profile:app.profile,players:app.players,ledger:app.kind==='host'||app.kind==='solo'?app.ledger:null,log:app.log,lastCheckpoint:app.lastCheckpoint,clockOffset:app.clockOffset,savedAt:Date.now()}));app.saveNeeded=false}catch(e){console.warn('save failed',e)}}
 function readSave(){try{return JSON.parse(localStorage.getItem(SAVE)||'null')}catch{return null}}
 function resume(){let s=readSave();if(!s?.session||!s.profile)return;app.session=s.session;app.kind=s.kind;app.room=s.room||'';app.profile=s.profile;app.profile.avatar=avatarForBirth(app.profile.origin);app.profile.action=null;app.profile.visitedMaps??=[app.profile.map];app.profile.maxHp??=80;app.profile.hp??=app.profile.maxHp;app.profile.weapon??={name:'旅立ちの木剣',attack:4,rarity:0};app.profile.gearBag??={};if((app.profile.inventory?.['伝説の剣']||0)>0)registerWeapon({name:'伝説の剣',attack:42,rarity:3});if((app.profile.inventory?.['伝説の剣']||0)>0&&(app.profile.weapon?.attack||0)<42)equipWeapon('伝説の剣');app.profile.kills??=0;app.profile.combo??=0;app.profile.tradeVolume??=0;app.profile.questScore??=0;app.profile.bossScore??=0;app.profile.researchScore??=0;app.profile.bossDefeated??={};if(!MAPS[app.profile.map]){app.profile.map=original(app.profile.origin)[3];app.profile.x=360;app.profile.y=535}app.players=s.players||{};app.ledger=s.ledger||defaultLedger();app.log=s.log||[];app.lastCheckpoint=s.lastCheckpoint||0;app.clockOffset=s.clockOffset||0;app.readySent=null;app.lastYear=-1;$('log').innerHTML=app.log.map(t=>`<p>${esc(t)}</p>`).join('');if(ageNow()>=app.session.endAge){enterGame();finish();return}enterGame();if(app.kind==='host')initHost(true);else if(app.kind==='guest')initGuest(app.room,true);toast('前回の人生を復元。離席中は無行動として経過しました。')}
@@ -1056,12 +1149,12 @@ function hostMessage(conn,d){if(!d||typeof d!=='object')return;let sender=app.pl
   const p=app.players[sender];const value=Number(d.score);
   if(p&&Number.isFinite(value)){
    p.score=Math.max(0,Math.round(value));p.updatedAt=Date.now();p.age=Number.isFinite(Number(d.age))?Number(d.age):p.age;
-   p.map=typeof d.map==='string'&&MAPS[d.map]?d.map:p.map;app.saveNeeded=true;
+   p.map=typeof d.map==='string'&&MAPS[d.map]?d.map:p.map;if(d.resultData)p.resultData=d.resultData;app.saveNeeded=true;
    renderLiveScores();
   }
   return;
  }
- if(d.t==='state'||d.t==='checkpoint'){if(d.player)app.players[sender]={...d.player,updatedAt:Date.now()};broadcast({t:'roster',players:publicRoster()});if(d.t==='checkpoint')conn.send({t:'checkpoint',ledger:app.ledger,age:d.age,hostTime:Date.now()});return}
+ if(d.t==='state'||d.t==='checkpoint'){if(d.player)app.players[sender]={...d.player,updatedAt:Date.now()};broadcast({t:'roster',players:publicRoster()});if(app.phase==='result')drawFinalResults();if(d.t==='checkpoint')conn.send({t:'checkpoint',ledger:app.ledger,age:d.age,hostTime:Date.now()});return}
  if(d.t==='syncReady'){if(d.player)app.players[sender]={...app.players[sender],...d.player,updatedAt:Date.now()};hostSyncReady(sender,d.age)}
  if(d.t==='sabotage')startSabotage(d,sender);
  if(d.t==='sabotageAck')sabotageAck(sender,d);
@@ -1086,7 +1179,7 @@ function replyTo(id,data){if(id===app.profile?.id){localMessage(data);return}let
 function sendHost(d){if(app.kind==='host'){hostSelf(d);return true}if(app.kind==='guest'&&app.hostConn?.open){app.hostConn.send(d);return true}return false}
 function hostSelf(d){if(d.t==='sabotage')startSabotage(d,app.profile.id);else if(d.t==='sabotageAck')sabotageAck(app.profile.id,d);else if(d.t==='bossVictory'){/*ホスト自身の画面は発動時に通知済み*/broadcast(d)}else if(d.t==='announcement')broadcast({t:'announcement',text:d.text});else if(d.t==='curse'){app.ledger.badEvents.push({id:d.id,target:d.target,source:app.profile.id,status:'pending',timeout:Date.now()+8000,checkpoint:(Math.floor(ageNow()/5)+1)*5});replyTo(d.target,{t:'curse',id:d.id})}else if(d.t==='attack'){let other=app.players[d.target];if(!other||other.map!==app.profile.map||!isOnlineId(d.target)){toast('対決できない相手です');return}let key=app.profile.id+'>'+d.target;if((app.ledger.attackCd[key]||0)>Date.now()){toast('攻撃禁止時間中');return}app.duels.set(d.id,{id:d.id,attacker:app.profile.id,target:d.target,attackStats:d.stats,at:Date.now()});replyTo(d.target,{t:'duelOffer',id:d.id,attackerName:app.profile.name,attacker:app.profile.id})}else if(d.t==='curseAck'){let b=app.ledger.badEvents.find(x=>x.id===d.id&&x.target===app.profile.id);if(b)b.status='done'}else if(d.t==='duelChoice'){resolveDuel(d,app.profile.id)}}
 function broadcast(d){for(let c of app.conns.values())if(c.open)c.send(d)}
-function guestMessage(d){if(d.t==='scoreBatch'){acceptScoreBatch(d);return}if(d.t==='full'){toast('部屋が満員です');return}if(d.t==='welcome'||d.t==='roster'){if(d.endAge)endAge=d.endAge;if(d.players)app.players=d.players;if(d.ledger){app.ledger=d.ledger;syncPenaltiesFromLedger();applySyncPenalties();if(app.ledger?.ceremony&&ageNow()>=10)showCeremony(app.ledger.ceremony)}if(d.hostTime)app.clockOffset=d.hostTime-Date.now();if(d.session&&(!app.session||app.session.id!==d.session.id)){app.session=d.session;if(!app.profile)app.profile=createProfile(cfg());enterGame()}else if(d.session&&app.session?.id===d.session.id){app.session=d.session;app.readySent=null;}else if(!app.session){setPhase('lobby');updateLobby()}else if(app.phase!=='game'&&app.phase!=='result')enterGame();updateLobby();app.saveNeeded=true}
+function guestMessage(d){if(d.t==='scoreBatch'){acceptScoreBatch(d);return}if(d.t==='full'){toast('部屋が満員です');return}if(d.t==='welcome'||d.t==='roster'){if(d.endAge)endAge=d.endAge;if(d.players)app.players=d.players;if(d.ledger){app.ledger=d.ledger;syncPenaltiesFromLedger();applySyncPenalties();if(app.ledger?.ceremony&&ageNow()>=10)showCeremony(app.ledger.ceremony)}if(d.hostTime)app.clockOffset=d.hostTime-Date.now();if(d.session&&(!app.session||app.session.id!==d.session.id)){app.session=d.session;if(!app.profile)app.profile=createProfile(cfg());enterGame()}else if(d.session&&app.session?.id===d.session.id){app.session=d.session;app.readySent=null;}else if(!app.session){setPhase('lobby');updateLobby()}else if(app.phase!=='game'&&app.phase!=='result')enterGame();updateLobby();if(app.phase==='result')drawFinalResults();app.saveNeeded=true}
  if(d.t==='start'){app.session=d.session;app.readySent=null;app.clockOffset=d.hostTime-Date.now();if(!app.profile)app.profile=createProfile(cfg());enterGame();save()}
  if(d.t==='ledger'){app.ledger=d.ledger;syncPenaltiesFromLedger();applySyncPenalties()}
  if(d.t==='buyResult'){if(d.ok){app.profile.money-=d.price;receivePurchase(d.item);toast(`${PRODUCTS[d.item].name}を購入！`);hideModal()}else toast(d.reason||'購入できませんでした')}
@@ -1099,15 +1192,15 @@ function guestMessage(d){if(d.t==='scoreBatch'){acceptScoreBatch(d);return}if(d.
  if(d.t==='syncNext'){app.session=d.session;app.clockOffset=d.hostTime-Date.now();app.readySent=null;if(d.ledger){app.ledger=d.ledger;syncPenaltiesFromLedger();applySyncPenalties();}app.keys.clear();app.saveNeeded=true;if(app.session.finished)finish();else msg(`【世界同期完了】${app.session.segmentAge}歳から再開！`)}
  if(d.t==='checkpoint'){if(d.ledger){app.ledger=d.ledger;syncPenaltiesFromLedger();applySyncPenalties();if(app.ledger?.ceremony&&ageNow()>=10)showCeremony(app.ledger.ceremony)}if(d.hostTime)app.clockOffset=d.hostTime-Date.now();}
  if(d.t==='sabotageHit')applySabotage(d);
- if(d.t==='sabotageResult')showSabotageAlert(d.text);
- if(d.t==='sabotageGain'){app.profile.money+=d.amount||0;showSabotageAlert(`${d.amount}Gを獲得した！`)}
+ if(d.t==='sabotageResult'){registerSabotageResult(d);showSabotageAlert(d.text);}
+ if(d.t==='sabotageGain'){app.profile.money+=d.amount||0;countRecord('money','sabotage',d.amount||0);showSabotageAlert(`${d.amount}Gを獲得した！`)}
  if(d.t==='curse'){applyCurse(d.id)}
- if(d.t==='penalty'){if(!app.profile.seen['penalty'+d.id]){app.profile.penalties+=d.amount;app.profile.seen['penalty'+d.id]=true;msg(`【同期精算】遅延した匿名妨害により${d.amount}pt減点`);showSabotageAlert(`未着の妨害を清算：-${d.amount}pt`,true)} }
+ if(d.t==='penalty'){if(!app.profile.seen['penalty'+d.id]){app.profile.penalties+=d.amount;countRecord('sabotage','late');app.profile.seen['penalty'+d.id]=true;msg(`【同期精算】遅延した匿名妨害により${d.amount}pt減点`);showSabotageAlert(`未着の妨害を清算：-${d.amount}pt`,true)} }
  if(d.t==='duelOffer')duelChoice(d);
- if(d.t==='duelResult'){msg(`【対決】${d.text}`);toast(d.text);if(d.dead)die('プレイヤーとの対決')}
+ if(d.t==='duelResult'){if(d.dead)countRecord('duels','losses');else if(/勝利|撃退/.test(d.text||''))countRecord('duels','wins');msg(`【対決】${d.text}`);toast(d.text);if(d.dead)die('プレイヤーとの対決')}
  if(d.t==='duelError')toast(d.text||'対決失敗');}
 function syncPenaltiesFromLedger(){if(!app.profile||!app.ledger)return;for(let b of (app.ledger.badEvents||[])){if(b.target===app.profile.id&&b.status==='penalty')localMessage({t:'penalty',id:b.id,amount:75})}}
-function localMessage(d){if(d.t==='sabotageHit')applySabotage(d);else if(d.t==='sabotageResult')showSabotageAlert(d.text);else if(d.t==='sabotageGain'){app.profile.money+=d.amount||0;showSabotageAlert(`${d.amount}Gを獲得した！`)}else if(d.t==='curse')applyCurse(d.id);else if(d.t==='penalty'){if(!app.profile.seen['penalty'+d.id]){app.profile.seen['penalty'+d.id]=true;app.profile.penalties+=d.amount;msg(`匿名妨害で${d.amount}pt減点`);showSabotageAlert(`未着の妨害を清算：-${d.amount}pt`,true)} }else if(d.t==='duelOffer')duelChoice(d);else if(d.t==='duelResult'){msg('【対決】'+d.text);if(d.dead)die('プレイヤーとの対決')} }
+function localMessage(d){if(d.t==='sabotageHit')applySabotage(d);else if(d.t==='sabotageResult'){registerSabotageResult(d);showSabotageAlert(d.text);}else if(d.t==='sabotageGain'){app.profile.money+=d.amount||0;countRecord('money','sabotage',d.amount||0);showSabotageAlert(`${d.amount}Gを獲得した！`)}else if(d.t==='curse')applyCurse(d.id);else if(d.t==='penalty'){if(!app.profile.seen['penalty'+d.id]){app.profile.seen['penalty'+d.id]=true;app.profile.penalties+=d.amount;countRecord('sabotage','late');msg(`匿名妨害で${d.amount}pt減点`);showSabotageAlert(`未着の妨害を清算：-${d.amount}pt`,true)} }else if(d.t==='duelOffer')duelChoice(d);else if(d.t==='duelResult'){if(d.dead)countRecord('duels','losses');else if(/勝利|撃退/.test(d.text||''))countRecord('duels','wins');msg('【対決】'+d.text);if(d.dead)die('プレイヤーとの対決')} }
 function updateLobby(){if(app.phase!=='lobby')return;$('lobbyCode').textContent=app.room;$('lobbyInfo').textContent=app.kind==='host'?`ホストです。${endAge}歳モードで開始します。`:`参加者です。ホストが開始するまで待機してください。`;$('roster').innerHTML=Object.values(publicRoster()).map(p=>`<p>・${esc(p.name)}（${esc(original(p.origin||'common')[1])}）</p>`).join('');$('beginMulti').classList.toggle('hide',app.kind!=='host');$('lobbyStatus').textContent=`参加 ${Object.keys(publicRoster()).length}/4 人`;}
 function startHostGame(){if(app.kind!=='host')return;const st=Date.now()+4300;let members=Object.values(publicRoster()).map(p=>({id:p.id,name:p.name}));if(!members.some(m=>m.id===app.profile.id))members.push({id:app.profile.id,name:app.profile.name});let s={id:randomId(),mode:'multi',endAge,startedAt:st,segmentAge:0,segmentStartedAt:st,members,sync:{age:5,ready:{},openedAt:0,deadline:0,waiting:false},finished:false};app.session=s;app.readySent=null;app.players[app.profile.id]=profilePublic(app.profile);broadcast({t:'start',session:s,hostTime:Date.now()});enterGame();msg('オンライン対戦が開始された。');save()}
 function initButtons(){document.querySelectorAll('[data-mode]').forEach(el=>el.onclick=()=>{setupMode=el.dataset.mode;updateModeUI()});document.querySelectorAll('[data-years]').forEach(el=>el.onclick=()=>{endAge=Number(el.dataset.years);updateModeUI()});$('origin').onchange=e=>{selection.origin=e.target.value;drawSkills();showBirth();updateAvatarPreview()};$('startSolo').onclick=startSolo;$('host').onclick=()=>{if(selectedPoints()<0){toast('転生ポイントを超過しています');return}app.profile=createProfile(cfg());app.room='';app.session=null;initHost()};$('join').onclick=()=>{if(selectedPoints()<0){toast('転生ポイントを超過しています');return}app.profile=createProfile(cfg());app.session=null;initGuest($('roomCode').value)};$('resume').onclick=resume;$('beginMulti').onclick=startHostGame;$('backLobby').onclick=()=>{app.peer?.destroy();app.peer=null;app.conns.clear();setPhase('setup')};$('copyCode').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(app.room);toast('ルームコードをコピー')};$('actE').onclick=()=>act('e');$('actSpace').onclick=()=>act('space');$('dodgeBtn').onclick=dodge;$('healBtn').onclick=drinkPotion;$('cancelAction').onclick=()=>cancelAction();$('openShop').onclick=openShop;$('openQuest').onclick=openQuest;$('openMiniMap').onclick=showFullMap;$('useCurse').onclick=useCurse;$('manualSave').onclick=()=>{save();toast('保存しました')};$('manageItems').onclick=showInventoryManager;$('openQuestJournal').onclick=questJournal;$('statsHelp').onclick=showStatHelp;$('backTitle').onclick=()=>{localStorage.removeItem(SAVE);app.peer?.destroy();app.peer=null;app.session=null;app.log=[];app.players={};renderSetup();setPhase('setup')};
@@ -1374,15 +1467,15 @@ function swingWeapon(){if(isSyncWaiting())return false;if(!hostileLevel(app.prof
  app.saveNeeded=true;return true
 }
 const RARITY=[{name:'普通',color:'#dadacb',power:1},{name:'希少',color:'#85cbe7',power:1.45},{name:'英雄',color:'#d7a6f5',power:2.1},{name:'伝説',color:'#ffcd77',power:3.2}];
-function defeatMob(m){let p=app.profile;if(m.humanGuard)msg('【襲撃】人間領の警備兵を撃退した。人族領での警戒は続く。');m.alive=false;m.respawnAt=Date.now()+(m.bossArt?120000:10000)+rand(0,4000);p.kills=(p.kills||0)+1;advanceQuestsOnKill(m);
+function defeatMob(m){let p=app.profile;if(m.humanGuard)msg('【襲撃】人間領の警備兵を撃退した。人族領での警戒は続く。');m.alive=false;m.respawnAt=Date.now()+(m.bossArt?120000:10000)+rand(0,4000);p.kills=(p.kills||0)+1;countRecord('killsByName',m.name);advanceQuestsOnKill(m);
   const era=Math.floor(ageNow()/5);if(p.combatEra!==era){p.combatEra=era;p.combatEraKills=0;}p.combatEraKills=(p.combatEraKills||0)+1;
   const fatigue=p.combatEraKills<=8?1:p.combatEraKills<=20?.5:.18;
   p.stats.強さ+=(has('consume')?.27:.14)*fatigue;p.stats.素早さ+=(has('consume')?.19:.10)*fatigue;
-  const gold=m.bossArt?rand(90,170)+m.level*9:rand(3,8)+m.level*2;p.money+=gold;
+  const gold=m.bossArt?rand(90,170)+m.level*9:rand(3,8)+m.level*2;p.money+=gold;countRecord('money','monster',gold);
   if(m.bossArt){
     p.bossDefeated??={};const unique=!p.bossDefeated[m.name],bonus=unique?Math.round(850+m.level*65):100;
     if(unique)p.bossDefeated[m.name]=true;
-    p.bossScore=(p.bossScore||0)+bonus;if(unique){p.feats=(p.feats||0)+2;msg('【偉業】ボス撃破：'+m.name);}
+    p.bossScore=(p.bossScore||0)+bonus;countRecord('bosses',m.name);countRecord('bossPoints',m.name,bonus);if(unique){p.feats=(p.feats||0)+2;msg('【偉業】ボス撃破：'+m.name);}
     const news={t:'bossVictory',id:randomId(),text:`${p.name}がボスモンスター「${m.name}」の討伐に成功しました！`};
     showBossVictory(news);if(app.kind!=='solo')sendHost(news);
     msg(`【ボス撃破】スコア +${bonus}pt ${unique?'（初回撃破）':'（再討伐）'}`);
@@ -1442,7 +1535,7 @@ function mobAI(dt){if(!hostileLevel(app.profile.map)||!canFight()||(app.activeMo
   if(!m.alive){if(now>=m.respawnAt){m.alive=true;m.hp=m.maxHp;m.x=m.homeX;m.y=m.homeY;m.windupAt=0}continue}
   let dx=p.x-m.x,dy=p.y-m.y,d=Math.hypot(dx,dy);if(d>350){if(Math.hypot(m.homeX-m.x,m.homeY-m.y)>25){m.x+=(m.homeX-m.x)*dt*.35;m.y+=(m.homeY-m.y)*dt*.35}continue}
   m.facing=dx>=0?1:-1;
-  if(m.windupAt){if(now>=m.windupAt){m.windupAt=0;m.lastAttackAt=now;if(d<(m.behavior==='ranged'?190:64)){if(now>(p.iframesUntil||0)){let damage=Math.max(2,Math.round((4+m.level*2-rand(0,4))*(m.bossArt?1.75:m.elite?1.13:1)));if(activateWard('魔物の攻撃')){spawnFX(p.x,p.y-55,'結界で防御！','#b2e9ff');continue;}p.hp=Math.max(0,(p.hp||80)-damage);spawnFX(p.x,p.y-56,`-${damage} HP`,'#ffa09a');spark(p.x,p.y-30,'#f38e92',9);
+  if(m.windupAt){if(now>=m.windupAt){m.windupAt=0;m.lastAttackAt=now;if(d<(m.behavior==='ranged'?190:64)){if(now>(p.iframesUntil||0)){let damage=Math.max(2,Math.round((4+m.level*2-rand(0,4))*(m.bossArt?1.75:m.elite?1.13:1)));if(activateWard('魔物の攻撃')){spawnFX(p.x,p.y-55,'結界で防御！','#b2e9ff');continue;}p.hp=Math.max(0,(p.hp||80)-damage);resultRecord(p).totalDamageTaken=(resultRecord(p).totalDamageTaken||0)+Math.min(damage,Math.max(0,(p.hp||0)+damage));spawnFX(p.x,p.y-56,`-${damage} HP`,'#ffa09a');spark(p.x,p.y-30,'#f38e92',9);
     if(p.action&&regionRank(p.map)>0&&Math.random()<.16&&(p.action.staggers||0)<2){p.action.staggers=(p.action.staggers||0)+1;p.action.elapsed=Math.max(0,p.action.elapsed-1.2);toast('魔物に作業を邪魔された！');}
     p.anim='hit';p.animAt=now;if(p.hp<=0){die('魔物の攻撃')}app.saveNeeded=true}else spawnFX(p.x,p.y-51,'回避！','#9fedd5')}}}
   else if(d<(m.behavior==='ranged'?185:65)&&now-m.lastAttackAt>(m.bossArt?1150:m.elite?1350:1800)){m.windupAt=now+(m.bossArt?850:m.behavior==='fast'?420:590)}
@@ -1565,7 +1658,7 @@ function draw(now){requestAnimationFrame(draw);let dt=Math.min((now-lastFrame)/1
 setInterval(()=>{gameSound.refresh();if(app.phase==='game'){if(!isReincarnationCountdown()){onAge();tickWorldSync();showSyncState();if(!isSyncWaiting())completeTasks();drawState();if(app.kind==='host')processTimeoutPenalties();}drawState();if(app.saveNeeded)save()}},1000);
 setInterval(()=>{if(app.phase!=='game'||!app.profile)return;
  if(app.kind==='host')broadcastScores();
- else if(app.kind==='guest'&&app.hostConn?.open)sendHost({t:'scorePulse',score:score(app.profile),age:ageNow(),map:app.profile.map});
+ else if(app.kind==='guest'&&app.hostConn?.open)sendHost({t:'scorePulse',score:score(app.profile),resultData:resultSnapshot(app.profile),age:ageNow(),map:app.profile.map});
 },2000);
 setInterval(()=>{if(app.phase==='game'&&app.profile){if(app.kind==='host'){app.players[app.profile.id]=profilePublic(app.profile);broadcast({t:'roster',players:publicRoster(),session:app.session,ledger:app.ledger,hostTime:Date.now()})}else if(app.kind==='guest'){if(!app.hostConn?.open){if(app.peer?.open&&!app._reconnectBusy){app._reconnectBusy=true;connectGuest();setTimeout(()=>{app._reconnectBusy=false},8000)}}else sendHost({t:'state',player:profilePublic(app.profile),full:app.profile})}}},7000);
 initButtons();gameSound.initialize();renderSetup();updateAvatarPreview();requestAnimationFrame(draw);
