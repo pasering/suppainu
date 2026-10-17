@@ -221,7 +221,7 @@ canvas{image-rendering:auto}
 .bossVictoryBanner.hide{display:none}
 #modalBody .topbar .actions{flex-wrap:wrap;justify-content:flex-end}
 </style></head><body>
-<div class="wrap"><header class="hero"><h1>転生ライフRTA <small style="font-size:.33em;color:#bd9f65">v9.5</small></h1><p>転生・探索・成長・競争 — 自由移動と人生の選択</p></header>
+<div class="wrap"><header class="hero"><h1>転生ライフRTA <small style="font-size:.33em;color:#bd9f65">v9.6</small></h1><p>転生・探索・成長・競争 — 自由移動と人生の選択</p></header>
 <div class="soundDock" id="soundDock">
  <details id="soundDetails"><summary id="soundSummary" title="BGM・効果音の設定">🔊 音量</summary>
  <div class="soundMixer"><div class="soundTitle">サウンド設定 <span id="soundState" aria-live="polite">待機中</span></div>
@@ -321,6 +321,7 @@ function isMonsterOrigin(origin){return ['demon','orc','wolf','goblin','slime'].
 function dangerLevel(name,profile=app.profile){return (isMonsterOrigin(profile?.origin)?DANGER_MONSTER:DANGER_HUMAN)[name]??0}
 function dangerReason(name,profile=app.profile){
  if(isMonsterOrigin(profile?.origin)&&HUMAN_TERRITORIES.has(name))return '人族の衛兵・猟師が敵対';
+ if(name==='魔界'&&profile?.origin==='demon')return '西の居住区は安全。東奥の狩場は5歳から敵が出現し、成長とともに危険になる';
  if(MONSTER_TERRITORIES.has(name))return isMonsterOrigin(profile?.origin)?'敵対する野生魔物・異種族が出現':'魔物の群れが敵対';
  return name==='草原'?'野生生物が出現':'比較的安全な生活圏';
 }
@@ -854,7 +855,12 @@ function nearSegment(x,y,ax,ay,bx,by,r){const dx=bx-ax,dy=by-ay,den=dx*dx+dy*dy;
 function passable(map,x,y){return x>=18&&x<=WORLD_W-18&&y>=18&&y<=WORLD_H-18}
 function advanceOnMap(p,dx,dy){
  const ox=p.x,oy=p.y;const nx=Math.max(18,Math.min(WORLD_W-18,ox+dx));const ny=Math.max(18,Math.min(WORLD_H-18,oy+dy));
- if(passable(p.map,nx,ny)){p.x=nx;p.y=ny;return true}
+ if(passable(p.map,nx,ny)){
+  p.x=nx;p.y=ny;
+  if(isDemonHome(p)&&ox<=DEMON_HOME_SAFE_X&&nx>DEMON_HOME_SAFE_X){toast('⚠ 魔界の狩場へ入った！ 強敵に注意');msg('【危険区域】魔族の居住区を離れた。東の狩場には敵が現れる。')}
+  else if(isDemonHome(p)&&ox>DEMON_HOME_SAFE_X&&nx<=DEMON_HOME_SAFE_X){toast('魔族の居住区へ戻った。敵の追跡を振り切った。');resetDemonPursuers()}
+  return true
+ }
  // 壁沿いにスライドし、斜め移動時も引っ掛かりすぎないようにする。
  if(passable(p.map,nx,oy)){p.x=nx;return true}
  if(passable(p.map,ox,ny)){p.y=ny;return true}
@@ -1002,7 +1008,7 @@ function completeTasks(){renderQuestTracker()}
 function showStatHelp(){passiveModal(`<h2>能力値の説明</h2><p class="sub">行動を重ねると成長し、最終スコアにも反映されます。</p><div class="questDetail"><strong>💪 強さ</strong><p>武器攻撃の威力・荷物を持てる重量・伐採／採掘や訓練の効率に影響。</p></div><div class="questDetail"><strong>📚 賢さ</strong><p>読書・学園・魔物の観察などの作業時間を短縮。適職にも成長傾向が反映されます。</p></div><div class="questDetail"><strong>💨 素早さ</strong><p>歩く速度、回避・攻撃の間隔、遊び・身体訓練の効率に影響します。</p></div><div class="questDetail"><strong>🛠 器用さ</strong><p>農業・採集・鍛冶などの作業時間を短縮。神匠の武器品質にも影響します。</p></div><div class="questDetail"><strong>✨ 魅力</strong><p>家族や住民の手伝い、祈り、アルバイトなどの作業時間を短縮。職業・成長とともにスコアへ加算されます。</p></div><p class="sub">すべての能力値はスコアにも加点。作業速度の短縮には上限があります。</p><button id="closeStatsHelp">閉じる</button>`);$('closeStatsHelp').onclick=hideModal;}
 function benefitText(type){if(type==='shop')return '商品購入・素材売却';if(type==='guild')return '討伐依頼・報告・報酬受取';if(type==='monster')return '魔物の調査';let b=ACTIONS[type]?.e?.[2]||'';const danger=HOSTILE_AREAS[app.profile?.map]||0;const regionNote=danger>0&&['farm','forage','chop','mine'].includes(type)?` ／ 危険度${Math.min(5,Math.max(1,Math.ceil(danger/2)))}`:'';return '効果：'+b+regionNote}
 function benefitDetails(loc){if(!loc)return '';let a=ACTIONS[loc.o[3]]?.e;return a?`Eで実行：${esc(a[0])}`:''}
-function drawState(force=false){if(app.phase!=='game')return;let a=ageNow(),p=app.profile;$('age').textContent=Math.min(a,app.session.endAge).toFixed(1);$('remaining').textContent=displayTime((app.session.endAge-a)*YEAR_MS/1000);$('nextSync').textContent=`${Math.min(app.session.endAge,(Math.floor(a/5)+1)*5)}歳`;$('mapName').textContent=p.map+' — '+MAPS[p.map].label+' ／ 危険度'+dangerLevel(p.map);checkEnvironmentAsset(p.map);$('mapRoutes').textContent=Object.entries(MAPS[p.map].neighbors).map(([dir,k])=>({west:'◀',east:'▶',north:'▲',south:'▼'}[dir]+' '+k+(canTravel(k)?'':' 🔒'+gateMinAge(k)+'歳'))).join('　');$('ageLimitText').textContent=ageNow()<3?'乳児期：家族・遊び中心':ageNow()<6?'幼児期：身の回りのお手伝い':ageNow()<10?'児童期：読み書きや採集へ':ageNow()<12?'適職の儀を終えた':ageNow()<15?'学園期：学習・訓練':'青年期以降：職業・冒険が解放';let ctxNear=nearObject(),help=ctxNear?(allowedObject(ctxNear)?'Eで実行':'🔒 '+describeLock(ctxNear)):'';$('contextHint').innerHTML=ctxNear?`<b>${esc(ctxNear.o[0])}</b><span class="benefitTag">${esc(benefitText(ctxNear.o[3]))}</span><span class="contextActions">${allowedObject(ctxNear)?benefitDetails(ctxNear):esc(help)}</span>`:'近くの施設に寄ってみよう';$('actE').disabled=!!p.action||!ctxNear||!allowedObject(ctxNear);$('actSpace').disabled=!!p.action||!hostileLevel(p.map)||!canFight();$('openShop').disabled=ctxNear?.o[3]!=='shop'||!allowedObject(ctxNear);$('openQuest').disabled=ctxNear?.o[3]!=='guild'||!allowedObject(ctxNear);$('charTitle').textContent=p.name+'（'+original(p.origin)[1]+'）';$('jobLine').textContent=`移動速度 ${movementSpeed(p)} / 適職：${p.career||'未鑑定'} / 所持金 ${Math.floor(p.money)} G`+(p.career?' / '+(CAREER_EFFECTS[p.career]||''):'');$('hpLabel').textContent=`HP ${Math.ceil(p.hp??80)} / ${Math.ceil(p.maxHp??80)}`;$('hpFill').style.width=`${Math.max(0,100*(p.hp??80)/(p.maxHp??80))}%`;$('weaponLabel').textContent=p.weapon?.name||'素手';$('killLabel').textContent=`討伐 ${p.kills||0}`;$('equipLine').innerHTML=`⚔ 装備：<b>${esc(p.weapon?.name||'素手')}</b>　攻撃力 +${p.weapon?.attack||0}`;$('stats').innerHTML=Object.entries(p.stats).map(([k,v])=>`<span class="pill">${k} <em>${v.toFixed(1)}</em></span>`).join('');$('inventory').textContent=Object.entries(p.inventory).filter(([k,n])=>n>0).map(([k,n])=>`${k}×${n}`).join('　')||'なし';$('carryInfo').textContent=`（${bagWeight(p).toFixed(1)} / ${Number.isFinite(bagLimit(p))?bagLimit(p).toFixed(1)+' kg':'∞'}）`;$('ownedSkills').textContent=p.skills.map(k=>SKILLS.find(x=>x[0]===k)?.[1]).join(' / ')||'なし';$('scoreNow').innerHTML=`<strong style="font-size:26px;color:var(--gold)">${score(p).toLocaleString()} pt</strong><div class="rightSmall">成長・資産・装備・研究・クエスト・ボス・交易実績を評価（死亡 -850pt）</div>`;$('milestones').textContent=p.milestones.filter(t=>!t.startsWith('sync')).map(s=>s+'歳').join(' / ')||'これから';$('netStatus').textContent=app.kind==='solo'?'ソロ':isSyncWaiting()?'5年世界同期待機中':app.kind==='host'?'ホスト / '+app.conns.size+'人接続':app.hostConn?.open?'接続中':'通信切断・再接続待ち';renderPlayers();if(force)msg('WASDで移動。施設はEで行動選択、Spaceは戦闘攻撃のみ。Shiftで回避。Mキーで全域を表示、ESCで閉じる。')}
+function drawState(force=false){if(app.phase!=='game')return;let a=ageNow(),p=app.profile;$('age').textContent=Math.min(a,app.session.endAge).toFixed(1);$('remaining').textContent=displayTime((app.session.endAge-a)*YEAR_MS/1000);$('nextSync').textContent=`${Math.min(app.session.endAge,(Math.floor(a/5)+1)*5)}歳`;$('mapName').textContent=p.map+' — '+MAPS[p.map].label+' ／ 危険度'+dangerLevel(p.map);checkEnvironmentAsset(p.map);$('mapRoutes').textContent=(isDemonHome()?('【'+(demonHomeSafe()?'安全な居住区':'危険な狩場')+'】　'):'' )+Object.entries(MAPS[p.map].neighbors).map(([dir,k])=>({west:'◀',east:'▶',north:'▲',south:'▼'}[dir]+' '+k+(canTravel(k)?'':' 🔒'+gateMinAge(k)+'歳'))).join('　');$('ageLimitText').textContent=ageNow()<3?'乳児期：家族・遊び中心':ageNow()<6?'幼児期：身の回りのお手伝い':ageNow()<10?'児童期：読み書きや採集へ':ageNow()<12?'適職の儀を終えた':ageNow()<15?'学園期：学習・訓練':'青年期以降：職業・冒険が解放';let ctxNear=nearObject(),help=ctxNear?(allowedObject(ctxNear)?'Eで実行':'🔒 '+describeLock(ctxNear)):'';$('contextHint').innerHTML=ctxNear?`<b>${esc(ctxNear.o[0])}</b><span class="benefitTag">${esc(benefitText(ctxNear.o[3]))}</span><span class="contextActions">${allowedObject(ctxNear)?benefitDetails(ctxNear):esc(help)}</span>`:'近くの施設に寄ってみよう';$('actE').disabled=!!p.action||!ctxNear||!allowedObject(ctxNear);$('actSpace').disabled=!!p.action||!hostileLevel(p.map)||!canFight();$('openShop').disabled=ctxNear?.o[3]!=='shop'||!allowedObject(ctxNear);$('openQuest').disabled=ctxNear?.o[3]!=='guild'||!allowedObject(ctxNear);$('charTitle').textContent=p.name+'（'+original(p.origin)[1]+'）';$('jobLine').textContent=`移動速度 ${movementSpeed(p)} / 適職：${p.career||'未鑑定'} / 所持金 ${Math.floor(p.money)} G`+(p.career?' / '+(CAREER_EFFECTS[p.career]||''):'');$('hpLabel').textContent=`HP ${Math.ceil(p.hp??80)} / ${Math.ceil(p.maxHp??80)}`;$('hpFill').style.width=`${Math.max(0,100*(p.hp??80)/(p.maxHp??80))}%`;$('weaponLabel').textContent=p.weapon?.name||'素手';$('killLabel').textContent=`討伐 ${p.kills||0}`;$('equipLine').innerHTML=`⚔ 装備：<b>${esc(p.weapon?.name||'素手')}</b>　攻撃力 +${p.weapon?.attack||0}`;$('stats').innerHTML=Object.entries(p.stats).map(([k,v])=>`<span class="pill">${k} <em>${v.toFixed(1)}</em></span>`).join('');$('inventory').textContent=Object.entries(p.inventory).filter(([k,n])=>n>0).map(([k,n])=>`${k}×${n}`).join('　')||'なし';$('carryInfo').textContent=`（${bagWeight(p).toFixed(1)} / ${Number.isFinite(bagLimit(p))?bagLimit(p).toFixed(1)+' kg':'∞'}）`;$('ownedSkills').textContent=p.skills.map(k=>SKILLS.find(x=>x[0]===k)?.[1]).join(' / ')||'なし';$('scoreNow').innerHTML=`<strong style="font-size:26px;color:var(--gold)">${score(p).toLocaleString()} pt</strong><div class="rightSmall">成長・資産・装備・研究・クエスト・ボス・交易実績を評価（死亡 -850pt）</div>`;$('milestones').textContent=p.milestones.filter(t=>!t.startsWith('sync')).map(s=>s+'歳').join(' / ')||'これから';$('netStatus').textContent=app.kind==='solo'?'ソロ':isSyncWaiting()?'5年世界同期待機中':app.kind==='host'?'ホスト / '+app.conns.size+'人接続':app.hostConn?.open?'接続中':'通信切断・再接続待ち';renderPlayers();if(force)msg('WASDで移動。施設はEで行動選択、Spaceは戦闘攻撃のみ。Shiftで回避。Mキーで全域を表示、ESCで閉じる。')}
 function renderPlayers(){let p=app.profile;let players=Object.values(app.players).filter(x=>!x.virtual&&x.id!==p.id);$('playersPanel').innerHTML=players.length?players.map(x=>`<div class="topbar" style="padding:5px 0;border-bottom:1px solid #354b65"><span>${esc(x.name)} / ${esc(x.map||'不明')} / ${esc(x.career||'未鑑定')}</span><span class="rightSmall">${(Date.now()-(x.updatedAt||0)<35000)?'通信中':'離席・未更新'}</span></div>`).join(''):'ほかの参加者はいません';$('attackPanel').innerHTML=players.filter(x=>x.map===p.map).map(x=>`<button data-attack="${esc(x.id)}">${esc(x.name)}に挑む</button>`).join('')||'<span class="rightSmall">同じMAPの対戦相手なし</span>';document.querySelectorAll('[data-attack]').forEach(b=>b.onclick=()=>attack(b.dataset.attack));$('useCurse').disabled=app.kind==='solo'||isSyncWaiting()||!SABOTAGE_ITEMS.some(k=>(p.inventory[SABOTAGE[k].item]||0)>0)||players.length===0;
  let ranks=liveScoreRows();$('rankings').innerHTML=`<table class="scores"><tr><th>名前</th><th>スコア</th><th>更新</th></tr>${ranks.map(r=>`<tr><td>${esc(r.name)}${r.self?' ★':''}</td><td>${r.score===null?'--':r.score.toLocaleString()} pt</td><td class="${r.fresh?'success':'muted'}">${esc(r.stamp)}</td></tr>`).join('')}</table>`;renderLiveScores()}
 function showSabotageAlert(text,victim=false){const el=$('interferenceAlert');if(!el)return;
@@ -1349,7 +1355,7 @@ function updateAvatarPreview(){
  $('avatarPreviewInfo').textContent='出生に応じて自動設定されます。変更はできません。';
 }
 
-function paintOverview(p,xx=735,yy=20,w=208,h=143){const world=MAPS[p.map],img=environment(p.map);ctx.save();ctx.fillStyle='#091b2ee8';ctx.beginPath();ctx.roundRect(xx-4,yy-4,w+8,h+31,10);ctx.fill();ctx.strokeStyle='#e1b976';ctx.lineWidth=1.6;ctx.stroke();ctx.save();ctx.beginPath();ctx.rect(xx,yy,w,h);ctx.clip();if(hasArt(img)){ctx.drawImage(img,xx,yy,w,h)}else{ctx.fillStyle=world.base;ctx.fillRect(xx,yy,w,h)}ctx.fillStyle='#06142157';ctx.fillRect(xx,yy,w,h);ctx.save();ctx.translate(xx,yy);drawPassageMask(ctx,w,h,p.map);ctx.restore();
+function paintOverview(p,xx=735,yy=20,w=208,h=143){const world=MAPS[p.map],img=environment(p.map);ctx.save();ctx.fillStyle='#091b2ee8';ctx.beginPath();ctx.roundRect(xx-4,yy-4,w+8,h+31,10);ctx.fill();ctx.strokeStyle='#e1b976';ctx.lineWidth=1.6;ctx.stroke();ctx.save();ctx.beginPath();ctx.rect(xx,yy,w,h);ctx.clip();if(hasArt(img)){ctx.drawImage(img,xx,yy,w,h)}else{ctx.fillStyle=world.base;ctx.fillRect(xx,yy,w,h)}ctx.fillStyle='#06142157';ctx.fillRect(xx,yy,w,h);ctx.save();ctx.translate(xx,yy);drawPassageMask(ctx,w,h,p.map);ctx.restore();if(isDemonHome(p)){const z=xx+DEMON_HOME_SAFE_X/WORLD_W*w;ctx.fillStyle='#e6545426';ctx.fillRect(z,yy,xx+w-z,h);ctx.setLineDash([4,3]);ctx.strokeStyle='#f7c077cc';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(z,yy);ctx.lineTo(z,yy+h);ctx.stroke();ctx.setLineDash([]);}
  for(const o of world.points){const lock=ageNow()<Math.max(minAge(o[3]),o[4]||0);const sx=xx+o[1]/WORLD_W*w,sy=yy+o[2]/WORLD_H*h;ctx.fillStyle=lock?'#9ba1a7':'#63dcb2';ctx.beginPath();ctx.arc(sx,sy,lock?3:3.5,0,7);ctx.fill();ctx.strokeStyle='#111d2d';ctx.lineWidth=1.2;ctx.stroke()}
  const edges={west:[xx+6,yy+h/2],east:[xx+w-6,yy+h/2],north:[xx+w/2,yy+6],south:[xx+w/2,yy+h-6]};for(const [dir,name] of Object.entries(world.neighbors)){const [cx,cy]=edges[dir];ctx.fillStyle=canTravel(name)?'#fbd076':'#a5acb7';ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fill();ctx.strokeStyle='#29364c';ctx.stroke()}
  let px=xx+p.x/WORLD_W*w,py=yy+p.y/WORLD_H*h;ctx.fillStyle='#45c8ff';ctx.strokeStyle='#ffffff';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(px,py-8);ctx.lineTo(px+7,py+6);ctx.lineTo(px,py+3);ctx.lineTo(px-7,py+6);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();ctx.fillStyle='#f6dda3';ctx.textAlign='center';ctx.font='bold 12px sans-serif';ctx.fillText('M : 全体MAP・出口を確認',xx+w/2,yy+h+20);ctx.restore()}
@@ -1394,7 +1400,7 @@ function drawWorldMap(){const c=$('worldMapCanvas');if(!c||!app.profile)return;c
 
 function portalTravel(name){let p=app.profile,era=Math.floor(ageNow()/5);if(!has('warp')||ageNow()<15)return toast('時空門は15歳から使えます');if(p.seen.portalEra===era)return toast('時空門は5年に1回です');if(!p.visitedMaps?.includes(name)||!MAPS[name])return toast('未訪問のMAPには転移できません');if(!canTravel(name))return toast('年齢制限のあるMAPへは転移できません');p.seen.portalEra=era;cancelAction(true);p.map=name;p.x=WORLD_W/2;p.y=WORLD_H/2;app.saveNeeded=true;hideModal();msg(`【時空門】${name}へ瞬間移動した`);toast(`${name}に転移！`)}
 function refreshFullMap(){if(!app.mapOpen||app.phase!=='game')return;
- const p=app.profile,mp=MAPS[p.map],c=$('largeMapPins');if(!c)return;if(app.overviewTab==='world'){const a=p.action;const t=$('overviewActionName'),r=$('overviewActionRemain'),b=$('overviewActionFill');if(t)t.textContent=a?a.label:'行動待機中';if(r)r.textContent=a?'残り '+Math.max(0,a.duration-a.elapsed).toFixed(1)+' 秒':'';if(b)b.style.width=a?`${Math.min(100,a.elapsed/a.duration*100)}%`:'0%';return;}const g=c.getContext('2d'),W=c.width,H=c.height;g.clearRect(0,0,W,H);
+ const p=app.profile,mp=MAPS[p.map],c=$('largeMapPins');if(!c)return;if(app.overviewTab==='world'){const a=p.action;const t=$('overviewActionName'),r=$('overviewActionRemain'),b=$('overviewActionFill');if(t)t.textContent=a?a.label:'行動待機中';if(r)r.textContent=a?'残り '+Math.max(0,a.duration-a.elapsed).toFixed(1)+' 秒':'';if(b)b.style.width=a?`${Math.min(100,a.elapsed/a.duration*100)}%`:'0%';return;}const g=c.getContext('2d'),W=c.width,H=c.height;g.clearRect(0,0,W,H);if(isDemonHome(p)){const z=W*DEMON_HOME_SAFE_X/WORLD_W;g.fillStyle='#f5646425';g.fillRect(z,0,W-z,H);g.strokeStyle='#ffd58d';g.lineWidth=2;g.setLineDash([8,6]);g.beginPath();g.moveTo(z,0);g.lineTo(z,H);g.stroke();g.setLineDash([]);g.fillStyle='#e1ffdb';g.font='bold 14px sans-serif';g.fillText('安全な居住区',18,22);g.fillStyle='#ffcab1';g.fillText('危険な狩場',z+10,22);}
  for(const o of mp.points){const x=o[1]/WORLD_W*W,y=o[2]/WORLD_H*H,locked=ageNow()<Math.max(minAge(o[3]),o[4]||0);g.fillStyle=locked?'#a1a3af':'#55eea3';g.beginPath();g.arc(x,y,6,0,7);g.fill();g.strokeStyle='#13253f';g.lineWidth=2;g.stroke();if(app.unlockCue?.map===p.map&&Date.now()<app.unlockCue.until&&app.unlockCue.points.some(pt=>pt.x===o[1]&&pt.y===o[2])){g.strokeStyle='#ffdf84';g.lineWidth=4;g.beginPath();g.arc(x,y,16+8*(.5+.5*Math.sin(Date.now()/180)),0,7);g.stroke();}}
  const exits={west:[12,H/2],east:[W-12,H/2],north:[W/2,12],south:[W/2,H-12]};for(const[d,n]of Object.entries(mp.neighbors)){const[x,y]=exits[d];g.fillStyle=canTravel(n)?'#ffcc70':'#969eb1';g.beginPath();g.arc(x,y,9,0,7);g.fill()}
  g.fillStyle='#00caff';g.strokeStyle='#ffffff';g.lineWidth=3;g.beginPath();g.arc(p.x/WORLD_W*W,p.y/WORLD_H*H,9,0,7);g.fill();g.stroke();
@@ -1417,6 +1423,18 @@ const MONSTER_RIVAL_GROUPS={
  'スライム沼':['spore','ghost','mandrake','toad','eyeball','spider']
 };
 function hostileLevel(map){return HOSTILE_AREAS[map]|| (monsterBirth()?HUMAN_GUARD_LEVEL[map]||0:0)}
+// 上級魔族は魔界の居住区から開始する。居住区は何歳でも敵対MOBが侵入しない。
+// 東側の狩場は5歳から段階的に強敵が現れる。魔界以外の出生・MAPには影響しない。
+const DEMON_HOME_SAFE_X=1160;
+function isDemonHome(p=app.profile){return !!p&&p.origin==='demon'&&p.map==='魔界'}
+function demonHomeSafe(p=app.profile){return isDemonHome(p)&&p.x<=DEMON_HOME_SAFE_X}
+function demonHuntTier(){const a=ageNow();return a<10?'young':a<15?'teen':'adult'}
+function resetDemonPursuers(){
+ for(const [key,units] of mobsByMap.entries()){
+  if(!key.startsWith('monster:魔界:'))continue;
+  for(const m of units){m.x=m.homeX;m.y=m.homeY;m.windupAt=0;}
+ }
+}
 const mobsByMap=new Map(),fx=[],floating=[];
 let combatHeartbeat=0;
 function canFight(){return ageNow() >= (monsterBirth()?5:12)}
@@ -1425,6 +1443,7 @@ function canFight(){return ageNow() >= (monsterBirth()?5:12)}
 function hostileEncounterAllowed(){
  if(!app.profile||!canFight())return false;
  const p=app.profile;
+ if(demonHomeSafe(p))return false;
  if(isMonsterOrigin(p.origin)&&ageNow()<10&&p.map===original(p.origin)[3]){
   const crib=MAPS[p.map]?.points?.[0];
   if(crib&&Math.hypot(p.x-crib[1],p.y-(crib[2]+78))<155)return false;
@@ -1435,15 +1454,22 @@ function localMobs(){
  const area=app.profile?.map,monsterPlayer=monsterBirth();if(!area||!hostileEncounterAllowed())return [];
  const guards=monsterPlayer&&HUMAN_TERRITORIES.has(area),base=hostileLevel(area);
  if(!base)return [];
- const cacheKey=(monsterPlayer?'monster:':'human:')+area;
+ const demonHunt=isDemonHome();
+ const tier=demonHunt?demonHuntTier():null;
+ const cacheKey=(monsterPlayer?'monster:':'human:')+area+(demonHunt?':'+tier:'');
  if(!mobsByMap.has(cacheKey)){
   const units=[],keys=guards?(HUMAN_GUARD_GROUPS[area]||['guard']):monsterPlayer?(MONSTER_RIVAL_GROUPS[area]||['ghost','beast']):(MOB_GROUPS[area]||['slime','goblin']);
-  const n=guards?7:11;
+  const n=demonHunt?(tier==='young'?4:tier==='teen'?6:8):(guards?7:11);
   for(let i=0;i<n;i++){
-   let x=490+(i%4)*330+(seedRnd(i*87+19)-.5)*80,y=230+Math.floor(i/4)*360+(seedRnd(i*55+10)-.5)*90;
-   const key=keys[(i*3+Math.floor(i/keys.length))%keys.length],data=MOB_INFO[key]||MOB_INFO.slime,elite=i===n-1;
-   const level=base+(i%3)+(elite?3:0),bossFlag=!guards&&elite&&!!BOSS_ART_V5[area],maxHp=Math.round((20+level*15)*(bossFlag?5.0:elite?2.2:1)*(data[1]==='tank'?1.4:1));
-   const bossArt=!guards&&elite?BOSS_ART_V5[area]:null;
+   // 魔界の居住区（左側）には敵を置かず、東の狩場だけに配置する。
+   let x=demonHunt?1350+(i%2)*345+(seedRnd(i*87+19)-.5)*35:490+(i%4)*330+(seedRnd(i*87+19)-.5)*80;
+   let y=demonHunt?190+Math.floor(i/2)*245+(seedRnd(i*55+10)-.5)*48:230+Math.floor(i/4)*360+(seedRnd(i*55+10)-.5)*90;
+   const key=keys[(i*3+Math.floor(i/keys.length))%keys.length],data=MOB_INFO[key]||MOB_INFO.slime;
+   const elite=i===n-1&&(!demonHunt||tier!=='young');
+   const level=demonHunt?(tier==='young'?1+(i%2):tier==='teen'?4+(i%3):base+(i%3)+(elite?3:0)):base+(i%3)+(elite?3:0);
+   const bossFlag=!guards&&elite&&!!BOSS_ART_V5[area]&&(!demonHunt||tier==='adult');
+   const maxHp=Math.round((20+level*15)*(bossFlag?5.0:elite?2.2:1)*(data[1]==='tank'?1.4:1));
+   const bossArt=bossFlag?BOSS_ART_V5[area]:null;
    const title=guards?(elite?'【隊長】'+data[0]:data[0]):bossArt?({"深緑の森":"森の守護樹","魔界":"焔の古竜","ゴブリン洞窟":"古城の黒騎士","スライム沼":"冥界の魔女","オーク集落":"氏族の黒騎士"}[area]||'異界の強敵'):(elite?'【強敵】':'')+data[0];
    units.push({id:cacheKey+':'+i,key,name:title,behavior:bossArt?'tank':data[1],material:bossArt?'伝説の素材':data[2],humanGuard:guards,level,x,y,homeX:x,homeY:y,hp:maxHp,maxHp,elite,bossArt,alive:true,respawnAt:0,lastAttackAt:0,windupAt:0,hitAt:0,facing:1});
   }
@@ -1529,11 +1555,15 @@ function dodge(){if(isReincarnationCountdown()||app.phase!=='game'||app.activeMo
  const mag=Math.hypot(vx,vy);advanceOnMap(p,vx/mag*93,vy/mag*93);p.iframesUntil=now+540;p.nextDodge=now+(has('swift')?1250:1850);p.anim='dodge';p.animAt=now;gameSound.sfx('dodge');spark(p.x,p.y,'#d6f1e9',10)
 }
 function mobAI(dt){if(!hostileLevel(app.profile.map)||!canFight()||(app.activeModal&&!app.mapOpen&&!app.modalPassive)||document.hidden||app.phase!=='game')return;
+ // 魔族の居住区まで追ってきた敵は狩場へ戻し、蘇生直後の連続死亡を防ぐ。
+ if(demonHomeSafe()) {resetDemonPursuers();return;}
  // HP表示のある敵は全て敵対。安全圏・幼少期はlocalMobs側で表示ごと抑制。
  if(!hostileEncounterAllowed())return;
  let p=app.profile,now=Date.now();for(let m of localMobs()){
   if(!m.alive){if(now>=m.respawnAt){m.alive=true;m.hp=m.maxHp;m.x=m.homeX;m.y=m.homeY;m.windupAt=0}continue}
-  let dx=p.x-m.x,dy=p.y-m.y,d=Math.hypot(dx,dy);if(d>350){if(Math.hypot(m.homeX-m.x,m.homeY-m.y)>25){m.x+=(m.homeX-m.x)*dt*.35;m.y+=(m.homeY-m.y)*dt*.35}continue}
+  let dx=p.x-m.x,dy=p.y-m.y,d=Math.hypot(dx,dy);
+  if(isDemonHome()&&p.x<DEMON_HOME_SAFE_X+85){m.windupAt=0;m.x+=(m.homeX-m.x)*Math.min(1,dt*2);m.y+=(m.homeY-m.y)*Math.min(1,dt*2);continue;}
+  if(d>350){if(Math.hypot(m.homeX-m.x,m.homeY-m.y)>25){m.x+=(m.homeX-m.x)*dt*.35;m.y+=(m.homeY-m.y)*dt*.35}continue}
   m.facing=dx>=0?1:-1;
   if(m.windupAt){if(now>=m.windupAt){m.windupAt=0;m.lastAttackAt=now;if(d<(m.behavior==='ranged'?190:64)){if(now>(p.iframesUntil||0)){let damage=Math.max(2,Math.round((4+m.level*2-rand(0,4))*(m.bossArt?1.75:m.elite?1.13:1)));if(activateWard('魔物の攻撃')){spawnFX(p.x,p.y-55,'結界で防御！','#b2e9ff');continue;}p.hp=Math.max(0,(p.hp||80)-damage);resultRecord(p).totalDamageTaken=(resultRecord(p).totalDamageTaken||0)+Math.min(damage,Math.max(0,(p.hp||0)+damage));spawnFX(p.x,p.y-56,`-${damage} HP`,'#ffa09a');spark(p.x,p.y-30,'#f38e92',9);
     if(p.action&&regionRank(p.map)>0&&Math.random()<.16&&(p.action.staggers||0)<2){p.action.staggers=(p.action.staggers||0)+1;p.action.elapsed=Math.max(0,p.action.elapsed-1.2);toast('魔物に作業を邪魔された！');}
