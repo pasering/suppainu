@@ -258,7 +258,7 @@ const MODS=[
 {id:'guard2',name:'防御+3',cost:3,kind:'up',types:['attack','defense','heal','special'],max:2,desc:'防御力+3。元が攻撃や回復カードでも防御に使えるようになる。'},
 {id:'counter',name:'反撃の刻印',cost:5,kind:'up',types:['attack','defense','heal','special'],desc:'防御としても使用可能。受けた攻撃の65%を反射（最大150%）。'},
 {id:'barrier',name:'障壁+4',cost:3,kind:'up',types:['attack','defense','heal','special'],desc:'使用時、自分の障壁+4。'},
-{id:'heal2',name:'治癒+3',cost:3,kind:'up',types:['attack','defense','heal','special'],max:2,desc:'使用時と防御時の回復+3。どのカードにも付けられる。'},
+{id:'heal2',name:'治癒+3',cost:3,kind:'up',types:['attack','defense','heal','special'],max:2,desc:'HP回復+3。同時に毒・火傷をそれぞれ最大3段階減らす。防御でも有効。'},
 {id:'draw',name:'補充',cost:3,kind:'up',types:['attack','defense','heal','special'],desc:'発動時カードを1枚引く。'},
 {id:'cleanse',name:'浄化',cost:3,kind:'up',types:['attack','defense','heal','special'],desc:'発動時・防御時に毒・火傷・弱体化をすべて解除する。'},
 {id:'detox',name:'解毒+2',cost:2,kind:'up',types:['attack','defense','heal','special'],max:2,desc:'発動時・防御時に自分の毒を2段階減らす。'},
@@ -267,7 +267,7 @@ const MODS=[
 {id:'burn4',name:'業火の刻印',cost:6,kind:'up',types:['attack','defense','heal','special'],desc:'相手に火傷4を追加付与。通常の火傷付与とも併用可能。'},
 {id:'lowhp',name:'逆境の力',cost:3,kind:'up',types:['attack','special'],desc:'自分のHPが半分以下なら与ダメージ+5。'},
 {id:'riposte',name:'報復の一刺し',cost:4,kind:'up',types:['attack','defense','heal','special'],desc:'防御時、相手に3ダメージを返す。防御モードを解放。'},
-{id:'lifeguard',name:'守護の祈り',cost:4,kind:'up',types:['attack','defense','heal','special'],desc:'防御時に自分を4回復。防御モードを解放。'},
+{id:'lifeguard',name:'守護の祈り',cost:4,kind:'up',types:['attack','defense','heal','special'],desc:'防御時に自分を4回復。毒・火傷もそれぞれ4段階軽減。防御モードを解放。'},
 {id:'atk1',name:'小さな研磨',cost:1,kind:'up',types:['attack','defense','heal','special'],max:2,desc:'攻撃力+1。1枚に2回まで。'},
 {id:'bite',name:'追撃の牙',cost:4,kind:'up',types:['attack','defense','heal','special'],desc:'攻撃力+3。武器以外もアタッカーにできる。'},
 {id:'recoil',name:'自傷の代償',cost:2,kind:'curse',desc:'発動後に自分が3ダメージ。'},
@@ -497,10 +497,10 @@ function helpView(){const rows=[
  ['カードの使い方','手番開始時に2枚補充し、カード1枚を使うか、温存するか、カードを使わず1枚補充するか選びます。選択カードをもう一度クリックすると使用確定。攻撃対象はプレイヤー欄をクリックして選択。'],
  ['命中・完全回避','攻撃カードの基本命中率は従来より15ポイント上昇（上限100%）。命中判定は相手が防御カードを選んで消費した後に行います。命中に失敗した攻撃はダメージ0で、毒・火傷などの状態異常も外れます。ただし、防御カードは消費され、回復・障壁・補充などの使用効果は発動します。完全回避は記載確率でダメージと状態異常の両方を無効化します。受けたHPダメージが0なので割合反射は0ですが、防御カード自身の攻撃力や反撃効果は別途発動します。回避に失敗しても通常の防御力は使えます。'],
  ['防御と反射','反射は、実際に受けたHPダメージの一部を相手にも与える効果です。自分が受けるダメージは減りません。受けたHPダメージに反射率を掛け（端数切り上げ）、反射カード自体の攻撃力を加えて返します。例えば攻撃10を防御4で受けて反射50%なら、自分は6ダメージを受け、相手には3ダメージを返します。返したダメージはさらに防御・再反射可能。命中失敗・完全回避・完全防御で受けたHPダメージが0なら割合反射は0。ただし、カード自身の攻撃力や「反撃」は独立して相手に攻撃します。例：完全回避に成功した「反射85%・攻撃2」のカードは、割合反射0＋追加攻撃2で威力2の反撃を行います。この反撃も防御・再反射できます。'],
- ['障壁・貫通','障壁は持ち越せる追加の防御値です。通常攻撃は防御カードの防御力で先に軽減し、残りを障壁で吸収します。貫通Nは攻撃威力のうち最大Nダメージを、防御・障壁を無視してHPに直接与えます。この貫通分では障壁は消費されません。残りの通常ダメージは防御→障壁で軽減します。例：攻撃10・貫通3に対して防御5＋障壁3なら、貫通3がHPに直撃、通常7のうち防御で5・障壁で2を吸収してHPダメージ3、障壁残り1です。通常部分を完全防御しても貫通でHPにダメージが届けば毒・火傷・弱体が命中します。回復付き防御でも貫通でHPに直撃した場合は回復後に状態異常が付きます（命中失敗・完全回避時は無効）。毒・火傷の継続ダメージは障壁で吸収可能です。'],
+ ['障壁・貫通','障壁は持ち越せる追加の防御値です。通常攻撃は防御カードの防御力で先に軽減し、残りを障壁で吸収します。貫通Nは攻撃威力のうち最大Nダメージを、防御・障壁を無視してHPに直接与えます。この貫通分では障壁は消費されません。残りの通常ダメージは防御→障壁で軽減します。例：攻撃10・貫通3に対して防御5＋障壁3なら、貫通3がHPに直撃、通常7のうち防御で5・障壁で2を吸収してHPダメージ3、障壁残り1です。通常部分を完全防御しても貫通でHPにダメージが届けば毒・火傷・弱体が命中します。貫通でHPに直撃した場合も状態異常は命中しますが、回復付き防御なら回復量ぶんを毒・火傷それぞれから減らします（命中失敗・完全回避時は付与なし）。毒・火傷の継続ダメージは障壁で吸収可能です。'],
  ['障壁を攻撃に変換','「障壁全消費→威力に加算」のカードは、攻撃を放つ際に自分の障壁をすべて消費し、その数値を攻撃威力に加えます。攻撃後は障壁が0になり、無防備になりやすいハイリスクな大技です。'],
- ['回復と状態異常','回復効果を持つカードで防御した場合、通常はその攻撃による毒・火傷・弱体を防ぎます。ただし貫通でHPに直接ダメージを受けた場合は、回復後に状態異常が付与されます。状態異常中に回復効果を持つカードを使えば、HPの回復量が0でも毒・火傷・弱体をすべて解除します。ただし、そのカード自身のデメリットで受ける毒・弱体化は回復・浄化・吸血の後に付与されるため、同じカードの回復では解除できません。'],
- ['毒・火傷・弱体','毒は自分の手番開始時に2ダメージ、火傷は3ダメージを与えます。障壁があればそのダメージを先に肩代わりし、いずれも残り段階が1減ります。毒・火傷は重ね掛けが可能（上限12）。弱体は攻撃力を2減らします。解毒・消火で個別にも軽減できます。'],
+ ['回復と状態異常','HP回復効果は、回復量と同じ数だけ毒と火傷をそれぞれ減らします。例：回復6を使うと毒8→2、火傷7→1。HPが満タンで回復量が実際には0でも、カードの回復数値ぶん治療できます。回復付き防御も、受けた毒・火傷を含めて各回復量まで軽減します。貫通でHPにダメージが通った場合も状態異常自体は命中しますが、その後の治療量だけ減ります。別効果の「浄化」は毒・火傷・弱体を全解除します。自身に状態異常を与えるデメリットは治療後に付与されます。'],
+ ['毒・火傷・弱体','自分の手番開始時、毒・火傷はそれぞれ現在のスタック数と同じダメージを与えます。例：毒3＋火傷1なら合計4、毒6＋火傷8なら合計14ダメージ。障壁があれば毒→火傷の順に吸収し、その後で各スタックが1ずつ減少します。毒・火傷は重ね掛け可能（各上限12）。回復カードは毒・火傷をそれぞれ回復量ぶん減らします。弱体は攻撃力を2減らし、解毒・消火でも毒・火傷を個別に軽減できます。'],
  ['反撃・吸血','反撃は防御した側から追加攻撃します。反射は相手の残余威力を返します。吸血は効果に応じてHPを回復します。'],
  ['追撃（2段目）','追撃効果付きの攻撃は同じ相手にもう1回攻撃します。2段目の攻撃力に加え、毒・火傷・弱体の付与量も元の45%（それぞれ端数切り上げ）です。例：攻撃10・毒4・火傷3なら追撃は攻撃5・毒2・火傷2。2段目も相手は防御でき、命中判定・完全回避は別々に行います。命中失敗や完全回避では状態異常は付与されません。'],
  ['呪札の暴発・強制発動','デメリットが1つでも付いたカードは「呪札」です。自分のターン終了時、手札にある呪札は1枚ごとに3%で暴発判定され、選ばれると勝手に発動します。「大暴発」付きは37%になり、発動時に自分へ10ダメージを受けます（通常使用・防御・強制発動・暴発共通）。デメリットを複数付けても通常の暴発率は3%のままです。強制発動付きカードにはデメリットを付与できず、デメリット付きカードにも強制発動を追加できません。また、強制発動の効果は相手の手札にある呪札だけをランダムに使わせ、反射・反撃との組み合わせでは連鎖することもあります。'],
@@ -523,7 +523,7 @@ function catalogView(){
  <div class="catalog-layout"><div class="catalog-grid">${cards.map(t=>{const c={tpl:t.id,mods:[],uid:'catalog-'+t.id};return `<button class="catalog-card-choice ${t.id===selected.id?'catalog-selected':''}" data-action="catalogselect" data-catalog-id="${t.id}" aria-label="${esc(t.name)}、${esc(summary(c))}" aria-pressed="${t.id===selected.id}">${cardHTML(c)}<span class="catalog-card-caption">${esc(t.name)}</span></button>`}).join('')}</div><aside class="surface catalog-detail"><div class="eyebrow">初期性能</div><div class="catalog-detail-image">${cardHTML(preview)}</div><h2 class="h2">${esc(selected.name)}</h2><div class="muted small">${esc(typenames[selected.type])} ・ ${esc(selected.family)} ・ レア度 ${selected.rarity}</div><div class="catalog-ability">${esc(summary(preview))}</div><p class="muted small">改造前の性能です。対戦前のデッキ改造で攻撃・防御・回復などの効果を自由に追加できます。</p></aside></div>
  </section>`;
 }
-function helpModal(){return `<div class="overlay"><div class="modal"><div class="between"><h2 class="h2">遊び方</h2><button class="btn btn-sm" data-action="closehelp">閉じる ✕</button></div><div class="sep"></div><div class="info-list"><div><b>勝利条件</b>：選択した初期ポイントに応じて最大HPが決まり、全員そのHPでスタート（30pt→HP50／50pt→HP60／80pt→HP70／100pt→HP85／120pt→HP100）。最後まで生き残ったプレイヤーが勝利。</div><div><b>各ターン</b>：開始時に行動順をランダムに決めます。カードを2枚ドローして、手札から1枚使用できます。任意で温存も可能。手札が0枚なら追加補充します。</div><div><b>命中・回避</b>：攻撃カードの基本命中率は従来より15ポイント上昇（上限100%）。防御カードを出してから命中判定します。命中に失敗しても防御カードは消費され、ダメージ0・状態異常なしです。完全回避はダメージ・状態異常を無効にします。受けたダメージに応じた割合反射は0ですが、防御カードの攻撃力・反撃効果は独立して発動します。貫通分は防御・障壁を無視してHPに直撃し、その分の障壁は消費しません。貫通でHPが減った場合は通常部分を防いでも状態異常が通り、回復付き防御でも回復後に状態異常が残ります。障壁転換カードは現在の障壁をすべて攻撃力に足します。</div><div><b>防御</b>：攻撃対象は防御性能のあるカードなら種類に関係なく1枚消費して軽減・反射できます。反射は受けたダメージの一部を相手にも返し、自分が受けるダメージはそのままです。反射も新しい攻撃としてさらに防御・再反射できます。反射カードの攻撃力は反射威力に加算されます。人間は手動、CPUは自動判断。攻撃・防御・回復はどのカードにも追加できます。防御カードに攻撃性能があれば、さらに防御された側が攻撃を防げます。カードが続く限り応酬します。</div><div><b>改造</b>：初期ポイントは30／50／80／100／120ptから選択。最大HPはそれぞれ50／60／70／85／100。デメリットによる追加上限はそれぞれ+20／+30／+40／+50／+60pt（現在は+${bonusLimit()}pt）。強化効果は各カード4個、デメリットは3個まで。防御+3、反撃、守護の祈りを追加すると防御用にも使えます。</div><div><b>強制発動</b>：強制発動効果とデメリット効果は同じカードに付与できません（元から強制発動を持つカードも対象）。対象の手札のデメリット付きカードに限り、ランダムに自動発動。攻撃対象は原則として強制したプレイヤー。強制発動された呪札には強制発動効果を付けられませんが、ほかの攻防や反撃は続く場合があります。</div><div><b>暴発</b>：デメリット付きカードは手札に持ち続けてもターン終了時に3%で自動発動し、大暴発付きなら37%。「大暴発」は通常使用・防御・強制発動・暴発のいずれでも発動時に自分へ10ダメージを与えます。暴発時の攻撃は敵にランダムに飛びます。</div><div><b>追撃</b>：同じ相手へ2段目の攻撃を行います。追撃の攻撃力と毒・火傷・弱体付与量はそれぞれ45%（端数切り上げ）。2段目も命中・防御・完全回避を個別に判定します。</div><div><b>状態異常</b>：自分への毒・弱体化のデメリットは回復・浄化・吸血の後に付与され、同じカードの回復では解除できません。毒は次の手番開始時から継続ダメージ（2ダメージ）。火傷は同様に3ダメージ。毒・火傷の数字は残り発動回数で、手番開始ごとに1減少。重ね掛けで最大12まで増加します。解毒+2・消火+2で個別に減らせます。弱体は与ダメージ-2。</div><div><b>演出</b>：カードの発動・防御・ダメージを大きく表示。一連のカード応酬を表示後、自動で次のターンへ進みます。</div><div><b>特殊効果</b>：時空の砂などではランダムな2人の現在HPを交換し、操り糸などでは使用カードと選んだ相手のランダムな手札を交換します。全体攻撃は相手を指定せずに使用できます。</div><div><b>ルーレット</b>：10ターンごとの全員ダメージは貫通ダメージです。防御力と障壁を無視してHPに直撃し、障壁は減りません。</div><div><b>山札</b>：初期20枚は同名重複なし。手札5枚・捨札0枚なら山札15枚で、その15枚から重複なしで補充。山札が尽きたら捨札をシャッフルして再利用。ドロー上限は手札10枚。</div></div></div></div>`}
+function helpModal(){return `<div class="overlay"><div class="modal"><div class="between"><h2 class="h2">遊び方</h2><button class="btn btn-sm" data-action="closehelp">閉じる ✕</button></div><div class="sep"></div><div class="info-list"><div><b>勝利条件</b>：選択した初期ポイントに応じて最大HPが決まり、全員そのHPでスタート（30pt→HP50／50pt→HP60／80pt→HP70／100pt→HP85／120pt→HP100）。最後まで生き残ったプレイヤーが勝利。</div><div><b>各ターン</b>：開始時に行動順をランダムに決めます。カードを2枚ドローして、手札から1枚使用できます。任意で温存も可能。手札が0枚なら追加補充します。</div><div><b>命中・回避</b>：攻撃カードの基本命中率は従来より15ポイント上昇（上限100%）。防御カードを出してから命中判定します。命中に失敗しても防御カードは消費され、ダメージ0・状態異常なしです。完全回避はダメージ・状態異常を無効にします。受けたダメージに応じた割合反射は0ですが、防御カードの攻撃力・反撃効果は独立して発動します。貫通分は防御・障壁を無視してHPに直撃し、その分の障壁は消費しません。貫通でHPが減った場合は通常部分を防いでも状態異常が通り、回復付き防御では回復量ぶんまで毒・火傷を軽減します。障壁転換カードは現在の障壁をすべて攻撃力に足します。</div><div><b>防御</b>：攻撃対象は防御性能のあるカードなら種類に関係なく1枚消費して軽減・反射できます。反射は受けたダメージの一部を相手にも返し、自分が受けるダメージはそのままです。反射も新しい攻撃としてさらに防御・再反射できます。反射カードの攻撃力は反射威力に加算されます。人間は手動、CPUは自動判断。攻撃・防御・回復はどのカードにも追加できます。防御カードに攻撃性能があれば、さらに防御された側が攻撃を防げます。カードが続く限り応酬します。</div><div><b>改造</b>：初期ポイントは30／50／80／100／120ptから選択。最大HPはそれぞれ50／60／70／85／100。デメリットによる追加上限はそれぞれ+20／+30／+40／+50／+60pt（現在は+${bonusLimit()}pt）。強化効果は各カード4個、デメリットは3個まで。防御+3、反撃、守護の祈りを追加すると防御用にも使えます。</div><div><b>強制発動</b>：強制発動効果とデメリット効果は同じカードに付与できません（元から強制発動を持つカードも対象）。対象の手札のデメリット付きカードに限り、ランダムに自動発動。攻撃対象は原則として強制したプレイヤー。強制発動された呪札には強制発動効果を付けられませんが、ほかの攻防や反撃は続く場合があります。</div><div><b>暴発</b>：デメリット付きカードは手札に持ち続けてもターン終了時に3%で自動発動し、大暴発付きなら37%。「大暴発」は通常使用・防御・強制発動・暴発のいずれでも発動時に自分へ10ダメージを与えます。暴発時の攻撃は敵にランダムに飛びます。</div><div><b>追撃</b>：同じ相手へ2段目の攻撃を行います。追撃の攻撃力と毒・火傷・弱体付与量はそれぞれ45%（端数切り上げ）。2段目も命中・防御・完全回避を個別に判定します。</div><div><b>状態異常</b>：自分への毒・弱体化のデメリットは回復・浄化・吸血の後に付与され、同じカードの回復では解除できません。毒・火傷は次の自分の手番開始時に、残りスタック数と同じダメージ（毒3＋火傷1なら4ダメージ）。各スタックはダメージ判定後に1減少。重ね掛けで各最大12まで増加します。回復6なら毒8→2・火傷7→1と両方を6段階ずつ治療。防御時も有効。「浄化」は全解除、解毒+2・消火+2で個別にも減らせます。弱体は与ダメージ-2。</div><div><b>演出</b>：カードの発動・防御・ダメージを大きく表示。一連のカード応酬を表示後、自動で次のターンへ進みます。</div><div><b>特殊効果</b>：時空の砂などではランダムな2人の現在HPを交換し、操り糸などでは使用カードと選んだ相手のランダムな手札を交換します。全体攻撃は相手を指定せずに使用できます。</div><div><b>ルーレット</b>：10ターンごとの全員ダメージは貫通ダメージです。防御力と障壁を無視してHPに直撃し、障壁は減りません。</div><div><b>山札</b>：初期20枚は同名重複なし。手札5枚・捨札0枚なら山札15枚で、その15枚から重複なしで補充。山札が尽きたら捨札をシャッフルして再利用。ドロー上限は手札10枚。</div></div></div></div>`}
 
 function backHandHTML(p){return `<div class="hand-grid hand-hidden" aria-label="${esc(p.name)}の手札 ${p.hand.length}枚（非公開）">${Array.from({length:p.hand.length},()=>`<div class="hidden-card"><img src="${cardBackImage()}" alt="裏向きのカード" loading="lazy"></div>`).join('')||'<div class="muted small">手札はありません</div>'}</div>`;}
 function stageCard(c,who,isGuard){if(!c)return `<div class="stage-card empty-card"><div class="stage-empty">${isGuard?'🛡️':'🎴'}</div><div class="small muted">${isGuard?'防御カードなし':'カードなし'}</div></div>`;
@@ -541,7 +541,7 @@ async function finishAction(){if(net.role==='guest')return;if(checkEnd())return;
 
 async function goNextTurn(){if(net.role==='guest')return;if(!state.waitingTurn||state.phase!=='battle')return;state.waitingTurn=false;state.busy=true;state.battleToken++;await advanceTurn();}
 
-function render(keep=true){const y=keep?window.scrollY:0;const previousEditorScroll=keep&&state.phase==='edit'?document.querySelector('.editor-side')?.scrollTop:null;$('#app').innerHTML=`<div class="wrap">${header()}${state.showHelp?helpView():catalogUI.open?catalogView():state.phase==='mode'?modeScreen():state.phase==='netsetup'?networkSetup():state.phase==='netlobby'?onlineLobby():state.phase==='lobby'?lobby():state.phase==='edit'?(localEditReady()?waitingEditor():editView()):state.phase==='battle'?battleView():endView()}<div class="footer">カスタムデッキバトル · v6.21 · シングル＆オンライン（PeerJS / WebRTC）</div></div>${state.handoff&&state.phase==='battle'?handoffModal():''}${state.roulette?rouletteHTML():''}${state.toast?`<div role="status" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;background:#e8c987;color:#28211c;font-weight:700;padding:11px 18px;border-radius:9px;box-shadow:0 8px 28px #000b;max-width:90vw;text-align:center">${esc(state.toast)}</div>`:''}`;if(keep)window.scrollTo(0,y);if(previousEditorScroll!==null&&previousEditorScroll!==undefined){const pane=document.querySelector('.editor-side');if(pane)pane.scrollTop=previousEditorScroll;}if(state.phase==='battle'){const log=$('#log');if(log)log.scrollTop=log.scrollHeight}if(net.role==='host')broadcastState();ensureDeckReveal();if(bgmAudio)syncBgm();stashGame()}
+function render(keep=true){const y=keep?window.scrollY:0;const previousEditorScroll=keep&&state.phase==='edit'?document.querySelector('.editor-side')?.scrollTop:null;$('#app').innerHTML=`<div class="wrap">${header()}${state.showHelp?helpView():catalogUI.open?catalogView():state.phase==='mode'?modeScreen():state.phase==='netsetup'?networkSetup():state.phase==='netlobby'?onlineLobby():state.phase==='lobby'?lobby():state.phase==='edit'?(localEditReady()?waitingEditor():editView()):state.phase==='battle'?battleView():endView()}<div class="footer">カスタムデッキバトル · v6.22 · シングル＆オンライン（PeerJS / WebRTC）</div></div>${state.handoff&&state.phase==='battle'?handoffModal():''}${state.roulette?rouletteHTML():''}${state.toast?`<div role="status" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:200;background:#e8c987;color:#28211c;font-weight:700;padding:11px 18px;border-radius:9px;box-shadow:0 8px 28px #000b;max-width:90vw;text-align:center">${esc(state.toast)}</div>`:''}`;if(keep)window.scrollTo(0,y);if(previousEditorScroll!==null&&previousEditorScroll!==undefined){const pane=document.querySelector('.editor-side');if(pane)pane.scrollTop=previousEditorScroll;}if(state.phase==='battle'){const log=$('#log');if(log)log.scrollTop=log.scrollHeight}if(net.role==='host')broadcastState();ensureDeckReveal();if(bgmAudio)syncBgm();stashGame()}
 function appendLog(s,level=''){state.logs.push({turn:state.turn,text:s,level});if(state.logs.length>100)state.logs.shift()}
 function damage(p,n,source=''){if(!p.alive||n<=0)return;const amount=Math.max(0,Math.round(n));p.hp=Math.max(0,p.hp-amount);sound('hit');if(source)appendLog(`${p.name} は ${source}で ${amount}ダメージ`,amount>=8?'crit':'');if(p.hp<=0){p.alive=false;p.rank=state.turn;appendLog(`☠ ${p.name} が脱落した！`,'crit')}}
 function healing(p,n,source=''){if(!p.alive)return;const actual=Math.min(p.maxHp-p.hp,Math.max(0,Math.floor(n)));p.hp+=actual;if(actual){appendLog(`${p.name} は${source}HPを ${actual} 回復`);sound('heal')}}
@@ -570,7 +570,24 @@ function chooseCPUDefense(p,raw,attacker){const opts=p.hand.filter(canDefend);if
 function askDefense(defender,attacker,raw){return new Promise(resolve=>{state.defense={defenderId:defender.id,attackerName:attacker.name,damage:raw,resolve};state.reactionSelected=null;render()})}
 async function statusBeat(target,kind,power,sourceCard=null){if(state.phase!=='battle')return;await sceneBeat(kind,{attackerId:null,defenderId:target.id,attackCard:sourceCard,defenseCard:null,note:kind==='poison'?`${target.name} が毒に侵された！`:`${target.name} が炎に包まれた！`,impact:kind==='poison'?`毒 ${power}`:`火傷 ${power}`},1.15);}
 async function addStatus(target,kind,amount,card=null){if(!target.alive||!amount)return;target[kind]=Math.min(12,Math.max(0,target[kind]||0)+amount);appendLog(`${target.name} に${kind==='poison'?'毒':'火傷'}${amount}を付与（残り${target[kind]}）`,'hot');await statusBeat(target,kind,target[kind],card);}
-async function cureStatuses(p,e,card,fromDefense=false){if(!p.alive)return;const oldP=p.poison,oldB=p.burn,oldW=p.weaken;if(e.cleanse||e.heal>0){p.poison=0;p.burn=0;p.weaken=0}else{p.poison=Math.max(0,p.poison-(e.detox||0));p.burn=Math.max(0,p.burn-(e.cooldown||0));}if(oldP!==p.poison||oldB!==p.burn||oldW!==p.weaken){appendLog(`${p.name} は自身の「${tmpl(card).name}」で状態異常を治療した（毒${oldP}→${p.poison}・火傷${oldB}→${p.burn}）`);await sceneBeat('support',{attackerId:p.id,defenderId:p.id,attackCard:card,defenseCard:null,note:`${p.name} は毒・火傷を治療！`,impact:`毒 ${p.poison}　火傷 ${p.burn}`},.78);}}
+// A healing card treats EACH ailment independently up to its printed healing
+// value, regardless of how much actual HP it restored. Dedicated Cleanse is
+// the only effect that removes the full stack unconditionally.
+async function cureStatuses(p,e,card,fromDefense=false){
+ if(!p.alive)return;
+ const oldP=p.poison,oldB=p.burn,oldW=p.weaken;
+ const recovery=Math.max(0,(e.heal||0)+(e.lifeguard||0));
+ if(e.cleanse){p.poison=0;p.burn=0;p.weaken=0;}
+ else{
+  p.poison=Math.max(0,p.poison-recovery-(e.detox||0));
+  p.burn=Math.max(0,p.burn-recovery-(e.cooldown||0));
+  if(recovery>0)p.weaken=0;
+ }
+ if(oldP!==p.poison||oldB!==p.burn||oldW!==p.weaken){
+  appendLog(`${p.name} は自身の「${tmpl(card).name}」で状態異常を治療した（毒${oldP}→${p.poison}・火傷${oldB}→${p.burn}${oldW!==p.weaken?`・弱体${oldW}→${p.weaken}`:''}）`);
+  await sceneBeat('support',{attackerId:p.id,defenderId:p.id,attackCard:card,defenseCard:null,note:`${p.name} は毒・火傷を治療！`,impact:`毒 ${p.poison}　火傷 ${p.burn}`},.78);
+ }
+}
 const CHAIN_LIMIT=500;
 // Counts combat exchanges and forced card activations in one uninterrupted chain.
 // If the chain reaches 500, the two current participants compare CURRENT HP.
@@ -655,7 +672,7 @@ async function resolveDamage(attacker,defender,raw,pierce,card,chain=0,exchange=
  }
  let dc=null,guardEff=null,statusProtected=false;
  if(defCard&&defender.alive){const i=defender.hand.findIndex(c=>c?.uid===defCard.uid);if(i>=0){
-  dc=defender.hand.splice(i,1)[0];defender.discard.push(dc);guardEff=baseMods(dc);statusProtected=guardEff.heal>0;
+  dc=defender.hand.splice(i,1)[0];defender.discard.push(dc);guardEff=baseMods(dc);
   if(guardEff.force)combat.forces.push({owner:defender,target:attacker,num:guardEff.force,chain:chain+1,card:dc});
   appendLog(`${defender.name} は「${tmpl(dc).name}」で防御した`);
   await sceneBeat('guard',{attackerId:attacker.id,defenderId:defender.id,attackCard:card,defenseCard:dc,note:`${defender.name} は「${tmpl(dc).name}」で防御！`,impact:`防御${guardEff.block}${guardEff.reflect?' ・ 反射'+Math.round(guardEff.reflect*100)+'%':''}`},.85);
@@ -664,14 +681,13 @@ async function resolveDamage(attacker,defender,raw,pierce,card,chain=0,exchange=
  const avoided=!missed&&!!(guardEff?.evade&&Math.random()<guardEff.evade);
  if(missed)appendLog(`${attacker.name} の「${tmpl(card).name}」は命中しなかった！（防御カードは消費・状態異常なし）`);
  if(avoided){appendLog(`✨ ${defender.name} は「${tmpl(dc).name}」の完全回避（${Math.round(guardEff.evade*100)}%）に成功！`,'hot');}
- // 貫通によるHPへの直撃があれば、通常部分が防御されても状態異常は命中する。
- // 回復付き防御の状態異常無効化より優先。ただし命中失敗と完全回避は無効。
- statusProtected=missed||avoided||(statusProtected&&!(pierce>0));
+ // 貫通でHPに届いた状態異常も通常どおり付与する。命中失敗と完全回避のみ付与を防ぐ。
+ // 回復付き防御は状態異常を完全には止めず、使用時に回復量ぶんずつ軽減する。
+ statusProtected=missed||avoided;
  // Pierce N: up to N points of the actual attack bypass both guard and barrier.
  // Only the non-piercing remainder is reduced by block, then by stored barrier.
  const pierced=missed||avoided?0:Math.min(raw,Math.max(0,pierce||0));
  const ordinary=missed||avoided?0:raw-pierced;
- const pierceThroughHealingGuard=pierced>0&&!!(guardEff?.heal>0);
  const block=guardEff?.block||0;
  const blockStopped=Math.min(ordinary,block);
  const shieldUsed=Math.min(Math.max(0,ordinary-blockStopped),Math.max(0,defender.shield));
@@ -686,8 +702,8 @@ async function resolveDamage(attacker,defender,raw,pierce,card,chain=0,exchange=
  else if(!missed&&!avoided)appendLog(`${defender.name} は攻撃を完全に防いだ`);
  await sceneBeat('impact',{attackerId:attacker.id,defenderId:defender.id,attackCard:card,defenseCard:dc,note:missed?`${attacker.name} の攻撃は外れた！`:avoided?`${defender.name} は攻撃を完全回避！`:taken?`${defender.name} に ${taken} ダメージ！`:`${defender.name} は攻撃を防ぎきった！`,impact:missed?'MISS · 0ダメージ・状態異常なし':avoided?'完全回避！ ダメージ・状態異常無効':`${taken?'−'+taken+' HP':'完全防御'}${prevented?' / '+prevented+'軽減':''}`},.84);
  if(combat.capped)return {statusProtected,taken,missed,avoided,pierced};
- // 貫通がHPへ命中した場合は通常部分が完全に防御されても状態異常を付与する。
- // 回復付き防御に貫通した際だけ、その回復処理の後に付与して即時解除されないようにする。
+ // 貫通による直接ダメージがあれば通常部分を防ぎ切っても状態異常は命中する。
+ // 防御時の回復はその後で毒・火傷を各回復量まで軽減する（全解除ではない）。
  // Each follow-up hit applies only 45% of the card's poison/burn/weaken, rounded up.
  // The first hit and normal reflect/counter hits retain their existing status amounts.
  const originalStrike=baseMods(card);
@@ -699,8 +715,7 @@ async function resolveDamage(attacker,defender,raw,pierce,card,chain=0,exchange=
   if(strike.burn)await addStatus(defender,'burn',strike.burn,card);
   if(strike.weaken){defender.weaken=Math.max(defender.weaken,strike.weaken);appendLog(`↓ ${defender.name} は弱体化した`);}
  };
- if(defender.alive&&!statusProtected&&!pierceThroughHealingGuard)await applyIncomingAilments();
- else if(!missed&&!avoided&&guardEff?.heal>0&&!pierceThroughHealingGuard&&(strike.poison||strike.burn||strike.weaken))appendLog(`${defender.name} は回復付き防御で状態異常を無効化`);
+ if(defender.alive&&!statusProtected)await applyIncomingAilments();
  if(combat.capped)return {statusProtected,taken,missed,avoided,pierced};
  // Settle the striking card BEFORE any guard counter/reflect. Exactly once per play.
  if(activation&&!activation.settled){activation.settled=true;await settlePlayedCard(activation.owner,activation.card,defender,chain,combat);}
@@ -710,7 +725,6 @@ async function resolveDamage(attacker,defender,raw,pierce,card,chain=0,exchange=
   // after the incoming hit and its ailments but BEFORE starting a reflect/counter.
   const guardAction={owner:defender,card:dc,settled:true};
   await settlePlayedCard(defender,dc,attacker,chain+1,combat);
-  if(pierceThroughHealingGuard&&!combat.capped&&defender.alive)await applyIncomingAilments();
   if(combat.capped||!defender.alive||!attacker.alive)return {statusProtected,taken,missed,avoided,pierced};
   const e=guardEff;
   let bonus=Math.max(0,e.damage+(defender.hp<=defender.maxHp/2?e.lowhp:0)-(defender.weaken?2:0));
@@ -802,8 +816,8 @@ function checkEnd(){if(state.finish||state.phase!=='battle')return state.finish;
 function getNextIndex(from){for(let j=1;j<=state.players.length;j++){const i=(from+j)%state.players.length;if(state.players[i].alive)return i}return from}
 function statusTickDamage(p,amount,label){const blocked=Math.min(Math.max(0,p.shield),amount);p.shield-=blocked;const hit=amount-blocked;if(blocked)appendLog(`${p.name} の障壁が${label}ダメージを${blocked}防いだ（障壁残り${p.shield}）`);if(hit)damage(p,hit,label);return hit;}
 async function applyTurnStart(p){if(!p.alive)return;
- if(p.poison){statusTickDamage(p,2,'毒');p.poison=Math.max(0,p.poison-1);appendLog(`${p.name} の毒が1減少（残り${p.poison}）`);}
- if(p.burn&&p.alive){statusTickDamage(p,3,'火傷');p.burn=Math.max(0,p.burn-1);appendLog(`${p.name} の火傷が1減少（残り${p.burn}）`);}
+ if(p.poison){statusTickDamage(p,p.poison,'毒');p.poison=Math.max(0,p.poison-1);appendLog(`${p.name} の毒が1減少（残り${p.poison}）`);}
+ if(p.burn&&p.alive){statusTickDamage(p,p.burn,'火傷');p.burn=Math.max(0,p.burn-1);appendLog(`${p.name} の火傷が1減少（残り${p.burn}）`);}
  if(p.weaken)p.weaken--;if(p.alive){const count=Math.max(0,2-(p.skipDraw?1:0));if(p.skipDraw)p.skipDraw--;draw(p,count);if(p.hand.length===0)draw(p,2);}}
 
 async function endTurn(){if(state.phase!=='battle'||state.busy||state.waitingTurn)return;state.busy=true;const p=state.players[state.current];appendLog(`${p.name} は手札を温存した`);await sceneBeat('support',{attackerId:p.id,defenderId:null,attackCard:null,defenseCard:null,note:`${p.name} はカードを温存した`,impact:''},.7);await finishAction();}
