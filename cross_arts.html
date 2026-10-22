@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover"/>
-<title>CROSS ARTS｜クロスアーツ v18 - 練習モード・打ち上げ調整版</title>
+<title>CROSS ARTS｜クロスアーツ v20 - 空中ヒットストップ＆体格調整版</title>
 <style>
 :root{--bg:#090c1b;--panel:#131c31;--gold:#ffe197;--blue:#68cfff;--muted:#9eabc3;--white:#f7f8ff;--edge:#32435c;--red:#ff637f}*{box-sizing:border-box}body{margin:0;color:var(--white);font-family:system-ui,-apple-system,'Segoe UI','Yu Gothic',Meiryo,sans-serif;background:radial-gradient(ellipse at 60% -28%,#29335a 0,transparent 65%),#070b17;min-height:100vh;overscroll-behavior:none}button,select{font:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}button:disabled{cursor:not-allowed;opacity:.4}.shell{max-width:1320px;margin:auto;padding:22px 24px 30px}.topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.brand{display:flex;align-items:center;gap:13px;font-weight:900;letter-spacing:.09em}.brand-mark{width:42px;height:42px;border:1px solid #8ae9ff88;border-radius:12px;background:#151e3c;display:grid;place-items:center;font-size:25px;box-shadow:0 0 25px #65baff15}.brand-sub{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.25em}.top-actions{display:flex;align-items:center;gap:8px}.tiny-btn{background:#1a253a;border:1px solid #3a4e69;color:#c8def5;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800}.tiny-btn:hover{border-color:#95daff;color:white}h1,h2,h3,p{margin-top:0}.intro{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:24px 0 26px}.intro h1{font-size:clamp(36px,5.4vw,72px);letter-spacing:-.05em;line-height:.95;margin:4px 0 12px;font-weight:1000;text-shadow:0 5px 36px #000}.intro h1 em{font-size:.42em;letter-spacing:.23em;font-style:normal;color:#88dafa;display:block;margin-top:10px}.intro p{color:#afc1d7;font-size:14px;margin:0}.eyebrow{font-size:11px;letter-spacing:.28em;color:#76cbee;font-weight:900}.mode-row{display:flex;gap:8px}.mode-chip{border:1px solid #3d4b65;border-radius:12px;background:#152037;color:#99adc8;padding:12px 17px;font-size:13px;font-weight:900;white-space:nowrap}.mode-chip.active{color:#121729;background:linear-gradient(110deg,#eae5ff,#7ccef2);border-color:#b5e9ff;box-shadow:0 0 22px #63a7ff33}.select-panel{border:1px solid #303e57;border-radius:22px;overflow:hidden;background:linear-gradient(150deg,#19213aee,#0a1223 75%);box-shadow:0 20px 75px #0007}.select-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-bottom:1px solid #26344d;padding:17px 22px}.section-label{font-size:14px;letter-spacing:.11em;font-weight:1000}.select-tabs{display:flex;background:#0b1021;padding:4px;border:1px solid #32415a;border-radius:10px;gap:3px}.select-tab{border:0;padding:7px 15px;border-radius:7px;background:transparent;color:#8fa6bf;font-weight:900;font-size:12px}.select-tab.active{background:#335b77;color:white}.fighter-layout{display:grid;grid-template-columns:minmax(205px,1fr) minmax(0,1.65fr) minmax(205px,1fr);min-height:383px}.portrait{position:relative;overflow:hidden;min-height:340px;padding:18px 15px;display:flex;align-items:end;background:radial-gradient(ellipse at center 63%,var(--p-glow,#327db533) 0,transparent 65%)}.portrait.left{border-right:1px solid #26344d}.portrait.right{border-left:1px solid #26344d}.portrait img{position:absolute;left:50%;top:51%;transform:translate(-50%,-54%) scale(1.08);height:84%;max-width:120%;object-fit:contain;filter:drop-shadow(0px 10px 22px #000a) drop-shadow(0 0 22px var(--p-glow));pointer-events:none}.portrait.right img{transform:translate(-50%,-54%) scaleX(-1) scale(1.08)}.portrait:after{content:"";height:46%;position:absolute;inset:auto 0 0;background:linear-gradient(transparent,#090f21 78%);pointer-events:none}.portrait-meta{position:relative;z-index:1;width:100%;text-shadow:0 2px 9px #000}.portrait-meta small{font-size:10px;letter-spacing:.2em;font-weight:900;color:var(--muted)}.portrait-meta h2{font-size:clamp(19px,2.6vw,30px);margin:2px 0;color:white}.portrait-meta p{font-size:11px;color:#bcc7dd;margin:0 0 9px;line-height:1.5}.skill-chip{border:1px solid #ffffff36;background:#18263bcc;padding:5px 9px;border-radius:6px;font-size:10px;display:inline-block;color:#e6e8ff;font-weight:900}.roster-area{padding:22px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px}.versus{font-weight:1000;font-size:39px;line-height:1;color:#f8dcaf;letter-spacing:-.08em;text-shadow:0 0 25px #f7bd6a40;transform:skew(-9deg)}.roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;width:100%;max-width:450px}.fighter-card{min-width:0;position:relative;overflow:hidden;aspect-ratio:1.04;border:1px solid #41516a;border-radius:11px;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--c) 18%,#172035),#0d1527 80%);padding:0;transition:transform .17s,border-color .17s}.fighter-card:hover{transform:translateY(-3px);border-color:#fff9}.fighter-card.selected1{border:2px solid #80dfff;box-shadow:0 0 0 2px #5ec9fa40}.fighter-card.selected2{border:2px solid #ffd98b;box-shadow:0 0 0 2px #ffce8940}.fighter-card.both{border-image:linear-gradient(110deg,#75d8ff,#ffce8b) 1}.fighter-card img{width:100%;height:89%;object-fit:contain;object-position:center 3px;filter:drop-shadow(0 2px 9px #0009)}.fighter-card span{position:absolute;bottom:0;left:0;right:0;background:#060b19df;color:#f1f7ff;padding:4px 2px 5px;font-size:11px;font-weight:900;letter-spacing:.06em}.fighter-card i{position:absolute;right:4px;top:4px;font-size:9px;font-style:normal;font-weight:1000;background:#5ab6ed;color:#07121d;border-radius:4px;padding:2px 5px}.fighter-card i.p2{background:#eac387}.fighter-card i.dual{background:linear-gradient(90deg,#5ab6ed 50%,#eac387 50%)}.stats-row{width:100%;max-width:450px;display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap;color:#9baec9;font-size:11px}.stat-tag{background:#141f33;padding:6px 8px;border-radius:5px;border:1px solid #334056}.footer-config{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:15px 22px;border-top:1px solid #28354f;flex-wrap:wrap}.config-group{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.field label{font-size:10px;font-weight:900;color:#8fa6bd;letter-spacing:.13em;display:block;margin-bottom:5px}.field select{background:#131d32;border:1px solid #40516b;color:#f4f7ff;border-radius:8px;padding:9px 34px 9px 11px;font-weight:800;font-size:12px;max-width:185px}.primary{border:0;border-radius:11px;background:linear-gradient(125deg,#c0effb,#f8d79e);color:#111728;font-size:15px;font-weight:1000;letter-spacing:.11em;padding:16px 29px;box-shadow:0 8px 33px #81cfff24;transition:transform .16s,filter .16s}.primary:hover{transform:translateY(-2px);filter:brightness(1.06)}.controls-notice{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:19px}.key-panel{background:#101829;border:1px solid #27364d;padding:14px 17px;border-radius:13px}.key-panel strong{font-size:12px;color:#e8ecff}.key-panel p{margin:7px 0 0;color:#a4b3c9;font-size:11px;line-height:1.9}.key{display:inline-block;min-width:22px;text-align:center;border:1px solid #3d4b63;border-bottom-width:3px;padding:1px 5px;border-radius:4px;background:#26334a;color:#e7f0ff;font-size:11px;font-weight:900}.hidden{display:none!important}
 #battleScene{position:relative;border-radius:19px;overflow:hidden;border:1px solid #435372;background:#050713;aspect-ratio:1100/630;box-shadow:0 20px 80px #000b;isolation:isolate}#battleCanvas{display:block;width:100%;height:100%}.hud{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between}.hud-top{display:grid;grid-template-columns:1fr 92px 1fr;gap:20px;padding:22px 27px 0;align-items:start}.hud-name{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:7px;text-shadow:0 2px 9px #000;letter-spacing:.08em;font-size:clamp(9px,1.3vw,16px);font-weight:1000}.hud-name .wins{color:#f7d798;letter-spacing:.1em;white-space:nowrap}.hud-bar{height:21px;border:2px solid #eef9ffad;background:#111627bb;box-shadow:0 2px 13px #0009;padding:3px;transform:skew(-7deg);border-radius:5px;overflow:hidden}.life{height:100%;width:100%;background:linear-gradient(90deg,#60dcb9,#b9ee72);transition:width .15s;position:relative}.life.enemy{margin-left:auto;background:linear-gradient(90deg,#fcb16a,#ff6a8c)}.life.warning{background:linear-gradient(90deg,#ff5d71,#ffc45d)}.meterbar{height:7px;margin-top:8px;background:#0a1225aa;border:1px solid #5e83a777;border-radius:7px;overflow:hidden}.meterbar div{height:100%;width:0%;background:linear-gradient(90deg,#71baff,#d3bdff);box-shadow:0 0 12px #73beff}.hud-right .meterbar div{margin-left:auto;background:linear-gradient(90deg,#ffc47e,#fb8eb5)}.timer-box{display:flex;align-items:center;flex-direction:column;text-shadow:0 3px 14px #000e;line-height:1}.timer-box span{font-size:9px;font-weight:900;letter-spacing:.28em;color:#cdd4e3}.timer-box strong{font-size:clamp(20px,4vw,43px);font-weight:1000;color:white}.hud-bottom{display:flex;justify-content:space-between;align-items:end;padding:0 22px 18px;font-size:10px;color:#b4c8db;font-weight:900;text-shadow:0 2px 8px black}.fighter-label{max-width:40%;display:flex;gap:8px;align-items:center}.fighter-label .orb{width:13px;height:13px;display:inline-block;flex:none;border-radius:50%;background:var(--col);box-shadow:0 0 14px var(--col)}.battle-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}.battle-topbar .matchinfo{font-size:12px;letter-spacing:.1em;color:#bdc9e6;font-weight:900}.battle-buttons{display:flex;gap:8px}.battle-buttons button{background:#132138;color:#dceaff;border:1px solid #3f5673;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:900}.battle-buttons button:hover{background:#2a3c5b}.round-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#050a1b53;pointer-events:none;text-align:center;text-shadow:0 5px 20px black;z-index:5}.round-overlay strong{font-size:clamp(36px,7.5vw,96px);font-style:italic;font-weight:1000;letter-spacing:-.055em;color:#f6e3b2;line-height:1;text-shadow:0 0 26px #ffdc7a69,0 4px 18px #000}.round-overlay p{margin:10px 0 0;color:#e3ecff;font-size:clamp(13px,1.8vw,24px);font-weight:1000;letter-spacing:.15em}.results{position:absolute;inset:0;display:grid;place-items:center;z-index:9;background:#071022cf;backdrop-filter:blur(7px)}.result-card{width:min(90%,490px);padding:34px 25px;text-align:center;background:linear-gradient(155deg,#22334f,#091325);border:1px solid #b3d7f377;border-radius:19px;box-shadow:0 15px 70px #000a}.result-card small{font-weight:900;letter-spacing:.35em;color:#c5d2e5}.result-card h2{font-size:clamp(31px,5vw,60px);line-height:1;margin:11px 0 15px;color:#ffe3a7}.result-card p{color:#b6c4d8;font-size:13px;line-height:1.7}.result-buttons{display:flex;gap:10px;justify-content:center;margin-top:22px}.result-buttons button:not(.primary){border:1px solid #496184;border-radius:9px;background:#22334e;padding:12px 17px;color:#ecf5ff;font-weight:900}.pause-scrim{position:absolute;inset:0;background:#080e20d8;z-index:7;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:20px}.pause-scrim strong{font-size:40px;letter-spacing:.3em}.pause-scrim p{font-size:13px;color:#b1c6dd}.pause-scrim button{border:1px solid #88b6d3;border-radius:10px;padding:12px 27px;color:#e7f6ff;background:#233b59;font-weight:900}.mobile-controls{display:none;margin-top:9px;justify-content:space-between;gap:12px;touch-action:none;user-select:none}.touch-group{display:flex;align-items:end;gap:7px}.touch-btn{width:49px;height:49px;display:grid;place-items:center;border-radius:13px;background:#1d2d49;color:#ddedff;border:1px solid #58769a;font-size:16px;font-weight:1000;touch-action:none;user-select:none}.touch-btn:active,.touch-btn.pressed{background:#599bc0;color:#061221}.touch-btn.attack{background:#513354;border-color:#ad6fa0}.touch-btn.sp{background:#75502e;border-color:#e3b371}.bottom-hint{text-align:center;color:#6f869f;font-size:11px;margin:12px 0 0}.help-modal{position:fixed;inset:0;display:grid;place-items:center;padding:18px;background:#000b;z-index:30}.help-card{max-width:610px;width:100%;padding:26px;background:#141e34;border:1px solid #6285a7;border-radius:18px;box-shadow:0 20px 90px #000d}.help-card h2{margin:0 0 16px;font-size:22px}.help-card p,.help-card li{font-size:13px;line-height:1.9;color:#bccbde}.help-card ul{padding-left:20px}.help-card button{margin-top:11px}.info-line{color:#9cb2ca;font-size:12px}
@@ -158,7 +158,7 @@
 <section id="battleSection" class="hidden"><div class="battle-topbar"><div class="matchinfo" id="matchInfo">ROUND 1 · 月影の神殿</div><div class="battle-buttons"><button id="battleAudioBtn" title="BGM・効果音設定">♫ 音ON</button><button id="pauseBtn">Ⅱ ポーズ</button><button id="trainingReset" class="hidden">◎ 位置リセット</button><button id="retryBtn">↻ やり直す</button><button id="homeBtn">⌂ キャラ選択</button></div></div><div id="battleScene"><canvas id="battleCanvas" width="1100" height="630"></canvas><div class="hud"><div class="hud-top"><div><div class="hud-name"><span id="hudName1"></span><span class="wins" id="wins1">◇◇</span></div><div class="hud-bar"><div class="life" id="hp1"></div></div><div class="meterbar"><div id="sp1"></div></div><div class="guard-meter"><span>GUARD</span><div class="guard-fill" id="guard1"></div></div></div><div class="timer-box"><span>TIME</span><strong id="timer">70</strong></div><div class="hud-right"><div class="hud-name"><span class="wins" id="wins2">◇◇</span><span id="hudName2"></span></div><div class="hud-bar"><div class="life enemy" id="hp2"></div></div><div class="meterbar"><div id="sp2"></div></div><div class="guard-meter"><span>GUARD</span><div class="guard-fill" id="guard2"></div></div></div></div><div class="hud-bottom"><div class="fighter-label"><span class="orb" id="orb1"></span><span id="specialName1"></span></div><div id="tipsTicker">ガードが尽きるとクラッシュ！ · 3ヒットでダウン · 起き上がり後0.3秒無敵（攻撃で解除）</div><div class="fighter-label"><span id="specialName2"></span><span class="orb" id="orb2"></span></div></div></div><div id="netFighterHUD" class="net-fighter-hud hidden"></div><div id="superCutin" class="super-cutin hidden"><div class="super-slash"></div><div class="super-portrait"><img id="superImg" alt=""></div><div class="super-type">ULTIMATE ATTACK</div><div class="super-copy"><small id="superPlayer">PLAYER 1</small><strong id="superMove">超必殺技</strong><span id="superOwner">アオベロ</span></div><div class="super-light"></div></div><div id="combo1" class="combo-tag combo-left hidden"><b>2</b><span>HIT COMBO</span></div><div id="combo2" class="combo-tag combo-right hidden"><b>2</b><span>HIT COMBO</span></div><div id="trainingDisplay" class="training-display hidden"><strong>TRAINING</strong><span id="trainingStats">DAMAGE 0 / 0 HIT</span><small>相手は不動・HP∞｜位置リセット：R</small></div><div id="roundOverlay" class="round-overlay hidden"><strong id="roundHeading">ROUND 1</strong><p id="roundCaption">FIGHT!</p></div><div id="winnerSplash" class="winner-splash hidden"><div class="winner-slash"></div><div class="winner-art"><img id="winnerSplashImg" alt="winner"></div><div class="winner-copy"><small>ROUND WINNER</small><strong id="winnerSplashName">蒼迅・レイ</strong><span id="winnerSplashWin">WIN</span></div></div><div id="pauseOverlay" class="pause-scrim hidden"><strong>PAUSE</strong><p>Esc キーで再開できます</p><button id="resumeBtn">▶ 戦いに戻る</button></div><div id="resultOverlay" class="results hidden"><div class="result-card"><small>MATCH RESULT</small><div class="result-hero"><img id="resultWinnerImg" alt="winner portrait"></div><h2 id="resultHeading">VICTORY</h2><p id="resultSub"></p><div class="result-buttons"><button id="rematchBtn" class="primary">もう一度戦う</button><button id="resultHomeBtn">キャラを変える</button></div></div></div></div>
 <div class="mobile-controls" id="mobileControls"><div class="touch-group"><button class="touch-btn" data-code="KeyA" aria-label="左へ移動">◀</button><button class="touch-btn" data-code="KeyD" aria-label="右へ移動">▶</button><button class="touch-btn" data-code="KeyW" aria-label="ジャンプ">跳</button><button class="touch-btn" data-code="KeyS" aria-label="しゃがむ">屈</button></div><div class="touch-group"><button class="touch-btn attack" data-code="ArrowLeft">小</button><button class="touch-btn attack" data-code="ArrowDown">中</button><button class="touch-btn attack" data-code="ArrowRight">大</button><button class="touch-btn sp" data-code="ArrowUp">特</button></div></div><div class="bottom-hint">後ろ入力＝ガード ／ S＋後ろ＝下段ガード ／ 同方向2回＝裏回りダッシュ・空中ダッシュ ／ ↓→＋攻撃＝飛び道具（SP10～20消費） ／ ↓↓＋大攻撃＝ランチャー ／ 100SPで超必殺 ／ Escでポーズ</div></section>
 </div>
-<div id="helpModal" class="help-modal hidden"><div class="help-card"><h2>遊び方・バトルルール</h2><p>新たな10人のファイターが激突！ 先に規定ラウンドを奪うと勝ち。制限時間切れは体力の残り割合で判定します。</p><ul><li>1P：<b>A / D</b> 左右移動、<b>W</b> ジャンプ、<b>S</b> しゃがみ。<b>← / ↓ / → / ↑</b> は小・中・大・特殊攻撃。</li><li>2P：<b>J / L</b> 移動、<b>I</b> ジャンプ、<b>K</b> しゃがみ。<b>N / M / , / .</b> は小・中・大・特殊攻撃。</li><li>相手と反対側の移動方向を押すと<b>ガード</b>。しゃがみと併用すれば下段ガード。立ちガードは下段攻撃に弱く、しゃがみガードはジャンプ攻撃に弱い。</li><li>移動方向を素早く2回押すと<b>短距離ダッシュ</b>。相手をすり抜けて背後に回れます。空中で2回押すと<b>空中ダッシュ</b>（着地まで1回）。Wで二段ジャンプ、空中攻撃も可能です。</li><li><b>↓→＋攻撃</b>は波動技（空中可・斜め下へ飛ぶ）、<b>→↓→＋攻撃</b>は対空技、<b>←↓→＋攻撃</b>は突進技。コマンド技は方向キーを順番に入れたときだけ発動し、同時押しでは発動しません。突進は約3歩分進み、ガードされた場合は大きくのけぞります。方向はキャラの向きに対応し、反転入力も有効。小・中・大で速度やダメージが変わります。</li><li>マーモットは他の半分ほどの大きさ。HPとリーチは控えめですが、素早い移動とジャンプで翻弄できます。</li><li>しゃがみ攻撃とジャンプ攻撃には独立した専用ポーズを追加。しゃがみ＋前＋大攻撃は通常のしゃがみ強攻撃です。↓↓と順番に押してから大攻撃でランチャーを出せます。ガードされなければ相手は頭上まで打ち上がり、空中の追撃で落下が遅くなります。地面へ落ちるとダウン無敵になります。上下段でガードを崩せます。被弾硬直中はガードできず、連続3ヒットまたは約38ダメージの蓄積でダウンします。ダウン中と起き上がり中は無敵です。起き上がり後も約0.3秒間は無敵のまま移動・ジャンプ・ガードが可能ですが、攻撃するとその時点で無敵が解除されます。後ろ方向を押し続ければ無敵終了後もガードを維持できます。</li><li>ガード時のHP減少は通常ほぼゼロですが、ガードゲージが削れます。0になるとガードクラッシュし、一定時間防御・行動不能。しばらく攻撃を受けなければ自動回復します。</li><li>近距離の連打はガードされた際の押し戻しと硬直が増え、空振りにも隙が生じます。SPを使う中距離の飛び道具、二段ジャンプ、裏回りダッシュで駆け引きしましょう。</li><li>練習モードは相手が動かずHP無限・ガードなし、タイマーなし。ランチャーや空中コンボも試せます。Rキーか画面のボタンで間合いをリセットできます。</li><li>飛び道具は地上・空中ともSP消費（小10／中15／大20）。ラウンド開始時は30SP、対空・突進のコマンド技はゲージ不要。攻撃を当てる／受けるとSPが増え、100SP満タンで特殊攻撃ボタンを押すとカットイン付きの超必殺技を発動します。SP不足時は特殊ボタンを押しても何も起きません。</li></ul><p class="info-line">BGMと効果音は内蔵シンセサイザーで生成。1人用はオフラインでも遊べます。オンライン対戦のみインターネット接続が必要です（無料のPeerJS仲介を利用）。</p><button class="primary" id="closeHelpBtn">わかった</button></div></div>
+<div id="helpModal" class="help-modal hidden"><div class="help-card"><h2>遊び方・バトルルール</h2><p>新たな10人のファイターが激突！ 先に規定ラウンドを奪うと勝ち。制限時間切れは体力の残り割合で判定します。</p><ul><li>1P：<b>A / D</b> 左右移動、<b>W</b> ジャンプ、<b>S</b> しゃがみ。<b>← / ↓ / → / ↑</b> は小・中・大・特殊攻撃。</li><li>2P：<b>J / L</b> 移動、<b>I</b> ジャンプ、<b>K</b> しゃがみ。<b>N / M / , / .</b> は小・中・大・特殊攻撃。</li><li>相手と反対側の移動方向を押すと<b>ガード</b>。しゃがみと併用すれば下段ガード。立ちガードは下段攻撃に弱く、しゃがみガードはジャンプ攻撃に弱い。</li><li>移動方向を素早く2回押すと<b>短距離ダッシュ</b>。相手をすり抜けて背後に回れます。空中で2回押すと<b>空中ダッシュ</b>（着地まで1回）。Wで二段ジャンプ、空中攻撃も可能です。</li><li><b>↓→＋攻撃</b>は波動技（空中可・斜め下へ飛ぶ）、<b>→↓→＋攻撃</b>は対空技、<b>←↓→＋攻撃</b>は突進技。コマンド技は方向キーを順番に入れたときだけ発動し、同時押しでは発動しません。突進は約3歩分進み、ガードされた場合は大きくのけぞります。方向はキャラの向きに対応し、反転入力も有効。最初の方向キーは長押しからつなげられますが、最後の方向入力から攻撃までは短時間で入力してください。小・中・大で速度やダメージが変わります。</li><li>マーモットは他の半分ほどの大きさ。HPとリーチは控えめですが、素早い移動とジャンプで翻弄できます。</li><li>しゃがみ攻撃とジャンプ攻撃には独立した専用ポーズを追加。しゃがみ＋前＋大攻撃は通常のしゃがみ強攻撃です。↓↓と順番に押してから大攻撃でランチャーを出せます。ガードされなければ相手は頭上まで打ち上がり、空中の追撃で落下が遅くなります。地面へ落ちるとダウン無敵になります。上下段でガードを崩せます。被弾硬直中はガードできず、連続3ヒットまたは約38ダメージの蓄積でダウンします。ダウン中と起き上がり中は無敵です。起き上がり後も約0.3秒間は無敵のまま移動・ジャンプ・ガードが可能ですが、攻撃するとその時点で無敵が解除されます。後ろ方向を押し続ければ無敵終了後もガードを維持できます。</li><li>ガード時のHP減少は通常ほぼゼロですが、ガードゲージが削れます。0になるとガードクラッシュし、一定時間防御・行動不能。しばらく攻撃を受けなければ自動回復します。</li><li>近距離の連打はガードされた際の押し戻しと硬直が増え、空振りにも隙が生じます。SPを使う中距離の飛び道具、二段ジャンプ、裏回りダッシュで駆け引きしましょう。</li><li>練習モードは相手が動かずHP無限・ガードなし、タイマーなし。ランチャーや空中コンボも試せます。Rキーか画面のボタンで間合いをリセットできます。</li><li>飛び道具は地上・空中ともSP消費（小10／中15／大20）。ラウンド開始時は30SP、対空・突進のコマンド技はゲージ不要。攻撃を当てる／受けるとSPが増え、100SP満タンで特殊攻撃ボタンを押すとカットイン付きの超必殺技を発動します。SP不足時は特殊ボタンを押しても何も起きません。</li></ul><p class="info-line">BGMと効果音は内蔵シンセサイザーで生成。1人用はオフラインでも遊べます。オンライン対戦のみインターネット接続が必要です（無料のPeerJS仲介を利用）。</p><button class="primary" id="closeHelpBtn">わかった</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 const ASSETS={};
@@ -235,9 +235,9 @@ const ROSTER=[
 {id:'01_short_hair',name:'蒼迅・レイ',group:'speed',type:'短髪格闘家 / RUSH',caption:'青い気をまとう疾風の格闘家。素早い連打と突進が得意。',skill:'蒼閃・連牙乱舞',color:'#65bafa',power:1.04,speed:1.16,hp:162,range:1.02,feature:'shock',superStyle:'rush',scale:0.86,ground:10,shadow:0.92},
 {id:'02_hat',name:'カード・ジャック',group:'ranged',type:'帽子のガンマン / TRICK',caption:'不思議なカードと魔弾で間合いを支配。隙を突く中距離型。',skill:'翠札・ミリオンショット',color:'#42d9b1',power:1.01,speed:.99,hp:161,range:1.08,feature:'warp',superStyle:'cards',scale:0.85,ground:10,shadow:0.90},
 {id:'03_elf',name:'エリシア',group:'magic',type:'森のエルフ / NATURE',caption:'風と自然魔法を操るエルフ。継続回復と遠距離魔法に強い。',skill:'世界樹・翠嵐の舞',color:'#87dc7e',power:.96,speed:1.02,hp:155,range:1.10,feature:'slow',superStyle:'nature',scale:0.78,ground:9,shadow:0.84},
-{id:'04_student',name:'白崎すず',group:'speed',type:'清楚な学生 / COUNTER',caption:'凛とした蹴りで戦う学生。切り返しの速さが特徴。',skill:'蒼月・流星脚',color:'#8ab5ff',power:.98,speed:1.12,hp:153,range:1.05,feature:'shock',superStyle:'moonKick',scale:0.66,ground:6,shadow:0.73},
-{id:'05_ojousama',name:'姫宮ルナ',group:'magic',type:'元気なお嬢様 / FIRE',caption:'派手な炎と強気な攻めが魅力。攻撃は高めだが体力低め。',skill:'紅蓮・ロイヤル花火',color:'#ff81a5',power:1.12,speed:1.05,hp:143,range:.99,feature:'burn',superStyle:'firework',scale:0.68,ground:6,shadow:0.75},
-{id:'06_boy',name:'ハルト',group:'speed',type:'少年拳士 / AERIAL',caption:'空中コンボと二段ジャンプを活用する身軽な少年。',skill:'旋空・疾風の一撃',color:'#73c8ff',power:.88,speed:1.35,hp:138,range:.92,feature:'shock',superStyle:'whirlwind',scale:0.61,ground:7,shadow:0.68},
+{id:'04_student',name:'白崎すず',group:'speed',type:'清楚な学生 / COUNTER',caption:'凛とした蹴りで戦う学生。切り返しの速さが特徴。',skill:'蒼月・流星脚',color:'#8ab5ff',power:.98,speed:1.12,hp:153,range:1.05,feature:'shock',superStyle:'moonKick',scale:0.615,ground:5,shadow:0.721},
+{id:'05_ojousama',name:'姫宮ルナ',group:'magic',type:'元気なお嬢様 / FIRE',caption:'派手な炎と強気な攻めが魅力。攻撃は高めだが体力低め。',skill:'紅蓮・ロイヤル花火',color:'#ff81a5',power:1.12,speed:1.05,hp:143,range:.99,feature:'burn',superStyle:'firework',scale:0.636,ground:5,shadow:0.742},
+{id:'06_boy',name:'ハルト',group:'speed',type:'少年拳士 / AERIAL',caption:'空中コンボと二段ジャンプを活用する身軽な少年。',skill:'旋空・疾風の一撃',color:'#73c8ff',power:.88,speed:1.35,hp:138,range:.92,feature:'shock',superStyle:'whirlwind',scale:0.647,ground:7,shadow:0.721},
 {id:'07_marmot',family:'mofu',group:'mascot',name:'マルモ',type:'小さなマスコット / EARTH',caption:'小さく俊敏なマーモット。素早い足さばきと土の魔法を使う。',skill:'大地・マルモ地震',color:'#e6ba63',power:.90,speed:1.58,hp:144,range:.80,feature:'slow',superStyle:'earth',scale:0.48,ground:5,shadow:0.62},
 {id:'08_big_man',group:'power',name:'鉄拳・ガドウ',type:'豪腕の男 / POWER',caption:'巨大な拳を持つ重戦士。低速だが打撃が重い。',skill:'爆砕・震天轟拳',color:'#ff8758',power:1.30,speed:.80,hp:222,range:1.00,feature:'burn',superStyle:'meteor',scale:0.96,ground:13,shadow:1.00},
 {id:'09_salaryman',group:'ranged',name:'黒田マサル',type:'サラリーマン / PAPER',caption:'書類とカバンを武器にする細身の会社員。牽制が得意。',skill:'極限・残業の流星',color:'#94cfff',power:.95,speed:1.03,hp:158,range:1.04,feature:'slow',superStyle:'paper',scale:0.82,ground:9,shadow:0.88},
@@ -384,11 +384,49 @@ const controls=[{l:'KeyA',r:'KeyD',u:'KeyW',d:'KeyS',light:'ArrowLeft',medium:'A
  {l:'KeyJ',r:'KeyL',u:'KeyI',d:'KeyK',light:'KeyN',medium:'KeyM',heavy:'Comma',special:'Period'}];
 const held=c=>keys.has(c)||virtual.has(c),hit=c=>pressed.has(c);
 const inputHist=[[],[]];
-function directionInput(code){if(mode==='online'){netLocalDirection(code);return;}if(!game||game.phase!=='fight')return;let now=performance.now();for(let n=0;n<2;n++){if(n===1&&mode==='cpu')continue;let f=game.fighters[n],c=controls[n],dir=code===c.d?'D':code===c.l?(f.facing===-1?'F':'B'):code===c.r?(f.facing===1?'F':'B'):null;if(dir){let h=inputHist[n];h.push({dir,time:now});inputHist[n]=h.filter(e=>now-e.time<850).slice(-9);if(dir==='F'||dir==='B'){const prev=h[h.length-2];if(prev?.dir===dir&&now-prev.time<=255){if(f.dashCD<=0&&!f.action&&f.stun<=0&&f.blockstun<=0){beginDash(f,dir==='F'?f.facing:-f.facing)}}}break;}}}
+// Preserve the first direction while held. A long hold is a valid motion prefix,
+// but after the final direction the attack button must arrive promptly.
+function pushDirection(n,code,dir,now=performance.now()){
+ const h=inputHist[n]||(inputHist[n]=[]);
+ h.push({dir,code,time:now,releasedAt:null});
+ inputHist[n]=h.slice(-12);
+ return h;
+}
+function releaseDirection(code,now=performance.now()){
+ // Online: keyboard release is local seat 0 only. Remote seats use snapshot transitions.
+ const histories=mode==='online'?[inputHist[0]]:inputHist;
+ for(const h of histories){
+  if(!h)continue;
+  for(let i=h.length-1;i>=0;i--){
+   if(h[i].code===code&&h[i].releasedAt===null){h[i].releasedAt=now;break;}
+  }
+ }
+}
+function commandKeyHeld(f,code){
+ if(mode==='online'&&net?.host&&f.n!==0)return !!net.input.get(f.n)?.held?.has(code);
+ return held(code);
+}
+function directionInput(code){if(mode==='online'){netLocalDirection(code);return;}if(!game||game.phase!=='fight')return;let now=performance.now();for(let n=0;n<2;n++){if(n===1&&mode==='cpu')continue;let f=game.fighters[n],c=controls[n],dir=code===c.d?'D':code===c.l?(f.facing===-1?'F':'B'):code===c.r?(f.facing===1?'F':'B'):null;if(dir){let h=pushDirection(n,code,dir,now);if(dir==='F'||dir==='B'){const prev=h[h.length-2];if(prev?.dir===dir&&now-prev.time<=255){if(f.dashCD<=0&&!f.action&&f.stun<=0&&f.blockstun<=0){beginDash(f,dir==='F'?f.facing:-f.facing)}}}break;}}}
 function detectCommand(f,attackKind='medium'){
- const now=performance.now(),h=inputHist[f.n].filter(e=>now-e.time<780);
- const check=(seq)=>{if(h.length<seq.length)return false;const tail=h.slice(-seq.length);if(tail.map(e=>e.dir).join('')!==seq)return false;if(now-tail[tail.length-1].time>300)return false;for(let i=1;i<tail.length;i++){const d=tail[i].time-tail[i-1].time;if(d<50||d>440)return false;}return true;};
- // Down, release, down, then HEAVY. Two independent key presses, not a held-down key.
+ const now=performance.now(),h=inputHist[f.n]||[];
+ const check=(seq)=>{
+  if(h.length<seq.length)return false;
+  const tail=h.slice(-seq.length);
+  if(tail.map(e=>e.dir).join('')!==seq)return false;
+  if(now-tail[tail.length-1].time>300)return false;
+  for(let i=1;i<tail.length;i++){
+   const gap=tail[i].time-tail[i-1].time;
+   if(gap<50)return false; // prevent simultaneous direction presses
+   if(gap>440){
+    // Only the FIRST direction may be held for an arbitrarily long time.
+    // It must still be held, or have been released immediately before the next input.
+    const prefix=tail[i-1];
+    if(i!==1||!(commandKeyHeld(f,prefix.code)&&prefix.releasedAt===null||
+       prefix.releasedAt!==null&&tail[i].time-prefix.releasedAt>=0&&tail[i].time-prefix.releasedAt<=220))return false;
+   }
+  }
+  return true;
+ };
  let kind=attackKind==='heavy'&&check('DD')?'launcher':check('BDF')?'cmd_rush':check('FDF')?'cmd_upper':check('DF')?'cmd_wave':null;
  if(kind)inputHist[f.n]=[];return kind;
 }
@@ -406,7 +444,7 @@ function beginDash(f,dir){
  addParticle(f.x,floorY(f)-80,f.def.color,airborne?24:14,airborne?240:165);
  sfx('dash');return true;
 }
-function newFighter(n,x){const def=ROSTER[pick[n]];return {n,def,x,y:0,vy:0,vx:0,facing:n===0?1:-1,hp:def.hp,maxhp:def.hp,sp:30,stun:0,blockstun:0,guardMeter:100,guardDelay:0,guardBroken:0,guardLock:false,launchLock:0,launched:false,juggleHits:0,juggleExhausted:false,downTime:0,getupTime:0,wakeInv:0,hitStreak:0,hitStreakDmg:0,hitChainTimer:0,lastHitBy:-1,jumpsUsed:0,airDashUsed:false,dashGhost:0,dashAir:false,chainTimer:0,chainRank:0,guard:false,crouching:false,action:null,atkCD:0,dashCD:0,dashTime:0,dashWindow:0,dashDir:0,flash:0,inv:0,slow:0,slowAmt:1,combo:0,comboTimer:0,dot:[],anim:0,alpha:1,shake:0,afterimages:[],hitCount:0};}
+function newFighter(n,x){const def=ROSTER[pick[n]];return {n,def,x,y:0,vy:0,vx:0,facing:n===0?1:-1,hp:def.hp,maxhp:def.hp,sp:30,stun:0,blockstun:0,guardMeter:100,guardDelay:0,guardBroken:0,guardLock:false,launchLock:0,airHitFreeze:0,launched:false,juggleHits:0,juggleExhausted:false,downTime:0,getupTime:0,wakeInv:0,hitStreak:0,hitStreakDmg:0,hitChainTimer:0,lastHitBy:-1,jumpsUsed:0,airDashUsed:false,dashGhost:0,dashAir:false,chainTimer:0,chainRank:0,guard:false,crouching:false,action:null,atkCD:0,dashCD:0,dashTime:0,dashWindow:0,dashDir:0,flash:0,inv:0,slow:0,slowAmt:1,combo:0,comboTimer:0,dot:[],anim:0,alpha:1,shake:0,afterimages:[],hitCount:0};}
 function setupBattle(){stage=$('stage').value;const best=+$('matchFormat').value;game={fighters:[newFighter(0,400),newFighter(1,1080)],projectiles:[],particles:[],floaters:[],waves:[],spriteFX:[],time:70,round:1,wins:[0,0],best,phase:'intro',phaseTime:2.15,phaseLabel:'ROUND 1',cinematic:null,superFX:0,winner:null,screenShake:0,slowmo:0,outroSplash:false,diff:$('difficulty').value,ai:{nextThink:0,l:false,r:false,u:false,g:false,d:false,light:false,medium:false,heavy:false,special:false,dash:false},tick:0,fxTick:0,trainingDamage:0,trainingHits:0};if(mode==='training'){game.fighters[1].hp=Infinity;game.fighters[1].maxhp=Infinity;}paused=false;playing=true;keys.clear();pressed.clear();virtual.clear();inputHist[0]=[];inputHist[1]=[];$('selectionScene').classList.add('hidden');$('battleSection').classList.remove('hidden');$('resultOverlay').classList.add('hidden');$('pauseOverlay').classList.add('hidden');$('superCutin').classList.add('hidden');hideWinnerSplash();$('trainingDisplay').classList.toggle('hidden',mode!=='training');$('trainingReset').classList.toggle('hidden',mode!=='training');updateHUD();showRound(mode==='training'?'TRAINING':'ROUND 1',mode==='training'?'COMMAND PRACTICE':'READY...');$('matchInfo').textContent=(mode==='training'?'TRAINING · ':'ROUND 1 · ')+arenaNames[stage];lastTime=performance.now();initAudio();}
 function backHome(){try{speechSynthesis.cancel()}catch(e){}if(mode==='online'){netToLobby();return;}playing=false;paused=false;game=null;keys.clear();pressed.clear();virtual.clear();inputHist[0]=[];inputHist[1]=[];$('selectionScene').classList.remove('hidden');$('battleSection').classList.add('hidden');$('superCutin').classList.add('hidden');hideWinnerSplash();$('trainingDisplay').classList.add('hidden');refreshSelection();}
 function showRound(heading,cap){$('roundHeading').textContent=heading;$('roundCaption').textContent=cap;$('roundOverlay').classList.remove('hidden');}
@@ -426,14 +464,14 @@ function showWinnerSplash(slot){
  panel.classList.remove('hidden');
 }
 function hideWinnerSplash(){const panel=$('winnerSplash');if(panel)panel.classList.add('hidden');}
-function resetTraining(){if(!game||mode!=='training')return;let a=game.fighters[0],b=game.fighters[1];a.x=400;b.x=1080;for(let f of [a,b]){f.y=0;f.vy=0;f.vx=0;f.stun=0;f.blockstun=0;f.guardMeter=100;f.guardDelay=0;f.guardBroken=0;f.guardLock=false;f.launchLock=0;f.launched=false;f.juggleHits=0;f.juggleExhausted=false;f.downTime=0;f.getupTime=0;f.hitStreak=0;f.hitStreakDmg=0;f.hitChainTimer=0;f.action=null;f.atkCD=0;f.dashTime=0;f.dashGhost=0;f.airDashUsed=false;f.guard=false;f.dot=[];f.combo=0;f.comboTimer=0;}game.projectiles=[];game.trainingDamage=0;game.trainingHits=0;inputHist[0]=[];inputHist[1]=[];updateHUD();}$('trainingReset').onclick=resetTraining;
+function resetTraining(){if(!game||mode!=='training')return;let a=game.fighters[0],b=game.fighters[1];a.x=400;b.x=1080;for(let f of [a,b]){f.y=0;f.vy=0;f.vx=0;f.stun=0;f.blockstun=0;f.guardMeter=100;f.guardDelay=0;f.guardBroken=0;f.guardLock=false;f.launchLock=0;f.airHitFreeze=0;f.launched=false;f.juggleHits=0;f.juggleExhausted=false;f.downTime=0;f.getupTime=0;f.hitStreak=0;f.hitStreakDmg=0;f.hitChainTimer=0;f.action=null;f.atkCD=0;f.dashTime=0;f.dashGhost=0;f.airDashUsed=false;f.guard=false;f.dot=[];f.combo=0;f.comboTimer=0;}game.projectiles=[];game.trainingDamage=0;game.trainingHits=0;inputHist[0]=[];inputHist[1]=[];updateHUD();}$('trainingReset').onclick=resetTraining;
 $('startBtn').onclick=()=>{setupBattle();sfx('win')};$('homeBtn').onclick=backHome;$('resultHomeBtn').onclick=backHome;$('retryBtn').onclick=setupBattle;$('rematchBtn').onclick=setupBattle;
 function togglePause(){if(mode==='online'||!game||game.phase==='result')return;paused=!paused;$('pauseOverlay').classList.toggle('hidden',!paused);$('pauseBtn').textContent=paused?'▶ 再開':'Ⅱ ポーズ';keys.clear();pressed.clear();virtual.clear();}
 $('pauseBtn').onclick=togglePause;$('resumeBtn').onclick=togglePause;
 const prevent=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight']);
 window.addEventListener('keydown',e=>{if(prevent.has(e.code)&&playing)e.preventDefault();if(e.code==='KeyR'&&playing&&!paused&&mode==='training'&&game?.phase==='fight'){resetTraining();return;}if(e.code==='Escape'){if(!$('helpModal').classList.contains('hidden')){$('helpModal').classList.add('hidden');return}if(playing){togglePause();return}}if(!keys.has(e.code)){if(mode==='online')netQueueTap(e.code);pressed.add(e.code);if(playing&&!paused)directionInput(e.code)}keys.add(e.code)});
-window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();pressed.clear();virtual.clear();if(mode!=='online'&&playing&&!paused&&game?.phase!=='result')togglePause()});
-for(const b of document.querySelectorAll('[data-code]')){const code=b.dataset.code;const down=e=>{e.preventDefault();initAudio();if(!virtual.has(code)){if(mode==='online')netQueueTap(code);pressed.add(code);directionInput(code)}virtual.add(code);b.classList.add('pressed');if(b.setPointerCapture)try{b.setPointerCapture(e.pointerId)}catch(err){}};const up=e=>{e.preventDefault();virtual.delete(code);b.classList.remove('pressed')};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up)}
+window.addEventListener('keyup',e=>{releaseDirection(e.code);keys.delete(e.code)});window.addEventListener('blur',()=>{keys.clear();pressed.clear();virtual.clear();inputHist.forEach(h=>h.length=0);if(mode!=='online'&&playing&&!paused&&game?.phase!=='result')togglePause()});
+for(const b of document.querySelectorAll('[data-code]')){const code=b.dataset.code;const down=e=>{e.preventDefault();initAudio();if(!virtual.has(code)){if(mode==='online')netQueueTap(code);pressed.add(code);directionInput(code)}virtual.add(code);b.classList.add('pressed');if(b.setPointerCapture)try{b.setPointerCapture(e.pointerId)}catch(err){}};const up=e=>{e.preventDefault();releaseDirection(code);virtual.delete(code);b.classList.remove('pressed')};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up)}
 function addParticle(x,y,color,n=8,power=180){if(!game)return;for(let k=0;k<n;k++){let ang=rand(-Math.PI,Math.PI),v=rand(.25,1)*power;game.particles.push({x,y,vx:Math.cos(ang)*v,vy:Math.sin(ang)*v,life:rand(.18,.54),max:.54,r:rand(2,6),color,gravity:rand(80,340)});}if(game.particles.length>210)game.particles.splice(0,game.particles.length-210)}
 function textPop(x,y,txt,color='#fff',size=24){game.floaters.push({x,y,txt,color,size,life:1.0});}
 function wave(x,y,color,range=100){game.waves.push({x,y,color,r:8,end:range,life:.32,max:.32});}
@@ -537,7 +575,7 @@ function doAttack(f,type){
 }
 const GUARD_CAP=100,GUARD_RECOVER_RATE=27,GUARD_COOLDOWN=1.05,GUARD_RECOVER_MIN=35;
 function triggerKnockdown(victim,attacker,knock){
- victim.downTime=.86;victim.getupTime=0;victim.wakeInv=0;victim.inv=0;victim.launched=false;victim.launchLock=0;victim.juggleHits=0;victim.juggleExhausted=false;
+ victim.downTime=.86;victim.getupTime=0;victim.wakeInv=0;victim.inv=0;victim.launched=false;victim.launchLock=0;victim.airHitFreeze=0;victim.juggleHits=0;victim.juggleExhausted=false;
  victim.action=null;victim.stun=0;victim.blockstun=0;victim.guard=false;victim.crouching=false;
  victim.dashTime=0;victim.dashWindow=0;victim.vy=0;
  if(mode!=='training')victim.vx=Math.sign(knock||victim.x-attacker.x||1)*Math.max(130,Math.abs(knock)*.58);
@@ -556,28 +594,37 @@ function breakGuard(victim){
 const LAUNCH_RISE_GRAVITY=1750,LAUNCH_FALL_GRAVITY=2150;
 function launchVictim(victim,attacker,power=920){
  if(!victim||victim.hp<=0||victim.downTime>0||victim.getupTime>0)return;
- victim.launched=true;victim.juggleHits=0;victim.juggleExhausted=false;
- // Minimum ascent is about one rendered character height (including shorter fighters).
- const visualHeight=(victim.def.family==='mofu'?247:354)*(victim.def.scale||1);
- const requiredRise=Math.max(140,Math.min(310,visualHeight*.93));
+ victim.launched=true;victim.airHitFreeze=0;victim.juggleHits=0;victim.juggleExhausted=false;
+ // Fixed world-space apex. No visual-scale or body-size dependency.
+ // Calibrated to the former salaryman launch (~290 units above ground).
+ const fixedApexY=-290;
  victim.launchStartY=victim.y;
- victim.launchRequiredRise=requiredRise;
  victim.y=Math.min(-8,victim.y);
- victim.vy=-Math.max(power,Math.sqrt(2*LAUNCH_RISE_GRAVITY*(requiredRise+12)));
- victim.launchLock=Math.max(victim.launchLock||0,.58);
+ // If hit midair above this apex, lift an additional 90 units rather than snap down.
+ const apexY=Math.min(fixedApexY,victim.y-90);
+ victim.launchRequiredRise=victim.y-apexY;
+ victim.vy=-Math.sqrt(2*LAUNCH_RISE_GRAVITY*victim.launchRequiredRise);
+ victim.launchLock=Math.max(victim.launchLock||0,.87);
  victim.stun=Math.max(victim.stun,.44);victim.guard=false;victim.action=null;victim.dashTime=0;
  victim.jumpsUsed=2;victim.airDashUsed=true;
  addParticle(victim.x,floorY(victim)-110,attacker.def.color,24,245);
  wave(victim.x,floorY(victim)-95,'#ffffff',125);
  textPop(victim.x,floorY(victim)-245,'LAUNCH!','#ffefb0',24);sfx('upper');
 }
-function juggleVictim(victim){
+const JUGGLE_HITSTOP=.14, JUGGLE_BACK_PUSH=250;
+function juggleVictim(victim,attacker){
  if(!victim.launched||victim.y>=0||victim.juggleExhausted)return;
  victim.juggleHits=(victim.juggleHits||0)+1;
- if(victim.juggleHits>5){victim.juggleExhausted=true;victim.vy=Math.max(victim.vy,480);victim.launchLock=Math.min(victim.launchLock||0,.12);return;}
- victim.vy=Math.min(victim.vy,-185);
- victim.launchLock=Math.max(victim.launchLock||0,.48);
- victim.stun=Math.max(victim.stun,.35);
+ if(victim.juggleHits>5){victim.juggleExhausted=true;victim.airHitFreeze=0;victim.vy=Math.max(victim.vy,480);return;}
+ // Aerial impact: freeze *vertical* motion very briefly; horizontal recoil remains active.
+ // This is per-victim, not whole-game slow motion, so the attacker can continue their combo.
+ victim.airHitFreeze=JUGGLE_HITSTOP;
+ victim.y=Math.max(-475,victim.y-17); // a slight visual pop without teleporting a whole body-length
+ victim.vy=0; // falling halts at impact, then restarts naturally with gravity
+ const away=Math.sign(victim.x-(attacker?.x??(victim.x-victim.facing)))||victim.facing||1;
+ victim.vx=away*Math.max(JUGGLE_BACK_PUSH,Math.min(315,Math.abs(victim.vx)*.7+95));
+ victim.launchLock=Math.max(victim.launchLock||0,.72);
+ victim.stun=Math.max(victim.stun,.52);
 }
 function hitTarget(attacker,victim,raw,knock,opt={}){
  if(mode==='online'&&(attacker.team===victim.team||victim.hp<=0))return false;
@@ -632,7 +679,7 @@ function hitTarget(attacker,victim,raw,knock,opt={}){
    textPop(attacker.x,floorY(attacker)-215,'+'+Math.round(damage*.42),'#88ffc7',18);
   }
   // Knockdown from 3 connected hits or accumulated 38 damage in one combo window.
-  if(victim.launched&&victim.y<0)juggleVictim(victim);
+  if(victim.launched&&victim.y<0)juggleVictim(victim,attacker);
   else if(victim.hp>0&&!(['launcher','cmd_upper','cmd_rush'].includes(attacker.action?.type)||(['heavy','dash_heavy'].includes(attacker.action?.type)&&victim.y<-35))&&(victim.hitStreak>=3||victim.hitStreakDmg>=38))triggerKnockdown(victim,attacker,knock);
  }
  game.screenShake=Math.max(game.screenShake,blocked?5:opt.super?24:opt.effect==='heavy'?14:9);
@@ -695,6 +742,8 @@ function updateRush(f,dt){
  }
 }
 function controlled(f,dt){
+ const holdAirHeight=!!(f.launched&&(f.airHitFreeze||0)>0);
+ f.airHitFreeze=Math.max(0,(f.airHitFreeze||0)-dt);
  f.guardBroken=Math.max(0,(f.guardBroken||0)-dt);
  f.guardDelay=Math.max(0,(f.guardDelay||0)-dt);
  if(f.guardDelay<=0&&f.guardMeter<GUARD_CAP)f.guardMeter=Math.min(GUARD_CAP,f.guardMeter+GUARD_RECOVER_RATE*dt);
@@ -724,16 +773,18 @@ function controlled(f,dt){
  }
  if(f.n===1&&mode==='training'){
   // Passive dummy: unlimited HP, no guard, and recoverable knockdown/launch animations.
-  f.x=1080;f.vx=0;f.dashTime=0;f.dashGhost=0;
+  f.dashTime=0;f.dashGhost=0;
   f.guard=false;f.crouching=false;f._movingNow=false;f.action=null;f.atkCD=0;f.sp=0;f.dot=[];
   f.stun=Math.max(0,f.stun-dt);f.flash=Math.max(0,f.flash-dt);f.blockstun=0;
   f.inv=0;f.wakeInv=0;
   f.launchLock=Math.max(0,(f.launchLock||0)-dt);
   if(f.launched){
-   f.vy+=(f.vy<0?LAUNCH_RISE_GRAVITY:LAUNCH_FALL_GRAVITY)*dt;
-   f.y+=f.vy*dt;
+   // Allow the passive training opponent to visibly recoil in the air, unlike grounded idle.
+   f.vx*=Math.max(0,1-5.1*dt);
+   f.x=clamp(f.x+f.vx*dt,105,W-105);
+   if(!holdAirHeight){f.vy+=(f.vy<0?LAUNCH_RISE_GRAVITY:LAUNCH_FALL_GRAVITY)*dt;f.y+=f.vy*dt;}
    if(f.y>=0){f.y=0;triggerKnockdown(f,game.fighters[0],100);f.downTime=.42;}
-  }else{f.y=0;f.vy=0;}
+  }else{f.x=1080;f.vx=0;f.y=0;f.vy=0;}
   return;
  }
  const c=controls[f.n],action=(f.n===1&&mode==='cpu')?game.ai:null;
@@ -793,7 +844,7 @@ function controlled(f,dt){
  }
  // Knockback velocity moves even while in hit / guard stun.
  f.vx*=Math.max(0,1-(f.guard?6.7:5.1)*dt);f.x+=f.vx*dt;
- f.vy+=(f.launched?(f.vy<0?LAUNCH_RISE_GRAVITY:LAUNCH_FALL_GRAVITY):2250)*dt*(f.dashTime>0&&f.dashAir?.14:1);f.y+=f.vy*dt;
+ if(!holdAirHeight){f.vy+=(f.launched?(f.vy<0?LAUNCH_RISE_GRAVITY:LAUNCH_FALL_GRAVITY):2250)*dt*(f.dashTime>0&&f.dashAir?.14:1);f.y+=f.vy*dt;}
  if(f.y>=0){if(f.launched){f.y=0;triggerKnockdown(f,mode==='online'?netNearestEnemy(f):game.fighters[1-f.n],(f.vx||f.facing*100));}else{if(f.vy>185)sfx('land');f.y=0;f.vy=0;f.jumpsUsed=0;f.airDashUsed=false;f.dashAir=false;}}
  f.x=clamp(f.x,105,W-105);
  updateRush(f,dt);
@@ -930,12 +981,13 @@ function netStatus(text,isError=false){const s=netEl('netStatus');s.textContent=
 function netKeyset(){const out=[];for(const code of NET_KEYS)if(held(code))out.push(code);return out;}
 function netQueueTap(code){if(!net.host&&NET_KEYS.has(code))net.taps.add(code);}
 function netLocalDirection(code){if(!net.inMatch||!net.host||!game||game.phase!=='fight')return;netDirectionFor(0,code);}
+function releaseDirectionFor(slot,code,now=performance.now()){const h=inputHist[slot]||[];for(let i=h.length-1;i>=0;i--){if(h[i].code===code&&h[i].releasedAt===null){h[i].releasedAt=now;break;}}}
 function netDirectionFor(slot,code){
  if(!game||game.phase!=='fight'||!NET_KEYS.has(code))return;
  const f=game.fighters[slot],c=controls[slot];if(!f||!c||f.hp<=0)return;
  const dir=code===c.d?'D':code===c.l?(f.facing===-1?'F':'B'):code===c.r?(f.facing===1?'F':'B'):null;
  if(!dir)return;
- const now=performance.now(),h=inputHist[slot];h.push({dir,time:now});inputHist[slot]=h.filter(e=>now-e.time<850).slice(-9);
+ const now=performance.now(),h=pushDirection(slot,code,dir,now);
  if(dir==='F'||dir==='B'){
   const prev=h[h.length-2];
   if(prev?.dir===dir&&now-prev.time<=255&&f.dashCD<=0&&!f.action&&f.stun<=0&&f.blockstun<=0){beginDash(f,dir==='F'?f.facing:-f.facing);}
@@ -1025,7 +1077,7 @@ function netHostAccept(conn){
   }else if(d.type==='input'&&net.inMatch){
    const state=net.input.get(slot),seq=Number(d.seq)||0;
    if(state&&seq>state.seq){
-    state.seq=seq;state.last=performance.now();state.held=new Set(Array.isArray(d.held)?d.held.filter(k=>NET_KEYS.has(k)).slice(0,8):[]);
+    const nextHeld=new Set(Array.isArray(d.held)?d.held.filter(k=>NET_KEYS.has(k)).slice(0,8):[]);for(const k of state.held)if(!nextHeld.has(k))releaseDirectionFor(slot,k);state.seq=seq;state.last=performance.now();state.held=nextHeld;
     for(const k of Array.isArray(d.taps)?d.taps.filter(k=>NET_KEYS.has(k)).slice(0,12):[]){state.taps.add(k);netDirectionFor(slot,k);}
    }
   }else if(d.type==='leave'){try{conn.close()}catch(e){}}
