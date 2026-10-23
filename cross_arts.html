@@ -871,7 +871,7 @@ for(const b of document.querySelectorAll('[data-code]')){const code=b.dataset.co
 function addParticle(x,y,color,n=8,power=180){if(!game)return;for(let k=0;k<n;k++){let ang=rand(-Math.PI,Math.PI),v=rand(.25,1)*power;game.particles.push({x,y,vx:Math.cos(ang)*v,vy:Math.sin(ang)*v,life:rand(.18,.54),max:.54,r:rand(2,6),color,gravity:rand(80,340)});}if(game.particles.length>210)game.particles.splice(0,game.particles.length-210)}
 function textPop(x,y,txt,color='#fff',size=24){game.floaters.push({x,y,txt,color,size,life:1.0});}
 function wave(x,y,color,range=100){game.waves.push({x,y,color,r:8,end:range,life:.32,max:.32});}
-const ATKS={  light:[.172,.046,0],medium:[.252,.091,0],heavy:[.399,.171,0],  dash_light:[.207,.060,0],dash_medium:[.294,.112,0],dash_heavy:[.406,.171,0],  crouch_light:[.179,.050,0],crouch_medium:[.259,.102,0],crouch_heavy:[.378,.154,0],  air_light:[.182,.049,0],air_medium:[.259,.095,0],air_heavy:[.364,.154,0],  launcher:[.344,.145,0], special:[.665,.147,SUPER_COST],cmd_wave:[.343,.147,0],cmd_upper:[.329,.077,0],cmd_rush:[.408,.128,0] };
+const ATKS={  light:[.172,.046,0],medium:[.295,.108,0],heavy:[.399,.171,0],  dash_light:[.207,.060,0],dash_medium:[.294,.112,0],dash_heavy:[.406,.171,0],  crouch_light:[.179,.050,0],crouch_medium:[.259,.102,0],crouch_heavy:[.378,.154,0],  air_light:[.182,.049,0],air_medium:[.259,.095,0],air_heavy:[.364,.154,0],  launcher:[.344,.145,0], special:[.665,.147,SUPER_COST],cmd_wave:[.343,.147,0],cmd_upper:[.329,.077,0],cmd_rush:[.408,.128,0] };
 const floorY=f=>FLOOR+f.y;
 const attackRank=t=>t.endsWith('light')?1:t.endsWith('medium')?2:t.endsWith('heavy')?3:4;
 function beginSuper(f){
@@ -896,8 +896,19 @@ function startAttack(f,type,strength='medium',chain=false){
  if(type==='special'&&game.phase!=='fight')return false;
  // Attacking immediately forfeits wake-up invulnerability; evasive actions and guard do not.
  if(f.wakeInv>0){f.wakeInv=0;f.inv=0;}
- f.sp-=cost;f.action={type,strength,t:0,done:false,duration:cfg[0],impact:cfg[1]};
- f.atkCD=cfg[0]+((base==='heavy'||type==='launcher')?.012:0);f.guard=false;f.anim+=1;f.chainTimer=0;
+ f.sp-=cost;
+ // Repeating the *same standing medium* indefinitely has visible extra recovery.
+ // Mix in light/heavy/crouching/commands or wait to reset the penalty.
+ let extraRecovery=0;
+ if(type==='medium'){
+  const now=performance.now();
+  f.mediumRepeat=now-(f.lastMediumTime??-1e6)<1150?Math.min(3,(f.mediumRepeat||0)+1):0;
+  f.lastMediumTime=now;
+  extraRecovery=f.mediumRepeat*.055;
+ }else if(type!=='medium'){f.mediumRepeat=0;f.lastMediumTime=-1e6;}
+ const moveDuration=cfg[0]+extraRecovery;
+ f.action={type,strength,t:0,done:false,duration:moveDuration,impact:cfg[1]};
+ f.atkCD=moveDuration+((base==='heavy'||type==='launcher')?.012:0);f.guard=false;f.anim+=1;f.chainTimer=0;
  if(type.startsWith('cmd_')){voiceSpeak(f,'command');
   textPop(f.x,floorY(f)-245,type==='cmd_wave'?'蒼牙・波動':type==='cmd_upper'?'昇牙・対空':'暴牙・突進',f.def.color,18);
   addParticle(f.x,floorY(f)-105,f.def.color,11,155);sfx(type==='cmd_wave'?'wave':type==='cmd_upper'?'upper':'rush');
@@ -943,7 +954,7 @@ function doAttack(f,type){
  else {
   // Light: fastest, short reach and low damage. Medium: same standard strike arc, mid values.
   // Heavy: widest and slowest with stronger recoil.
-  const specs={light:[6.8,106,106,76,.20],medium:[11.7,151,136,130,.30],heavy:[19.3,200,150,210,.39]};
+  const specs={light:[6.8,106,106,76,.20],medium:[11.7,146,136,205,.255],heavy:[19.3,200,150,210,.39]};
   const spec=specs[base]||specs.medium;
   dmg=spec[0]*f.def.power;range=spec[1];vertical=spec[2];knock=spec[3];stun=spec[4];
   if(type.startsWith('dash_')){dmg*=1.14;range+=67;knock+=100;stun+=.06;}
@@ -1037,7 +1048,7 @@ function hitTarget(attacker,victim,raw,knock,opt={}){
  if(mode==='training'&&victim.n===1&&!blocked){game.trainingDamage+=damage;game.trainingHits++;}
  const knockSign=Math.sign(knock||(victim.x-attacker.x)||1);
  if(!(mode==='training'&&victim.n===1))victim.vx+=knockSign*Math.max(blocked?65:145,Math.abs(knock)*(blocked?.80:1.35))*(victim.def.family==='mofu'?1.10:1);
- if(!blocked&&!(mode==='training'&&attacker.n===1))attacker.vx-=knockSign*Math.min(96,Math.abs(knock)*.18);
+ if(!blocked&&!(mode==='training'&&attacker.n===1))attacker.vx-=knockSign*Math.min(135,Math.abs(knock)*(attacker.action?.type==='medium'?.38:.18));
  victim.flash=blocked?.09:.19;victim.shake=blocked?.13:.34;
  victim.sp=clamp(victim.sp+(blocked?6:Math.min(22,8+damage*.29)),0,100);
  attacker.sp=clamp(attacker.sp+(blocked?5:Math.min(20,9+damage*.25)),0,100);voiceSpeak(victim,blocked?'guard':'hit');
@@ -1093,26 +1104,46 @@ function chooseAI(dt){
  if(mode==='story'){chooseStoryAI(dt);return;}
  const ai=game.ai,f=game.fighters[1],op=game.fighters[0],skill=({easy:0,normal:1,hard:2,extreme:3})[game.diff]??1;
  ai.nextThink-=dt;if(ai.nextThink>0)return;
- ai.nextThink=skill===0?rand(.24,.38):skill===1?rand(.12,.20):skill===2?rand(.08,.135):rand(.05,.09);
- for(const k of ['l','r','u','d','g','light','medium','heavy','special','dash','wave'])ai[k]=false;
- const dist=Math.abs(op.x-f.x),dir=Math.sign(op.x-f.x)||f.facing;
- const threat=op.action&&dist<250,projectile=game.projectiles.find(p=>p.owner===0&&Math.abs(p.x-f.x)<370&&((p.vx>0&&p.x<f.x)||(p.vx<0&&p.x>f.x)));
- const def=[.20,.42,.64,.79][skill];
- if(projectile&&Math.random()<def){if(Math.random()<.22+skill*.13&&f.y>=-2){ai.u=true;}else ai.g=true;return;}
- if(threat&&Math.random()<def){ai.g=true;ai.d=(op.action.type||'').startsWith('crouch_');return;}
- if(f.sp>=SUPER_COST&&dist<670&&Math.random()<.06+skill*.05){ai.special=true;return;}
- if(f.action||f.stun>0||f.blockstun>0)return;
- // Aim for mid-range 280-490px. Back off against proximity mashing.
- if(dist<175){if(dir<0)ai.r=true;else ai.l=true;if(Math.random()<.12+skill*.08)ai.u=true;return;}
- if(dist>495){if(dir<0)ai.l=true;else ai.r=true;if(dist>680&&Math.random()<.05+skill*.02)ai.dash=true;}
- if(dist>=185&&dist<=600&&f.atkCD<=0){
-  const r=Math.random();
-  if(r<.18+skill*.10&&f.sp>=WAVE_COSTS.medium){ai.wave=true;return;}
-  if(dist<244){if(r<.48)ai.medium=true;else if(r<.60)ai.heavy=true;else if(r<.70){ai.d=true;ai.light=true;}}
+ ai.nextThink=skill===0?rand(.19,.30):skill===1?rand(.10,.16):skill===2?rand(.065,.11):rand(.045,.075);
+ for(const k of ['l','r','u','d','g','light','medium','heavy','special','dash','wave']){ai[k]=false;ai['_pulse_'+k]=false;}
+ if(!f||!op||f.hp<=0)return;
+ const dist=Math.abs(op.x-f.x),dir=Math.sign(op.x-f.x)||f.facing,toward=dir<0?'l':'r',away=dir<0?'r':'l';
+ const threat=op.action&&dist<255,projectile=game.projectiles.find(p=>p.owner===0&&Math.abs(p.x-f.x)<395&&((p.vx>0&&p.x<f.x)||(p.vx<0&&p.x>f.x)));
+ const def=[.28,.57,.73,.87][skill];
+ if(projectile&&Math.random()<def){if(Math.random()<.12+skill*.10&&f.y>=-2)ai.u=true;else ai.g=true;return;}
+ // Attack startup is genuinely dangerous; recoveries are opportunities to counter.
+ if(threat&&op.action&&!op.action.done&&Math.random()<def){ai.g=true;ai.d=op.action.type.startsWith('crouch_');return;}
+ if(f.action||f.stun>0||f.blockstun>0||f.guardBroken>0||f.atkCD>.035)return;
+ if(dist<150*f.def.range&&op.action?.type==='medium'&&op.action.done&&Math.random()<.35+.17*skill){ai.light=true;return;}
+ if(op.y< -40&&dist<205&&Math.random()<.12+.23*skill){startAttack(f,'cmd_upper',skill>=2?'heavy':'medium');return;}
+ if(f.sp>=SUPER_COST&&dist<500&&Math.random()<.025+skill*.03){ai.special=true;return;}
+ // Fight at actual attack reach, not outside the medium's hitbox.
+ if(dist<=108*f.def.range){
+  const r=Math.random();if(r<.35+skill*.07)ai.light=true;
+  else if(r<.60+skill*.05)ai.medium=true;
+  else if(r<.79){ai.d=true;ai.light=true;}
+  else if(r<.91)ai.g=true;
+  else ai[away]=true;
+  return;
  }
- if(dist>290&&Math.random()<.015+skill*.008)ai.u=true;
+ if(dist<=145*f.def.range){
+  const r=Math.random();if(r<.47+skill*.06)ai.medium=true;
+  else if(r<.74)ai.light=true;
+  else if(r<.9)ai.g=true;
+  else {ai.d=true;ai.heavy=true;}
+  return;
+ }
+ if(dist<=205*f.def.range){
+  const r=Math.random();if(threat&&r<def*.70){ai.g=true;return;}
+  if(r<.30+skill*.1){ai.heavy=true;return;}
+  if(r<.56+skill*.04&&f.sp>=WAVE_COSTS.medium){ai.wave=true;return;}
+  ai[toward]=true;return;
+ }
+ if(dist<=480&&f.sp>=WAVE_COSTS.medium&&Math.random()<.17+.11*skill){ai.wave=true;return;}
+ ai[toward]=true;
+ if(dist>570&&Math.random()<.07+skill*.05)ai.dash=true;
+ if(dist>330&&Math.random()<.012+skill*.007)ai.u=true;
 }
-
 function updateRush(f,dt){
  if(!f.action||f.action.type!=='cmd_rush'||f.rushHit||f.rushLeft<=0||f.stun>0)return;
  const advance=Math.min(f.rushLeft,f.rushSpeed*dt);
@@ -1185,7 +1216,7 @@ function controlled(f,dt){
   return;
  }
  const c=controls[f.n],action=(f.n===1&&(mode==='cpu'||mode==='story'))?game.ai:null;
- const is=v=>action?action[v]:held(c[v]),was=v=>action?action[v]:hit(c[v]);
+ const is=v=>action?action[v]:held(c[v]),was=v=>{if(!action)return hit(c[v]);if(!action[v]||action['_pulse_'+v])return false;action['_pulse_'+v]=true;return true;};
  const other=mode==='online'?netNearestEnemy(f):game.fighters[1-f.n];if(other)f.facing=other.x>=f.x?1:-1;
  f.stun=Math.max(0,f.stun-dt);f.blockstun=Math.max(0,f.blockstun-dt);
  f.flash=Math.max(0,f.flash-dt);f.inv=Math.max(0,f.inv-dt);
@@ -1253,7 +1284,7 @@ function controlled(f,dt){
    if(Math.random()<.73)addParticle(f.x-f.dashDir*55,floorY(f)-125,f.def.color,2,100);
   }
   else if(!f.action){f.x+=axis*moveSpeed*(f.crouching?0:f.guard?.43:f.y<0?.98:1)*dt;f.anim+=Math.abs(axis)*dt*13;}
-  else{f.x+=axis*moveSpeed*(f.y<0?.29:.10)*dt;f.anim+=dt*3;}
+  else{f.x+=axis*moveSpeed*(f.y<0?.29:f.action?.type==='medium'?0:.10)*dt;f.anim+=dt*3;}
  }
  // Knockback velocity moves even while in hit / guard stun.
  f.vx*=Math.max(0,1-(f.guard?6.7:5.1)*dt);f.x+=f.vx*dt;
@@ -1947,48 +1978,45 @@ function storyExit(){
 function chooseStoryAI(dt){
  const ai=game.ai,f=game.fighters[1],op=game.fighters[0],level=clamp(story.stage,0,8),p=level/8;
  ai.nextThink-=dt;if(ai.nextThink>0)return;
- ai.nextThink=rand(.35-.275*p,.50-.40*p);
- for(const key of ['l','r','u','d','g','light','medium','heavy','special','dash','wave'])ai[key]=false;
+ ai.nextThink=rand(.24-.165*p,.34-.25*p);
+ for(const k of ['l','r','u','d','g','light','medium','heavy','special','dash','wave']){ai[k]=false;ai['_pulse_'+k]=false;}
  if(!f||!op||f.hp<=0||f.downTime>0||f.getupTime>0)return;
- const distance=Math.abs(op.x-f.x),dir=Math.sign(op.x-f.x)||f.facing;
- const toward=dir<0?'l':'r',away=dir<0?'r':'l';
+ const dist=Math.abs(op.x-f.x),dir=Math.sign(op.x-f.x)||f.facing,toward=dir<0?'l':'r',away=dir<0?'r':'l';
  const projectile=game.projectiles.find(q=>q.owner===0&&Math.abs(q.x-f.x)<(290+120*p)&&((q.vx>0&&q.x<f.x)||(q.vx<0&&q.x>f.x)));
- const attacking=!!(op.action&&distance<275),opair=op.y< -35;
- const defensiveness=.12+.73*p;
+ const threat=!!(op.action&&dist<258),defensiveness=.28+.56*p;
  if(projectile&&Math.random()<defensiveness){if(p>.56&&Math.random()<.24&&f.y>=-2)ai.u=true;else ai.g=true;return;}
- if(attacking&&Math.random()<defensiveness){
-  // Later opponents punish unsafe follow-through and intelligently switch guards.
-  const impactSoon=op.action?.t>=(op.action?.impact||.15)-(.03+.12*p);
-  if(impactSoon||p>.68){ai.g=true;ai.d=String(op.action?.type||'').includes('crouch');return;}
- }
- if(f.stun>0||f.blockstun>0||f.guardBroken>0||f.action)return;
- // Anti-air reaction improves through the story.
- if(opair&&distance<245&&f.y>=-10&&f.atkCD<=0&&Math.random()<.18+.65*p){
-  startAttack(f,'cmd_upper',p>.68?'heavy':'medium');return;
- }
- if(f.sp>=SUPER_COST&&distance<500&&f.atkCD<=0&&Math.random()<.005+.12*p){ai.special=true;return;}
- if(f.chainTimer>0&&f.atkCD<=.08&&distance<215&&Math.random()<.22+.68*p){
-  ai[f.chainRank===1?'medium':'heavy']=true;return;
- }
- const targetRange=240+60*(1-p);
- if(distance>targetRange+120){ai[toward]=true;if(distance>580&&Math.random()<.04+.25*p)ai.dash=true;
-  if(distance>360&&f.sp>=WAVE_COSTS.medium&&Math.random()<.14+.34*p&&f.atkCD<=0){ai.wave=true;}
+ if(threat&&op.action&&!op.action.done&&Math.random()<defensiveness){ai.g=true;ai.d=op.action.type.startsWith('crouch_');return;}
+ if(f.stun>0||f.blockstun>0||f.guardBroken>0||f.action||f.atkCD>.03)return;
+ // Repeated medium punches should eventually be answered, even by the first rival.
+ if(dist<140*f.def.range&&op.action?.type==='medium'&&op.action.done&&Math.random()<.20+.57*p){ai.light=true;return;}
+ if(op.y< -35&&dist<230&&f.y>=-10&&Math.random()<.10+.65*p){startAttack(f,'cmd_upper',p>.68?'heavy':'medium');return;}
+ if(f.sp>=SUPER_COST&&dist<500&&Math.random()<.005+.105*p){ai.special=true;return;}
+ if(f.chainTimer>0&&dist<175&&Math.random()<.22+.62*p){ai[f.chainRank===1?'medium':'heavy']=true;return;}
+ if(dist<105*f.def.range){
+  const r=Math.random();if(r<.35+.15*p)ai.light=true;
+  else if(r<.55+.16*p)ai.medium=true;
+  else if(r<.71){ai.d=true;ai.light=true;}
+  else if(r<.86+.06*p)ai.g=true;
+  else ai[away]=true;
   return;
  }
- if(distance<105){if(Math.random()<.22+.18*p)ai[away]=true;else ai.light=true;return;}
- if(distance<245&&f.atkCD<=.04){
-  if(Math.random()<.20+.48*p){
-   if(distance<155&&Math.random()<.56)ai.light=true;
-   else if(distance<188)ai.medium=true;
-   else ai.heavy=true;
-   if(p>.5&&Math.random()<.22){ai.d=true;ai.heavy=true;}
-   return;
-  }
+ if(dist<145*f.def.range){
+  const r=Math.random();if(r<.35+.22*p)ai.medium=true;
+  else if(r<.52+.14*p)ai.light=true;
+  else if(r<.71+.13*p)ai.g=true;
+  else ai[toward]=true;
+  return;
  }
- if(distance>210&&distance<550&&f.sp>=WAVE_COSTS.medium&&f.atkCD<=0&&Math.random()<.08+.28*p){ai.wave=true;return;}
- if(distance<180&&Math.random()<.08+.32*p){ai[away]=true;ai.g=p>.35;return;}
- if(distance>245){ai[toward]=true;if(p>.57&&Math.random()<.09)ai.dash=true;}
- if(p>.45&&distance>245&&Math.random()<.025+.06*p)ai.u=true;
+ if(dist<208*f.def.range){
+  const r=Math.random();if(threat&&r<defensiveness*.62){ai.g=true;return;}
+  if(r<.20+.30*p){ai.heavy=true;return;}
+  if(r<.34+.35*p&&f.sp>=WAVE_COSTS.medium){ai.wave=true;return;}
+  ai[toward]=true;return;
+ }
+ if(dist>340&&f.sp>=WAVE_COSTS.medium&&Math.random()<.08+.24*p){ai.wave=true;return;}
+ ai[toward]=true;
+ if(dist>550&&Math.random()<.03+.20*p)ai.dash=true;
+ if(p>.5&&dist>260&&Math.random()<.02+.06*p)ai.u=true;
 }
 // UI navigation
 $('titleStory').onclick=()=>{initAudio();openCharacterSelect('story');};
