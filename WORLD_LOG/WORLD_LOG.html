@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WORLD//LOG v4.6 — エルダ・ノヴァ</title>
+<title>WORLD//LOG v5.0 — エルダ・ノヴァ</title>
 <style>
 :root{color-scheme:dark;--bg:#0a101c;--panel:#131d30;--panel2:#1b2940;--line:#30415a;--ink:#eff6ff;--muted:#9cb0cd;--cyan:#73dfd3;--gold:#ffc879;--red:#ef8a91;--blue:#87b8ff;--green:#92d9a0}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 12% 0,#243651 0,transparent 33%),radial-gradient(ellipse at 94% 8%,#172c3b 0,transparent 28%),var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-size:14px;line-height:1.6}
@@ -571,7 +571,7 @@ const STORY_CAST={
 };
 function isActiveCharacter(a){return !!a&&(!a.joined||a.joined<=G.day)}
 function leagueReference(exclude=[]){const ranks=G.agents.filter(a=>a.unique&&isActiveCharacter(a)&&!exclude.includes(a.id)).map(a=>a.level).sort((a,b)=>b-a);return Math.max(1,Math.round(average(ranks.slice(0,Math.min(5,ranks.length))))) }
-function pairStrength(p){return average(p.members.map(agent).filter(Boolean).map(a=>a.level*4+a.apt*.55+Math.min(180,a.fame/12)))}
+function pairStrength(p){return average(p.members.map(agent).filter(Boolean).map(a=>a.level*4+a.apt*.55+Math.min(180,a.fame/12)+npcRelicStats(a.id).effectiveLevel*4))}
 
 const PARTY_NAMES=['蒼天の騎士団','暁の旅団','灰狼連盟','流星の足跡','黒猫探検隊','永遠の午睡','七色の翼','月影の盟約','白銀の槍','熱砂の鷹','灯火の守り手','鉄壁の円環','黎明の羅針盤','神秘の森','静寂の狼','天穹の鎖'];
 const NATION_NAMES=['蒼天王国','星屑共和国','月灯り領','黒月帝国','黄金商業連合','暁の王国','翠風自治国','虹の楽園','銀河連邦'];
@@ -748,6 +748,7 @@ function updateActivities(a){
    e*=lead>=6?.30:lead>=3?.40:.56;
    a.v35SharedRounds=0;
  }
+ e*=1+Math.min(.12,npcRelicStats(a.id).effectiveLevel*.012);
  a.exp+=e;while(a.exp>35+a.level*3.5&&a.level<85){a.exp-=35+a.level*3.5;a.level++}
  if(a.unique){
    const golden=['lateDuo','goldenDuo','goldenSolo'].includes(a.storyType);
@@ -793,6 +794,7 @@ function updateActivities(a){
 function attemptPartyBoss(p,b){
  const mem=p.members.map(agent).filter(a=>a&&a.online&&isActiveCharacter(a));if(!p.active||mem.length<2)return;
  const avg=average(mem.map(a=>a.level));if(!canChallengeBoss(b,Math.max(...mem.map(a=>a.level)))||avg<b.level-4)return;
+ const combatAvg=avg+average(mem.map(a=>npcRelicStats(a.id).effectiveLevel));
  const known=mem.filter(a=>a.unique&&(a.fame>=90||a.apt>=110)).length;
  const cohesive=p.storyTag==='lateDuo'||p.storyTag==='goldenDuo';
  const groupRisk=average(mem.map(a=>a.persona?.risk??55));
@@ -800,9 +802,9 @@ function attemptPartyBoss(p,b){
  const synergy=(cohesive?.055:0)+Math.min(.11,known*.027)+(p.wins>0?.025:0)+clamp((groupAmbition-55)*.0007,-.015,.025);
  if(G.day-(p.lastBossTry||0)<(cohesive?7:3))return;
  p.lastBossTry=G.day;
- if(rand()>clamp(.22+(avg-b.level)*.018+synergy+(groupRisk-55)*.0013,.09,.75))return;
+ if(rand()>clamp(.22+(combatAvg-b.level)*.018+synergy+(groupRisk-55)*.0013,.09,.75))return;
  const entry=G.bosses[b.id];entry.attempts++;
- const odds=clamp(.045+(avg-b.level)*.034+(mem.length-2)*.065+entry.knowledgePublic*.025+synergy-(groupRisk>82?.025:0),.03,.82);
+ const odds=clamp(.045+(combatAvg-b.level)*.034+(mem.length-2)*.065+entry.knowledgePublic*.025+synergy-(groupRisk>82?.025:0),.03,.82);
  if(rand()>odds)return;
  recordBossClear(b,mem.map(a=>a.id),p.id,avg);
 }
@@ -882,7 +884,8 @@ function temporaryGoldenRaid(){
  const names=chosen.map(agentName),rivalGroups=first.includes('n89')?'コノエ':first.includes('n90')?'まどいろ':'サロロ';
  const other=second.includes('n89')?'コノエ':second.includes('n90')?'まどいろ':'サロロ';
  const entry=G.bosses[target.id];entry.attempts++;
- const success=rand()<clamp(.07+(avg-target.level)*.019+entry.knowledgePublic*.025,.065,.52);
+ const gearPower=average(chosen.map(id=>npcRelicStats(id).effectiveLevel));
+ const success=rand()<clamp(.07+(avg+gearPower-target.level)*.019+entry.knowledgePublic*.025,.065,.52);
  addEvent('party',`【臨時共闘】${rivalGroups} × ${other}`,`${names.join('・')}が${target.name}の攻略のため一時的に共闘。${success?'連携が実を結び、討伐に成功した。':'今回は突破できず、それぞれの活動に戻った。'}固定の所属パーティは変わらない。`,{importance:success?3:2,actorIds:[...chosen],bossId:target.id});
  if(success)recordBossClear(target,chosen,null,avg,`${rivalGroups}＆${other}臨時攻略隊`);
 }
@@ -1063,7 +1066,7 @@ function worldDaily(){
  evolveParties();goldenRivalActivities();temporaryGoldenRaid();
  if(G.day%2===0){const p=shuffle(G.parties.filter(p=>p.active&&p.members.length>=2)).sort((a,b)=>pairStrength(b)-pairStrength(a));const openings=BOSSES.filter(isBossAvailable);for(let i=0;i<Math.min(8,p.length);i++){if(!openings.length)break;const s=p[i];const mem=s.members.map(agent).filter(Boolean);const avg=average(mem.map(a=>a.level));const reachable=openings.filter(b=>canChallengeBoss(b,Math.max(...mem.map(a=>a.level)))&&avg>=b.level-5);if(!reachable.length)continue;const b=v30BossChoice(reachable);attemptPartyBoss(s,b)}}
  // セミユニークや未所属冒険者による臨時パーティも攻略候補になる。
- if(G.day%3===0){let candidates=G.agents.filter(a=>a.online&&!a.partyId&&isActiveCharacter(a)&&a.storyType!=='goldenSolo'&&a.level>=8).sort((a,b)=>b.level-a.level).slice(0,90);if(candidates.length>=4){let groups=ri(1,3);for(let j=0;j<groups;j++){const mem=shuffle(candidates).slice(0,4);const avg=average(mem.map(a=>a.level));const possibles=BOSSES.filter(b=>canChallengeBoss(b,Math.max(...mem.map(a=>a.level)))&&avg>=b.level-3);if(!possibles.length)continue;const b=v30BossChoice(possibles),entry=G.bosses[b.id];entry.attempts++;if(rand()<clamp(.012+(avg-b.level)*.013+entry.knowledgePublic*.012,.006,.28))recordBossClear(b,mem.map(a=>a.id),null,avg)}}}
+ if(G.day%3===0){let candidates=G.agents.filter(a=>a.online&&!a.partyId&&isActiveCharacter(a)&&a.storyType!=='goldenSolo'&&a.level>=8).sort((a,b)=>b.level-a.level).slice(0,90);if(candidates.length>=4){let groups=ri(1,3);for(let j=0;j<groups;j++){const mem=shuffle(candidates).slice(0,4);const avg=average(mem.map(a=>a.level));const possibles=BOSSES.filter(b=>canChallengeBoss(b,Math.max(...mem.map(a=>a.level)))&&avg>=b.level-3);if(!possibles.length)continue;const b=v30BossChoice(possibles),entry=G.bosses[b.id];entry.attempts++;if(rand()<clamp(.012+(avg+average(mem.map(a=>npcRelicStats(a.id).effectiveLevel))-b.level)*.013+entry.knowledgePublic*.012,.006,.28))recordBossClear(b,mem.map(a=>a.id),null,avg)}}}
  evolveNations();
  invitedOnFame();
  // うわさと情報解禁は実際に存在する攻略対象だけについて生成する。
@@ -1395,7 +1398,7 @@ function effectiveKills(n){return Math.min(n,4)+Math.max(0,Math.min(n-4,3))*.45+
 function createEnemy(bt,b,isBoss){const a=bt.area,lv=isBoss?b.level:a.level+ri(-2,2);let max=isBoss?b.hp:clamp(34+lv*7.5+ri(-6,10),30,460);return{id:bt.nextId++,name:isBoss?b.name:pick(['影狼','野生スライム','鉄殻獣','迷いゴーレム','小型竜']),boss:!!isBoss,lv,x:isBoss?715:ri(600,905),y:ri(110,445),hp:max,max,r:isBoss?37:22,atk:isBoss?b.atk:7+lv*.93,cooldown:ri(4,15)/10,speed:isBoss?78:ri(85,125),charge:0,chargeX:0,chargeY:0,hit:0,color:isBoss?b.color:pick(['#e89b74','#bdabd5','#8fc9be','#dfc87e'])}}
 // Party allies are visible actors with position, movement, attacks and HP.
 function createBattleAlly(id,index,bt){
- const a=agent(id);const max=105+a.level*8;return {id,x:clamp(bt.player.x-55-(index%2)*34,40,880),y:clamp(bt.player.y+((index%3)-1)*46,100,475),hp:max,max,dir:1,attackCd:.38+index*.22,skillCd:6.1+index*.65,hit:0,walk:0,attackFlash:0};
+ const a=agent(id);const max=105+a.level*8+npcRelicStats(id).hp;return {id,x:clamp(bt.player.x-55-(index%2)*34,40,880),y:clamp(bt.player.y+((index%3)-1)*46,100,475),hp:max,max,dir:1,attackCd:.38+index*.22,skillCd:6.1+index*.65,hit:0,walk:0,attackFlash:0};
 }
 function damageAlly(ally,n,bt){if(ally.hp<=0)return;ally.hp=Math.max(0,ally.hp-Math.max(1,Math.round(n)));ally.hit=.32;bt.fx.push({x:ally.x,y:ally.y-36,time:.4,type:'number',value:Math.round(n),color:'#ffa3ad'});if(!ally.hp){bt.fx.push({x:ally.x,y:ally.y,time:.45,type:'dash',color:'#f78f9b'});bt.info=agentName(ally.id)+'が戦闘不能になった';}}
 function updateBattleAllies(bt,dt){
@@ -1411,9 +1414,9 @@ function updateBattleAllies(bt,dt){
   let dx=goalX-ally.x,dy=goalY-ally.y,dist=Math.hypot(dx,dy);
   if(dist>20){const step=Math.min(dist,(155+Math.min(80,a.level*1.15))*dt);ally.x=clamp(ally.x+dx/dist*step,30,930);ally.y=clamp(ally.y+dy/dist*step,72,493);ally.walk+=dt;}
   if(target){ally.dir=target.x>=ally.x?1:-1;let reach=Math.hypot(target.x-ally.x,target.y-ally.y);
-   if(reach<110+target.r*.35&&ally.attackCd===0){let dmg=adjustedCombatDamage((10+a.level*2.1)*(bt.guests?.includes(ally.id)?1:1.12),a.level,target.lv);if(target.boss)dmg=Math.round(dmg*.85);hitEnemy(target,dmg,'friend');ally.attackCd=.88+(index%3)*.11;ally.attackFlash=.22;bt.fx.push({x:ally.x+ally.dir*26,y:ally.y-8,time:.17,type:'swipe',color:'#88cfff'});}
+   if(reach<110+target.r*.35&&ally.attackCd===0){let dmg=adjustedCombatDamage((10+a.level*2.1+npcRelicStats(ally.id).atk)*(bt.guests?.includes(ally.id)?1:1.12),a.level,target.lv);if(target.boss)dmg=Math.round(dmg*.85);hitEnemy(target,dmg,'friend');ally.attackCd=.88+(index%3)*.11;ally.attackFlash=.22;bt.fx.push({x:ally.x+ally.dir*26,y:ally.y-8,time:.17,type:'swipe',color:'#88cfff'});}
    // Occasional short-range area skill, like the player's Q attack.
-   if(reach<140&&ally.skillCd===0&&a.level>=7){for(const e of living){if(e.hp>0&&Math.hypot(e.x-ally.x,e.y-ally.y)<135)hitEnemy(e,adjustedCombatDamage(16+a.level*2.7,a.level,e.lv),'friend')};ally.skillCd=9.5+index*.65;bt.fx.push({x:ally.x,y:ally.y,time:.32,type:'skill',color:'#a6b6ff'});}
+   if(reach<140&&ally.skillCd===0&&a.level>=7){for(const e of living){if(e.hp>0&&Math.hypot(e.x-ally.x,e.y-ally.y)<135)hitEnemy(e,adjustedCombatDamage(16+a.level*2.7+npcRelicStats(ally.id).atk*1.3,a.level,e.lv),'friend')};ally.skillCd=9.5+index*.65;bt.fx.push({x:ally.x,y:ally.y,time:.32,type:'skill',color:'#a6b6ff'});}
   }
  }
 }
@@ -1602,6 +1605,9 @@ function drawBattle(bt){
 }
 function endBattle(won,reason){const bt=battle;if(!bt?.active)return;bt.active=false;cancelAnimationFrame(raf);battle=null;G.pendingBattle=null;
  const p=G.player,a=bt.area,b=bt.boss;let gold=0,xp=0,mat=0,fame=0,follow=0,first=false;
+ const isFirstPersonalBoss=!!(b&&won&&!p.bossFirstVictory49?.[b.id]);
+ const bossFirstFame=isFirstPersonalBoss?Math.round(b.level*b.level):0;
+ const bossFirstFans=isFirstPersonalBoss?Math.round(bossFirstFame*.25):0;
  if(b){if(won){first=!!recordBossClear(b,['player',...companionIds(bt)],null,average([G.player.level,...companionIds(bt).map(id=>agent(id)?.level||1)]));gold=Math.round(90+b.level*11+(first?180:0));xp=Math.round(75+b.level*5);mat=ri(2,4);p.kills++;
  fame=first?620:Math.round(18+b.level*1.7);follow=bt.live?(first?ri(600,1200):ri(80,190)):first?ri(130,320):ri(0,5);
  if(bt.live)G.player.broadcasts++;
@@ -1622,14 +1628,30 @@ function endBattle(won,reason){const bt=battle;if(!bt?.active)return;bt.active=f
   xp=Math.round(xp*earnedFactor*huntFatigue*v39HuntXpRate(bt));gold=Math.round(gold*earnedFactor*(v28Job()==='商人'?1.16:1));mat=Math.max(0,Math.round(mat*earnedFactor));
   if(!bt.boss)p.huntsToday=(p.huntsToday||0)+1;
   fame=Math.round(fame*earnedFactor);follow=Math.round(follow*earnedFactor);
+ // 冒険方針は戦闘終了時に確定。採取・NPC成長・配信の計算には影響しない。
+ const focus=bt.rewardFocus==='money'||bt.rewardFocus==='experience'?bt.rewardFocus:'balanced';
+ if(focus==='money'){gold=Math.round(gold*1.5);xp=Math.round(xp*.75)}
+ else if(focus==='experience'){xp=Math.round(xp*1.35);gold=Math.round(gold*.75)}
  if(bt.live){registerPlayerBroadcast();follow=playerLiveAudienceGain(follow);}
- const displayedXP=v39ProjectedXp(xp,G.player.followers+follow);
+ const displayedXP=v39ProjectedXp(xp,G.player.followers+follow+bossFirstFans);
  if(bt.eventId){const e=currentSideEvents().find(e=>e.id===bt.eventId);if(e){const points=Math.round(Math.max(0,bt.kills)*.72*(12+a.level*.6)*earnedFactor);addSideScore(e,'player',points);addEvent('player',`${e.name}で討伐に参加`,`モンスター${bt.kills}体を討伐し、イベント得点${points}点を獲得。`,{importance:0,sideId:e.id})}}
  if(!b)addEvent('player',`${a.name}でモンスター狩り`,`モンスター${bt.kills}体討伐（自身${performance.playerKills}体）、活躍評価${performance.rating}、EXP ${displayedXP}、${gold}G、素材${mat}個。${bt.live?'配信実施。':''}`,{importance:0});
- if(b&&won)addEvent('player',`${b.name}の討伐に成功`,`討伐報酬：${gold}G、EXP ${displayedXP}。活躍評価${performance.rating}。${first?'世界初討伐を記録。':'再討伐として記録。'}${bt.live?'配信で注目を集めた。':''}`,{importance:bt.live&&first?2:0,bossId:b.id});
- p.gold+=gold;p.materials+=mat;if(bt.live)v40BroadcastGain(fame,follow);else fameGain(fame,follow);const up=xpGain(xp);maybeMeet(a.id,bt.friend,bt.guests||[]);
- let result=`${reason}\n${b?b.name+' / ':a.name+' / '}討伐数 ${bt.kills}（自分 ${performance.playerKills} / 仲間 ${performance.allyKills}）\n活躍評価 ${performance.rating} / 総合力 ${fmt(performance.power)}（Lv・武器・防具）\n与ダメージ：自分 ${fmt(Math.round(performance.playerDamage))} / 仲間 ${fmt(Math.round(performance.allyDamage))}\n活躍倍率 ×${performance.multiplier.toFixed(2)}\n獲得：EXP ${fmt(displayedXP)}、${fmt(gold)}G、素材 ${fmt(mat)}個${up?'\nLEVEL UP! '+p.level+'になりました':''}${first?'\n★ 世界初討伐を達成！ 世界フラグを更新しました。':''}${bt.live?`\n配信：知名度+${Math.round(fame*v40BroadcastMultiplier())} / フォロワー+${Math.round(follow*v40BroadcastMultiplier())}（希少装備補正 ×${v40BroadcastMultiplier().toFixed(2)}）`:''}\nモチベーション補正 ×${motivationFactor.toFixed(2)} / フォロワー補正 ×${v39FollowerXpRate().toFixed(2)}${v28Job()==='聖職者'?` / 有効回復量 ${Math.round(bt.stats?.playerHealing||0)}`:''}${companionIds(bt).length?`\n同行：${companionIds(bt).map(agentName).join('、')}（新しい知り合いは「フレンドと交流」へ）`:''}`;
- if(won){const relic=maybePlayerFindRelic(bt);if(relic)result+=`\n✦ ${relic.name}を発見した！（持ち物から装備可能）`;}$('#modalRoot').innerHTML='';finishAction();showModal(won?'討伐成功！':'冒険終了',result,[{text:'結果を閉じる',main:true,action:closeModal}]);
+ if(b&&won)addEvent('player',`${b.name}の討伐に成功`,`討伐報酬：${gold}G、EXP ${displayedXP}。活躍評価${performance.rating}。${first?'世界初討伐を記録。':'討伐成功を記録。'}${isFirstPersonalBoss?' 個人初回討伐ボーナス獲得。':''}${bt.live?'配信で注目を集めた。':''}`,{importance:bt.live&&first?2:0,bossId:b.id});
+ p.gold+=gold;p.materials+=mat;if(bt.live)v40BroadcastGain(fame,follow);else fameGain(fame,follow);
+ if(isFirstPersonalBoss){
+  p.bossFirstVictory49??={};p.bossFirstVictory49[b.id]=G.day;
+  fameGain(bossFirstFame,bossFirstFans);
+  addEvent('player',`【初回討伐報酬】${b.name}`,`個人初討伐達成。知名度+${fmt(bossFirstFame)}、フォロワー+${fmt(bossFirstFans)}を獲得。`,{importance:2,bossId:b.id});
+ }
+ const up=xpGain(xp);maybeMeet(a.id,bt.friend,bt.guests||[]);
+ let result=`${reason}\n${b?b.name+' / ':a.name+' / '}討伐数 ${bt.kills}（自分 ${performance.playerKills} / 仲間 ${performance.allyKills}）\n活躍評価 ${performance.rating} / 総合力 ${fmt(performance.power)}（Lv・武器・防具）\n与ダメージ：自分 ${fmt(Math.round(performance.playerDamage))} / 仲間 ${fmt(Math.round(performance.allyDamage))}\n活躍倍率 ×${performance.multiplier.toFixed(2)}\n獲得：EXP ${fmt(displayedXP)}、${fmt(gold)}G、素材 ${fmt(mat)}個${up?'\nLEVEL UP! '+p.level+'になりました':''}${first?'\n★ 世界初討伐を達成！':''}${bt.live?`\n配信：知名度+${Math.round(fame*v40BroadcastMultiplier())} / フォロワー+${Math.round(follow*v40BroadcastMultiplier())}（希少装備補正 ×${v40BroadcastMultiplier().toFixed(2)}）`:''}\nモチベーション補正 ×${motivationFactor.toFixed(2)} / フォロワー補正 ×${v39FollowerXpRate().toFixed(2)}${v28Job()==='聖職者'?` / 有効回復量 ${Math.round(bt.stats?.playerHealing||0)}`:''}${companionIds(bt).length?`\n同行：${companionIds(bt).map(agentName).join('、')}（新しい知り合いは「フレンドと交流」へ）`:''}`;
+ if(won){
+  if(isFirstPersonalBoss)result+=`\n🏆 このボスの初回討伐報酬：知名度 +${fmt(bossFirstFame)}、フォロワー +${fmt(bossFirstFans)}`;
+  if(b)result+=`\n戦闘報酬方針：${focus==='money'?'お金重視（G×1.50／EXP×0.75）':focus==='experience'?'経験値重視（EXP×1.35／G×0.75）':'バランス（標準）'}`;
+  const relic=b?(isFirstPersonalBoss?v49FirstBossRelic(b,first?.30:.10):null):maybePlayerFindRelic(bt);
+  if(relic)result+=`\n✦ ${relic.name}を発見した！（持ち物から装備可能）`;
+
+ }$('#modalRoot').innerHTML='';finishAction();showModal(won?'討伐成功！':'冒険終了',result,[{text:'結果を閉じる',main:true,action:closeModal}]);
 }
 function changePlayerName(){
  if(battle)return;modalMode='name';
@@ -1703,6 +1725,28 @@ function ensureEquipmentState(){
  for(const [slot,id] of Object.entries(p.equipped)){if(id&&!p.inventory.includes(id))p.equipped[slot]=null}
 }
 function equipmentStats(){if(!G?.player)return{atk:0,hp:0};ensureEquipmentState();let atk=0,hp=0;for(const id of Object.values(G.player.equipped)){let gear=equipmentById(id);if(gear){atk+=gear.atk;hp+=gear.hp}}return{atk,hp}}
+// NPCs automatically use any unique equipment they own when they meet its level.
+// Compute its advantage over level-appropriate ordinary gear, so it boosts real
+// combat power without counting the same item multiple times after a transfer.
+function npcRelicStats(id){
+ const a=typeof id==='string'?agent(id):id;
+ const empty={atk:0,hp:0,effectiveLevel:0,items:[]};
+ if(!G?.relics||!a||!Number.isFinite(a.level))return empty;
+ const slots={};
+ for(const d of RELIC_GEAR){
+  if(G.relics[d.id]?.owner!==a.id||a.level<d.level)continue;
+  const ordinary=COMMON_GEAR.filter(g=>g.slot===d.slot&&g.level<=a.level)
+   .sort((x,y)=>(y.atk+y.hp*.17)-(x.atk+x.hp*.17))[0];
+  const dAtk=Math.max(0,d.atk-(ordinary?.atk||0));
+  const dHp=Math.max(0,d.hp-(ordinary?.hp||0));
+  const score=dAtk+dHp*.17;
+  if(!slots[d.slot]||score>slots[d.slot].score)slots[d.slot]={d,score,dAtk,dHp};
+ }
+ const values=Object.values(slots),atk=Math.round(values.reduce((n,x)=>n+x.dAtk*.72,0));
+ const hp=Math.round(values.reduce((n,x)=>n+x.dHp,0));
+ return{atk,hp,effectiveLevel:Math.min(15,atk/2.5+hp/62),items:values.map(x=>x.d)};
+}
+
 function publicRelicReport(id,owner,verb,kind='economic'){
  const r=G.relics[id],d=equipmentById(id);if(!r||!d)return;
  const ownerName=owner==='player'?G.player.name:agentName(owner);
@@ -1928,7 +1972,7 @@ function bindRoomControls(){const cv=$('#roomCanvas');if(!cv)return;
  $('#roomE').onclick=roomAct;
  $$('[data-room-key]').forEach(b=>{const key=b.dataset.roomKey;b.onpointerdown=e=>{e.preventDefault();roomKeys[key]=true;b.setPointerCapture?.(e.pointerId)};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>{roomKeys[key]=false}});
  $('#rpgNext').onclick=nextDay;
- $('#rpgSettings').onclick=()=>showModal('ゲームについて',`装備やユニーク装備は今回のアップデートで追加されました。\nセーブデータの書出・読込は画面右上の設定メニューから利用できます。\nゲーム内で知った希少装備の所持者情報は、あとで変わっている場合があります。`);
+ $('#rpgSettings').onclick=()=>showModal('ゲームについて',`セーブデータの書出・読込は画面右上の設定メニューから利用できます。\nゲーム内で知った希少装備の所持者情報は、あとで変わっている場合があります。`);
 }
 function openRoomSettings(){showModal('設定・セーブデータ','この世界の進行状況はブラウザに自動保存されます。',[{text:'セーブデータ書出',action:()=>{closeModal();$('#exportBtn').click()}},{text:'セーブデータ読込',action:()=>{closeModal();$('#importBtn').click()}},{text:'新しい世界',action:()=>{closeModal();$('#newBtn').click()}},{text:'閉じる',main:true,action:closeModal}])}
 const previousRenderMain=renderMain;
@@ -3783,8 +3827,8 @@ updateBattleAllies=function(bt,dt){
   const dx=gx-ally.x,dy=gy-ally.y,dist=Math.hypot(dx,dy);
   if(dist>24){const step=Math.min(dist,170*dt);ally.x=clamp(ally.x+dx/dist*step,30,930);ally.y=clamp(ally.y+dy/dist*step,72,493);ally.walk+=dt;}
   if(target){ally.dir=target.x>=ally.x?1:-1;const reach=Math.hypot(target.x-ally.x,target.y-ally.y);
-   if(reach<445&&ally.attackCd<=0){const isBow=a.job==='弓使い';const dmg=Math.round((10+a.level*2.1)*(isBow?.60:1.37)*(target.boss?.85:1));v28Projectile(bt,ally.x,ally.y-15,Math.atan2(target.y-ally.y,target.x-ally.x),dmg,ally.id,isBow?'bow':'staff',isBow?780:560);ally.attackCd=isBow?.78:2.06;ally.attackFlash=.20;}
-   if(a.job==='聖職者'&&ally.skillCd<=0){const low=bt.allies.filter(x=>x.hp>0&&x.hp<x.max*.75&&Math.hypot(x.x-ally.x,x.y-ally.y)<200).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low){low.hp=Math.min(low.max,low.hp+Math.round(18+a.level*1.3));ally.skillCd=2.0;bt.fx.push({x:low.x,y:low.y,time:.31,type:'heal',color:'#90f5be'});}}
+   if(reach<445&&ally.attackCd<=0){const isBow=a.job==='弓使い';const dmg=Math.round((10+a.level*2.1+npcRelicStats(ally.id).atk)*(isBow?.60:1.37)*(target.boss?.85:1));v28Projectile(bt,ally.x,ally.y-15,Math.atan2(target.y-ally.y,target.x-ally.x),dmg,ally.id,isBow?'bow':'staff',isBow?780:560);ally.attackCd=isBow?.78:2.06;ally.attackFlash=.20;}
+   if(a.job==='聖職者'&&ally.skillCd<=0){const low=bt.allies.filter(x=>x.hp>0&&x.hp<x.max*.75&&Math.hypot(x.x-ally.x,x.y-ally.y)<200).sort((x,y)=>x.hp/x.max-y.hp/y.max)[0];if(low){low.hp=Math.min(low.max,low.hp+Math.round(18+a.level*1.3+npcRelicStats(ally.id).atk*.2));ally.skillCd=2.0;bt.fx.push({x:low.x,y:low.y,time:.31,type:'heal',color:'#90f5be'});}}
   }
  }
 };
@@ -4854,14 +4898,14 @@ worldHtml=function(){
  if(start<0||end<=start)return h;
  const p=v23PopulationStats(),level=v23LevelPlace('player'),stream=G.player.broadcasts?v23StreamPlace('player'):null;
  const section=(kind,name)=>`<section class="v20-ranklist v40-ranklist"><h3>${name} TOP 10</h3>${v40LeaderboardRows(kind,10)}<button class="v40-top100" type="button" data-v40-ranking="${kind}">📊 ${name}ランキング TOP100を見る</button></section>`;
- const panel=`<div class="panel"><h2>冒険者ランキング</h2><p class="small-t muted">上位10人を1位から10位まで連続表示。詳しい記録はTOP100で確認できます。未追跡の一般参加者は100位以下の推計順位に反映します。</p><div class="v20-ranks">${section('level','攻略レベル')}${section('stream','配信者')}</div><div class="focus-card" style="margin-top:10px"><b>あなたの順位</b><div class="small-t muted">攻略 ${fmt(level)}位 / ${fmt(p.level)}人　・　配信 ${stream?fmt(stream)+'位 / '+fmt(p.stream)+'人':'未配信'}</div></div></div>`;
+ const panel=`<div class="panel"><h2>冒険者ランキング</h2><p class="small-t muted">上位の冒険者たち。ランキング詳細からTOP100を確認できます。</p><div class="v20-ranks">${section('level','攻略レベル')}${section('stream','配信者')}</div><div class="focus-card" style="margin-top:10px"><b>あなたの順位</b><div class="small-t muted">攻略 ${fmt(level)}位 / ${fmt(p.level)}人　・　配信 ${stream?fmt(stream)+'位 / '+fmt(p.stream)+'人':'未配信'}</div></div></div>`;
  return h.slice(0,start)+panel+h.slice(end);
 };
 function v40OpenRanking(kind='level'){
  if(!G)return;kind=kind==='stream'?'stream':'level';
  const label=kind==='stream'?'配信者':'攻略レベル';
  const el=document.getElementById('modalRoot');if(!el)return;
- el.innerHTML=`<div class="modal-back"><div class="modal v40-ranking-modal"><div class="v40-ranking-header"><h2>🏆 ${label}ランキング TOP100</h2><button type="button" class="small ghost" data-v40-close>✕ 閉じる</button></div><div class="v40-ranking-tabs"><button class="small ${kind==='level'?'main':''}" data-v40-switch="level">攻略レベル</button><button class="small ${kind==='stream'?'main':''}" data-v40-switch="stream">配信者</button></div><p class="small-t muted">上位100人を実際のレベル・フォロワー順で表示。人物を押すと詳細を確認できます。</p><div class="v40-ranking-scroll">${v40LeaderboardRows(kind,100)}</div></div></div>`;
+ el.innerHTML=`<div class="modal-back"><div class="modal v40-ranking-modal"><div class="v40-ranking-header"><h2>🏆 ${label}ランキング TOP100</h2><button type="button" class="small ghost" data-v40-close>✕ 閉じる</button></div><div class="v40-ranking-tabs"><button class="small ${kind==='level'?'main':''}" data-v40-switch="level">攻略レベル</button><button class="small ${kind==='stream'?'main':''}" data-v40-switch="stream">配信者</button></div><p class="small-t muted">名前を押すと人物の詳細を確認できます。</p><div class="v40-ranking-scroll">${v40LeaderboardRows(kind,100)}</div></div></div>`;
  el.querySelector('[data-v40-close]').onclick=closeModal;
  el.querySelectorAll('[data-v40-switch]').forEach(b=>b.onclick=()=>v40OpenRanking(b.dataset.v40Switch));
  el.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>openProfile(b.dataset.profile));
@@ -5617,4 +5661,223 @@ const v45UIStyle=document.createElement('style');v45UIStyle.textContent=`
 /* ===== end v4.5 ===== */
 /* ===== WORLD//LOG v4.7: protagonist XP +15%; companion XP share -10% ===== */
 
+/* ===== WORLD//LOG v4.8: watched-streamer messages, invitation shortcuts, unread phone badge ===== */
+// Message recipients are determined by actual viewing history, not by celebrity status.
+function v48WatchedStreamers(){
+ if(!G)return [];
+ return Object.entries(G.streamHistory||{})
+  .filter(([id,h])=>Number(h?.views)>0&&!!agent(id)&&isActiveCharacter(agent(id)))
+  .map(([id,h])=>({a:agent(id),views:Number(h.views)||0,lastViewed:Number(h.lastViewed)||0}))
+  .sort((x,y)=>y.lastViewed-x.lastViewed||y.views-x.views||x.a.name.localeCompare(y.a.name,'ja'));
+}
+v25DirectMessageHtml=function(){
+ const watched=v48WatchedStreamers();
+ const options=watched.map(({a,views})=>`<option value="${esc(a.id)}">${esc(a.name)} / ${esc(a.job||'冒険者')} / 視聴${views}回</option>`).join('');
+ return `<div class="panel v25-outreach"><h3>✉️ 配信者にメッセージを送る</h3>
+ <p class="small-t muted">一度でも配信を視聴した相手に連絡できます。有名人以外の配信者にも送れます。1日1通まで。</p>
+ <div class="field"><label for="outreachTarget">送信先（視聴したことのある配信者）</label><select id="outreachTarget" ${watched.length?'':'disabled'}>${options||'<option value="">まだ視聴した配信者がいません</option>'}</select></div>
+ <div class="field"><label for="v25MessageTopic">送る内容</label><select id="v25MessageTopic">${V25_MESSAGE_TOPICS.map(([id,label])=>`<option value="${esc(id)}">${esc(label)}</option>`).join('')}</select></div>
+ <p id="outreachOdds" class="tiny muted">${watched.length?'相手の活動方針や関係によって返信があるかが変わります。':'ライブ配信を一度視聴すると、その配信者にメッセージを送れるようになります。'}</p>
+ <button type="button" id="sendOutreach" class="main small" ${G.lastOutreachDay===G.day||!watched.length?'disabled':''}>メッセージを送る</button></div>`;
+};
+// Recheck the viewing history when sending, including on old saves; do not trust just the option markup.
+sendOutreach=function(){
+ const id=$('#outreachTarget')?.value,a=agent(id),topic=$('#v25MessageTopic')?.value||'friendship';
+ if(!a||!isActiveCharacter(a)||!(Number(G.streamHistory?.[id]?.views||0)>0))return writeToast('一度配信を視聴した相手を選んでください');
+ if(G.lastOutreachDay===G.day)return writeToast('メッセージは1日1通までです');
+ G.outreachCooldown??={};
+ if((G.outreachCooldown[id]||0)>G.day)return writeToast('同じ相手には数日空けてから連絡できます');
+ G.lastOutreachDay=G.day;G.outreachCooldown[id]=G.day+4;
+ const compatible=topic===v25DMPreference(a);
+ const chance=clamp(outreachOdds(a)*(compatible?1.5:.68),.008,.75);
+ const subject=V25_MESSAGE_TOPICS.find(x=>x[0]===topic)?.[1]||'メッセージ';
+ const known=!!G.contacts[id];
+ addEvent('player',`${a.name}にメッセージを送った`,`「${subject}」という話題でメッセージを送信した。`,{importance:0,actorIds:[id]});
+ if(rand()<chance){
+  if(known)G.contacts[id].affinity=clamp((G.contacts[id].affinity||0)+(compatible?7:3),0,100);
+  else addContact(id,ri(9,17)+(compatible?4:0),'dm');
+  addEvent('player',`${a.name}から返事が届いた`,known?`「${subject}」への返信が届き、少し親しくなった。`:`「${subject}」というメッセージに返信があった。知り合いとなったが、まだフレンドではない。`,{importance:0,actorIds:[id]});
+  writeToast(known?`${a.name}から返信が届き、交流が深まりました`:`${a.name}から返信！「会ったことがある人」に追加`);
+ }else writeToast(`${a.name}からは今回は返信がありませんでした`);
+ v27MessageTab='sent';saveGame();renderMain();
+};
+// Keep the cross-link on the community screen consistent with the new compose form.
+const v48BeforeCommunityHtml=communityHtml;
+communityHtml=function(){return v48BeforeCommunityHtml().replace(/有名人にメッセージ/g,'配信者にメッセージ')};
+
+// The received-mail item for a fixed party invitation opens its actual membership screen.
+// Historic mail remains readable even after an invitation expires or is declined.
+function v48OfferForMail(e){
+ if(!G||!e||!/^「.+」から加入のお誘い$/.test(String(e.title||'')))return null;
+ return (G.partyOffers||[]).find(o=>{
+  const p=party(o.partyId);
+  return p&&e.title===`「${p.name}」から加入のお誘い`&&
+   Number(o.created)===Number(e.day)&&(!e.actorIds?.length||e.actorIds.includes(o.from));
+ })||null;
+}
+const v48EarlierMailCard=v44MailCard;
+v44MailCard=function(e,kind){
+ let html=v48EarlierMailCard(e,kind);
+ if(kind!=='in'||!/^「.+」から加入のお誘い$/.test(String(e?.title||'')))return html;
+ const offer=v48OfferForMail(e),p=offer&&party(offer.partyId);
+ const valid=!!(offer&&p&&p.active&&!offer.declined&&offer.expiry>=G.day&&!G.playerParty&&p.members.length<5);
+ const action=valid?
+  `<button type="button" class="main small" data-v48-party-mail="${esc(p.id)}">🛡️ 固定パーティ参加画面へ</button>`:
+  `<span class="small-t muted">${G.playerParty&&G.playerParty.id===p?.id?'このパーティに参加済み':G.playerParty?'現在は別の固定パーティに所属中':'この招待は終了・期限切れです'}</span>`;
+ return html.replace('<div class="v44-mail-actions">',`<div class="v48-invite-action">${action}</div><div class="v44-mail-actions">`);
+};
+document.addEventListener('click',ev=>{
+ const button=ev.target.closest?.('[data-v48-party-mail]');if(!button)return;
+ ev.preventDefault();ev.stopPropagation();
+ const id=button.dataset.v48PartyMail;
+ const o=(G.partyOffers||[]).find(x=>x.partyId===id&&!x.declined&&x.expiry>=G.day),p=party(id);
+ if(!o||!p?.active||G.playerParty)return writeToast('この招待は現在利用できません');
+ v19CommunityTab='party';
+ if(typeof v25VisitedStack!=='undefined'&&roomScreen&&roomScreen!=='community')v25VisitedStack.push(roomScreen);
+ roomScreen='community';phonePage='apps';renderMain();
+ const body=document.querySelector('#roomPanel .rpg-dialog-body');if(body)body.scrollTop=0;
+},true);
+
+// Show a compact notification dot ON the smartphone shortcut (not only the header mail notice).
+const v48BeforePaintHud=v34PaintHud;
+v34PaintHud=function(){
+ v48BeforePaintHud();
+ if(!G)return;
+ const count=v34UnreadCounts();
+ const hud=document.querySelector('.rpg-hud');
+ if(hud){
+  // Keep the original labeled smartphone button; never add a second icon-only one.
+  hud.querySelector('#v48PhoneQuick')?.remove();
+  const btn=hud.querySelector('#v20Status');
+  if(btn){
+   btn.classList.add('v48-phone-has-badge');
+   btn.title=count?`スマホ（未読メッセージ ${count}件）`:'スマホを開く';
+   let dot=btn.querySelector('.v48-unread-dot');
+   if(count&&!dot){dot=document.createElement('span');dot.className='v48-unread-dot';dot.setAttribute('aria-hidden','true');btn.appendChild(dot)}
+   else if(!count&&dot)dot.remove();
+  }
+ }
+ document.querySelectorAll('.home-choice.phone-choice').forEach(btn=>{
+  btn.classList.add('v48-phone-has-badge');
+  let dot=btn.querySelector('.v48-unread-dot');
+  if(count&&!dot){dot=document.createElement('span');dot.className='v48-unread-dot';dot.setAttribute('aria-hidden','true');btn.appendChild(dot)}
+  else if(!count&&dot)dot.remove();
+ });
+};
+const v48Style=document.createElement('style');
+v48Style.textContent=`
+.v48-phone-quick{position:relative;display:inline-grid;place-items:center;min-width:35px;min-height:34px;padding:4px 6px;border:1px solid #58728c;border-radius:9px;background:#21334b;color:#f4f8ff;cursor:pointer;font-size:19px}
+.v48-phone-quick:hover{background:#344966}
+.v48-phone-has-badge{position:relative}
+.v48-unread-dot{position:absolute;right:-4px;top:-5px;width:11px;height:11px;background:#ed3543;border:2px solid #f7f9fd;border-radius:50%;z-index:5;box-shadow:0 0 0 1px #812b36}
+.v48-invite-action{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 10px 4px}
+.v48-invite-action button{white-space:normal}
+`;
+document.head.appendChild(v48Style);
+/* ===== end v4.8 ===== */
+
+
+
+/* ===== WORLD//LOG v4.9: personal boss first-clear and adventure reward strategy ===== */
+function v49FirstBossRelic(b,chance=.30,owner="player"){
+ if(!b||!G)return null;
+ ensureEquipmentState();
+ // Only undiscovered unique gear may enter the world; never duplicate a unique item
+ // already obtained by another player. Restrict to a nearby boss level tier.
+ const eligible=RELIC_GEAR.filter(d=>{
+  const r=G.relics?.[d.id];
+  return r&&!r.discovered&&Math.abs(d.level-b.level)<=7;
+ });
+ if(!eligible.length||rand()>=chance)return null;
+ const minDistance=Math.min(...eligible.map(d=>Math.abs(d.level-b.level)));
+ const closest=eligible.filter(d=>Math.abs(d.level-b.level)<=minDistance+3);
+ const item=pick(closest);
+ transferRelic(item.id,owner,`${b.name}の${chance>=.3?'世界初':'個人初回'}討伐報酬`,true);
+ return item;
+}
+// Historical manual saves and imported JSON remain compatible; no schema version bump.
+const v49BeforeNormalize=normalizeSocialState;
+normalizeSocialState=function(){v49BeforeNormalize();if(G?.player){G.player.bossFirstVictory49??={};if(!['balanced','money','experience'].includes(G.player.adventureFocus49))G.player.adventureFocus49='balanced';}};
+const v49BeforeMakeWorld=makeWorld;
+makeWorld=function(...args){const result=v49BeforeMakeWorld(...args);if(G?.player){G.player.bossFirstVictory49??={};G.player.adventureFocus49='balanced'}return result;};
+// Persist selection when an adventure begins, including if the tab is reached via
+// a quest or invitation, and also persist it for interrupted battle recovery.
+const v49BeforeOpenBattle=openBattle;
+openBattle=function(setting,resume=false){
+ const saved=G.pendingBattle?.rewardFocus;
+ const choice=['balanced','money','experience'].includes(saved)?saved:
+              ['balanced','money','experience'].includes(G.player.adventureFocus49)?G.player.adventureFocus49:'balanced';
+ if(G.pendingBattle)G.pendingBattle.rewardFocus=choice;
+ return v49BeforeOpenBattle({...setting,rewardFocus:choice},resume);
+};
+const v49BeforeAdventureHtml=adventureHtml;
+adventureHtml=function(){
+ let html=v49BeforeAdventureHtml();
+ const focus=['balanced','money','experience'].includes(G.player.adventureFocus49)?G.player.adventureFocus49:'balanced';
+ const control=`<div class="field v49-reward-field"><label for="v49RewardFocus">今回の冒険で重視する報酬</label>
+  <select id="v49RewardFocus">
+   <option value="balanced" ${focus==='balanced'?'selected':''}>⚖️ バランス</option>
+   <option value="money" ${focus==='money'?'selected':''}>💰 お金重視（ゴールド＋50% ／ EXP－25%）</option>
+   <option value="experience" ${focus==='experience'?'selected':''}>📘 経験値重視（EXP＋35% ／ ゴールド－25%）</option>
+  </select><div class="tiny muted">戦闘・ボス討伐の報酬に適用。素材採取には影響しません。</div></div>`;
+ html=html.replace('<button id="startAction"',control+'<button id="startAction"');
+ // Clearly distinguish personal first-clear bonus from the world's first clear.
+
+ return html;
+};
+const v49BeforeBindMain=bindMain;
+bindMain=function(){
+ v49BeforeBindMain();
+ const control=document.querySelector('#v49RewardFocus');
+ if(control)control.onchange=()=>{G.player.adventureFocus49=control.value;saveGame();updateActionForm();};
+};
+const v49Style=document.createElement('style');v49Style.textContent=`.v49-reward-field{margin:15px 0 8px;padding:11px 13px;border:1px solid #4e7791;border-radius:10px;background:#12293baa}.v49-reward-field label{display:block;margin-bottom:7px;font-weight:750}.v49-reward-field select{width:100%;max-width:620px}.v49-reward-field .tiny{margin-top:7px}.v49-boss-first-hint{margin:6px 0 12px;line-height:1.55}`;
+document.head.append(v49Style);
+/* ===== end v4.9 ===== */
+
+
+/* ===== WORLD//LOG v5.0: worldwide first-clear relic, world display, unified phone badge ===== */
+// A world's first boss victory can belong to NPCs. Their 30% unique-relic reward
+// must be registered with the actual NPC, and must not duplicate an existing relic.
+const v50BeforeRecordBossClear=recordBossClear;
+recordBossClear=function(b,ids,partyId,avgLvl,temporaryName=null){
+ const first=v50BeforeRecordBossClear(b,ids,partyId,avgLvl,temporaryName);
+ if(first&&!ids.includes('player')){
+  const npcIds=ids.filter(id=>!!agent(id));
+  if(npcIds.length)v49FirstBossRelic(b,.30,pick(npcIds));
+ }
+ return first;
+};
+// All earlier ranking wrappers rely on the former panel as an insertion boundary.
+// Remove only the final rendered panel, leaving the sole "注目パーティ" panel.
+const v50BeforeWorldHtml=worldHtml;
+worldHtml=function(){
+ const html=v50BeforeWorldHtml();
+ const tpl=document.createElement('template');tpl.innerHTML=html;
+ for(const panel of tpl.content.querySelectorAll('.panel')){
+  const h=panel.querySelector(':scope > h2');
+  if(h?.textContent?.trim()==='有力パーティの動向')panel.remove();
+ }
+ return tpl.innerHTML;
+};
+// v2.6 rewrites the labeled #v20Status contents during renderMain. After a
+// render, ensure its unread badge survives that rewrite.
+const v50BeforeRenderMain=renderMain;
+renderMain=function(...args){
+ const result=v50BeforeRenderMain(...args);
+ if(G){
+  const btn=document.querySelector('.rpg-hud #v20Status');
+  const count=v34UnreadCounts();
+  document.querySelector('#v48PhoneQuick')?.remove();
+  if(btn){
+   btn.classList.add('v48-phone-has-badge');
+   btn.title=count?`スマホ（未読メッセージ ${count}件）`:'スマホを開く';
+   const old=btn.querySelector('.v48-unread-dot');
+   if(count&&!old){const dot=document.createElement('span');dot.className='v48-unread-dot';dot.setAttribute('aria-hidden','true');btn.appendChild(dot)}
+   if(!count&&old)old.remove();
+  }
+ }
+ return result;
+};
+/* ===== end v5.0 ===== */
 </script></body></html>
