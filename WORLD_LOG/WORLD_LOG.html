@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WORLD//LOG v5.0 — エルダ・ノヴァ</title>
+<title>WORLD//LOG v5.2 — エルダ・ノヴァ</title>
 <style>
 :root{color-scheme:dark;--bg:#0a101c;--panel:#131d30;--panel2:#1b2940;--line:#30415a;--ink:#eff6ff;--muted:#9cb0cd;--cyan:#73dfd3;--gold:#ffc879;--red:#ef8a91;--blue:#87b8ff;--green:#92d9a0}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 12% 0,#243651 0,transparent 33%),radial-gradient(ellipse at 94% 8%,#172c3b 0,transparent 28%),var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-size:14px;line-height:1.6}
@@ -1328,7 +1328,7 @@ function watchStream(sid){
  const h=streamerHistory(host.id);if(!(host.id in G.favStreamers))G.favStreamers[host.id]=true;h.views++;h.lastViewed=G.day;if(s.uniqueReport)observeRelicReport(s.uniqueReport);
  let detail='';if(s.bossId){const b=boss(s.bossId),was=G.player.knowledge[b.id]||0,now=Math.min(3,was+1);G.player.knowledge[b.id]=now;detail=`${b.name}の攻略知識 ${was}→${now}/3。「${b.weak}」を学んだ。`}
  else detail='攻略知識の増加なし。';
- const delta=motivationDelta(Number.isFinite(s.moodShift)?s.moodShift:8);
+ const delta=motivationDelta(Math.max(5,Number.isFinite(s.moodShift)?s.moodShift:8));
  let invitation=false;
  if(h.views>=4&&!G.contacts[host.id]?.friend&&!incomingInvites().some(i=>i.from===host.id)){
   let compatible=clamp(1-Math.max(0,host.level-G.player.level)/36,.28,1);
@@ -1373,7 +1373,7 @@ function battleControlsHTML(){return`<div class="touch-controls"><div class="dpa
 function companionIds(bt){return [...new Set([...(bt.friend?[bt.friend]:[]),...(bt.guests||[])])].filter(id=>!!agent(id))}
 function openBattle(setting,resume=false){
  const p=G.player,mod=setting.boss;
- const instance={...setting,active:true,time:0,last:performance.now(),duration:mod?13:11,kills:0,target:mod?1:10,spawn:0,frames:0,friendCd:0.9,allyTimers:{},allies:[],info:'',infoTimer:0,fx:[],keys:{},enemies:[],nextId:1,damageTaken:0,stats:{playerDamage:0,allyDamage:0,playerKills:0,allyKills:0,playerHits:0,allyHits:0,skillsHit:0},attemptDay:G.day,motivationAtStart:G.player.motivation,player:{x:265,y:275,dir:1,hp:130+p.level*7+p.gear*8+equipmentStats().hp,max:130+p.level*7+p.gear*8+equipmentStats().hp,attackCd:0,skillCd:0,dodgeCd:0,immune:0,dodgeTime:0}};
+ const instance={...setting,active:true,time:0,last:performance.now(),duration:mod?(mod.tier==='demon'?30:mod.tier==='elite'?26:13):11,kills:0,target:mod?1:10,spawn:0,frames:0,friendCd:0.9,allyTimers:{},allies:[],info:'',infoTimer:0,fx:[],keys:{},enemies:[],nextId:1,damageTaken:0,stats:{playerDamage:0,allyDamage:0,playerKills:0,allyKills:0,playerHits:0,allyHits:0,skillsHit:0},attemptDay:G.day,motivationAtStart:G.player.motivation,player:{x:265,y:275,dir:1,hp:130+p.level*7+p.gear*8+equipmentStats().hp,max:130+p.level*7+p.gear*8+equipmentStats().hp,attackCd:0,skillCd:0,dodgeCd:0,immune:0,dodgeTime:0}};
  battle=instance;
  instance.allies=companionIds(instance).map((id,i)=>createBattleAlly(id,i,instance));
  const previous=resume?G.pendingBattle?.snapshot:null;
@@ -1440,10 +1440,23 @@ function battleLoop(now){if(!battle?.active)return;const bt=battle;let dt=docume
  for(const e of [...bt.enemies]){
   if(e.hp<=0)continue;
   e.cooldown-=dt;e.hit=Math.max(0,e.hit-dt);
-  if(e.charge>0){e.charge-=dt;if(e.charge<=0){for(const t of battleDamageTargets(bt)){if(Math.hypot(t.x-e.chargeX,t.y-e.chargeY)<(e.boss?106:64)){if(t.isPlayer){if(p.immune<=0)damagePlayer(e.atk*(e.boss?1.3:1)*enemyThreatFactor(e.lv))}else damageAlly(t.ref,e.atk*(e.boss?1.3:1)*Math.min(3,Math.pow(1.10,Math.max(0,e.lv-(agent(t.ref.id)?.level||1)))),bt)}}e.cooldown=e.boss?1.65:1.1;e.charge=0}continue}
-  const targets=battleDamageTargets(bt),t=targets.reduce((best,x)=>!best||Math.hypot(x.x-e.x,x.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?x:best,null),d=Math.hypot(t.x-e.x,t.y-e.y)||1;
+  if(e.charge>0){e.charge-=dt;if(e.charge<=0){for(const t of battleDamageTargets(bt)){if(Math.hypot(t.x-e.chargeX,t.y-e.chargeY)<(e.boss?106:64)){if(t.isPlayer){if(p.immune<=0)damagePlayer(e.atk*(e.boss?1.3:1)*enemyThreatFactor(e.lv))}else if(!e.boss||rand()>=.35)damageAlly(t.ref,e.atk*(e.boss?.70:1)*Math.min(3,Math.pow(1.10,Math.max(0,e.lv-(agent(t.ref.id)?.level||1)))),bt)}}e.cooldown=e.boss?1.65:1.1;e.charge=0}continue}
+  const targets=battleDamageTargets(bt);
+  let t=targets.reduce((best,x)=>!best||Math.hypot(x.x-e.x,x.y-e.y)<Math.hypot(best.x-e.x,best.y-e.y)?x:best,null);
+  if(e.boss&&targets.length>1){
+   const previous=targets.find(x=>(x.isPlayer?'player':x.ref.id)===e.v52AggroTarget);
+   if(!previous||bt.time>=(e.v52AggroUntil||0)){
+    const nearby=targets.filter(x=>Math.hypot(x.x-e.x,x.y-e.y)<300);
+    const pool=nearby.length?nearby:targets;
+    const chosen=pick(pool);
+    e.v52AggroTarget=chosen.isPlayer?'player':chosen.ref.id;
+    e.v52AggroUntil=bt.time+2.5;
+   }
+   t=targets.find(x=>(x.isPlayer?'player':x.ref.id)===e.v52AggroTarget)||t;
+  }
+  const d=Math.hypot(t.x-e.x,t.y-e.y)||1;
   if(d>e.r+24){let step=e.speed*dt;e.x+=((t.x-e.x)/d)*step;e.y+=((t.y-e.y)/d)*step}
-  else if(e.cooldown<=0){if(e.boss){e.charge=Math.max(.36,.75-(G.player.knowledge[bt.boss.id]||0)*.04);e.chargeX=t.x;e.chargeY=t.y;e.cooldown=2.2}else{if(t.isPlayer){if(p.immune<=0)damagePlayer(e.atk*enemyThreatFactor(e.lv))}else damageAlly(t.ref,e.atk*Math.min(3,Math.pow(1.10,Math.max(0,e.lv-(agent(t.ref.id)?.level||1)))),bt);e.cooldown=ri(10,18)/10}}
+  else if(e.cooldown<=0){if(e.boss){e.charge=Math.max(.36,.75-(G.player.knowledge[bt.boss.id]||0)*.04);e.chargeX=t.x;e.chargeY=t.y;e.cooldown=2.2}else{if(t.isPlayer){if(p.immune<=0)damagePlayer(e.atk*enemyThreatFactor(e.lv))}else damageAlly(t.ref,e.atk*(e.boss?.80:1)*Math.min(3,Math.pow(1.10,Math.max(0,e.lv-(agent(t.ref.id)?.level||1)))),bt);e.cooldown=ri(10,18)/10}}
  }
  updateBattleAllies(bt,dt);
  if(!bt.boss){bt.spawn-=dt;if(bt.spawn<=0&&bt.enemies.filter(e=>e.hp>0).length<5){bt.enemies.push(createEnemy(bt,null,false));bt.spawn=.78}}
@@ -3403,24 +3416,23 @@ startAdventure=function(){
    launchAdventure({type,id,b,live,friend:null,guests:requested,source:'friend'});
   }}]);
 };
-// Boss HP now scales to a raid encounter rather than ordinary-monster damage.
-// This only affects player-controlled real-time boss fights; NPC world simulation is unchanged.
+// Real-time boss encounters have fixed raid durability independent of ally count.
+// NPC world simulation is unchanged.
 const v25BaseCreateEnemy = createEnemy;
 createEnemy=function(bt,b,isBoss){
  const e=v25BaseCreateEnemy(bt,b,isBoss);
  if(isBoss){
-  const companions=Math.min(4,companionIds(bt).length);
-  const hpScale=4.8+companions*.70;
+  const hpScale=9.6; // Same boss durability for solo and all party sizes
   e.max=Math.round(e.max*hpScale);e.hp=e.max;
-  e.atk=Math.round(e.atk*(1.15+companions*.06));
-  e.speed=Math.round(e.speed*(1.06+companions*.015));
+  e.atk=Math.round(e.atk*1.15);
+  e.speed=Math.round(e.speed*1.06);
  }
  return e;
 };
-// Allies are useful but cannot melt a raid boss by themselves while the player idles.
+// Allies contribute full damage. Actual survivability and boss attack patterns prevent idle victories.
 const v25BaseHitEnemy = hitEnemy;
 hitEnemy=function(e,n,source){
- if(e?.boss&&source==='friend')n=Math.max(1,Math.round(n*.56));
+ // Every successful ally attack deals its full damage, even when several hit together.
  return v25BaseHitEnemy(e,n,source);
 };
 // Make the exact team count visible before launch and during the fight.
@@ -3434,7 +3446,7 @@ openBattle=function(setting,resume=false){const ret=v25BossBeforeOpenBattle(sett
  const count=companionIds(setting).length;
  const top=document.querySelector('.battle-top .tiny.muted');
  if(top)top.textContent=`${setting.live?'● 配信中 / ':''}${count?`主人公＋同行${count}人（合計${count+1}人） / `:'ソロ挑戦 / '}プレイDAY ${playerDayNo()}`;
- if(setting.boss){const title=document.querySelector('#battleInfo');if(title&&!resume){title.textContent=`ボス戦：${count+1}人編成に合わせて耐久力が変化します。必殺技だけでなく攻撃・回避の継続が重要です。`;}}
+ if(setting.boss){const title=document.querySelector('#battleInfo');if(title&&!resume){title.textContent='強敵との対決。仲間と連携し、予備動作を見極めよう。';}}
  return ret;
 };
 // ===== end v2.5 release fixes =====
@@ -3507,9 +3519,9 @@ createEnemy=function(bt,b,isBoss){const e=v26OldCreateEnemy(bt,b,isBoss);if(!isB
  else if(edge===2){e.x=ri(35,67);e.y=ri(80,488)}
  else{e.x=ri(895,928);e.y=ri(80,488)}
  }return e;};
-// Five-person boss needs an extra contribution; retains boss mechanics, no auto-win.
+// Maintain the same damage rules for groups of all sizes.
 const v26PreviousHitEnemy=hitEnemy;
-hitEnemy=function(e,n,source){if(e?.boss&&source==='friend'&&battle&&companionIds(battle).length===4)n=Math.max(1,Math.round(n*.90));return v26PreviousHitEnemy(e,n,source);};
+hitEnemy=function(e,n,source){/* No additional damage penalty for four companions. */return v26PreviousHitEnemy(e,n,source);};
 // Add members at most 5 in player-owned parties, and do not let random reshuffles change them.
 // Recruits now display details (including members, professions and profile links) before applying.
 const v26OldBindMain=bindMain;
@@ -3567,8 +3579,8 @@ const v27PreviousPhoneHtml=phoneHtml;
 phoneHtml=function(){
  if(phonePage!=='messages')return v27PreviousPhoneHtml();
  const recv=v27IncomingEvents(),sent=v27OutgoingEvents(),pending=incomingInvites();
- const tabs=[['received','受信メール',recv.length+pending.length],['sent','送信メール',sent.length],['compose','メッセージを送る',null]];
- const tabBar=`<div class="v27-mail-tabs" role="tablist" aria-label="メッセージ切り替え">${tabs.map(([id,label,count])=>`<button type="button" role="tab" data-v27-mailtab="${id}" aria-selected="${v27MessageTab===id}" class="${v27MessageTab===id?'active':''}">${label}${count!==null?` <span class="pill">${count}</span>`:''}</button>`).join('')}</div>`;
+ const tabs=[['received','受信メール',v34UnreadCounts()],['sent','送信メール',0],['compose','メッセージを送る',null]];
+ const tabBar=`<div class="v27-mail-tabs" role="tablist" aria-label="メッセージ切り替え">${tabs.map(([id,label,count])=>`<button type="button" role="tab" data-v27-mailtab="${id}" aria-selected="${v27MessageTab===id}" class="${v27MessageTab===id?'active':''}">${label}${count>0?` <span class="pill">${count}</span>`:''}</button>`).join('')}</div>`;
  let content='';
  if(v27MessageTab==='received')content=`<div class="v27-mail-heading"><h3>受信メール</h3><span class="v27-mail-note">新着順・冒険のお誘いもここに届きます</span></div>${invitationsHtml()}${recv.map(e=>v44MailCard(e,'in')).join('')||(!pending.length?'<div class="v27-mail-empty">まだ受信メールはありません。</div>':'')}`;
  else if(v27MessageTab==='sent')content=`<div class="v27-mail-heading"><h3>送信メール</h3><span class="v27-mail-note">以前送ったメッセージの履歴</span></div>${sent.map(e=>v44MailCard(e,'out')).join('')||'<div class="v27-mail-empty">まだメッセージを送っていません。</div>'}`;
@@ -3691,7 +3703,7 @@ inventoryScreen=function(){let h=v28OldInventory();const shield=equipmentById(G.
  return h.replace('防具は最大HP、武器は通常攻撃と必殺技に反映されます。装備の購入・切り替えでは行動回数を消費しません。','装備は職業によって使用できる種類が異なります。');};
 // Relationships: a subscriber is not automatically a friend or a hunting partner.
 const v28OldOutreachOdds=outreachOdds;
-outreachOdds=function(a){const seen=G?.streamHistory?.[a?.id]?.views||0;return clamp(v28OldOutreachOdds(a)*.33+(seen>=12?.015:0),.005,.18)};
+outreachOdds=function(a){const seen=G?.streamHistory?.[a?.id]?.views||0;const base=clamp(v28OldOutreachOdds(a)*.33+(seen>=12?.015:0),.005,.18);const fameGap=Math.max(0,(G?.player?.fame||0)-(a?.fame||0));const boost=.63*(1-Math.exp(-fameGap/Math.max(400,(a?.fame||0)+400)));return clamp(base+boost,.005,.90)};
 const v28OldOfferInvite=offerInvite;
 offerInvite=function(id,kind){if(kind==='viewer'){
  const h=G.streamHistory[id],c=G.contacts[id],a=agent(id);
@@ -4374,11 +4386,22 @@ drawBattle=function(bt){v35BaseDrawBattle(bt);const e=bt.v35Burst;if(!e)return;c
 function v35Ensure(){if(!G)return null;const w=G.v35||(G.v35={lastNpcRequestDay:0,requestCooldown:{}});w.requestCooldown??={};return w}
 const v35OriginalMake=makeWorld;makeWorld=function(seed){const r=v35OriginalMake(seed);v35Ensure();return r};
 const v35OriginalNormalize=normalizeSocialState;normalizeSocialState=function(){const r=v35OriginalNormalize();v35Ensure();return r};
-function v35RequestFriend(id){const c=G?.contacts?.[id],a=agent(id);if(!c||!a)return writeToast('まだ面識のない相手です');if(c.friend)return writeToast('すでにフレンドです');if(c.lastInvite===G.day)return writeToast('今日はすでに申請しています');
- const known=isKnownFigure(a),days=Math.max(0,G.day-(c.metDay||G.day));if(c.affinity<(known?65:46)||days<(known?8:3))return writeToast('今はまだ申請を受けてもらいにくい関係です');
- c.lastInvite=G.day;const chance=clamp((known?.055:.18)+(c.affinity-(known?65:46))*.006+Math.min(days,24)*.005-Math.max(0,a.level-G.player.level)*.007-Math.max(0,a.fame-G.player.fame)/26000,known?.018:.12,known?.46:.77);
+function v35RequestFriend(id){
+ const c=G?.contacts?.[id],a=agent(id);
+ if(!c||!a)return writeToast('まだ面識のない相手です');
+ if(c.friend)return writeToast('すでにフレンドです');
+ if(c.lastInvite===G.day)return writeToast('今日はすでに申請しています');
+ const known=isKnownFigure(a),playerFame=Math.max(0,G.player.fame||0),theirFame=Math.max(0,a.fame||0);
+ const fameAdv=Math.max(0,playerFame-theirFame);
+ const fameBoost=.55*(1-Math.exp(-fameAdv/Math.max(500,theirFame+600)));
+ const minAffinity=Math.max(known?30:20,Math.round((known?65:46)-fameBoost*48));
+ if(c.affinity<minAffinity)return writeToast('もう少し交流を深めてから申請してみましょう');
+ c.lastInvite=G.day;
+ const socialPenalty=Math.max(0,a.level-G.player.level)*.007+Math.max(0,theirFame-playerFame)/26000;
+ const chance=clamp((known?.08:.22)+(c.affinity-minAffinity)*.0065+fameBoost-socialPenalty,known?.04:.12,.94);
  if(rand()<chance){c.friend=true;addEvent('player',`${a.name}とフレンドになった`,'フレンド申請を受け入れてもらえた。',{importance:0,actorIds:[id]});v32Notice(`${a.name}がフレンドになりました`,2)}
- else{addEvent('player',`${a.name}へフレンド申請`,'申請したが、返答は保留となった。',{importance:0,actorIds:[id]});writeToast(`${a.name}からは今回は保留の返事が届きました`)}saveGame();renderAll();return c.friend;
+ else{addEvent('player',`${a.name}へフレンド申請`,'申請したが、返答は保留となった。',{importance:0,actorIds:[id]});writeToast(`${a.name}からは今回は保留の返事が届きました`)}
+ saveGame();renderAll();return c.friend;
 }
 const v35PriorPersonCard=v19PersonCard;
 v19PersonCard=function(id,c){let h=v35PriorPersonCard(id,c);if(!c.friend&&h.includes('data-talk='))h=h.replace('<button class="small" data-talk=',`<button class="small v35-request" data-v35-friend="${esc(id)}" ${c.lastInvite===G.day?'disabled':''}>フレンド申請</button><button class="small" data-talk=`);return h};
@@ -5689,7 +5712,7 @@ sendOutreach=function(){
  if((G.outreachCooldown[id]||0)>G.day)return writeToast('同じ相手には数日空けてから連絡できます');
  G.lastOutreachDay=G.day;G.outreachCooldown[id]=G.day+4;
  const compatible=topic===v25DMPreference(a);
- const chance=clamp(outreachOdds(a)*(compatible?1.5:.68),.008,.75);
+ const chance=clamp(outreachOdds(a)*(compatible?1.5:.68),.008,.94);
  const subject=V25_MESSAGE_TOPICS.find(x=>x[0]===topic)?.[1]||'メッセージ';
  const known=!!G.contacts[id];
  addEvent('player',`${a.name}にメッセージを送った`,`「${subject}」という話題でメッセージを送信した。`,{importance:0,actorIds:[id]});
@@ -5880,4 +5903,18 @@ renderMain=function(...args){
  return result;
 };
 /* ===== end v5.0 ===== */
+/* ===== WORLD//LOG v5.2 boss teamwork tuning ===== */
+const v52PreviousHitEnemy=hitEnemy;
+hitEnemy=function(e,n,source){
+ if(e?.boss&&battle?.active){
+  const living=(battle.allies||[]).filter(a=>a.hp>0).length;
+  if(source==='player')n=Math.max(1,Math.round(n*(.58+Math.min(4,living)*.105)));
+  else if(source==='friend')n=Math.max(1,Math.round(n*1.25));
+ }
+ return v52PreviousHitEnemy(e,n,source);
+};
+/* ===== end v5.2 ===== */
+/* ===== WORLD//LOG v5.3: boss timer, mail badges, social response, viewing motivation ===== */
+
+
 </script></body></html>
