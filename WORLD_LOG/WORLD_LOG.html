@@ -5917,4 +5917,117 @@ hitEnemy=function(e,n,source){
 /* ===== WORLD//LOG v5.3: boss timer, mail badges, social response, viewing motivation ===== */
 
 
+
+/* ===== WORLD//LOG v5.4: inseparable duo friendships and adventure invitations ===== */
+const V54_DUOS=[['n90','n91'],['n98','n99']];
+const V54_PARTNERS=Object.freeze({n90:'n91',n91:'n90',n98:'n99',n99:'n98'});
+function v54Partner(id){return V54_PARTNERS[id]||null;}
+function v54DuoExpand(ids){
+ const result=[];
+ for(const id of ids||[]){
+  if(!id||result.includes(id))continue;
+  result.push(id);
+  const mate=v54Partner(id);
+  if(mate&&!result.includes(mate))result.push(mate);
+ }
+ return result;
+}
+function v54SyncFriends(){
+ if(!G?.contacts)return;
+ for(const [left,right] of V54_DUOS){
+  const a=G.contacts[left],b=G.contacts[right];
+  if(!a?.friend&&!b?.friend)continue;
+  const primary=a?.friend?a:b;
+  for(const id of [left,right]){
+   if(!agent(id))continue;
+   if(!G.contacts[id])addContact(id,Math.max(30,primary.affinity||30),'duo');
+   const c=G.contacts[id];
+   if(!c)continue;
+   c.friend=true;
+   c.affinity=Math.max(30,c.affinity||0);
+  }
+ }
+}
+// Correct one-sided friendships in older save data, and persist both together.
+const v54PriorNormalizeSocial=normalizeSocialState;
+normalizeSocialState=function(){const result=v54PriorNormalizeSocial();v54SyncFriends();return result;};
+const v54PriorSave=saveGame;
+saveGame=function(){v54SyncFriends();return v54PriorSave();};
+const v54PriorRenderAll=renderAll;
+renderAll=function(...args){v54SyncFriends();return v54PriorRenderAll(...args);};
+// Both must be active and available on the same day: there is no solo invitation.
+const v54PriorIsOnline=v26IsOnline;
+v26IsOnline=function(id){
+ const partner=v54Partner(id);
+ return v54PriorIsOnline(id)&&(!partner||v54PriorIsOnline(partner));
+};
+// Keep the two checkboxes and the four-character limit consistent after rerenders.
+const v54PriorFriendField=v20FriendField;
+v20FriendField=function(){
+ v54SyncFriends();
+ v20FriendChoices=v54DuoExpand(v20FriendChoices).slice(0,V26_MAX_COMPANIONS);
+ let html=v54PriorFriendField();
+ for(const [id,mate] of Object.entries(V54_PARTNERS)){
+  const token='data-v20-friend="'+id+'"';
+  const at=html.indexOf(token);
+  if(at<0)continue;
+  const end=html.indexOf('</label>',at);
+  if(end<0)continue;
+  const start=html.lastIndexOf('<label',at);
+  if(start<0)continue;
+  const row=html.slice(start,end+8);
+  const amended=row.replace('</small>',` / ${esc(agentName(mate))}と一緒に参加</small>`);
+  html=html.slice(0,start)+amended+html.slice(end+8);
+ }
+ html=html.replace('日送りで参加状況が変わります。','日送りで参加状況が変わります。まどか・いろは、サーシャ・ロロは2人で参加します。');
+ return html;
+};
+function v54SelectFriend(id,checked){
+ const partner=v54Partner(id);
+ const targets=partner?[id,partner]:[id];
+ if(checked){
+  if(targets.some(x=>!agent(x)||!v26IsOnline(x)))return writeToast(partner?'2人のどちらかが今日は参加不可です':agentName(id)+'は今日は参加不可です');
+  const next=v54DuoExpand([...v20FriendChoices,...targets]);
+  if(next.length>V26_MAX_COMPANIONS)return writeToast(partner?'2人を誘うには空きが2枠必要です':'同行者は4人まで選べます');
+  // Becoming acquainted with one member is sufficient to invite their companion.
+  for(const who of targets){if(!G.contacts?.[who])addContact(who,Math.max(20,G.contacts?.[id]?.affinity||20),'duo-intro');}
+  v20FriendChoices=next;
+ }else{
+  v20FriendChoices=v20FriendChoices.filter(x=>!targets.includes(x));
+ }
+ renderMain();
+}
+const v54PriorBindMain=bindMain;
+bindMain=function(){
+ const result=v54PriorBindMain();
+ $$('[data-v20-friend]').forEach(cb=>cb.onchange=()=>v54SelectFriend(cb.dataset.v20Friend,cb.checked));
+ return result;
+};
+const v54PriorStartAdventure=startAdventure;
+startAdventure=function(){
+ if(advPartyMode==='friend'){
+  const expanded=v54DuoExpand(v20FriendChoices);
+  if(expanded.length>V26_MAX_COMPANIONS)return writeToast('2人を誘うには空きが2枠必要です');
+  if(expanded.some(id=>!agent(id)||!v26IsOnline(id)))return writeToast('2人のどちらかが今日は参加不可です');
+  for(const id of expanded){if(!G.contacts[id])addContact(id,24,'duo-intro');}
+  v20FriendChoices=expanded;
+ }
+ return v54PriorStartAdventure();
+};
+// Also cover invitations accepted from inboxes rather than the adventure planner.
+const v54PriorLaunchAdventure=launchAdventure;
+launchAdventure=function(opts){
+ if(opts&&(opts.source==='friend'||opts.source==='invite'||v54Partner(opts.friend))){
+  const ids=v54DuoExpand([...(opts.guests||[]),...(opts.friend?[opts.friend]:[])]);
+  if(ids.length>V26_MAX_COMPANIONS)return writeToast('2人を誘うには空きが2枠必要です');
+  if(ids.some(id=>!agent(id)||!v26IsOnline(id)))return writeToast('2人のどちらかが今日は参加不可です');
+  if(ids.some(v54Partner)){
+   for(const id of ids){if(v54Partner(id)&&!G.contacts[id])addContact(id,24,'duo-intro');}
+   return v54PriorLaunchAdventure({...opts,friend:null,guests:ids});
+  }
+ }
+ return v54PriorLaunchAdventure(opts);
+};
+/* ===== end v5.4 ===== */
+
 </script></body></html>
