@@ -42,6 +42,9 @@
 #placementHUD strong{font-size:14px;color:#f0ddad}#placementHUD .goodplace{color:#9fe9bd}#placementHUD .badplace{color:#ed998e}#placementHUD .instruct{font-size:11px;color:#cfddd3;margin-top:6px}
 #placementHUD.active{display:block}
 @media(max-width:690px){#placementHUD{bottom:156px;min-width:235px}}
+
+.petAttackMode{display:flex;align-items:center;gap:10px;padding:8px 10px;margin-top:9px;border:1px solid #70958469;border-radius:7px;background:#15342f9c;font-size:12px;cursor:pointer;max-width:max-content}
+.petAttackMode input{width:18px;height:18px;accent-color:#8ccd9a;cursor:pointer}
 </style></head><body>
 <canvas id="scene"></canvas>
 <div id="hud"><div id="survivalEdge"><div id="survivalText"></div></div>
@@ -1527,7 +1530,8 @@ updatePets=function(dt){if(activeInterior)return;
  let slotAngle=TAU*i/Math.max(3,tamed.length)+.7,slotRadius=2.6+(i%2)*.7;
  let followX=player.x+Math.sin(slotAngle+worldTime*.12)*slotRadius,followZ=player.z+Math.cos(slotAngle+worldTime*.12)*slotRadius;
  if(pet.wx!==wx||pet.wy!==wy||!!pet.inCave!==inCave){pet.x=followX;pet.z=followZ;pet.wx=wx;pet.wy=wy;pet.inCave=inCave;pet.cd=0;pet.wanderTimer=0}
- let nearest=null,best=99;for(let m of mobs){if(m.dead)continue;let dist=hypot(m.x-pet.x,m.z-pet.z),fromHero=hypot(m.x-player.x,m.z-player.z);if(fromHero>12&&dist>8)continue;if(dist<best){nearest=m;best=dist}}
+ let nearest=null,best=99;
+ if(pet.aggressive){for(let m of mobs){if(m.dead)continue;let dist=hypot(m.x-pet.x,m.z-pet.z),fromHero=hypot(m.x-player.x,m.z-player.z);if(fromHero>12&&dist>8)continue;if(dist<best){nearest=m;best=dist}}}
  let ownSpeed=PET_SPEEDS[pet.type]??3.5;
  // Re-evaluate personal roaming points periodically. Different companion indices get different destinations.
  pet.wanderTimer=(pet.wanderTimer||0)-dt;if(pet.wanderTimer<=0){pet.wanderTimer=2.2+i*.45+Math.random()*1.1;
@@ -1544,7 +1548,7 @@ updatePets=function(dt){if(activeInterior)return;
  if(hypot(px-pet.x,pz-pet.z)<.002){pet.stuck=(pet.stuck||0)+dt;if(pet.stuck>3){pet.x=followX;pet.z=followZ;pet.stuck=0}}else pet.stuck=0}
  if(hypot(pet.x-player.x,pet.z-player.z)>19){pet.x=followX;pet.z=followZ}
  pet.y=height(pet.x,pet.z);pet.cd=Math.max(-1,(pet.cd||0)-dt);
- if(nearest&&!nearest.dead&&hypot(nearest.x-pet.x,nearest.z-pet.z)<mobDefs[nearest.type].radius+1.8&&pet.cd<=0){petAttack(nearest,pet);pet.cd=pet.type===2?.88:pet.type===1?1.35:1.7;burst(nearest.x,nearest.y+.8,nearest.z,[.85,.94,.64],4)}
+ if(pet.aggressive&&nearest&&!nearest.dead&&hypot(nearest.x-pet.x,nearest.z-pet.z)<mobDefs[nearest.type].radius+1.8&&pet.cd<=0){petAttack(nearest,pet);pet.cd=pet.type===2?.88:pet.type===1?1.35:1.7;burst(nearest.x,nearest.y+.8,nearest.z,[.85,.94,.64],4)}
  }};
 // Repeated guarded attacks. Guard stays raised only between attacks, never during swings.
 const playerUpdateBeforeGuardCombo=updatePlayer;
@@ -1561,7 +1565,9 @@ window.addEventListener('keydown',e=>{if(e.code!=='Escape'||!panelTab)return;e.p
 // Inventory, crafting, building, companion progression and direct equipment recovery.
 const CATALOG_GROUPS=[['all','すべて'],['material','素材'],['food','食料・薬'],['weapon','武器・道具'],['armor','防具'],['structure','建築・設備'],['other','その他']];
 const RECIPE_GROUPS=[['all','すべて'],['material','素材・加工'],['food','食料・薬'],['weapon','武器・道具'],['armor','防具'],['structure','建築・設備'],['other','その他']];
-let inventoryGroup='all',craftGroup='all',buildGroup='all',onlyCraftable=false,onlyOwned=false;
+let inventoryGroup='all',craftGroup='all',buildGroup='building',onlyCraftable=false,onlyOwned=false;
+const BUILD_TABS=[['building','建物'],['fixture','設備・家具']];
+const isBuildingKind=id=>HOME_KINDS.has(id);
 const MATERIAL_HINTS=/(_ore|_ingot|_bar|_wire|_fiber|_core|_plank|_leather|_shard|_stone|_wood|_log|_cloth|_gem|^raw_|^iron$|^copper$|^stone$|^wood$|^branch$|^fiber$|^leaf$|^ore$|^coal$|^rope$|^flint$|^herb$|^crystal$|^quartz$|^hide$|^bone$|^sand$|^gel$|^silver$|^tin$|^gold$|^obsidian$|^reed$)/;
 const EXTRA_FOOD=/(_potion|_stew|_soup|_bread|_meat|_fish|_tea|_water|_fruit|^milk$|^egg$|^berry$|^water$|^fish$|^soup$|^mushroom$|^nightshade$|^incense)/;
 function itemGroup(id){
@@ -1591,34 +1597,39 @@ function craftCatalog(){
  $('panelBody').innerHTML=html;
 }
 function buildCatalog(){
- $('panelTitle').textContent=activeInterior?'室内の建築・家具':'建築';let html=`<p class="muted">所持中の設備を前方に配置できます。近くの設置物は <strong>R</strong> キーで回収できます。</p><label class="catalogFilter"><input id="onlyOwned" type="checkbox" ${onlyOwned?'checked':''}>所持しているもののみ表示</label>`;
- const canPlace=id=>!activeInterior||!HOME_KINDS.has(id)&&!INFRA_ORIGINAL.includes(id);
- let list=[...BUILDABLE].filter(id=>ITEMS[id]&&canPlace(id)&&(!onlyOwned||has(id)));
- if(!list.length)html+='<p class="muted">条件に一致する建築物はありません。</p>';
- for(let id of list){let n=count(id);html+=`<div class="entry"><div class="entryTitle"><span>${ITEMS[id][1]} ${ITEMS[id][0]}</span><span>${n}個所持</span></div><p>${itemDesc(id)}</p><button data-build="${id}" ${n&&!currentJob?'':'disabled'}>前方に設置</button></div>`}
- const buildings=activeInterior?roomFurnishings():currentBuildings;
- html+='<h3>設置済みの設備</h3>';
+ $('panelTitle').textContent=activeInterior?'室内の建築・家具':'建築';
+ let html=`<p class="muted">${activeInterior?'屋内には設備・家具を配置できます。':'拠点になる建物と、作業用の設備・家具を分けて表示します。'}　設置済みのものは近づいて <strong>R</strong> キーで回収できます。</p>${catalogTabs(buildGroup,'build',BUILD_TABS)}<label class="catalogFilter"><input id="onlyOwned" type="checkbox" ${onlyOwned?'checked':''}>所持しているもののみ表示</label>`;
+ const canPlace=id=>!activeInterior||(!isBuildingKind(id)&&!INFRA_ORIGINAL.includes(id));
+ const selected=id=>buildGroup==='building'?isBuildingKind(id):!isBuildingKind(id);
+ let list=[...BUILDABLE].filter(id=>ITEMS[id]&&selected(id)&&canPlace(id)&&(!onlyOwned||has(id)));
+ if(activeInterior&&buildGroup==='building')html+='<p class="muted">シェルターや小屋などの建物は屋外で設置できます。</p>';
+ else if(!list.length)html+='<p class="muted">この種類に表示できるものはありません。</p>';
+ for(let id of list){let n=count(id);html+=`<div class="entry"><div class="entryTitle"><span>${ITEMS[id][1]} ${ITEMS[id][0]}</span><span>${n}個所持</span></div><p>${itemDesc(id)}</p><button data-build="${id}" ${n&&!currentJob?'':'disabled'}>配置場所を選ぶ</button></div>`}
+ const buildings=(activeInterior?roomFurnishings():currentBuildings).filter(b=>selected(b.type));
+ html+=`<h3>設置済みの${buildGroup==='building'?'建物':'設備・家具'}</h3>`;
  if(!buildings.length)html+='<p class="muted">まだありません。</p>';
  for(let b of buildings){let near=hypot(b.x-player.x,b.z-player.z)<4;html+=`<div class="entry flex"><span>${ITEMS[b.type]?.[0]||b.type}</span><button data-remove="${b.id}" ${near?'':'disabled'}>回収</button></div>`}
  $('panelBody').innerHTML=html;
 }
-function initCompanion(pet){let def=mobDefs[pet.type]||mobDefs[0];if(!Number.isFinite(pet.lv))pet.lv=1;if(!Number.isFinite(pet.xp))pet.xp=0;if(!Number.isFinite(pet.maxHp))pet.maxHp=Math.round(Math.max(25,def.hp*.85)+(pet.lv-1)*7);if(!Number.isFinite(pet.hp))pet.hp=pet.maxHp;if(!Number.isFinite(pet.resting))pet.resting=0;pet.hp=clamp(pet.hp,0,pet.maxHp)}
+function initCompanion(pet){let def=mobDefs[pet.type]||mobDefs[0];if(!Number.isFinite(pet.lv))pet.lv=1;if(!Number.isFinite(pet.xp))pet.xp=0;if(!Number.isFinite(pet.maxHp))pet.maxHp=Math.round(Math.max(25,def.hp*.85)+(pet.lv-1)*7);if(!Number.isFinite(pet.hp))pet.hp=pet.maxHp;if(!Number.isFinite(pet.resting))pet.resting=0;if(typeof pet.aggressive!=='boolean')pet.aggressive=true;pet.hp=clamp(pet.hp,0,pet.maxHp)}
 function petNeedXP(lv){return 24+lv*16+Math.floor(lv*lv*1.6)}
 function petAttackPower(pet){initCompanion(pet);return Math.round(6+(mobDefs[pet.type]?.damage||5)*.55+pet.lv*2.3)}
 function gainCompanionXP(pet,n){initCompanion(pet);if(pet.lv>=99)return;pet.xp+=Math.max(0,n);while(pet.xp>=petNeedXP(pet.lv)&&pet.lv<99){pet.xp-=petNeedXP(pet.lv);pet.lv++;pet.maxHp+=7;pet.hp=Math.min(pet.maxHp,pet.hp+12);feed(`${mobDefs[pet.type]?.name||'仲間'}がLV ${pet.lv}になった！`);burst(pet.x,pet.y+1,pet.z,[.97,.88,.46],10)}save()}
-function petAttack(m,pet){let wasAlive=!m.dead;if(!wasAlive)return;let damage=petAttackPower(pet);hitMob(m,damage,false,.68,pet.x,pet.z);gainCompanionXP(pet,4+(m.dead?(mobDefs[m.type]?.exp||10):0))}
+function petAttack(m,pet){initCompanion(pet);let wasAlive=!m.dead;if(!wasAlive||!pet.aggressive)return;let damage=petAttackPower(pet);hitMob(m,damage,false,.68,pet.x,pet.z);gainCompanionXP(pet,4+(m.dead?(mobDefs[m.type]?.exp||10):0))}
 const companionsBeforeThreats=updateMobs;
 updateMobs=function(dt){companionsBeforeThreats(dt);if(activeInterior)return;for(let pet of tamed){initCompanion(pet);if(pet.resting>0)continue;pet.hurtTimer=Math.max(0,(pet.hurtTimer||0)-dt);for(let m of mobs){if(m.dead||m.wind<=0||!(m.atkPose>.7)||pet.hurtTimer>0)continue;if(hypot(m.x-pet.x,m.z-pet.z)<(mobDefs[m.type]?.range||1.7)+.8){pet.hp=Math.max(0,pet.hp-Math.max(2,Math.round((mobDefs[m.type]?.damage||9)*.36)));pet.hurtTimer=2.2;if(pet.hp<=0){pet.resting=13;feed(`${mobDefs[pet.type]?.name||'仲間'}が休息している`)}break}}}}
 function companionsCatalog(){
- $('panelTitle').textContent='仲間の魔物';let html=`<p class="muted">同行中 ${tamed.length} / 3。仲間も戦闘で経験値を獲得し、レベルアップするとHPと攻撃力が上がります。</p>`;
+ $('panelTitle').textContent='仲間の魔物';
+ let html=`<p class="muted">同行中 ${tamed.length} / 3。仲間は戦闘で経験値を獲得して成長します。「積極的に攻撃する」をOFFにすると、敵を追いかけたり自分から攻撃したりせず、主人公の近くを歩き回ります。</p>`;
  if(!tamed.length)html+='<p class="muted">仲間はいません。弱った魔物にお香を使うとテイムできます。</p>';
- tamed.forEach((p,i)=>{initCompanion(p);let max=petNeedXP(p.lv);html+=`<div class="petLine"><div><strong>${['①','②','③'][i]} ${mobDefs[p.type]?.name||'魔物'}</strong><div class="muted">LV ${p.lv} ${p.resting>0?'・休息中':'・同行中'}</div></div><span class="good">攻撃 ${petAttackPower(p)}　速度 ${(PET_SPEEDS[p.type]||3).toFixed(1)}</span><div class="petMeters"><span>HP ${Math.ceil(p.hp)}/${p.maxHp}</span><div class="petMeter"><i style="width:${100*p.hp/p.maxHp}%"></i></div><span>経験値 ${p.xp}/${max}</span><div class="petMeter xp"><i style="width:${100*p.xp/max}%"></i></div></div></div>`});
+ tamed.forEach((p,i)=>{initCompanion(p);let max=petNeedXP(p.lv);let engaged=p.aggressive;
+ html+=`<div class="petLine"><div><strong>${['①','②','③'][i]||'・'} ${mobDefs[p.type]?.name||'魔物'}</strong><div class="muted">LV ${p.lv} ${p.resting>0?'・休息中':'・同行中'}</div></div><span class="good">攻撃 ${petAttackPower(p)}　速度 ${(PET_SPEEDS[p.type]||3).toFixed(1)}</span><label class="petAttackMode"><input type="checkbox" data-pet-aggressive="${i}" ${engaged?'checked':''}><span>積極的に攻撃する：<strong class="${engaged?'good':'muted'}">${engaged?'ON':'OFF'}</strong></span></label><div class="petMeters"><span>HP ${Math.ceil(p.hp)}/${p.maxHp}</span><div class="petMeter"><i style="width:${100*p.hp/p.maxHp}%"></i></div><span>経験値 ${p.xp}/${max}</span><div class="petMeter xp"><i style="width:${100*p.xp/max}%"></i></div></div></div>`});
  $('panelBody').innerHTML=html;
 }
 const catalogOriginalRender=renderPanel;
 renderPanel=function(){if(!panelTab)return;if(panelTab==='inventory')return inventoryCatalog();if(panelTab==='craft')return craftCatalog();if(panelTab==='build')return buildCatalog();if(panelTab==='pets')return companionsCatalog();return catalogOriginalRender()};
 $('panelBody').addEventListener('click',function(e){let b=e.target.closest('button');if(!b)return;let ds=b.dataset;if(ds.invGroup!==undefined){inventoryGroup=ds.invGroup;renderPanel()}else if(ds.craftGroup!==undefined){craftGroup=ds.craftGroup;renderPanel()}else if(ds.buildGroup!==undefined){buildGroup=ds.buildGroup;renderPanel()}else return;e.preventDefault();e.stopImmediatePropagation()},true);
-$('panelBody').addEventListener('change',function(e){if(e.target.id==='onlyCraftable'){onlyCraftable=e.target.checked;renderPanel()}if(e.target.id==='onlyOwned'){onlyOwned=e.target.checked;renderPanel()}});
+$('panelBody').addEventListener('change',function(e){if(e.target.matches('[data-pet-aggressive]')){let i=Number(e.target.dataset.petAggressive);if(Number.isInteger(i)&&i>=0&&i<tamed.length){tamed[i].aggressive=e.target.checked;save();renderPanel()}return}if(e.target.id==='onlyCraftable'){onlyCraftable=e.target.checked;renderPanel()}if(e.target.id==='onlyOwned'){onlyOwned=e.target.checked;renderPanel()}});
 const petQuick=document.createElement('button');petQuick.className='quick';petQuick.dataset.hot='pets';petQuick.innerHTML='<b>N</b>仲間';$('quickBar').appendChild(petQuick);petQuick.addEventListener('click',()=>openPanel('pets'));
 window.addEventListener('keydown',e=>{if(e.code==='KeyN'&&!e.repeat&&playing&&!paused&&!gameover&&!e.target?.matches?.('input,select,textarea')){e.preventDefault();openPanel('pets')}},true);
 // R is reserved for recovering installed items; C remains the craft menu.
