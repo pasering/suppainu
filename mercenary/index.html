@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.8 — MERCENARY DRAFT</title>
+<title>傭兵競売戦記 v2.9 — MERCENARY DRAFT</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -2376,6 +2376,280 @@ if(screen==='setup')renderSetup();
     };
     return result;
   };
+})();
+</script>
+
+
+<!-- v2.9 Mobile-first companion layout. Desktop styles are intentionally untouched. -->
+<style id="v29-mobile-layout">
+@media(max-width:760px){
+  html,body{width:100%;min-width:0;overflow-x:hidden;overscroll-behavior-x:none}
+  body{font-size:14px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  header{position:relative;z-index:40}
+  header .top{flex-wrap:nowrap;padding:7px 9px;gap:7px;min-height:49px;max-width:100%}
+  header .top>.mark{display:none}
+  header .brand{font-size:clamp(12px,3.3vw,15px);white-space:nowrap;letter-spacing:.015em}
+  header .subbrand{display:none}
+  header .topright{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:4px;min-width:0}
+  header .topright>.tag{display:none!important}
+  header .sound-controls{padding:3px;gap:3px;border-radius:8px;max-width:100%;margin:0}
+  header .sound-controls button{min-height:34px;padding:4px 6px;font-size:10px;border-radius:6px}
+  header .sound-controls label{font-size:0;gap:0}
+  header .sound-controls input{width:40px;min-width:0;min-height:26px}
+  main{width:100%;min-width:0;padding:12px 10px 28px}
+  .footer{padding:0 12px 22px}
+  .pageintro{margin-bottom:13px}
+  .pageintro .headline,.headline{font-size:clamp(23px,6vw,31px);line-height:1.32}
+  .pageintro .lead{font-size:12px;line-height:1.7}
+  .pageintro .steps{gap:5px;margin-top:12px}
+  .pageintro .steps .step{padding:5px 7px;font-size:9px;gap:3px}
+  .stepnumber{width:16px;height:16px}
+  .split,.split.wide,.battlewrap,.online-auc-main,.net-deploy-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0}
+  .surface,.surface.pad,.cfgbox,.split>*{min-width:0;max-width:100%}
+  .surface.pad{padding:13px;border-radius:13px}
+  .actions{gap:7px;justify-content:stretch}
+  .actions>.btn{flex-grow:1;min-width:0;white-space:normal}
+  .btn,.auc-btn{min-height:44px;touch-action:manipulation}
+  .btn.sm{min-height:38px;font-size:11px}
+  .input,select,input[type=number]{font-size:16px}
+  .input.big{font-size:21px}
+  .configcols{grid-template-columns:1fr;gap:10px}
+  .cfgbox{padding:13px}
+  .blocktitle{gap:5px;font-size:15px;flex-wrap:wrap}
+  .blocktitle small{font-size:10px}
+  .landing-banner{height:155px;margin-bottom:13px}
+  .landing-banner-text{padding:12px}
+  .online-intro,.online-menu{margin:12px 0 15px;padding:13px!important}
+  .online-intro h2{font-size:16px}
+  .online-intro p{font-size:12px}
+  .online-menu-actions,.online-settings{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+  .online-menu-actions label{min-width:0}
+  .room-code{font-size:19px;word-break:break-all}
+  .room-members{gap:6px}
+  .net-stage{margin:10px auto;padding:14px!important}
+  .race-choices{grid-template-columns:minmax(0,1fr)!important;gap:10px}
+  .race-map{display:flex;min-height:105px}
+  .race-map img{width:39%;height:auto;min-height:105px;aspect-ratio:1.35;object-fit:cover}
+  .race-map-details{padding:10px;min-width:0}
+  .race-map-details strong{font-size:13px}
+  .race-map-details small{font-size:11px;line-height:1.45}
+  .race-scoreboard{gap:5px}
+  .race-score-pill{font-size:11px;padding:7px 8px}
+  /* Shop: thumb and equipment data stack without wide desktop minimums. */
+  .equip-main{display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:start;margin:8px 0}
+  .equip-art-thumb{width:70px!important;max-width:70px!important;height:80px!important;object-fit:cover;grid-column:1}
+  .equip-main>*{min-width:0}
+  .equip-main>div{min-width:0}
+  .equip-main .mercname{font-size:20px!important;overflow-wrap:anywhere}
+  .equip-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:9px}
+  .equip-stats>div{gap:4px}
+  .shop-slot{margin-top:12px}
+  .shop-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .gear-card{min-height:100px;padding:9px;font-size:12px}
+  .lineup{max-height:330px}
+  .unitrow{padding:9px}
+  .tactic-controls{grid-template-columns:1fr!important}
+  .focus-buttons{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px}
+  .focus-buttons button{white-space:normal}
+  .net-merc-profile{grid-template-columns:100px minmax(0,1fr);gap:10px}
+  .net-merc-profile h2{font-size:18px}
+  .net-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .net-stat-grid span{padding:6px}
+  .net-stat-grid b{font-size:17px}
+  .online-auc-main .member-card{margin:5px 0}
+  .net-actions{padding:12px 0}
+  .net-bid-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .net-adjust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .net-adjust button{min-height:40px}
+  .net-equips{grid-template-columns:1fr}
+  .net-deploy-grid canvas{width:100%;max-width:100%;height:auto;touch-action:manipulation}
+  .net-plans{max-height:none;overflow:visible}
+  .novel-box{padding:10px 11px}
+  .auc-modal{padding:8px;align-items:center}
+  .auc-modal-panel{padding:14px;width:100%;max-height:92dvh}
+  .auc-gear-grid{grid-template-columns:1fr;gap:9px}
+  .auc-gear-row{font-size:11px;gap:7px}
+  /* Larger, tap-friendly map selection and pre-battle planning. */
+  .arena:not(.battle-3d){width:100%;max-width:100%;touch-action:none}
+  .arena:not(.battle-3d) canvas{width:100%;max-width:100%}
+  .battletoolbar{gap:5px}
+  .battletoolbar .pill{font-size:10px;padding:4px 6px}
+  .battlewrap > section.surface.pad{padding:6px!important}
+  .battle-3d{width:100%;margin:0}
+  .battle-3d canvas#arenaCanvas{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:1100/760;touch-action:none}
+  .battle-3d .battle-hud{left:4px;right:4px;top:4px;gap:3px}
+  .battle-hud-top{padding:4px 5px;min-height:32px;gap:4px}
+  .battle-hud-top .race-battlebar{gap:6px;font-size:10px;max-height:34px;overflow-x:auto;white-space:nowrap}
+  .battle-hud-top .race-battlebar>span:first-child{font-size:10px}
+  .battle-hud-top .race-battlebar>span:last-child{font-size:10px}
+  .battle-hud-top #battleTimer{font-size:17px}
+  .battle-hud-toggle{min-width:30px;min-height:29px}
+  .battle-hud-tools{padding:6px;gap:5px}
+  .battle-hud-tools .battletoolbar{gap:4px}
+  .battle-hud-tools .camera-panel{min-width:0;flex-basis:100%}
+  .battle-hud-tools .camera-buttons{max-width:100%;flex-wrap:wrap;overflow:visible}
+  .battle-hud-tools .camera-buttons .btn{min-height:32px}
+  .battle-3d > .mini-panel{width:78px!important;max-width:25%;padding:4px!important;right:4px!important;top:var(--mini-mobile-top,47px)!important}
+  .battle-3d > .mini-panel .blocktitle{display:none}
+  .battle-3d > .mini-panel canvas#battleMiniMap{width:100%;max-width:70px!important}
+  .battlewrap>.sidebar{display:grid;gap:10px}
+  .battlewrap>.sidebar>.surface{margin-top:0!important}
+  .battlewrap .scores{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .battlewrap .score{padding:7px}
+  .battlewrap .scoretop{font-size:10px;flex-wrap:wrap}
+  .battlewrap .scoretop small{font-size:10px}
+  .battlewrap .events{height:140px}
+  .mobile-cam-mode{position:absolute;z-index:18;bottom:6px;left:6px;font-size:11px;min-height:33px!important;padding:5px 9px!important;border-radius:8px;background:#0a1e30ec!important;box-shadow:0 3px 8px #0008}
+  .mobile-cam-mode[aria-pressed=true]{background:#86612c!important;border-color:#f0c788!important;color:#fff2c6}
+  .merc-confirm-card{padding:19px}
+  .merc-confirm-actions{gap:8px}
+  .merc-confirm-actions button{flex:1;min-width:0}
+}
+@media(max-width:760px) and (orientation:landscape){
+  .battle-3d .battle-hud-tools{max-height:34vh;overflow:auto}
+}
+/* Mobile auction: portrait/stats over a stable input strip and fixed novel window. */
+@media(max-width:760px){
+  body.auction-active{overflow:hidden}
+  body.auction-active main{width:100%;padding:0;max-width:none}
+  .auc-screen{inset:var(--merc-mobile-header,51px) 0 0!important;top:var(--merc-mobile-header,51px)!important;bottom:0!important;height:auto!important;max-height:none!important;padding:5px 6px max(5px,env(safe-area-inset-bottom));display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:40px minmax(0,1fr) minmax(120px,19dvh)!important;gap:5px;overflow:hidden}
+  .auc-head{width:100%;min-width:0;gap:6px;padding:2px 4px 5px;white-space:normal;flex-wrap:nowrap}
+  .auc-head .lot{font-size:14px;white-space:nowrap}
+  .auc-head .phase{font-size:10px;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .auc-head .auc-track{display:none}
+  .auc-head #viewGear{padding:5px 7px!important;min-height:34px;font-size:11px;flex:none}
+  .auc-head .auc-mobile-roster-btn{padding:5px 7px;min-height:34px;flex:none}
+  .auc-middle{min-height:0;min-width:0;display:block;overflow:hidden}
+  .auc-left{height:100%;min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:5px;overflow:hidden}
+  .auc-profile{height:100%;min-height:0;display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;padding:8px;align-content:start;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;border-radius:12px}
+  .auc-art-column{min-width:0;gap:7px;align-self:start}
+  .auc-art{height:110px;max-height:none;aspect-ratio:1/1;border-radius:9px}
+  .auc-art img{height:100%;width:100%;max-height:none;object-position:center center}
+  .auc-role{font-size:9px;line-height:1.2;padding:3px;left:2px;right:2px;bottom:2px}
+  .auc-radar{padding:3px;min-width:0;overflow:hidden}
+  .auc-radar-title{font-size:9px;justify-content:center;padding:3px 1px 0}
+  .auc-radar-title span{display:none}
+  .auc-radar svg{height:auto;max-height:110px;width:100%}
+  .auc-info{min-width:0;min-height:auto;overflow:visible;padding-right:0;word-break:normal;overflow-wrap:anywhere}
+  .auc-info>.auc-sub{font-size:10px;line-height:1.3}
+  .auc-name{font-size:18px!important;line-height:1.3;margin:3px 0 6px;overflow-wrap:anywhere}
+  .auc-primary{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:7px 0}
+  .auc-stat{padding:5px 3px;text-align:center;min-width:0}
+  .auc-stat span{font-size:9px;white-space:nowrap}
+  .auc-stat strong{font-size:18px!important}
+  .auc-allstats{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+  .auc-allstats>div{min-width:0;gap:2px;font-size:9px;padding:4px 5px;line-height:1.35}
+  .auc-allstats b{font-size:12px}
+  .auc-valuation{flex-wrap:wrap;gap:2px;margin-top:7px;padding-top:6px}
+  .auc-valuation .auc-note{font-size:10px}
+  .auc-valuation b{font-size:19px;white-space:nowrap}
+  .auc-class-specials{display:block!important;padding:7px;margin-top:10px}
+  .auc-class-specials-title{display:block;font-size:11px}
+  .auc-class-specials-title small{display:block;margin:2px 0}
+  .auc-skill-preview{grid-template-columns:minmax(0,1fr) auto;gap:3px;padding:5px 0;font-size:10px}
+  .auc-skill-preview b{white-space:normal}
+  .auc-skill-preview span{grid-column:1/-1;grid-row:2}
+  .auc-skill-preview em{grid-column:2;grid-row:1}
+  .auc-traits-info{display:none}
+  .auc-bidpanel{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;padding:8px;max-height:min(235px,43dvh);overflow-y:auto;overscroll-behavior:contain;align-content:start}
+  .auc-bidpanel>.auc-note{font-size:10px;line-height:1.35}
+  .auc-bidfield{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:center;width:100%}
+  .auc-bidfield>label{font-size:12px;white-space:nowrap}
+  .auc-bidfield>input{width:100%!important;max-width:100%!important;flex-basis:auto!important;min-height:40px;font-size:17px!important;padding:6px 9px}
+  .auc-bidfield>.auc-note{grid-column:1/-1;font-size:10px}
+  .auc-bid-adjust{width:100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;justify-content:stretch}
+  .auc-bid-adjust button{height:36px;min-height:36px;min-width:0!important;padding:2px 0!important;font-size:10px!important;white-space:nowrap}
+  .auc-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;justify-content:stretch}
+  .auc-actions .auc-btn{width:100%;padding:7px 5px!important;font-size:12px;white-space:normal}
+  .auc-bidpanel>#enterBid{width:100%}
+  .auc-bidpanel>.auc-btn{width:100%}
+  .auc-aside{position:absolute;z-index:20;display:none;top:46px;left:6px;right:6px;bottom:calc(max(120px,19dvh) + 9px);grid-template-rows:auto minmax(0,1fr);background:#102035f7;border:1px solid #ac915e;border-radius:12px;padding:8px;box-shadow:0 10px 30px #000c;overflow:hidden}
+  .auc-aside.mobile-roster-open{display:grid}
+  .auc-self{padding:9px}
+  .auc-roster{padding:8px}
+  .auc-roster-scroll{overflow:auto}
+  .auc-novel{min-height:0;max-height:none;display:grid;grid-template-columns:30px minmax(0,1fr);align-items:start;gap:7px;padding:8px 9px;border-radius:12px;overflow:hidden}
+  .auc-speaker-icon{width:30px;height:30px;font-size:16px;border-radius:7px}
+  .auc-dialogue{min-width:0;min-height:0;overflow-y:auto;justify-content:flex-start;align-self:stretch;gap:3px;padding-right:1px}
+  .auc-dialogue label{font-size:11px}
+  .auc-dialogue p{font-size:12px;line-height:1.55;min-height:1.5em}
+  .auc-dialogue .hint{font-size:9px;line-height:1.3}
+  .auc-novel>.auc-btn,.auc-novel>.auc-actions,.auc-novel button{grid-column:1/-1;justify-self:stretch;min-height:38px;padding:6px}
+  body.auction-active:has(#bidInput:focus) .auc-screen{grid-template-rows:40px minmax(0,1fr) 0!important}
+  body.auction-active:has(#bidInput:focus) .auc-novel{display:none}
+  body.auction-active:has(#bidInput:focus) .auc-aside{bottom:10px}
+  .auc-screen.lot-enter .auc-left{animation:none!important;filter:none!important;transform:none!important;opacity:1!important}
+  .auc-screen.lot-enter .auc-profile{animation:mercBoardPageSlide .75s cubic-bezier(.18,.70,.22,1) both}
+  .auc-screen.lot-enter .auc-left::after{display:none!important}
+}
+@media(max-width:360px){
+  .auc-screen{grid-template-rows:35px minmax(0,1fr) minmax(105px,17dvh)!important}
+  .auc-head .phase{display:none}
+  .auc-profile{grid-template-columns:95px minmax(0,1fr)}
+  .auc-art{height:95px}
+  .auc-name{font-size:16px!important}
+  .auc-stat strong{font-size:16px!important}
+  .auc-novel{grid-template-columns:23px minmax(0,1fr);padding:6px}
+  .auc-speaker-icon{width:23px;height:26px;font-size:13px}
+  .auc-dialogue p{font-size:11px}
+  .auc-aside{top:40px}
+}
+</style>
+<script id="v29-mobile-behavior">
+(function(){
+ const mobile=()=>window.matchMedia('(max-width:760px)').matches;
+ const header=document.querySelector('header');
+ const syncHeader=()=>{
+  if(!header)return;
+  document.documentElement.style.setProperty('--merc-mobile-header',Math.ceil(header.getBoundingClientRect().height)+'px');
+ };
+ syncHeader();
+ if(typeof ResizeObserver!=='undefined'&&header)new ResizeObserver(syncHeader).observe(header);
+ window.addEventListener('resize',syncHeader,{passive:true});
+ const appRoot=document.getElementById('app');
+ if(!appRoot)return;
+ let scheduled=false;
+ function layoutMobile(){
+  scheduled=false;if(!mobile())return;
+  const auc=appRoot.querySelector('.auc-screen');
+  if(auc&&!auc.querySelector('.auc-mobile-roster-btn')){
+   const head=auc.querySelector('.auc-head'),aside=auc.querySelector('.auc-aside');
+   if(head&&aside){
+    const btn=document.createElement('button');btn.type='button';btn.className='auc-btn secondary auc-mobile-roster-btn';btn.textContent='陣営一覧';btn.setAttribute('aria-expanded','false');
+    btn.onclick=()=>{const open=aside.classList.toggle('mobile-roster-open');btn.setAttribute('aria-expanded',String(open));btn.textContent=open?'一覧を閉じる':'陣営一覧';};
+    head.insertBefore(btn,head.querySelector('#viewGear'));
+   }
+  }
+  // Add a direct on-screen gesture mode for touch battle spectators.
+  const arena=appRoot.querySelector('.battle-3d');
+  if(arena&&!arena.querySelector('.mobile-cam-mode')){
+    const canvas=arena.querySelector('#arenaCanvas');
+    if(!canvas)return;
+    const btn=document.createElement('button');btn.type='button';btn.className='btn sm mobile-cam-mode';btn.textContent='☝ 指で移動';btn.setAttribute('aria-pressed','false');btn.setAttribute('aria-label','タッチ操作：移動・回転を切り替える');
+    let rotate=false,touch=null;
+    btn.onclick=()=>{rotate=!rotate;btn.setAttribute('aria-pressed',String(rotate));btn.textContent=rotate?'⟳ 指で回転':'☝ 指で移動';};
+    canvas.addEventListener('pointerdown',function(e){
+      if(!mobile()||!rotate||e.pointerType!=='touch')return;
+      e.preventDefault();e.stopImmediatePropagation();touch={id:e.pointerId,x:e.clientX,y:e.clientY};
+      try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    },true);
+    canvas.addEventListener('pointermove',function(e){
+      if(!mobile()||!rotate||!touch||touch.id!==e.pointerId)return;
+      e.preventDefault();e.stopImmediatePropagation();
+      const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch.x=e.clientX;touch.y=e.clientY;
+      if(typeof stageCam!=='undefined'&&stageCam){stageCam.yaw+=dx*.0085;stageCam.tilt=Math.max(.32,Math.min(1.35,stageCam.tilt+dy*.003));try{camText();}catch(_){}}
+    },true);
+    for(const evt of ['pointerup','pointercancel'])canvas.addEventListener(evt,function(e){if(touch&&e.pointerId===touch.id){touch=null;e.stopImmediatePropagation();}},true);
+    arena.appendChild(btn);
+    // Mobile observation is cleaner with the secondary HUD folded initially.
+    const hud=arena.querySelector('.battle-hud'),toggle=hud?.querySelector('.battle-hud-toggle');
+    if(hud&&!hud.classList.contains('collapsed')){hud.classList.add('collapsed');if(toggle){toggle.textContent='▾';toggle.setAttribute('aria-expanded','false');}}
+  }
+ }
+ function queueLayout(){if(scheduled)return;scheduled=true;requestAnimationFrame(layoutMobile);}
+ new MutationObserver(queueLayout).observe(appRoot,{childList:true,subtree:false});
+ window.addEventListener('resize',queueLayout,{passive:true});
+ queueLayout();
 })();
 </script>
 
