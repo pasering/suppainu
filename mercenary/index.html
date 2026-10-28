@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.22 — 戦闘配置・後衛護衛調整版</title>
+<title>傭兵競売戦記 v2.24 — 護衛部隊の後退ループ修正版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -100,7 +100,7 @@ main{max-width:1510px;margin:0 auto;padding:28px 28px 44px}.overline{font-size:1
 </head>
 <body>
 <header><div class="top"><div class="mark">♜</div><div><div class="brand">傭兵競売戦記</div><div class="subbrand">MERCENARY DRAFT · ART EDITION</div></div><div class="topright"><span class="tag">戦略オークション × 自動戦闘</span><span class="tag live" id="headerStage">NEW GAME</span><div id="soundControls" class="sound-controls" aria-label="サウンド設定"><button type="button" id="toggleMusic" title="BGMをオン・オフ">♫ BGM</button><button type="button" id="toggleFx" title="効果音をオン・オフ">♪ SE</button><label title="音量">🔊 <input type="range" id="soundVolume" min="0" max="100" value="48" aria-label="全体音量"></label></div></div></div></header>
-<main id="app"></main><div class="footer">Prototype ver. 2.22 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
+<main id="app"></main><div class="footer">Prototype ver. 2.23 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
 <script>
 'use strict';
 // Mercenary Draft: single-file, no runtime dependencies.
@@ -987,29 +987,34 @@ renderBattleCommands=function(){
 nearestEnemy=function(u,enemies){
  if(!enemies.length)return null;
  const conf=u.tactic||JOB_TACTICS[u.type],focus=game.sim?.orders?.[u.owner]?.focus;
- // Rear-guard posture: defend allied ranged/support units rather than chasing
- // arbitrary enemies. A shot/cast aimed at a rear unit is a clear threat.
+ // Rear-guard: actively fight within an interception zone, but immediately
+ // switch to anyone attacking the allied backline. Never pursue outside the leash.
  if((u.type==='warrior'||u.type==='rogue')&&conf.stance==='rearGuard'&&game?.sim){
    const rear=game.sim.units.filter(a=>a.alive&&a.owner===u.owner&&a.id!==u.id&&
      ['archer','mage','healer','enchanter'].includes(a.type));
    if(rear.length){
      const now=game.sim.time;
+     const center={x:rear.reduce((n,a)=>n+a.x,0)/rear.length,
+                   y:rear.reduce((n,a)=>n+a.y,0)/rear.length};
+     // Detection is intentionally independent of current distance: a ranged
+     // attacker threatening our healer is still the highest-priority target.
      let chosen=null,best=Infinity;
      for(const enemy of enemies){
-       let score=Infinity;
-       for(const a of rear){
-         const aimed=enemy.targetId===a.id||
-           (enemy._recentAttackTargetId===a.id&&now-(enemy._recentAttackAt??-999)<4.5);
-         const close=dist(enemy,a)<(enemy.type==='warrior'||enemy.type==='rogue'?12:7);
-         if(aimed||close){
-           const priority=aimed?0:5;
-           score=Math.min(score,dist(enemy,a)*.48+dist(u,enemy)*.36+priority);
-         }
-       }
+       const targets=rear.filter(a=>enemy.targetId===a.id||
+         (enemy._recentAttackTargetId===a.id&&now-(enemy._recentAttackAt??-999)<4.5));
+       if(!targets.length)continue;
+       const score=Math.min(...targets.map(a=>dist(enemy,a)))*.32+
+         dist(u,enemy)*.54+Math.max(0,dist(enemy,center)-20)*.32-
+         (u._guardThreatId===enemy.id?1.8:0);
        if(score<best){chosen=enemy;best=score;}
      }
      if(chosen){u._guardThreatId=chosen.id;u.targetId=chosen.id;return chosen;}
      u._guardThreatId=null;
+     // No attack against the backline: use normal offensive priorities, but
+     // only against enemies we can intercept while staying with the backline.
+     const available=enemies.filter(e=>dist(e,center)<=19||
+       (dist(e,u)<=6&&dist(e,center)<=24));
+     if(available.length)enemies=available;
    }else u._guardThreatId=null;
  }
  const immediate=enemies.filter(v=>dist(u,v)<(u.type==='rogue'?2.5:3.7));
@@ -1084,8 +1089,19 @@ aiTick=function(u,dt,s){
   // Two healers or two enchanters must NOT use each other as a frontline:
   // they would both seek points behind one another and run off the map.
   const fighters=partners.filter(v=>v.type!=='healer'&&v.type!=='enchanter');
-  const frontline=fighters.filter(v=>v.type==='warrior'||v.type==='rogue').sort((a,b)=>dist(u,a)-dist(u,b));
-  const anchor=fighters.find(v=>v.id===u._supportAnchorId)||frontline[0]||fighters.sort((a,b)=>dist(u,a)-dist(u,b))[0]||null;
+  const frontline=fighters.filter(v=>v.type==='warrior'||v.type==='rogue');
+  // Escorting warriors/rogues are NOT a front line to fall behind: they follow
+  // the rear formation, so treating them as anchors makes the entire group flee.
+  // An independently fighting melee unit is preferred; otherwise use a ranged
+  // attacker who is advancing on the enemy. If only escorts remain, the support
+  // unit acts offensively and the escorts follow it, never the other way around.
+  const advancingFront=frontline.filter(v=>!['rearGuard','guard'].includes((v.tactic||JOB_TACTICS[v.type]).stance));
+  const fightingRanged=fighters.filter(v=>v.type!=='warrior'&&v.type!=='rogue');
+  const anchors=[...advancingFront,...fightingRanged];
+  const anchor=anchors.find(v=>v.id===u._supportAnchorId)||
+    advancingFront.sort((a,b)=>dist(u,a)-dist(u,b))[0]||
+    fightingRanged.sort((a,b)=>dist(u,a)-dist(u,b))[0]||null;
+  const escortOnly=frontline.length>0&&advancingFront.length===0;
   u._supportAnchorId=anchor?.id??null;
   const closeThreat=enemies.filter(v=>['warrior','rogue'].includes(v.type)&&dist(u,v)<8)
     .sort((a,b)=>dist(u,a)-dist(u,b))[0];
@@ -1110,11 +1126,14 @@ aiTick=function(u,dt,s){
     // squad instead of repeatedly trying to escort each other.
     // If any enemy can be hit, attack from here; otherwise close the distance.
     const canShoot=enemies.some(v=>dist(u,v)<=c.range-.8&&!firstObstruction(u,v,true));
-    if(!canShoot&&tgt){
-      vx+=(tgt.x-u.x)*1.25;vy+=(tgt.y-u.y)*1.25;
+    // Escort-only squads form a closer firing line so their guards can engage.
+    const escortNeedsAdvance=escortOnly&&tgt&&dist(u,tgt)>16.5;
+    if((!canShoot||escortNeedsAdvance)&&tgt){
+      vx+=(tgt.x-u.x)*(escortNeedsAdvance?.92:1.25);
+      vy+=(tgt.y-u.y)*(escortNeedsAdvance?.92:1.25);
     }
-    // A little cohesion, but never choose a position *behind* a support ally.
-    // Their mutual pursuit cannot cause the squad to retreat from enemies.
+    // Cohesion is soft here: rear supports must lead escort-only squads into
+    // attack range rather than orbiting the warrior who is following them.
     if(partners.length){
       const group={x:partners.reduce((v,p)=>v+p.x,0)/partners.length,
                    y:partners.reduce((v,p)=>v+p.y,0)/partners.length};
@@ -1124,7 +1143,12 @@ aiTick=function(u,dt,s){
   }
   // Heal only within the current zone: even critical injuries never trigger cross-map pursuit.
   // Strong evasive response to melee threats, without suppressing attacks.
-  if(closeThreat){vx+=(u.x-closeThreat.x)*2.4;vy+=(u.y-closeThreat.y)*2.4;}
+  // With escort-only melee, back off only from an actual contact threat.
+  // Escaping from an enemy eight units away would otherwise drag the escort
+  // away from combat repeatedly, recreating an endless retreat loop.
+  if(closeThreat&&(!escortOnly||dist(u,closeThreat)<5.4)){
+    vx+=(u.x-closeThreat.x)*2.4;vy+=(u.y-closeThreat.y)*2.4;
+  }
  }else if(ranged){
   // Being in firing range is enough: hold the firing line unless a melee threat approaches.
   if(d>c.range-.9){vx+=(tgt.x-u.x);vy+=(tgt.y-u.y);}
@@ -1135,30 +1159,29 @@ aiTick=function(u,dt,s){
    if(rear.length){
      const center={x:rear.reduce((v,a)=>v+a.x,0)/rear.length,
                    y:rear.reduce((v,a)=>v+a.y,0)/rear.length};
-     const threatening=enemies.find(e=>e.id===u._guardThreatId&&e.alive);
-     const gap=dist(u,center);
-     // Cancel the ordinary chase path; guard the friendly rear units instead.
+     const gap=dist(u,center),leash=18;
+     const urgent=tgt&&u._guardThreatId===tgt.id;
+     const inZone=tgt&&(dist(tgt,center)<=19||
+       (dist(tgt,u)<=6&&dist(tgt,center)<=24));
+     // Override the normal pursuit. Fight nearby enemies even when our rear
+     // squad is safe, but never run far away from the rear just to score a hit.
      vx=0;vy=0;
-     if(threatening&&dist(threatening,center)<28){
-       if(dist(u,threatening)>Math.max(2.5,c.range*.76)){
-         vx+=(threatening.x-u.x)*1.75;
-         vy+=(threatening.y-u.y)*1.75;
-       }
-       if(gap>21){vx+=(center.x-u.x)*2.8;vy+=(center.y-u.y)*2.8;}
-     }else{
-       // Defend ~5-7 world units from the rear squad, no arbitrary pursuit.
-       if(gap>7){vx+=(center.x-u.x)*1.3;vy+=(center.y-u.y)*1.3;}
-       if(gap<3.5&&tgt){
-         const ex=center.x-tgt.x,ey=center.y-tgt.y,ll=Math.hypot(ex,ey)||1;
-         vx-=ex/ll*1.5;vy-=ey/ll*1.5;
-       }
-       // Opportunistic attack on enemies arriving directly at the backline.
-       const nearby=enemies.filter(e=>dist(e,center)<10).sort((a,b)=>dist(a,center)-dist(b,center))[0];
-       if(nearby&&dist(u,nearby)>Math.max(2.5,c.range*.76)){
-         vx+=(nearby.x-u.x)*1.25;vy+=(nearby.y-u.y)*1.25;
-       }
+     if(tgt&&(urgent||inZone)&&d>Math.max(2.6,c.range*.8)){
+       const tc=dist(tgt,center)||1;
+       const tx=center.x+(tgt.x-center.x)*Math.min(1,(leash-1)/tc);
+       const ty=center.y+(tgt.y-center.y)*Math.min(1,(leash-1)/tc);
+       const approach=Math.hypot(tx-u.x,ty-u.y);
+       if(approach>1.2){vx+=(tx-u.x)*1.55;vy+=(ty-u.y)*1.55;}
      }
-   }
+     // Return to a modest guard radius when there is no useful target.
+     if(Math.hypot(vx,vy)<.08&&gap>8&&!inZone&&!urgent){
+       vx+=(center.x-u.x);vy+=(center.y-u.y);
+     }
+     // Soft leash pulls the guard home; the hard leash below prevents
+     // accidental chasing caused by skill buffs or movement detours.
+     if(gap>leash-3){vx+=(center.x-u.x)*2.6;vy+=(center.y-u.y)*2.6;}
+     u._rearGuardCenter=center;
+   }else u._rearGuardCenter=null;
  }
  if(pref.stance==='guard'&&!support){
   const anchor=allies.filter(v=>v.id!==u.id&&['healer','mage','enchanter','archer'].includes(v.type)).sort((a,b)=>dist(u,a)-dist(u,b))[0]||avg;
@@ -1186,7 +1209,17 @@ aiTick=function(u,dt,s){
  // Firing opportunities take priority over kiting; stop briefly instead of running forever.
  const imminentMelee=ranged&&enemies.some(v=>(v.type==='warrior'||v.type==='rogue')&&dist(u,v)<5.8);
  const firingWindow=ranged&&!imminentMelee&&d<=c.range+1.2&&u.nextAction<=.15&&u._standAndFire;
- if(Math.hypot(vx,vy)>.1&&!firingWindow)dirMove(u,vx,vy,dt);
+ if(Math.hypot(vx,vy)>.1&&!firingWindow){
+   const priorX=u.x,priorY=u.y;
+   dirMove(u,vx,vy,dt);
+   // A movement detour cannot drag rear guards away from their allies.
+   const guard=u._rearGuardCenter;
+   if(pref.stance==='rearGuard'&&guard&&(u.type==='warrior'||u.type==='rogue')){
+     const after=Math.hypot(u.x-guard.x,u.y-guard.y);
+     const before=Math.hypot(priorX-guard.x,priorY-guard.y);
+     if(after>18.3&&after>before){u.x=priorX;u.y=priorY;}
+   }
+ }
  if(u.type==='healer'&&u.nextAction<=0){
   const urgent=healTarget&&healTarget.hp/healTarget.maxHp<.42;
   const canHeal=healTarget&&dist(u,healTarget)<=SUPPORT_HEAL_RANGE;
@@ -1551,7 +1584,8 @@ function contextualSkill(u,s){
   case 'march':ok=!!target&&d>11&&d<39&&friends.length>=2;if(ok)friends.forEach(a=>status(a,'_speedBuffUntil',s.time+6));break;
   case 'smoke':ok=!!target&&d>=3.4&&d<16;if(ok)status(u,'_stealthUntil',s.time+5);break;
   case 'shadow_run':ok=!!target&&d>6&&d<33;if(ok)status(u,'_speedBuffUntil',s.time+5);break;
-  case 'shadow_step':if(target&&d>5.5&&d<23){let len=d,dirX=(target.x-u.x)/len,dirY=(target.y-u.y)/len;for(const advance of [Math.min(8.5,d-2.4),Math.min(6,d-2.4),Math.min(4,d-2.4)]){const nx=u.x+dirX*advance,ny=u.y+dirY*advance;if(walkable(nx,ny,.85)){u.x=nx;u.y=ny;ok=true;effect(nx,ny,'#b183f8',1.5);break;}}}break;
+  case 'shadow_step':if(target&&d>5.5&&d<23){let len=d,dirX=(target.x-u.x)/len,dirY=(target.y-u.y)/len;for(const advance of [Math.min(8.5,d-2.4),Math.min(6,d-2.4),Math.min(4,d-2.4)]){const nx=u.x+dirX*advance,ny=u.y+dirY*advance;if(walkable(nx,ny,.85)&&!(u.tactic?.stance==='rearGuard'&&u._rearGuardCenter&&
+  Math.hypot(nx-u._rearGuardCenter.x,ny-u._rearGuardCenter.y)>18)){u.x=nx;u.y=ny;ok=true;effect(nx,ny,'#b183f8',1.5);break;}}}break;
  }
  if(!ok)return false;
  useSkill(u,skill,s);
