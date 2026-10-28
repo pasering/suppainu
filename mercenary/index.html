@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.19 — ビジュアルアイコン統合版</title>
+<title>傭兵競売戦記 v2.21 — 契約・戦士バランス調整版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -88,6 +88,15 @@ main{max-width:1510px;margin:0 auto;padding:28px 28px 44px}.overline{font-size:1
 
 </style>
 <style>.equip-bonus-formula{display:block;font-size:10px;font-weight:600;color:#a6c9ec;margin-top:3px;white-space:normal}.gear-card.active{cursor:pointer;box-shadow:inset 0 0 0 1px #d5b176}.net-equips label button{margin-top:7px;display:block;font-size:11px;max-width:100%}</style>
+<style>
+.story-contract-choice .story-contract-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0;padding:0}
+.story-contract-choice .story-contract-totals>div{border:1px solid #53697c80;border-radius:12px;padding:13px;background:#0e1c2c}
+.story-contract-choice .story-contract-totals small{display:block;font-size:11px;color:#aabccc;margin-bottom:7px}
+.story-contract-choice .story-contract-totals strong{display:block;font-size:20px;overflow-wrap:anywhere}
+.story-fixed-skill{border:1px solid #69809e7b;background:#1b2b3b;border-radius:10px;padding:10px 12px}
+.story-fixed-skill .story-locked-skill{display:block;margin-top:4px;line-height:1.7}
+@media (max-width:700px){.story-contract-choice .story-contract-totals{grid-template-columns:1fr}.story-contract-choice .story-contract-totals>div{padding:10px 12px}.story-contract-choice .story-contract-totals strong{font-size:17px}}
+</style>
 </head>
 <body>
 <header><div class="top"><div class="mark">♜</div><div><div class="brand">傭兵競売戦記</div><div class="subbrand">MERCENARY DRAFT · ART EDITION</div></div><div class="topright"><span class="tag">戦略オークション × 自動戦闘</span><span class="tag live" id="headerStage">NEW GAME</span><div id="soundControls" class="sound-controls" aria-label="サウンド設定"><button type="button" id="toggleMusic" title="BGMをオン・オフ">♫ BGM</button><button type="button" id="toggleFx" title="効果音をオン・オフ">♪ SE</button><label title="音量">🔊 <input type="range" id="soundVolume" min="0" max="100" value="48" aria-label="全体音量"></label></div></div></div></header>
@@ -102,7 +111,7 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const fmt=n=>Math.round(n).toLocaleString('ja-JP');
-const cls={warrior:{name:'戦士',icon:'⚔️',symbol:'戦',range:4.0,ideal:1.6,color:'#e5a073',desc:'前衛で敵の攻撃を受け止め、強力な近接物理攻撃を繰り出す。'},archer:{name:'弓師',icon:'🏹',symbol:'弓',range:51,ideal:13,color:'#9fce84',desc:'距離を保ち、後方から正確な矢を放つ物理遠距離アタッカー。'},mage:{name:'魔法使い',icon:'🔮',symbol:'魔',range:41.6,ideal:12,color:'#ba9beb',desc:'高い魔法攻撃力と範囲魔法で複数の敵にダメージを与える。'},healer:{name:'ヒーラー',icon:'✚',symbol:'癒',range:28.6,ideal:16,color:'#8edbc6',desc:'前衛から少し離れた中衛で回復と攻撃を行う。回復魔法の射程は21。'},enchanter:{name:'付与術師',icon:'✨',symbol:'付',range:31.2,ideal:16,color:'#ebbd72',desc:'中衛から周囲25の味方を強化し、魔法弾でも支援する。'},rogue:{name:'盗賊',icon:'🗡️',symbol:'盗',range:4.2,ideal:1.8,color:'#91c8e9',desc:'集団から離れて後衛（弓師・魔法使い・ヒーラー・付与術師）を積極的に狙う高速の近接物理職。'}};
+const cls={warrior:{name:'戦士',icon:'⚔️',symbol:'戦',range:4.0,ideal:1.6,color:'#e5a073',desc:'前衛で敵の攻撃を受け止め、強力な近接物理攻撃を繰り出す。'},archer:{name:'弓師',icon:'🏹',symbol:'弓',range:51,ideal:13,color:'#9fce84',desc:'距離を保ち、後方から正確な矢を放つ物理遠距離アタッカー。'},mage:{name:'魔法使い',icon:'🔮',symbol:'魔',range:41.6,ideal:12,color:'#ba9beb',desc:'高い魔法攻撃力と範囲魔法で複数の敵にダメージを与える。'},healer:{name:'ヒーラー',icon:'✚',symbol:'癒',range:28.6,ideal:16,color:'#8edbc6',desc:'前衛から少し離れた中衛で回復と攻撃を行う。回復魔法の射程は32。'},enchanter:{name:'付与術師',icon:'✨',symbol:'付',range:31.2,ideal:16,color:'#ebbd72',desc:'中衛から周囲25の味方を強化し、魔法弾でも支援する。'},rogue:{name:'盗賊',icon:'🗡️',symbol:'盗',range:4.2,ideal:1.8,color:'#91c8e9',desc:'集団から離れて後衛（弓師・魔法使い・ヒーラー・付与術師）を積極的に狙う高速の近接物理職。'}};
 const traitPool=[{n:'頑強',d:'最大HP +15%',id:'tough'},{n:'俊足',d:'移動速度 +16%',id:'swift'},{n:'精密',d:'命中率 +12%',id:'precise'},{n:'強打',d:'与ダメージ +12%',id:'mighty'},{n:'直感',d:'回避率 +9%',id:'instinct'},{n:'節約家',d:'スキルMP消費 -25%',id:'thrifty'},{n:'生命力',d:'毎秒HPを少しずつ回復',id:'vital'},{n:'急所狙い',d:'クリティカル率 +10%',id:'crit'}];
 const palette=['#e9a574','#78bdec','#b8a1eb','#8ed3a4','#eac674','#e990a5'];
 const first=['アレン','ミラ','ゼイン','リリィ','レオン','フィオ','セリア','ガレス','ノエル','カイ','ユリア','オスカー','ルーク','エマ','リオ','イリス','ロラン','シエナ','アッシュ','ニナ','エリオ','ユノ','クロエ','リヒト','セナ','ベリル','エド','アルマ','テオ','カレン','ザラ','ジン'];
@@ -1006,7 +1015,7 @@ launchBattle=function(){
  if(game?.sim)for(const u of game.sim.units){const m=game.players[u.owner].units.find(v=>v.id===u.id);u.tactic={...(m?.tactic||JOB_TACTICS[u.type])};}
 };
 // Midline caster positioning and spell reach (in continuous world units).
-const SUPPORT_HEAL_RANGE=21, SUPPORT_BUFF_RANGE=25;
+const SUPPORT_HEAL_RANGE=32, SUPPORT_BUFF_RANGE=25;
 // Tactical movement & targeting, preserving abilities, terrain routing and sprite animation.
 aiTick=function(u,dt,s){
  if(!u.alive)return;
@@ -1051,19 +1060,26 @@ aiTick=function(u,dt,s){
   // they would both seek points behind one another and run off the map.
   const fighters=partners.filter(v=>v.type!=='healer'&&v.type!=='enchanter');
   const frontline=fighters.filter(v=>v.type==='warrior'||v.type==='rogue').sort((a,b)=>dist(u,a)-dist(u,b));
-  const anchor=frontline[0]||fighters.sort((a,b)=>dist(u,a)-dist(u,b))[0]||null;
+  const anchor=fighters.find(v=>v.id===u._supportAnchorId)||frontline[0]||fighters.sort((a,b)=>dist(u,a)-dist(u,b))[0]||null;
+  u._supportAnchorId=anchor?.id??null;
   const closeThreat=enemies.filter(v=>['warrior','rogue'].includes(v.type)&&dist(u,v)<8)
     .sort((a,b)=>dist(u,a)-dist(u,b))[0];
-  const urgentHeal=u.type==='healer'&&healTarget&&healTarget.hp/healTarget.maxHp<.68;
   if(anchor){
-    // Escort the nearest *combat* ally, keeping the midline distance.
-    const frontThreat=enemies.reduce((a,b)=>!a||dist(anchor,b)<dist(anchor,a)?b:a,null);
-    let backX=anchor.x-(frontThreat?.x??tgt?.x??anchor.x),backY=anchor.y-(frontThreat?.y??tgt?.y??anchor.y);
-    let len=Math.hypot(backX,backY);
-    if(len<.01){backX=u.x-anchor.x;backY=u.y-anchor.y;len=Math.max(.01,Math.hypot(backX,backY));}
-    const gap=pref.stance==='engage'?11.5:pref.stance==='kite'?20:pref.stance==='flank'?14.5:16;
-    const desired={x:clamp(anchor.x+backX/len*gap,2,WORLD_SIZE-2),y:clamp(anchor.y+backY/len*gap,2,WORLD_SIZE-2)};
-    if(dist(u,desired)>2.8){vx+=(desired.x-u.x)*.85;vy+=(desired.y-u.y)*.85;}
+    // Healers hold a midfield *zone*, not a point tied to a moving wounded ally.
+    // A wide follow threshold stops them constantly mirroring the frontline's every step.
+    const gap=pref.stance==='engage'?12:pref.stance==='kite'?20:pref.stance==='flank'?15:16;
+    const spacing=dist(u,anchor);
+    const localPatient=u.type==='healer'&&allies.some(v=>v.hp<v.maxHp-12&&dist(u,v)<=SUPPORT_HEAL_RANGE-2);
+    if(spacing>gap+11){
+      // Stay put while treating a nearby patient, unless the squad has truly moved away.
+      if(!localPatient||spacing>SUPPORT_HEAL_RANGE+6){vx+=(anchor.x-u.x)*.75;vy+=(anchor.y-u.y)*.75;}
+    }else if(spacing<gap-7&&!closeThreat){
+      // Make room behind the front line without chasing any specific patient.
+      const nearbyEnemy=enemies.reduce((a,b)=>!a||dist(anchor,b)<dist(anchor,a)?b:a,null);
+      let ax=anchor.x-(nearbyEnemy?.x??tgt.x),ay=anchor.y-(nearbyEnemy?.y??tgt.y);
+      const length=Math.hypot(ax,ay)||1;
+      vx+=ax/length*3.5;vy+=ay/length*3.5;
+    }
   }else{
     // All surviving allies are support classes: become an ordinary ranged
     // squad instead of repeatedly trying to escort each other.
@@ -1081,10 +1097,7 @@ aiTick=function(u,dt,s){
       if(separation>22){vx+=(group.x-u.x)*.12;vy+=(group.y-u.y)*.12;}
     }
   }
-  // Heal an injured ally from spell range instead of rushing to touch them.
-  if(urgentHeal&&healTarget.id!==u.id&&dist(u,healTarget)>SUPPORT_HEAL_RANGE-1){
-    vx+=(healTarget.x-u.x)*1.25;vy+=(healTarget.y-u.y)*1.25;
-  }
+  // Heal only within the current zone: even critical injuries never trigger cross-map pursuit.
   // Strong evasive response to melee threats, without suppressing attacks.
   if(closeThreat){vx+=(u.x-closeThreat.x)*2.4;vy+=(u.y-closeThreat.y)*2.4;}
  }else if(ranged){
@@ -3188,7 +3201,8 @@ function sceneRestore(){if(!story)return;story.inBattle=false;
  else if(story.phase==='market'&&story.market?.length)renderMarket();
  else if(story.phase==='shop')renderShop();
  else if(story.phase==='prep')renderPrep();
- else if(story.phase==='contracts'||story.phase==='result')renderContracts();
+ else if(story.phase==='contracts')renderContracts();
+ else if(story.phase==='contract-mode'||story.phase==='result')renderContractModeChoice();
  else if(story.phase==='defeat')renderStoryDefeat();
  else if(story.phase==='complete'&&story.chapter>=EPISODES.length)renderStoryVictory();
  else renderStoryHub();}
@@ -3327,6 +3341,22 @@ function prepareBattle(){
  const h=app.querySelector('.pageintro .headline');if(h)h.innerHTML=`${story.chapter+1}戦目 <span class="gold">${esc(q.title)}</span>`;
  const intro=app.querySelector('.pageintro .lead');if(intro)intro.textContent='出撃円の位置を自由に動かしてください。敵の出撃位置は非公開です。行動方針は出撃準備画面で変更可能です。契約時に覚えた必殺スキルは変更できません。';
 }
+const storyPlacementWithLockedSkill=renderPlacement;
+renderPlacement=function(...args){
+ const result=storyPlacementWithLockedSkill.apply(this,args);
+ if(story?.inBattle&&screen==='placement'){
+   const panels=app.querySelectorAll('.tactic-unit');
+   for(const [i,m] of game.players[0].units.entries()){
+     const pane=panels[i];if(!pane)continue;
+     const skillPanel=pane.querySelector('.ultimate-select-box');
+     if(!skillPanel)continue;
+     skillPanel.classList.add('story-fixed-skill');
+     // The acquired skill is fixed when the mercenary is first contracted.
+     skillPanel.innerHTML=`<div class="ultimate-label">習得済みの必殺スキル <small>変更不可</small></div><div class="story-skill-summary">${skillLine(m)}</div>`;
+   }
+ }
+ return result;
+};
 const origRenderBattle=renderBattle;
 renderBattle=function(...args){const r=origRenderBattle.apply(this,args);if(!story?.inBattle||screen!=='battle')return r;const h=app.querySelector('.pageintro .headline');if(h)h.innerHTML=`${esc(epi().title)} <span class="gold">防衛戦</span>`;const head=app.querySelector('.race-battlebar');if(head)head.innerHTML=`<span>第${story.chapter+1}戦 · ${esc(epi().foe)}</span><span>国庫 ${money(fund())}　生存傭兵を守れ</span>`;return r;};
 function gainXp(m,u){const gain=10+(u.kills||0)*14+Math.round((1-u.hp/Math.max(1,u.maxHp))*5);m.xp=(m.xp||0)+gain;m.level=m.level||1;let levels=0;while(m.xp>=28+m.level*16){m.xp-=28+m.level*16;m.level++;levels++;m.st.hp+=18;m.st.pd+=2;m.st.md+=2;m.st.ag+=1;m.st.dx+=1;if(['mage','healer','enchanter'].includes(m.type))m.st.ma+=3;else m.st.pa+=3;}return {gain,levels};}
@@ -3351,7 +3381,7 @@ function finishStoryBattle(){
  }
  story.phase='result';save();const o=story.outcome;
  renderShell(header('勝利！ 王国の旗は守られた',`${story.chapter+1}戦目・${epi().title}`)+`<div class="story-clear-banner victory"><div class="story-clear-kicker">⚜ STAGE CLEARED · ${story.chapter+1} / ${EPISODES.length}</div><div class="story-clear-title">王国軍、勝利！</div><div class="story-clear-stage">${esc(epi().title)}　戦利金 +${money(o.reward)}</div></div><div class="story-layout"><section class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line story-event-line">「${esc((STAGE_CLEAR_LINES[story.chapter]||'王国軍の勝利です！').replaceAll('アレン',story.playerName||'アレン'))}」</div>${o.deaths.length?`<p class="story-warning">戦死：${o.deaths.map(m=>esc(m.name)).join('、')}（復活不可）</p>`:'<p class="green">全員が生還しました。</p>'}<div class="story-actions">${o.heroDead?btn('戦闘前からコンテニュー','storyRetryHero'):btn('契約更新へ進む →','storyToContracts')}</div></section><aside class="story-card"><div class="overline">BATTLE REPORT</div><h2>戦利金 ${money(o.reward)}</h2>${o.growth.map(g=>`<div class="story-summary-row"><span>${esc(g.name)} / Lv.${g.level}${g.up?' <b class="gold">LEVEL UP!</b>':''}</span><span>経験 +${g.xp} · 撃破 ${g.kills}</span></div>`).join('')}<p class="muted small">戦死者の装備は勝利後に回収され、国の在庫へ戻ります。</p></aside></div>`);
- action('storyRetryHero',retryStoryBattle);action('storyToContracts',()=>{story.contractQueue=[];story.contractStep=0;renderContracts()});
+ action('storyRetryHero',retryStoryBattle);action('storyToContracts',()=>{story.contractQueue=[];story.contractStep=0;renderContractModeChoice()});
 }
 function renderStoryDefeat(){
  if(!story)return;story.phase='defeat';save();
@@ -3363,6 +3393,37 @@ function retryStoryBattle(){
  if(!raw){alert('戦闘直前の記録が見つかりません。セーブデータから再開してください。');openSaveMenu();return;}
  try{const saved=JSON.parse(raw);if(!validateStory(saved))throw new Error('invalid checkpoint');story=saved;story.phase='prep';story.inBattle=false;story.outcome=null;story.finalized=-1;game=null;save();renderPrep();}
  catch(_){alert('コンテニュー用の記録を読み込めませんでした。');openSaveMenu();}
+}
+function renderContractModeChoice(){
+ if(!story)return;
+ story.phase='contract-mode';
+ const mercs=story.units.filter(m=>!m.isHero);
+ const total=mercs.reduce((sum,m)=>sum+contractRenewal(m),0);
+ save();
+ renderShell(header('傭兵との契約をどうする？','戦闘で生き残った傭兵について、契約を更新する方法を選びます。')+
+ `<div class="story-layout"><section class="story-card story-contract-choice"><div class="overline">CONTRACT RENEWAL</div><h2>次の戦いに向けて契約を更新</h2>
+ <p class="story-sub">傭兵${mercs.length}名の更新を行います。<strong>一括継続</strong>なら全員の推定契約額を支払い、<strong>個別に判断</strong>ならステータスを確認しながら一人ずつ決められます。</p>
+ <div class="story-contract-totals"><div><small>現在の国庫</small><strong>${money(story.funds)}</strong></div><div><small>全員を継続する費用</small><strong class="gold">${money(total)}</strong></div><div><small>一括継続後の残金</small><strong>${story.funds>=total?money(story.funds-total):'資金不足'}</strong></div></div>
+ <div class="story-actions">${btn(`全員を継続雇用（${money(total)}）`,'storyRenewAll')}${btn('1人ずつ契約を選択','storyRenewIndividually','')}</div>
+ ${story.funds<total?'<p class="story-warning">全員分の更新料が足りません。個別に判断して継続する傭兵を選んでください。</p>':''}
+ ${mercs.length===0?'<p class="story-note">現在、更新が必要な傭兵はいません。そのまま次の事件へ進めます。</p>':''}</section>
+ <aside class="story-card"><div class="overline">CONTRACT ESTIMATES</div>
+ ${mercs.length?mercs.map(m=>`<div class="story-summary-row"><span>${esc(m.name)} <small class="muted">${job(m)} / Lv.${m.level||1}</small></span><strong>${money(contractRenewal(m))}</strong></div>`).join(''):'<p class="story-note">継続契約の対象はいません。</p>'}
+ <div class="story-note">更新料は初回落札額ではなく、各傭兵の推定契約額で計算します。</div></aside></div>`);
+ const allBtn=document.getElementById('storyRenewAll');
+ if(allBtn)allBtn.disabled=story.funds<total;
+ action('storyRenewAll',()=>{
+   const current=story.units.filter(m=>!m.isHero);
+   const cost=current.reduce((n,m)=>n+contractRenewal(m),0);
+   if(story.funds<cost)return;
+   if(current.length&&!confirm(`${current.length}名全員の契約を更新します。\n必要額：${money(cost)}\n継続しますか？`))return;
+   story.funds-=cost;
+   for(const m of current)m.renewDecision='renew';
+   story.contractQueue=current.map(m=>m.id);
+   story.contractStep=current.length;
+   save();renderContracts();
+ });
+ action('storyRenewIndividually',()=>{story.contractQueue=[];story.contractStep=0;save();renderContracts()});
 }
 function renderContracts(){
  story.phase='contracts';
@@ -3400,10 +3461,10 @@ if(screen==='setup'){renderSetup();}
    const wounded=allies.filter(v=>v.alive&&v.hp<v.maxHp-12);
    if(!wounded.length)return null;
    // A critically wounded ally already in healing range always takes precedence.
-   const inReach=wounded.filter(v=>dist(u,v)<=21);
+   const inReach=wounded.filter(v=>dist(u,v)<=32);
    const urgent=inReach.filter(v=>v.hp/Math.max(1,v.maxHp)<.27);
    if(urgent.length)return urgent.sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];
-   const candidates=inReach.length?inReach:wounded;
+   const candidates=inReach; if(!candidates.length)return null;
    const isFront=v=>v.type==='warrior'||v.type==='rogue';
    const preferred=(mode==='frontline'?candidates.filter(isFront):mode==='backline'?candidates.filter(v=>!isFront(v)):candidates);
    const pool=preferred.length?preferred:candidates;
@@ -3589,4 +3650,17 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
 })();
 </script>
 
+<script>
+'use strict';
+// v2.21: Warriors take 30% less incoming damage from archers and rogues.
+(function(){
+ const previousDamage=doDamage;
+ doDamage=function(target,amount,attacker,color,critical){
+   if(target?.type==='warrior' && (attacker?.type==='archer'||attacker?.type==='rogue') && Number.isFinite(amount) && amount>0){
+     amount=Math.max(1,Math.round(amount*.70));
+   }
+   return previousDamage(target,amount,attacker,color,critical);
+ };
+})();
+</script>
 </body></html>
