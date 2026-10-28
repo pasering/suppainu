@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.21 — 契約・戦士バランス調整版</title>
+<title>傭兵競売戦記 v2.22 — 戦闘配置・後衛護衛調整版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -100,7 +100,7 @@ main{max-width:1510px;margin:0 auto;padding:28px 28px 44px}.overline{font-size:1
 </head>
 <body>
 <header><div class="top"><div class="mark">♜</div><div><div class="brand">傭兵競売戦記</div><div class="subbrand">MERCENARY DRAFT · ART EDITION</div></div><div class="topright"><span class="tag">戦略オークション × 自動戦闘</span><span class="tag live" id="headerStage">NEW GAME</span><div id="soundControls" class="sound-controls" aria-label="サウンド設定"><button type="button" id="toggleMusic" title="BGMをオン・オフ">♫ BGM</button><button type="button" id="toggleFx" title="効果音をオン・オフ">♪ SE</button><label title="音量">🔊 <input type="range" id="soundVolume" min="0" max="100" value="48" aria-label="全体音量"></label></div></div></div></header>
-<main id="app"></main><div class="footer">Prototype ver. 2.18 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
+<main id="app"></main><div class="footer">Prototype ver. 2.22 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
 <script>
 'use strict';
 // Mercenary Draft: single-file, no runtime dependencies.
@@ -833,7 +833,7 @@ renderSetup();
 // v1.7 - secret deployment circle, one-click focus, individual tactics.
 (function(){
 const DEPLOY_RADIUS=11.5;
-const STANCES={engage:'突破・接近',balanced:'標準行動',guard:'味方を護衛',kite:'距離を確保',flank:'遊撃・側面'};
+const STANCES={engage:'突破・接近',balanced:'標準行動',guard:'味方を護衛',kite:'距離を確保',flank:'遊撃・側面',rearGuard:'後衛を護衛'};
 const TARGETS={nearest:'近くの敵',backline:'後衛優先',frontline:'前衛優先',weak:'低HP優先',threat:'高火力優先'};
 const HEAL_TARGETS={frontline:'前衛を優先',backline:'後衛を優先',lowHp:'HP残量が少ない味方',nearest:'近くにいる味方'};
 const JOB_TACTICS={
@@ -959,7 +959,7 @@ renderPlacement=function(){
  const ids=p.units.length;
  app.innerHTML=`<div class="pageintro"><div class="overline">SECRET DEPLOYMENT</div><div class="headline" style="font-size:31px">部隊の<span class="gold">出撃地点</span>を選択</div><div class="lead">マップをクリック、またはドラッグして出撃円を移動させます。傭兵は円内に自動で隊列を組みます。<strong>他陣営の出撃地点は表示されません。</strong> 各傭兵の行動方針は右側で個別に変更できます。</div>${steps('部隊の配置')}</div>
  <div class="split wide"><section class="surface pad"><div class="battletoolbar"><span class="pill focal">${escapeHtml(p.name)} の出撃地点</span><span class="pill">200 × 200 / 部隊一括配置</span></div><div class="placement-art-ribbon"><img src="${EMBEDDED_MAPS[setup.map||'ruins']}" alt="戦場風景"><div class="meta"><b>出撃円をマップの好きな位置へ</b><br>他陣営の開始位置は非公開。障害物の上には配置できません。位置が決まったら「配置確定」を押してください。</div></div><div class="arena topdown"><canvas id="arenaCanvas" width="900" height="900"></canvas><div class="arenabadge">◉ 地図をクリック / ドラッグして出撃位置を移動</div><div class="overlay-note" id="circleInfo">出撃地点は自分だけに表示されます。円内の隊列は自動調整されます。</div></div><div class="actions"><button class="btn" id="rerollFormation">隊列を組み直す</button><button class="btn primary" id="nextDeploy">${game.placeTurn+1<game.placeOrder.length?'この位置で確定・次のプレイヤー →':'この位置で戦闘開始 →'}</button></div></section>
- <aside class="sidebar"><section class="surface pad"><h2 class="blocktitle">${escapeHtml(p.name)} の作戦設定 <small>${ids}名</small></h2><p class="small muted">基本は職業別のおすすめ設定。変更した傭兵だけ別の判断で行動します。</p><div class="tactic-roster">${p.units.map((m,i)=>`<div class="tactic-unit"><div class="tactic-heading"><span style="font-weight:900">${cls[m.type].icon} ${escapeHtml(m.name)}</span><small>${cls[m.type].name}</small></div><div class="tactic-controls"><label>立ち回り<select class="input tactic-choice" data-index="${i}" data-field="stance">${optionsFrom(STANCES,tactic(m).stance)}</select></label><label>攻撃優先<select class="input tactic-choice" data-index="${i}" data-field="target">${optionsFrom(TARGETS,tactic(m).target)}</select></label>${m.type==='healer'?`<label>回復優先<select class="input tactic-choice" data-index="${i}" data-field="heal">${optionsFrom(HEAL_TARGETS,tactic(m).heal)}</select></label>`:''}</div><div class="tactic-footer"><small>HP ${enhancedStats(m).hp} / 物攻 ${enhancedStats(m).pa} / 魔攻 ${enhancedStats(m).ma}</small><button class="tactic-reset" data-index="${i}">職業の初期設定へ</button></div></div>`).join('')}</div></section><section class="surface pad" style="margin-top:16px"><div class="blocktitle">参加陣営</div>${game.players.map(q=>`<div class="playerrow"><i class="dot" style="background:${q.color};color:${q.color}"></i><span class="pname">${escapeHtml(q.name)}</span><span class="tiny muted" style="margin-left:auto">${q.id===p.id?'出撃位置調整中':'位置非公開'}</span></div>`).join('')}</section></aside></div>`;
+ <aside class="sidebar"><section class="surface pad"><h2 class="blocktitle">${escapeHtml(p.name)} の作戦設定 <small>${ids}名</small></h2><p class="small muted">基本は職業別のおすすめ設定。変更した傭兵だけ別の判断で行動します。</p><div class="tactic-roster">${p.units.map((m,i)=>`<div class="tactic-unit"><div class="tactic-heading"><span style="font-weight:900">${cls[m.type].icon} ${escapeHtml(m.name)}</span><small>${cls[m.type].name}</small></div><div class="tactic-controls"><label>立ち回り<select class="input tactic-choice" data-index="${i}" data-field="stance">${optionsFrom((m.type==='warrior'||m.type==='rogue')?STANCES:Object.fromEntries(Object.entries(STANCES).filter(([key])=>key!=='rearGuard')),tactic(m).stance)}</select></label><label>攻撃優先<select class="input tactic-choice" data-index="${i}" data-field="target">${optionsFrom(TARGETS,tactic(m).target)}</select></label>${m.type==='healer'?`<label>回復優先<select class="input tactic-choice" data-index="${i}" data-field="heal">${optionsFrom(HEAL_TARGETS,tactic(m).heal)}</select></label>`:''}</div><div class="tactic-footer"><small>HP ${enhancedStats(m).hp} / 物攻 ${enhancedStats(m).pa} / 魔攻 ${enhancedStats(m).ma}</small><button class="tactic-reset" data-index="${i}">職業の初期設定へ</button></div></div>`).join('')}</div></section><section class="surface pad" style="margin-top:16px"><div class="blocktitle">参加陣営</div>${game.players.map(q=>`<div class="playerrow"><i class="dot" style="background:${q.color};color:${q.color}"></i><span class="pname">${escapeHtml(q.name)}</span><span class="tiny muted" style="margin-left:auto">${q.id===p.id?'出撃位置調整中':'位置非公開'}</span></div>`).join('')}</section></aside></div>`;
  initCanvas();drawPlacement();
  canvas.style.cursor='grab';
  canvas.addEventListener('pointerdown',e=>{if(screen!=='placement')return;drag={circle:true};canvas.style.cursor='grabbing';tryCircleAt(mapPointer(e));try{canvas.setPointerCapture(e.pointerId)}catch(_){}});
@@ -987,6 +987,31 @@ renderBattleCommands=function(){
 nearestEnemy=function(u,enemies){
  if(!enemies.length)return null;
  const conf=u.tactic||JOB_TACTICS[u.type],focus=game.sim?.orders?.[u.owner]?.focus;
+ // Rear-guard posture: defend allied ranged/support units rather than chasing
+ // arbitrary enemies. A shot/cast aimed at a rear unit is a clear threat.
+ if((u.type==='warrior'||u.type==='rogue')&&conf.stance==='rearGuard'&&game?.sim){
+   const rear=game.sim.units.filter(a=>a.alive&&a.owner===u.owner&&a.id!==u.id&&
+     ['archer','mage','healer','enchanter'].includes(a.type));
+   if(rear.length){
+     const now=game.sim.time;
+     let chosen=null,best=Infinity;
+     for(const enemy of enemies){
+       let score=Infinity;
+       for(const a of rear){
+         const aimed=enemy.targetId===a.id||
+           (enemy._recentAttackTargetId===a.id&&now-(enemy._recentAttackAt??-999)<4.5);
+         const close=dist(enemy,a)<(enemy.type==='warrior'||enemy.type==='rogue'?12:7);
+         if(aimed||close){
+           const priority=aimed?0:5;
+           score=Math.min(score,dist(enemy,a)*.48+dist(u,enemy)*.36+priority);
+         }
+       }
+       if(score<best){chosen=enemy;best=score;}
+     }
+     if(chosen){u._guardThreatId=chosen.id;u.targetId=chosen.id;return chosen;}
+     u._guardThreatId=null;
+   }else u._guardThreatId=null;
+ }
  const immediate=enemies.filter(v=>dist(u,v)<(u.type==='rogue'?2.5:3.7));
  let pool=immediate.length?immediate:enemies;
  if(!immediate.length&&focus!==null&&pool.some(v=>v.owner===focus))pool=pool.filter(v=>v.owner===focus);
@@ -1029,7 +1054,7 @@ aiTick=function(u,dt,s){
  // A preferred enemy outside reach must not hide other shootable enemies.
  // Respect the designated team where possible, but respond to adjacent melee threats.
  const pickRangedTarget=()=>{
-   if(c.range<=4.2)return nearestEnemy(u,enemies);
+   if(u.type==='warrior'||u.type==='rogue')return nearestEnemy(u,enemies);
    const threat=enemies.filter(v=>(v.type==='warrior'||v.type==='rogue')&&dist(u,v)<7.0).sort((a,b)=>dist(u,a)-dist(u,b))[0];
    if(threat)return threat;
    const choice=nearestEnemy(u,enemies);
@@ -1046,7 +1071,7 @@ aiTick=function(u,dt,s){
  const avg={x:allies.reduce((n,v)=>n+v.x,0)/allies.length,y:allies.reduce((n,v)=>n+v.y,0)/allies.length};
  const support=u.type==='healer'||u.type==='enchanter',healTarget=u.type==='healer'?nearestSupportTarget(u,allies):null;
  let vx=0,vy=0;
- const ranged=c.range>4.2;
+ const ranged=u.type!=='warrior'&&u.type!=='rogue';
  const ideal=ranged?Math.min(Math.max(c.ideal,c.range*.35)*(pref.stance==='kite'?1.02:.96),c.range*.83):c.ideal*(pref.stance==='engage'?.77:1);
  if(u._rangeDecisionUntil===undefined)u._rangeDecisionUntil=-1;
  if(s.time>=u._rangeDecisionUntil){u._rangeDecisionUntil=s.time+1.2+Math.random()*.9;u._standAndFire=Math.random()<(u.type==='archer'||u.type==='mage'?.48:.36);u._retreatChoice=Math.random()<.55;}
@@ -1105,6 +1130,36 @@ aiTick=function(u,dt,s){
   if(d>c.range-.9){vx+=(tgt.x-u.x);vy+=(tgt.y-u.y);}
  }else if(d>Math.min(ideal+1.2,c.range*.92)){vx+=(tgt.x-u.x);vy+=(tgt.y-u.y);}
  else if(d<ideal*.65){vx+=(u.x-tgt.x)*.48;vy+=(u.y-tgt.y)*.48;}
+ if(pref.stance==='rearGuard'&&!support&&(u.type==='warrior'||u.type==='rogue')){
+   const rear=allies.filter(a=>a.id!==u.id&&['archer','mage','healer','enchanter'].includes(a.type));
+   if(rear.length){
+     const center={x:rear.reduce((v,a)=>v+a.x,0)/rear.length,
+                   y:rear.reduce((v,a)=>v+a.y,0)/rear.length};
+     const threatening=enemies.find(e=>e.id===u._guardThreatId&&e.alive);
+     const gap=dist(u,center);
+     // Cancel the ordinary chase path; guard the friendly rear units instead.
+     vx=0;vy=0;
+     if(threatening&&dist(threatening,center)<28){
+       if(dist(u,threatening)>Math.max(2.5,c.range*.76)){
+         vx+=(threatening.x-u.x)*1.75;
+         vy+=(threatening.y-u.y)*1.75;
+       }
+       if(gap>21){vx+=(center.x-u.x)*2.8;vy+=(center.y-u.y)*2.8;}
+     }else{
+       // Defend ~5-7 world units from the rear squad, no arbitrary pursuit.
+       if(gap>7){vx+=(center.x-u.x)*1.3;vy+=(center.y-u.y)*1.3;}
+       if(gap<3.5&&tgt){
+         const ex=center.x-tgt.x,ey=center.y-tgt.y,ll=Math.hypot(ex,ey)||1;
+         vx-=ex/ll*1.5;vy-=ey/ll*1.5;
+       }
+       // Opportunistic attack on enemies arriving directly at the backline.
+       const nearby=enemies.filter(e=>dist(e,center)<10).sort((a,b)=>dist(a,center)-dist(b,center))[0];
+       if(nearby&&dist(u,nearby)>Math.max(2.5,c.range*.76)){
+         vx+=(nearby.x-u.x)*1.25;vy+=(nearby.y-u.y)*1.25;
+       }
+     }
+   }
+ }
  if(pref.stance==='guard'&&!support){
   const anchor=allies.filter(v=>v.id!==u.id&&['healer','mage','enchanter','archer'].includes(v.type)).sort((a,b)=>dist(u,a)-dist(u,b))[0]||avg;
   if(dist(u,anchor)>7){vx+=(anchor.x-u.x)*2.0;vy+=(anchor.y-u.y)*2.0;}
@@ -1127,7 +1182,7 @@ aiTick=function(u,dt,s){
  // Only retreat to the safe zone after storm damage begins.
  if(s.time>=46){const dc=Math.hypot(u.x-WORLD_MID,u.y-WORLD_MID);
   if(dc>s.storm-3){vx+=(WORLD_MID-u.x)*2.7;vy+=(WORLD_MID-u.y)*2.7;}}
- if(c.range>4.2&&d<c.range+9){let wall=firstObstruction(u,tgt,true);if(wall){let dd=Math.max(.1,d),side=u.id%2?1:-1;vx+=-(tgt.y-u.y)/dd*side*12+(wall.x-u.x)*.16;vy+=(tgt.x-u.x)/dd*side*12+(wall.y-u.y)*.16;}}
+ if(ranged&&d<c.range+9){let wall=firstObstruction(u,tgt,true);if(wall){let dd=Math.max(.1,d),side=u.id%2?1:-1;vx+=-(tgt.y-u.y)/dd*side*12+(wall.x-u.x)*.16;vy+=(tgt.x-u.x)/dd*side*12+(wall.y-u.y)*.16;}}
  // Firing opportunities take priority over kiting; stop briefly instead of running forever.
  const imminentMelee=ranged&&enemies.some(v=>(v.type==='warrior'||v.type==='rogue')&&dist(u,v)<5.8);
  const firingWindow=ranged&&!imminentMelee&&d<=c.range+1.2&&u.nextAction<=.15&&u._standAndFire;
@@ -3302,7 +3357,7 @@ function renderShop(){
 }
 function renderPrep(){
  story.phase='prep';save();const q=epi();
- renderShell(header('戦闘準備・部隊の作戦','行動方針は試合ごとに変更できます。必殺スキルは契約時に決まったものを使用し、変更できません。敵の装備やステータスは不明です。')+`<div class="story-layout"><section class="story-card"><div class="overline">BATTLE ORDERS</div><h2 class="blocktitle">出撃部隊 ${story.units.length}名</h2>${story.units.map(m=>`<div class="story-choice"><div><b>${esc(m.name)}</b><div class="tiny muted">${job(m)} · Lv.${m.level||1}</div></div><label class="tiny muted">行動方針<select data-story-stance="${m.id}">${Object.entries({engage:'突破・接近',normal:'標準行動',guard:'護衛・中衛',kite:'距離を確保',flank:'遊撃・側面'}).map(([k,v])=>`<option value="${k}" ${m.tactic?.stance===k?'selected':''}>${v}</option>`).join('')}</select></label><label class="tiny muted">攻撃優先<select data-story-target="${m.id}">${Object.entries({nearest:'近くの敵',frontline:'前衛優先',backline:'後衛優先',weak:'低HP優先',threat:'高火力優先'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.target||JOB_TACTICS[m.type].target)===k?'selected':''}>${v}</option>`).join('')}</select></label>${m.type==='healer'?`<label class="tiny muted">回復優先<select data-story-heal="${m.id}">${Object.entries({frontline:'前衛を優先',backline:'後衛を優先',lowHp:'HP残量が少ない味方',nearest:'近くにいる味方'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.heal||'lowHp')===k?'selected':''}>${v}</option>`).join('')}</select></label>`:''}<div class="story-prep-skill">${skillLine(m)}</div><details class="story-prep-profile"><summary>能力詳細・レーダーチャートを表示</summary><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div></details></div>`).join('')}<div class="story-actions">${btn('出撃地点を決める →','storyStartDeployment')}${btn('装備を見直す','storyBackShop','')}</div></section><aside class="story-card"><div class="overline">INCOMING THREAT</div><h3>${q.title}</h3><img src="${EMBEDDED_MAPS[q.map]}" alt="戦場のイメージ" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><p class="story-sub">${esc(q.foe)} / 敵影 ${q.enemies}名${q.foes?`<br>交戦勢力 ${q.foes.length+1}陣営（三つ巴・四つ巴）`:''}<br>勝利時の戦利金：<b class="gold">${money(q.reward)}</b></p><p class="muted small">戦死した傭兵は永久に失われます。戦闘で勝利した場合は戦死者の装備も回収できます。</p></aside></div>`);
+ renderShell(header('戦闘準備・部隊の作戦','行動方針は試合ごとに変更できます。必殺スキルは契約時に決まったものを使用し、変更できません。敵の装備やステータスは不明です。')+`<div class="story-layout"><section class="story-card"><div class="overline">BATTLE ORDERS</div><h2 class="blocktitle">出撃部隊 ${story.units.length}名</h2>${story.units.map(m=>`<div class="story-choice"><div><b>${esc(m.name)}</b><div class="tiny muted">${job(m)} · Lv.${m.level||1}</div></div><label class="tiny muted">行動方針<select data-story-stance="${m.id}">${Object.entries({engage:'突破・接近',normal:'標準行動',guard:'護衛・中衛',kite:'距離を確保',flank:'遊撃・側面',...(m.type==='warrior'||m.type==='rogue'?{rearGuard:'後衛を護衛'}:{})}).map(([k,v])=>`<option value="${k}" ${m.tactic?.stance===k?'selected':''}>${v}</option>`).join('')}</select></label><label class="tiny muted">攻撃優先<select data-story-target="${m.id}">${Object.entries({nearest:'近くの敵',frontline:'前衛優先',backline:'後衛優先',weak:'低HP優先',threat:'高火力優先'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.target||JOB_TACTICS[m.type].target)===k?'selected':''}>${v}</option>`).join('')}</select></label>${m.type==='healer'?`<label class="tiny muted">回復優先<select data-story-heal="${m.id}">${Object.entries({frontline:'前衛を優先',backline:'後衛を優先',lowHp:'HP残量が少ない味方',nearest:'近くにいる味方'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.heal||'lowHp')===k?'selected':''}>${v}</option>`).join('')}</select></label>`:''}<div class="story-prep-skill">${skillLine(m)}</div><details class="story-prep-profile"><summary>能力詳細・レーダーチャートを表示</summary><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div></details></div>`).join('')}<div class="story-actions">${btn('出撃地点を決める →','storyStartDeployment')}${btn('装備を見直す','storyBackShop','')}</div></section><aside class="story-card"><div class="overline">INCOMING THREAT</div><h3>${q.title}</h3><img src="${EMBEDDED_MAPS[q.map]}" alt="戦場のイメージ" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><p class="story-sub">${esc(q.foe)} / 敵影 ${q.enemies}名${q.foes?`<br>交戦勢力 ${q.foes.length+1}陣営（三つ巴・四つ巴）`:''}<br>勝利時の戦利金：<b class="gold">${money(q.reward)}</b></p><p class="muted small">戦死した傭兵は永久に失われます。戦闘で勝利した場合は戦死者の装備も回収できます。</p></aside></div>`);
  app.querySelectorAll('[data-story-stance]').forEach(el=>el.addEventListener('change',()=>{const m=story.units.find(m=>m.id===Number(el.dataset.storyStance));if(m){m.tactic=m.tactic||{...JOB_TACTICS[m.type]};m.tactic.stance=el.value;save();}}));
  app.querySelectorAll('[data-story-target]').forEach(el=>el.addEventListener('change',()=>{const m=story.units.find(m=>m.id===Number(el.dataset.storyTarget));if(m){m.tactic=m.tactic||{...JOB_TACTICS[m.type]};m.tactic.target=el.value;save();}}));
  app.querySelectorAll('[data-story-heal]').forEach(el=>el.addEventListener('change',()=>{const m=story.units.find(m=>m.id===Number(el.dataset.storyHeal));if(m){m.tactic=m.tactic||{...JOB_TACTICS[m.type]};m.tactic.heal=el.value;save();}}));
@@ -3362,9 +3417,9 @@ renderBattle=function(...args){const r=origRenderBattle.apply(this,args);if(!sto
 function gainXp(m,u){const gain=10+(u.kills||0)*14+Math.round((1-u.hp/Math.max(1,u.maxHp))*5);m.xp=(m.xp||0)+gain;m.level=m.level||1;let levels=0;while(m.xp>=28+m.level*16){m.xp-=28+m.level*16;m.level++;levels++;m.st.hp+=18;m.st.pd+=2;m.st.md+=2;m.st.ag+=1;m.st.dx+=1;if(['mage','healer','enchanter'].includes(m.type))m.st.ma+=3;else m.st.pa+=3;}return {gain,levels};}
 function finishStoryBattle(){
  if(!story||!game?.sim)return;
- const s=game.sim,won=s.winner===0;
+ const s=game.sim,heroDead=s.units.some(u=>u.owner===0&&(u.id===901||u.isHero)&&!u.alive),battlefieldWon=s.winner===0,won=battlefieldWon&&!heroDead;
  if(!won){
-   story.inBattle=false;story.phase='defeat';story.outcome={won:false,chapter:story.chapter,heroDead:s.units.some(u=>u.owner===0&&u.id===901&&!u.alive)};
+   story.inBattle=false;story.phase='defeat';story.outcome={won:false,chapter:story.chapter,heroDead,teamWon:battlefieldWon};
    save();renderStoryDefeat();return;
  }
  if(story.finalized!==story.chapter){
@@ -3385,7 +3440,9 @@ function finishStoryBattle(){
 }
 function renderStoryDefeat(){
  if(!story)return;story.phase='defeat';save();
- renderShell(header('敗戦 ― 王国の危機',`${story.chapter+1}戦目・${epi().title}`)+`<div class="story-clear-banner defeat"><div class="story-clear-kicker">⚔ MISSION FAILED</div><div class="story-clear-title">防衛線、突破される</div><div class="story-clear-stage">${esc(epi().title)}</div></div><div class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line">「まだ終わりではありません！ 部隊を立て直し、もう一度戦いましょう！」</div><p class="story-note">コンテニューでは出撃直前へ戻ります。敗戦中の傭兵の死亡・装備損失・資金の変化は確定しません。装備と行動方針を見直して再挑戦できます。</p><div class="story-actions">${btn('コンテニュー・戦闘準備へ','storyRetryBattle')}${btn('セーブデータをロード','storyDefeatLoad','')}</div></div>`);
+ const special=!!story.outcome?.teamWon&&!!story.outcome?.heroDead;
+ const heroName=story.units.find(m=>m.isHero)?.name||'主人公';
+ renderShell(header(special?'敵軍を退けたが、主人公が戦死': '敗戦 ― 王国の危機',`${story.chapter+1}戦目・${epi().title}`)+`<div class="story-clear-banner defeat"><div class="story-clear-kicker">⚔ MISSION FAILED</div><div class="story-clear-title">${special?'戦闘勝利・任務失敗':'防衛線、突破される'}</div><div class="story-clear-stage">${esc(epi().title)}</div></div><div class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line">${special?`「敵軍は全滅しました。しかし、${esc(heroName)}が戦死してしまいました……！ 王国の命運を託された主人公を失ったため、この戦いは敗北扱いです。」`:'「まだ終わりではありません！ 部隊を立て直し、もう一度戦いましょう！」'}</div><p class="story-note">コンテニューでは出撃直前へ戻ります。敗戦中の傭兵の死亡・装備損失・資金の変化は確定しません。装備と行動方針を見直して再挑戦できます。</p><div class="story-actions">${btn('コンテニュー・戦闘準備へ','storyRetryBattle')}${btn('セーブデータをロード','storyDefeatLoad','')}</div></div>`);
  action('storyRetryBattle',retryStoryBattle);action('storyDefeatLoad',openSaveMenu);
 }
 function retryStoryBattle(){
@@ -3663,4 +3720,69 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
  };
 })();
 </script>
+
+<script id="v222-rearguard-overlap">
+'use strict';
+(function(){
+  // Tag the target of actual attacks. Useful for protect-the-backline decisions.
+  const previousFire=fireProjectile;
+  fireProjectile=function(att,target,...args){
+    if(att&&target){att._recentAttackTargetId=target.id;att._recentAttackAt=game?.sim?.time??0;}
+    return previousFire(att,target,...args);
+  };
+  const previousStrike=strike;
+  strike=function(att,target,...args){
+    if(att&&target){att._recentAttackTargetId=target.id;att._recentAttackAt=game?.sim?.time??0;}
+    return previousStrike(att,target,...args);
+  };
+  // Continuous movement is unchanged. Gently separate bodies overlapping within
+  // one spatial cell; never place a unit inside an obstacle or outside the map.
+  function separateOverlaps(sim){
+    const units=sim.units.filter(u=>u.alive);
+    if(units.length<2)return;
+    const cellSize=3.3,minGap=2.65;
+    for(let pass=0;pass<2;pass++){
+      const cells=new Map();
+      for(const u of units){
+        const gx=Math.floor(u.x/cellSize),gy=Math.floor(u.y/cellSize);
+        const key=gx+','+gy;
+        if(!cells.has(key))cells.set(key,[]);
+        cells.get(key).push(u);
+      }
+      for(const u of units){
+        const gx=Math.floor(u.x/cellSize),gy=Math.floor(u.y/cellSize);
+        for(let ax=-1;ax<=1;ax++)for(let ay=-1;ay<=1;ay++){
+          const near=cells.get((gx+ax)+','+(gy+ay));if(!near)continue;
+          for(const v of near){
+            if(v.id<=u.id)continue;
+            const dx=u.x-v.x,dy=u.y-v.y;
+            const d=Math.hypot(dx,dy);
+            if(d>=minGap)continue;
+            const phase=(u.id*19+v.id*13)%37;
+            const a=phase*Math.PI*2/37;
+            const nx=d>.001?dx/d:Math.cos(a),ny=d>.001?dy/d:Math.sin(a);
+            const step=Math.min(.7,(minGap-d)*.5);
+            const ux=clamp(u.x+nx*step,1.2,WORLD_SIZE-1.2);
+            const uy=clamp(u.y+ny*step,1.2,WORLD_SIZE-1.2);
+            const vx=clamp(v.x-nx*step,1.2,WORLD_SIZE-1.2);
+            const vy=clamp(v.y-ny*step,1.2,WORLD_SIZE-1.2);
+            const canU=walkable(ux,uy,.57),canV=walkable(vx,vy,.57);
+            if(canU){u.x=ux;u.y=uy;}
+            if(canV){v.x=vx;v.y=vy;}
+          }
+        }
+      }
+    }
+  }
+  const previousTick=simTick;
+  simTick=function(dt){
+    const sim=game?.sim;
+    const oldTime=sim?.time;
+    const result=previousTick(dt);
+    if(sim&&sim.time!==oldTime&&!sim.ended)separateOverlaps(sim);
+    return result;
+  };
+})();
+</script>
+
 </body></html>
