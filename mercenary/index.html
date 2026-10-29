@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.24 — 護衛部隊の後退ループ修正版</title>
+<title>傭兵競売戦記 v2.38 — 傭兵詳細・回復待機AI改善版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -86,6 +86,9 @@ main{max-width:1510px;margin:0 auto;padding:28px 28px 44px}.overline{font-size:1
 .detail-art-thumb{width:80px;height:80px;object-fit:contain;float:right;margin:0 0 7px 10px;border-radius:8px;background:#41536d55}
 @media(max-width:650px){.landing-banner{height:185px}.landing-banner-text{padding:15px}.map-preview img{height:98px}}
 
+
+/* v2.35 Three strategic choices and route ledger */
+.story-plan-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}.story-plan-option{min-height:150px;text-align:left;display:flex;flex-direction:column;gap:7px;align-items:flex-start;padding:16px;border:1px solid #b59555;border-radius:12px;background:linear-gradient(145deg,#173043,#0c1724);color:#f6ecd0;cursor:pointer}.story-plan-option:hover{background:linear-gradient(145deg,#244c60,#102739);transform:translateY(-2px)}.story-plan-option b{font-size:16px}.story-plan-option small{opacity:.85;font-size:12px;line-height:1.5}.story-plan-option.easy{border-color:#73a08b}.story-plan-option.hard{border-color:#c98668}.story-difficulty-label{font-size:12px;color:#e7c77a;font-weight:900}@media(max-width:740px){.story-plan-options{grid-template-columns:1fr}.story-plan-option{min-height:0}}
 </style>
 <style>.equip-bonus-formula{display:block;font-size:10px;font-weight:600;color:#a6c9ec;margin-top:3px;white-space:normal}.gear-card.active{cursor:pointer;box-shadow:inset 0 0 0 1px #d5b176}.net-equips label button{margin-top:7px;display:block;font-size:11px;max-width:100%}</style>
 <style>
@@ -97,10 +100,15 @@ main{max-width:1510px;margin:0 auto;padding:28px 28px 44px}.overline{font-size:1
 .story-fixed-skill .story-locked-skill{display:block;margin-top:4px;line-height:1.7}
 @media (max-width:700px){.story-contract-choice .story-contract-totals{grid-template-columns:1fr}.story-contract-choice .story-contract-totals>div{padding:10px 12px}.story-contract-choice .story-contract-totals strong{font-size:17px}}
 </style>
+
+<style id="campaign-v228-style">
+.story-dialogue-sequence{display:grid;gap:11px;margin:14px 0 17px}.story-dialogue-entry{background:rgba(17,32,47,.75);border-left:3px solid #ac8c57;border-radius:7px;padding:12px 15px}.story-dialogue-entry b{display:block;color:#e3c78b;font-size:13px;margin-bottom:7px}.story-dialogue-entry p{margin:0;color:#e3eaf1;line-height:1.85;font-size:14px}.story-clear-title{overflow-wrap:anywhere}
+@media(max-width:680px){.story-dialogue-entry{padding:10px}.story-dialogue-entry p{font-size:13px}}
+</style>
 </head>
 <body>
 <header><div class="top"><div class="mark">♜</div><div><div class="brand">傭兵競売戦記</div><div class="subbrand">MERCENARY DRAFT · ART EDITION</div></div><div class="topright"><span class="tag">戦略オークション × 自動戦闘</span><span class="tag live" id="headerStage">NEW GAME</span><div id="soundControls" class="sound-controls" aria-label="サウンド設定"><button type="button" id="toggleMusic" title="BGMをオン・オフ">♫ BGM</button><button type="button" id="toggleFx" title="効果音をオン・オフ">♪ SE</button><label title="音量">🔊 <input type="range" id="soundVolume" min="0" max="100" value="48" aria-label="全体音量"></label></div></div></div></header>
-<main id="app"></main><div class="footer">Prototype ver. 2.23 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
+<main id="app"></main><div class="footer">Prototype ver. 2.38 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
 <script>
 'use strict';
 // Mercenary Draft: single-file, no runtime dependencies.
@@ -316,7 +324,18 @@ function nearestEnemy(u,enemies){if(!enemies.length)return null;let close=enemie
 function nearestSupportTarget(u,allies){let best=null,bestScore=0;for(let a of allies){const missing=(a.maxHp-a.hp);let score=missing/a.maxHp*2+missing/450-dist(u,a)/60;if(score>bestScore&&missing>14){best=a;bestScore=score;}}return best;}
 function dirMove(u,vx,vy,dt){let speed=(3.7+u.st.ag*.054)*(u.trait.id==='swift'?1.16:1)*(u.type==='rogue'?1.21:1)*(u.buffUntil>game.sim.time?1.17:1);let len=Math.hypot(vx,vy);if(len<.08)return;let n=speed*dt/len;u.x=clamp(u.x+vx*n,1,99);u.y=clamp(u.y+vy*n,1,99);}
 function skillCost(u,base){return Math.ceil(base*(u.trait.id==='thrifty'?.75:1));}
-function effectiveDmg(u,isMagic){let st=u.st;return (isMagic?st.ma:st.pa)*(u.trait.id==='mighty'?1.12:1)*(u.buffUntil>game.sim.time?1.21:1);}
+// Passive group enchantments are stored by caster ID. One caster can refresh but
+// cannot stack with itself; different enchanters provide independent stacks.
+function passiveBuffStacks(u,at){
+ if(!u||!u._passiveEnchantments)return 0;
+ let n=0;
+ for(const [caster,until] of Object.entries(u._passiveEnchantments)){
+  if(until>at)n++;
+  else delete u._passiveEnchantments[caster];
+ }
+ return n;
+}
+function effectiveDmg(u,isMagic){let st=u.st;const t=game.sim?.time??0;return (isMagic?st.ma:st.pa)*(u.trait.id==='mighty'?1.12:1)*(u.buffUntil>t?1.21:1)*(1+.21*passiveBuffStacks(u,t));}
 function strike(att,target,magic=false,mult=1,splash=false){let s=game.sim;if(!target.alive||!att.alive)return;let hit=clamp(.76+(att.st.dx-55)*.0038+(att.trait.id==='precise'?.12:0)-(target.st.ag-50)*.0028-(target.trait.id==='instinct'?.09:0),.43,.985);if(Math.random()>hit){floatText(target.x,target.y,'MISS','#a4bece');effect(target.x,target.y,'#c0d3e9',.3);return;}
  let raw=effectiveDmg(att,magic)*(.53+rnd(-.065,.075))*mult;let def=magic?target.st.md:target.st.pd;let damage=Math.max(4,Math.round(raw*100/(75+def)));let critical=Math.random()<(0.04+att.st.dx*.001+(att.trait.id==='crit'?.10:0));if(critical)damage=Math.round(damage*1.7);
  doDamage(target,damage,att,magic?'#ae9deb':'#f0b47d',critical);if(splash){let others=s.units.filter(v=>v.alive&&v.owner!==att.owner&&v.id!==target.id&&dist(v,target)<4.3);others.forEach(v=>doDamage(v,Math.max(2,Math.round(damage*.42)),att,'#c198eb',false));}}
@@ -342,7 +361,7 @@ function aiTick(u,dt,s){if(!u.alive)return;u.battleTime=s.time;
  // Ranged combatants try to leave full cover instead of attacking through stone walls.
  if(c.range>4.2&&tgt&&d<c.range+9){let wall=firstObstruction(u,tgt,true);if(wall){let tx=tgt.x-u.x,ty=tgt.y-u.y,L=Math.max(.1,Math.hypot(tx,ty));let side=(u.id%2?1:-1);vx+=(-ty/L)*side*12+(wall.x-u.x)*.16;vy+=(tx/L)*side*12+(wall.y-u.y)*.16;}}
  if(Math.hypot(vx,vy)>.1)dirMove(u,vx,vy,dt);
- if(u.type==='healer'&&u.nextAction<=0){if(healTarget&&dist(u,healTarget)<12){let h=(14+u.st.ma*.50)*(u.buffUntil>s.time?1.18:1)*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);effect(healTarget.x,healTarget.y,'#94f7ca',.9);floatText(healTarget.x,healTarget.y,`+${Math.round(h)}`,'#97ebc0');u.nextAction=clamp(2.3-u.st.ag*.009,1.2,2.4);return;}}
+ if(u.type==='healer'&&u.nextAction<=0){if(healTarget&&dist(u,healTarget)<12){let h=(14+u.st.ma*.50)*(u.buffUntil>s.time?1.18:1)*(1+.18*passiveBuffStacks(u,s.time))*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);effect(healTarget.x,healTarget.y,'#94f7ca',.9);floatText(healTarget.x,healTarget.y,`+${Math.round(h)}`,'#97ebc0');u.nextAction=clamp(2.3-u.st.ag*.009,1.2,2.4);return;}}
  if(u.type==='enchanter'&&u.nextSpecial<=0&&u.mp>=skillCost(u,15)){let near=allies.filter(v=>dist(u,v)<17);if(near.length){u.mp-=skillCost(u,15);near.forEach(a=>{a.buffUntil=Math.max(a.buffUntil,s.time+6.5);effect(a.x,a.y,'#f3d989',.8)});u.nextSpecial=8.5;u.nextAction=Math.min(u.nextAction,.16);}}
  if(u.nextAction>0)return;
  tgt=nearestEnemy(u,enemies);d=dist(u,tgt);if(!tgt||d>c.range+1.4)return;
@@ -510,7 +529,7 @@ function paintCombatUnit(u){
  if(isDead)return;
  ctx.save();ctx.fillStyle=u.color;ctx.globalAlpha=.55;
  ctx.beginPath();ctx.ellipse(p.x,p.y+3,Math.max(9,p.s*1.32),Math.max(3,p.s*.48),0,0,6.283);ctx.strokeStyle=u.color;ctx.lineWidth=1.6;ctx.stroke();ctx.restore();
- if(u.buffUntil>t){ctx.strokeStyle='#f9df92';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y-h*.43,h*.35,h*.42,0,0,6.283);ctx.stroke();}
+ if(u.buffUntil>t||passiveBuffStacks(u,t)>0){ctx.strokeStyle='#f9df92';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y-h*.43,h*.35,h*.42,0,0,6.283);ctx.stroke();}
  let bw=clamp(p.s*6,34,96),bh=clamp(p.s*.42,3,6),barY=p.y-h-5;
  ctx.fillStyle='#06111de5';ctx.fillRect(p.x-bw/2,barY,bw,bh+2);
  ctx.fillStyle=u.color||'#8ac6df';ctx.fillRect(p.x-bw/2+1,barY+1,(bw-2)*health,bh);
@@ -558,7 +577,7 @@ window.addEventListener('keydown',e=>{if(screen!=='battle'||e.repeat||e.altKey||
 window.addEventListener('keyup',e=>cameraKeyDown.delete(e.key.toLowerCase()));
 window.addEventListener('blur',()=>cameraKeyDown.clear());
 function updateCameraKeyboard(dt){if(!stageCam||!cameraKeyDown.size)return;let movement=28*dt/Math.sqrt(stageCam.zoom),dx=(cameraKeyDown.has('d')?1:0)-(cameraKeyDown.has('a')?1:0),dy=(cameraKeyDown.has('s')?1:0)-(cameraKeyDown.has('w')?1:0);if(dx||dy)camPan(dx*movement,dy*movement);if(cameraKeyDown.has('q'))stageCam.tilt=clamp(stageCam.tilt-dt*.65,.32,1.35);if(cameraKeyDown.has('e'))stageCam.tilt=clamp(stageCam.tilt+dt*.65,.32,1.35);camText();}
-dirMove=function(u,vx,vy,dt){let speed=(3.7+u.st.ag*.054)*(u.trait.id==='swift'?1.16:1)*(u.type==='rogue'?1.21:1)*(u.buffUntil>game.sim.time?1.17:1);let len=Math.hypot(vx,vy);if(len<.08)return;let ang=Math.atan2(vy,vx),step=speed*dt;
+dirMove=function(u,vx,vy,dt){let speed=(3.7+u.st.ag*.054)*(u.trait.id==='swift'?1.16:1)*(u.type==='rogue'?1.21:1)*(u.buffUntil>game.sim.time?1.17:1)*(1+.17*passiveBuffStacks(u,game.sim.time));let len=Math.hypot(vx,vy);if(len<.08)return;let ang=Math.atan2(vy,vx),step=speed*dt;
  let ahead=2.5+step*2.5,clear=(angle,d)=>walkable(u.x+Math.cos(angle)*d,u.y+Math.sin(angle)*d,.60);
  if(!clear(ang,ahead)){if(u.detourSide==null)u.detourSide=(u.id%2)?1:-1;
   let candidates=[.38,.8,1.2,1.6,2.05,2.55,3.1];let found=null;
@@ -833,7 +852,7 @@ renderSetup();
 // v1.7 - secret deployment circle, one-click focus, individual tactics.
 (function(){
 const DEPLOY_RADIUS=11.5;
-const STANCES={engage:'突破・接近',balanced:'標準行動',guard:'味方を護衛',kite:'距離を確保',flank:'遊撃・側面',rearGuard:'後衛を護衛'};
+const STANCES={engage:'突破・接近',balanced:'標準行動',guard:'味方を護衛',kite:'距離を確保',flank:'遊撃・側面',rearGuard:'後衛を守る（自由行動）'};
 const TARGETS={nearest:'近くの敵',backline:'後衛優先',frontline:'前衛優先',weak:'低HP優先',threat:'高火力優先'};
 const HEAL_TARGETS={frontline:'前衛を優先',backline:'後衛を優先',lowHp:'HP残量が少ない味方',nearest:'近くにいる味方'};
 const JOB_TACTICS={
@@ -951,6 +970,7 @@ function tryCircleAt(pt){
  const next=packSquadAt(at,p),label=$('#circleInfo');
  if(!next){if(label)label.textContent='この場所には部隊を配置できません。地形の空いた場所を選んでください。';return false;}
  game.spawnPoints[pid]=at;game.placements[pid]=next;
+ window.mercPublishSpawn?.(pid,at);
  if(label)label.textContent=`出撃地点：X ${Math.round(x)} / Y ${Math.round(y)}　※敵の初期地点は非公開`;
  drawPlacement();return true;
 }
@@ -958,7 +978,7 @@ renderPlacement=function(){
  screen='placement';setStage('DEPLOYMENT');const p=game.players[activePlacementId()];if(!p){launchBattle();return;}
  const ids=p.units.length;
  app.innerHTML=`<div class="pageintro"><div class="overline">SECRET DEPLOYMENT</div><div class="headline" style="font-size:31px">部隊の<span class="gold">出撃地点</span>を選択</div><div class="lead">マップをクリック、またはドラッグして出撃円を移動させます。傭兵は円内に自動で隊列を組みます。<strong>他陣営の出撃地点は表示されません。</strong> 各傭兵の行動方針は右側で個別に変更できます。</div>${steps('部隊の配置')}</div>
- <div class="split wide"><section class="surface pad"><div class="battletoolbar"><span class="pill focal">${escapeHtml(p.name)} の出撃地点</span><span class="pill">200 × 200 / 部隊一括配置</span></div><div class="placement-art-ribbon"><img src="${EMBEDDED_MAPS[setup.map||'ruins']}" alt="戦場風景"><div class="meta"><b>出撃円をマップの好きな位置へ</b><br>他陣営の開始位置は非公開。障害物の上には配置できません。位置が決まったら「配置確定」を押してください。</div></div><div class="arena topdown"><canvas id="arenaCanvas" width="900" height="900"></canvas><div class="arenabadge">◉ 地図をクリック / ドラッグして出撃位置を移動</div><div class="overlay-note" id="circleInfo">出撃地点は自分だけに表示されます。円内の隊列は自動調整されます。</div></div><div class="actions"><button class="btn" id="rerollFormation">隊列を組み直す</button><button class="btn primary" id="nextDeploy">${game.placeTurn+1<game.placeOrder.length?'この位置で確定・次のプレイヤー →':'この位置で戦闘開始 →'}</button></div></section>
+ <div class="split wide"><section class="surface pad"><div class="battletoolbar"><span class="pill focal">${escapeHtml(p.name)} の出撃地点</span><span class="pill">200 × 200 / 部隊一括配置</span></div><div class="placement-art-ribbon"><img src="${EMBEDDED_MAPS[setup.map||'ruins']}" alt="戦場風景"><div class="meta"><b>出撃円をマップの好きな位置へ</b><br>敵の出撃位置は表示されます。障害物を避けて配置してください。バトロワでは準備OK後の5秒間も変更できます。</div></div><div class="arena topdown"><canvas id="arenaCanvas" width="900" height="900"></canvas><div class="arenabadge">◉ 地図をクリック / ドラッグして出撃位置を移動</div><div class="overlay-note" id="circleInfo">出撃地点は自分だけに表示されます。円内の隊列は自動調整されます。</div></div><div class="actions"><button class="btn" id="rerollFormation">隊列を組み直す</button><button class="btn primary" id="nextDeploy">${game.placeTurn+1<game.placeOrder.length?'この位置で確定・次のプレイヤー →':'この位置で戦闘開始 →'}</button></div></section>
  <aside class="sidebar"><section class="surface pad"><h2 class="blocktitle">${escapeHtml(p.name)} の作戦設定 <small>${ids}名</small></h2><p class="small muted">基本は職業別のおすすめ設定。変更した傭兵だけ別の判断で行動します。</p><div class="tactic-roster">${p.units.map((m,i)=>`<div class="tactic-unit"><div class="tactic-heading"><span style="font-weight:900">${cls[m.type].icon} ${escapeHtml(m.name)}</span><small>${cls[m.type].name}</small></div><div class="tactic-controls"><label>立ち回り<select class="input tactic-choice" data-index="${i}" data-field="stance">${optionsFrom((m.type==='warrior'||m.type==='rogue')?STANCES:Object.fromEntries(Object.entries(STANCES).filter(([key])=>key!=='rearGuard')),tactic(m).stance)}</select></label><label>攻撃優先<select class="input tactic-choice" data-index="${i}" data-field="target">${optionsFrom(TARGETS,tactic(m).target)}</select></label>${m.type==='healer'?`<label>回復優先<select class="input tactic-choice" data-index="${i}" data-field="heal">${optionsFrom(HEAL_TARGETS,tactic(m).heal)}</select></label>`:''}</div><div class="tactic-footer"><small>HP ${enhancedStats(m).hp} / 物攻 ${enhancedStats(m).pa} / 魔攻 ${enhancedStats(m).ma}</small><button class="tactic-reset" data-index="${i}">職業の初期設定へ</button></div></div>`).join('')}</div></section><section class="surface pad" style="margin-top:16px"><div class="blocktitle">参加陣営</div>${game.players.map(q=>`<div class="playerrow"><i class="dot" style="background:${q.color};color:${q.color}"></i><span class="pname">${escapeHtml(q.name)}</span><span class="tiny muted" style="margin-left:auto">${q.id===p.id?'出撃位置調整中':'位置非公開'}</span></div>`).join('')}</section></aside></div>`;
  initCanvas();drawPlacement();
  canvas.style.cursor='grab';
@@ -983,39 +1003,27 @@ renderBattleCommands=function(){
  const control=$('#commandPlayer');if(control)control.onchange=e=>{s.commandOwner=+e.target.value;renderBattleCommands();};
  node.querySelectorAll('[data-focus]').forEach(btn=>btn.onclick=()=>{const id=+btn.dataset.focus;o.focus=id<0?null:id;unitEvents(`${p.name}：${o.focus===null?'優先攻撃なし':game.players[o.focus].name+'を優先攻撃'}。`,'command');renderBattleCommands();});
 };
+// Rear guards have no leash. A rear ally being damaged temporarily overrides target choice.
 // Unit-specific target choice. The team's explicit focus takes priority outside immediate melee.
 nearestEnemy=function(u,enemies){
  if(!enemies.length)return null;
  const conf=u.tactic||JOB_TACTICS[u.type],focus=game.sim?.orders?.[u.owner]?.focus;
- // Rear-guard: actively fight within an interception zone, but immediately
- // switch to anyone attacking the allied backline. Never pursue outside the leash.
+ // Rear-guard: fight freely unless an allied backliner has just taken damage.
+ // There is no range leash, forced retreat or exclusion of distant enemies.
  if((u.type==='warrior'||u.type==='rogue')&&conf.stance==='rearGuard'&&game?.sim){
    const rear=game.sim.units.filter(a=>a.alive&&a.owner===u.owner&&a.id!==u.id&&
      ['archer','mage','healer','enchanter'].includes(a.type));
-   if(rear.length){
-     const now=game.sim.time;
-     const center={x:rear.reduce((n,a)=>n+a.x,0)/rear.length,
-                   y:rear.reduce((n,a)=>n+a.y,0)/rear.length};
-     // Detection is intentionally independent of current distance: a ranged
-     // attacker threatening our healer is still the highest-priority target.
-     let chosen=null,best=Infinity;
-     for(const enemy of enemies){
-       const targets=rear.filter(a=>enemy.targetId===a.id||
-         (enemy._recentAttackTargetId===a.id&&now-(enemy._recentAttackAt??-999)<4.5));
-       if(!targets.length)continue;
-       const score=Math.min(...targets.map(a=>dist(enemy,a)))*.32+
-         dist(u,enemy)*.54+Math.max(0,dist(enemy,center)-20)*.32-
-         (u._guardThreatId===enemy.id?1.8:0);
-       if(score<best){chosen=enemy;best=score;}
-     }
-     if(chosen){u._guardThreatId=chosen.id;u.targetId=chosen.id;return chosen;}
-     u._guardThreatId=null;
-     // No attack against the backline: use normal offensive priorities, but
-     // only against enemies we can intercept while staying with the backline.
-     const available=enemies.filter(e=>dist(e,center)<=19||
-       (dist(e,u)<=6&&dist(e,center)<=24));
-     if(available.length)enemies=available;
-   }else u._guardThreatId=null;
+   const now=game.sim.time;
+   let chosen=null,latest=-Infinity;
+   for(const member of rear){
+     if(member._lastDamagingAttackerId===undefined||now-(member._lastDamagedAt??-Infinity)>4.0)continue;
+     const attacker=enemies.find(e=>e.id===member._lastDamagingAttackerId);
+     if(!attacker)continue;
+     const stamp=member._lastDamagedAt;
+     if(stamp>latest||(stamp===latest&&chosen&&dist(u,attacker)<dist(u,chosen))){chosen=attacker;latest=stamp;}
+   }
+   if(chosen){u._guardThreatId=chosen.id;u.targetId=chosen.id;return chosen;}
+   u._guardThreatId=null;
  }
  const immediate=enemies.filter(v=>dist(u,v)<(u.type==='rogue'?2.5:3.7));
  let pool=immediate.length?immediate:enemies;
@@ -1095,7 +1103,7 @@ aiTick=function(u,dt,s){
   // An independently fighting melee unit is preferred; otherwise use a ranged
   // attacker who is advancing on the enemy. If only escorts remain, the support
   // unit acts offensively and the escorts follow it, never the other way around.
-  const advancingFront=frontline.filter(v=>!['rearGuard','guard'].includes((v.tactic||JOB_TACTICS[v.type]).stance));
+  const advancingFront=frontline.filter(v=>(v.tactic||JOB_TACTICS[v.type]).stance!=='guard');
   const fightingRanged=fighters.filter(v=>v.type!=='warrior'&&v.type!=='rogue');
   const anchors=[...advancingFront,...fightingRanged];
   const anchor=anchors.find(v=>v.id===u._supportAnchorId)||
@@ -1154,35 +1162,6 @@ aiTick=function(u,dt,s){
   if(d>c.range-.9){vx+=(tgt.x-u.x);vy+=(tgt.y-u.y);}
  }else if(d>Math.min(ideal+1.2,c.range*.92)){vx+=(tgt.x-u.x);vy+=(tgt.y-u.y);}
  else if(d<ideal*.65){vx+=(u.x-tgt.x)*.48;vy+=(u.y-tgt.y)*.48;}
- if(pref.stance==='rearGuard'&&!support&&(u.type==='warrior'||u.type==='rogue')){
-   const rear=allies.filter(a=>a.id!==u.id&&['archer','mage','healer','enchanter'].includes(a.type));
-   if(rear.length){
-     const center={x:rear.reduce((v,a)=>v+a.x,0)/rear.length,
-                   y:rear.reduce((v,a)=>v+a.y,0)/rear.length};
-     const gap=dist(u,center),leash=18;
-     const urgent=tgt&&u._guardThreatId===tgt.id;
-     const inZone=tgt&&(dist(tgt,center)<=19||
-       (dist(tgt,u)<=6&&dist(tgt,center)<=24));
-     // Override the normal pursuit. Fight nearby enemies even when our rear
-     // squad is safe, but never run far away from the rear just to score a hit.
-     vx=0;vy=0;
-     if(tgt&&(urgent||inZone)&&d>Math.max(2.6,c.range*.8)){
-       const tc=dist(tgt,center)||1;
-       const tx=center.x+(tgt.x-center.x)*Math.min(1,(leash-1)/tc);
-       const ty=center.y+(tgt.y-center.y)*Math.min(1,(leash-1)/tc);
-       const approach=Math.hypot(tx-u.x,ty-u.y);
-       if(approach>1.2){vx+=(tx-u.x)*1.55;vy+=(ty-u.y)*1.55;}
-     }
-     // Return to a modest guard radius when there is no useful target.
-     if(Math.hypot(vx,vy)<.08&&gap>8&&!inZone&&!urgent){
-       vx+=(center.x-u.x);vy+=(center.y-u.y);
-     }
-     // Soft leash pulls the guard home; the hard leash below prevents
-     // accidental chasing caused by skill buffs or movement detours.
-     if(gap>leash-3){vx+=(center.x-u.x)*2.6;vy+=(center.y-u.y)*2.6;}
-     u._rearGuardCenter=center;
-   }else u._rearGuardCenter=null;
- }
  if(pref.stance==='guard'&&!support){
   const anchor=allies.filter(v=>v.id!==u.id&&['healer','mage','enchanter','archer'].includes(v.type)).sort((a,b)=>dist(u,a)-dist(u,b))[0]||avg;
   if(dist(u,anchor)>7){vx+=(anchor.x-u.x)*2.0;vy+=(anchor.y-u.y)*2.0;}
@@ -1210,15 +1189,7 @@ aiTick=function(u,dt,s){
  const imminentMelee=ranged&&enemies.some(v=>(v.type==='warrior'||v.type==='rogue')&&dist(u,v)<5.8);
  const firingWindow=ranged&&!imminentMelee&&d<=c.range+1.2&&u.nextAction<=.15&&u._standAndFire;
  if(Math.hypot(vx,vy)>.1&&!firingWindow){
-   const priorX=u.x,priorY=u.y;
    dirMove(u,vx,vy,dt);
-   // A movement detour cannot drag rear guards away from their allies.
-   const guard=u._rearGuardCenter;
-   if(pref.stance==='rearGuard'&&guard&&(u.type==='warrior'||u.type==='rogue')){
-     const after=Math.hypot(u.x-guard.x,u.y-guard.y);
-     const before=Math.hypot(priorX-guard.x,priorY-guard.y);
-     if(after>18.3&&after>before){u.x=priorX;u.y=priorY;}
-   }
  }
  if(u.type==='healer'&&u.nextAction<=0){
   const urgent=healTarget&&healTarget.hp/healTarget.maxHp<.42;
@@ -1227,16 +1198,29 @@ aiTick=function(u,dt,s){
   // moderate injuries are healed intermittently with magical attacks mixed in.
   const canAttack=tgt&&d<=c.range+1.4;
   if(canHeal&&(urgent||!canAttack||Math.random()<.61)){
-   let h=(14+u.st.ma*.50)*(u.buffUntil>s.time?1.18:1)*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);
+   let h=(14+u.st.ma*.50)*(u.buffUntil>s.time?1.18:1)*(1+.18*passiveBuffStacks(u,s.time))*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);
    effect(healTarget.x,healTarget.y,'#94f7ca',.9);floatText(healTarget.x,healTarget.y,`+${Math.round(h)}`,'#97ebc0');u.nextAction=clamp(2.3-u.st.ag*.009,1.2,2.4);
   }
  }
- if(u.type==='enchanter'&&u.nextSpecial<=0&&u.mp>=skillCost(u,15)){
-  const near=allies.filter(v=>v.id!==u.id&&dist(u,v)<=SUPPORT_BUFF_RANGE);
-  if(near.length&&near.some(v=>v.buffUntil<s.time+1.0)){
-   u.mp-=skillCost(u,15);near.forEach(a=>{a.buffUntil=Math.max(a.buffUntil,s.time+6.5);effect(a.x,a.y,'#f3d989',.8)});u.nextSpecial=8.5;u.nextAction=Math.min(u.nextAction,.16);
-  }else{u.nextSpecial=4.0;}
- }
+  // Regular enchantment is NOT an ultimate skill. It has its own timer,
+  // so the fixed / selected ultimate still fires independently.
+  if(u.type==='enchanter'&&s.time>=(u._passiveEnchantReadyAt??0)){
+   const near=allies.filter(v=>v.id!==u.id&&dist(u,v)<=SUPPORT_BUFF_RANGE);
+   const cost=skillCost(u,15);
+   if(near.length&&u.mp>=cost){
+    u.mp-=cost;
+    for(const a of near){
+     (a._passiveEnchantments??={})[String(u.id)]=s.time+6.5;
+     effect(a.x,a.y,'#f3d989',.8);
+    }
+    u._passiveEnchantReadyAt=s.time+8.5;
+    u._attackUntil=s.time+.35;
+    u.nextAction=Math.min(u.nextAction,.16);
+   }else{
+    // Retry promptly if allies enter range; avoid repeated effects at zero MP.
+    u._passiveEnchantReadyAt=s.time+(u.mp<cost?1.5:.9);
+   }
+  }
  if(u.nextAction<=0){
   tgt=pickRangedTarget();d=tgt?dist(u,tgt):Infinity;
   if(tgt&&d<=c.range+1.4){
@@ -1584,8 +1568,7 @@ function contextualSkill(u,s){
   case 'march':ok=!!target&&d>11&&d<39&&friends.length>=2;if(ok)friends.forEach(a=>status(a,'_speedBuffUntil',s.time+6));break;
   case 'smoke':ok=!!target&&d>=3.4&&d<16;if(ok)status(u,'_stealthUntil',s.time+5);break;
   case 'shadow_run':ok=!!target&&d>6&&d<33;if(ok)status(u,'_speedBuffUntil',s.time+5);break;
-  case 'shadow_step':if(target&&d>5.5&&d<23){let len=d,dirX=(target.x-u.x)/len,dirY=(target.y-u.y)/len;for(const advance of [Math.min(8.5,d-2.4),Math.min(6,d-2.4),Math.min(4,d-2.4)]){const nx=u.x+dirX*advance,ny=u.y+dirY*advance;if(walkable(nx,ny,.85)&&!(u.tactic?.stance==='rearGuard'&&u._rearGuardCenter&&
-  Math.hypot(nx-u._rearGuardCenter.x,ny-u._rearGuardCenter.y)>18)){u.x=nx;u.y=ny;ok=true;effect(nx,ny,'#b183f8',1.5);break;}}}break;
+  case 'shadow_step':if(target&&d>5.5&&d<23){let len=d,dirX=(target.x-u.x)/len,dirY=(target.y-u.y)/len;for(const advance of [Math.min(8.5,d-2.4),Math.min(6,d-2.4),Math.min(4,d-2.4)]){const nx=u.x+dirX*advance,ny=u.y+dirY*advance;if(walkable(nx,ny,.85)){u.x=nx;u.y=ny;ok=true;effect(nx,ny,'#b183f8',1.5);break;}}}break;
  }
  if(!ok)return false;
  useSkill(u,skill,s);
@@ -1732,7 +1715,7 @@ renderBattleCommands=function(){oldBattleCommands();const box=document.querySele
       row.querySelector('#raceTarget').addEventListener('change',e=>setup.raceTo=Number(e.target.value));
     }
     const title=app.querySelector('.surface.pad .blocktitle');if(title)title.textContent='対戦ルールの設定';
-    const lead=app.querySelector('.pageintro .lead');if(lead)lead.innerHTML='競売で傭兵を集め、装備を整えたら連戦開始。<strong>各試合のマップはホストが選択</strong>し、出撃地点を非公開で決めます。';
+    const lead=app.querySelector('.pageintro .lead');if(lead)lead.innerHTML='競売で傭兵を集め、装備を整えたら連戦開始。<strong>各試合のマップはホストが選択</strong>し、出撃地点を2秒遅れで確認しながら決めます。';
     const rules=app.querySelector('.rules');if(rules)rules.insertAdjacentHTML('beforeend',`<div class="rule"><span class="ruleicon">Ⅵ</span><div><strong>連戦方式</strong><br>3・5・10本先取から選択。部隊と装備は維持し、各戦で全員回復。毎試合マップと出撃位置を選び直します。</div></div>`);
   };
 
@@ -1810,6 +1793,60 @@ renderBattleCommands=function(){oldBattleCommands();const box=document.querySele
 })();
 </script>
 
+<style id="deployment-v230-css">
+.deploy-enemy-legend{font-size:12px;color:#d9e1ef;margin:8px 0;padding:8px 12px;border:1px solid #65839666;border-radius:9px;background:#132736c9}
+.deploy-enemy-legend strong{color:#ffcf8c}.placement-art-ribbon .meta{line-height:1.55}
+#nextDeploy[disabled],#netPlaceConfirm[disabled]{opacity:.8;cursor:default}
+.story-path-history{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0}.story-path-chip{font-size:10px;padding:5px 8px;border:1px solid #6584979a;border-radius:9px;background:#162c3c}.story-path-chip.won{border-color:#4eae85;color:#b8f5d8}.story-path-chip.lost{border-color:#c17a67;color:#ffbda7}.story-extra-chronicle{margin:14px 0;border-left:2px solid #bd9a63;padding-left:10px}
+</style>
+<script id="deployment-v230">
+'use strict';
+(function(){
+ const oldDraw230=drawPlacement;
+ drawPlacement=function(...args){
+  const result=oldDraw230.apply(this,args);
+  if(screen!=='placement'||!canvas||!game?.players?.length)return result;
+  const pid=activePlacementId(),px=canvas.width/WORLD_SIZE;
+  const visible=game._storyRevealEnemies?Object.fromEntries(game.players.map(p=>[p.id,game.spawnPoints?.[p.id]])):(game._spawnVisible||{});
+  ctx.save();ctx.scale(px,px);
+  for(const p of game.players){
+   if(p.id===pid)continue;
+   const center=visible[p.id];if(!center||!Number.isFinite(center.x)||!Number.isFinite(center.y))continue;
+   ctx.beginPath();ctx.arc(center.x,center.y,11.5,0,Math.PI*2);ctx.fillStyle=p.color+'20';ctx.fill();ctx.lineWidth=.5;ctx.setLineDash([1.7,1.2]);ctx.strokeStyle=p.color;ctx.stroke();ctx.setLineDash([]);
+   ctx.beginPath();ctx.arc(center.x,center.y,2.2,0,Math.PI*2);ctx.fillStyle=p.color;ctx.fill();
+   ctx.font='bold 2.8px system-ui';ctx.textAlign='center';ctx.lineWidth=.8;ctx.strokeStyle='#0d1725';ctx.fillStyle='#ffffff';ctx.strokeText(p.name,center.x,center.y-14.4);ctx.fillText(p.name,center.x,center.y-14.4);
+  }
+  ctx.restore();return result;
+ };
+ const oldPlacement230=renderPlacement;
+ renderPlacement=function(...args){
+  const result=oldPlacement230.apply(this,args);
+  if(screen!=='placement'||!game?.players)return result;
+  const storyBattle=!!game._storyRevealEnemies;
+  const k=app.querySelector('.pageintro .overline');if(k)k.textContent=storyBattle?'BATTLEFIELD INTELLIGENCE':'DELAYED FIELD INTELLIGENCE';
+  const description=app.querySelector('.pageintro .lead');
+  if(description)description.textContent=storyBattle?'敵の出撃位置は最初から見えます。好きな場所に出撃円を動かし、準備OKでそのまま戦闘を始めます。':'敵チームの出撃位置は約2秒遅れで表示・更新されます。準備OK後も5秒のカウントダウン中は位置・行動方針を変更できます。';
+  const ribbon=app.querySelector('.placement-art-ribbon .meta');if(ribbon)ribbon.innerHTML=storyBattle?'敵の出撃位置は公開。障害物を避けて自軍の出撃円を配置してください。':'敵の出撃円は約2秒遅れで表示。準備OK後の5秒間も変更できます。';
+  const badge=app.querySelector('#circleInfo');if(badge)badge.textContent=storyBattle?'敵チームの出撃円も表示されています。出撃位置を選択してください。':'敵の出撃円は2秒遅れで更新されます。自軍は即時反映。';
+  for(const node of app.querySelectorAll('.playerrow .pside .tiny'))if(node.textContent.includes('位置非公開'))node.textContent=storyBattle?'位置公開':'約2秒遅れで公開';
+  const ready=app.querySelector('#nextDeploy');
+  if(ready){
+   const original=ready.onclick;
+   ready.textContent=storyBattle?'準備OK・戦闘開始':'準備OK（5秒後に出撃）';
+    ready.onclick=()=>{
+     if(storyBattle){ original?.(); return; }
+    if(ready.dataset.counting)return;
+    ready.dataset.counting='1';ready.disabled=true;
+    const match=game,pid=activePlacementId(),end=performance.now()+5000;
+    const tick=()=>{if(game!==match||screen!=='placement'){clearInterval(loop);return;}const seconds=Math.max(0,Math.ceil((end-performance.now())/1000));ready.textContent=`出撃まで ${seconds}秒 · 配置変更可能`;};
+    const loop=setInterval(tick,120);tick();
+    setTimeout(()=>{clearInterval(loop);if(game===match&&screen==='placement'&&pid===activePlacementId()){ready.onclick=original;original?.();}},5000);
+   };
+  }
+  drawPlacement();return result;
+ };
+})();
+</script>
 <script>
 'use strict';
 // Online battle prototype v2.1: host-authoritative PeerJS room / private player actions.
@@ -1852,7 +1889,7 @@ function hostConnect(conn){conn.on('data',msg=>{if(!msg||typeof msg!=='object')r
  conn.on('close',()=>{const idx=online.guests.findIndex(x=>x.conn===conn);if(idx<0)return;if(!online.active){online.guests.splice(idx,1);online.guests.forEach((g,i)=>g.pid=i+1);hostLobby();}else{const g=online.guests[idx];let warn=document.querySelector('#onlineWarning');if(!warn){warn=document.createElement('div');warn.id='onlineWarning';warn.className='online-disconnect';document.body.append(warn);}warn.textContent=`${g.name}の接続が切れました。進行は一時的に相手の操作待ちになる場合があります。`;}});
 }
 function publicPlayers(pid,forBattle=false){return game.players.map(p=>({id:p.id,name:p.name,color:p.color,human:p.human,money:p.id===pid?p.money:null,units:p.units.map(m=>forBattle?m:{id:m.id,name:m.name,type:m.type,st:p.id===pid?m.st:undefined,gear:p.id===pid?m.gear:undefined,tactic:p.id===pid?m.tactic:undefined,specialChoice:p.id===pid?m.specialChoice:undefined}),spent:p.id===pid?p.spent:undefined,kills:p.kills||0}));}
-function waiting(label){if(online.role!=='host'||!online.active)return;document.body.classList.remove('auction-active');screen='online-wait';setStage('ONLINE');app.innerHTML=stageHtml('参加プレイヤーの操作を待機中',`<div class="net-wait-symbol">⌛</div><p>${safe(label)} が操作しています。操作が終わると自動で次へ進みます。</p><p class="muted small">ほかのプレイヤーの入札額、予算、出撃地点は公開されません。</p>`);}
+function waiting(label){if(online.role!=='host'||!online.active)return;document.body.classList.remove('auction-active');screen='online-wait';setStage('ONLINE');app.innerHTML=stageHtml('参加プレイヤーの操作を待機中',`<div class="net-wait-symbol">⌛</div><p>${safe(label)} が操作しています。操作が終わると自動で次へ進みます。</p><p class="muted small">ほかのプレイヤーの入札額・予算は非公開。出撃地点は配置画面で約2秒遅れに公開されます。</p>`);}
 function packFor(pid,kind,extra={}){let p=game.players[pid];return {type:'stage',kind,pid,players:publicPlayers(pid),money:p.money,lotIndex:game.lotIndex,lotTotal:game.lots.length,lot:['auction','intro','bid','result'].includes(kind)?game.lots[game.lotIndex]:null,auctionRound:game.auction?.round??0,results:game.history.slice(0,7).map(h=>({owner:h.owner,merc:{id:h.merc.id,name:h.merc.name,type:h.merc.type}})),unitList:p.units.map(m=>({id:m.id,name:m.name,type:m.type,st:m.st,trait:m.trait,gear:m.gear,tactic:m.tactic,specialChoice:m.specialChoice})),map:setup.map,round:game.series?.round||0,raceTo:setup.raceTo,scores:game.series?.scores||{},...extra};}
 function transmit(pid,kind,extra={}){const g=online.guests.find(g=>g.pid===pid);if(!g)return;send(g.conn,packFor(pid,kind,extra));}
 function announceWait(which,pid){online.guests.forEach(g=>{if(g.pid!==pid)send(g.conn,packFor(g.pid,'wait',{message:which}));});}
@@ -1892,16 +1929,25 @@ function hostAction(pid,msg){if(!online.active||online.role!=='host'||!game)retu
   const before=game.spawnPoints[pid];game.spawnPoints[pid]={x,y};const loc=randomizedPlacement(pid,p.units.length);
   const valid=loc.every((v,i)=>Number.isFinite(v.x)&&Math.hypot(v.x-x,v.y-y)<=11.5&&walkable(v.x,v.y,.85)&&loc.every((other,j)=>j===i||Math.hypot(v.x-other.x,v.y-other.y)>=.8));
   if(!valid){game.spawnPoints[pid]=before;transmit(pid,'placement',{error:'障害物が多く配置できません。別の場所にしてください'});return;}
-  game.placements[pid]=loc;game.netPlacementConfirmed=game.netPlacementConfirmed||{};game.netPlacementConfirmed[pid]=true;transmit(pid,'placement',{placeOk:true});return;
+  game.placements[pid]=loc;game.netPlacementConfirmed=game.netPlacementConfirmed||{};game.netPlacementConfirmed[pid]=true;window.mercPublishSpawn?.(pid,{x,y});transmit(pid,'placement',{placeOk:true});return;
  }
  if(kind==='placeDone'&&isPlace()){
   if(!game.netPlacementConfirmed?.[pid]){transmit(pid,'placement',{error:'まず地図をクリックして出撃円を配置してください。'});return;}
-  game.placeTurn++;selected=0;if(game.placeTurn>=game.placeOrder.length)launchBattle();else viewTurn('placement',game.placeOrder[game.placeTurn]);return;
+  game._netReady=game._netReady||{};if(game._netReady[pid])return;
+  game._netReady[pid]=true;
+  const current=game;send(online.guests.find(g=>g.pid===pid)?.conn,{type:'readyCountdown',seconds:5});
+  setTimeout(()=>{if(game!==current||!online.active||!isPlace())return;game.placeTurn++;selected=0;if(game.placeTurn>=game.placeOrder.length)launchBattle();else viewTurn('placement',game.placeOrder[game.placeTurn]);},5000);
+  return;
  }
  if(kind==='focus'&&screen==='battle'&&game.sim){const target=n===null?null:Number(n);if(target===null||(Number.isInteger(target)&&game.players[target]&&target!==pid)){game.sim.orders[pid].focus=target;transmit(pid,'focusAck',{focus:target});}return;}
 }
 const oldStartPlacement=startPlacement;
-startPlacement=function(){if(online.role==='host'&&online.active){online.guests.forEach(g=>send(g.conn,packFor(g.pid,'mapwait',{message:'ホストが次のマップを選択しています'})));}return oldStartPlacement();};
+startPlacement=function(){
+ if(online.role==='host'&&online.active){online.guests.forEach(g=>send(g.conn,packFor(g.pid,'mapwait',{message:'ホストが次のマップを選択しています'})));}
+ const out=oldStartPlacement();
+ if(game&&!game._storyRevealEnemies){game._spawnVisible={};game._spawnSentAt={};for(const p of game.players){const at=game.spawnPoints?.[p.id];if(at)window.mercPublishSpawn?.(p.id,at);}}
+ return out;
+};
 const oldRenderBattleOnline=renderBattle;
 renderBattle=function(){oldRenderBattleOnline();if(online.role==='host'&&online.active&&screen==='battle'){broadcastBattle(true);}if(online.role==='client'&&online.active&&screen==='battle'){$('#pauseBattle')?.remove();$('#speedBattle')?.remove();}};
 const baseRenderCommands=renderBattleCommands;
@@ -1949,16 +1995,32 @@ function clientReceive(msg){if(!msg||typeof msg!=='object')return;
  if(msg.type==='lobby'){clientStage('lobby',msg);return;}
  if(msg.type==='started'){online.active=true;clientStage('wait',{message:'ホストが競売を開始しました。順番を待っています。'});return;}
  if(msg.type==='stage'){online.active=true;clientStage(msg.kind,msg);return;}
+ if(msg.type==='spawnUpdate'){
+  const round=msg.round;if(round!==online._spawnRound){online._spawnRound=round;online.spawns={};}
+  const team=Number(msg.pid),center=msg.center;if(!Number.isInteger(team)||!center||!Number.isFinite(center.x)||!Number.isFinite(center.y))return;
+  const snapshot={x:center.x,y:center.y};
+  setTimeout(()=>{if(online._spawnRound!==round)return;online.spawns=online.spawns||{};online.spawns[team]=snapshot;online.redrawPlacement?.();},2000);
+  return;
+ }
+ if(msg.type==='readyCountdown'){
+  const button=$('#netPlaceConfirm');if(!button)return;button.disabled=true;
+  const start=performance.now(),loop=setInterval(()=>{
+   if(screen!=='placement'||!document.contains(button)){clearInterval(loop);return;}
+   const n=Math.max(0,5-Math.floor((performance.now()-start)/1000));button.textContent=`戦闘開始まで ${n}秒 · 位置変更可能`;
+   if(n===0)clearInterval(loop);
+  },100);
+  return;
+ }
  if(msg.type==='battle'){online.active=true;receiveBattle(msg);return;}
  if(msg.type==='end'){clientEnd(msg);return;}
 }
 function guestSend(kind,fields={}){send(online.hostConn,{type:'action',kind,...fields});}
 function clientStage(kind,data={}){online.stage=kind;
  if(kind==='lobby'){screen='online-lobby';app.innerHTML=stageHtml('ロビーに参加中',`<p>部屋コード <strong>${safe(data.room)}</strong></p><h3>参加者</h3><div class="room-members">${(data.names||[]).map(n=>`<div>● ${safe(n)}</div>`).join('')}</div><p>ホストがCPU人数・勝利条件を決めて開始します。</p>`);return;}
- if(['wait','mapwait'].includes(kind)){screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面で他人の入札額・所持金・出撃地点は確認できません。</p>`);return;}
+ if(['wait','mapwait'].includes(kind)){if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面では他人の入札額・所持金は非公開。配置画面では出撃地点を約2秒遅れで確認できます。</p>`);return;}
  if(kind==='intro'||kind==='bid'||kind==='result'){clientAuction(kind,data);return;}
  if(kind==='equip'){clientEquip(data);return;}
- if(kind==='placement'){clientPlacement(data);return;}
+ if(kind==='placement'){if(screen==='placement'&&online.currentPlacementRound===data.round){if(data.error){const node=$('#netCoord');if(node)node.textContent=data.error;}return;}online.currentPlacementRound=data.round;clientPlacement(data);return;}
  if(kind==='focusAck'&&screen==='battle'){game.sim.orders[online.myPid].focus=data.focus;renderBattleCommands();}
 }
 function rosterList(data){return `<section class="surface pad" style="min-width:220px"><div class="blocktitle">契約済みの傭兵一覧</div>${(data.players||[]).map(p=>`<div class="member-card"><strong style="color:${p.color}">● ${safe(p.name)}</strong> <span class="tiny">${p.units.length}名</span><div class="member-roster">${p.units.length?p.units.map(m=>`<div class="member-merc">${cls[m.type].icon} ${safe(m.name)}</div>`).join(''):'<div class="tiny muted">未契約</div>'}</div></div>`).join('')}</section>`;}
@@ -1976,11 +2038,13 @@ function clientAuction(kind,data){screen=kind==='result'?'lot-result':'auction';
 function clientEquip(data){screen='equipment';const units=data.unitList||[];app.innerHTML=stageHtml('装備購入',`<p>あなたの残金 <strong class="gold">${data.money}G</strong>。装備は1人につき武器1個と防具1個です。</p>${data.error?`<p class="red">${safe(data.error)}</p>`:''}<div class="net-equipment">${units.length?units.map(m=>`<div class="surface pad"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><p class="tiny muted">武器：${m.gear.weapon?gearCatalog.weapon[m.gear.weapon-1]?.name:'未装備'}　防具：${m.gear.armor?gearCatalog.armor[m.gear.armor-1]?.name:'未装備'}</p><div class="net-equips">${['weapon','armor'].map(slot=>`<label>${slot==='weapon'?'武器':'防具'}<select class="input" data-unit="${m.id}" data-slot="${slot}"><option value="">購入する装備を選択</option>${gearCatalog[slot].map((item,i)=>`<option value="${i+1}">${safe(item.name)} ${item.price}G　${safe(item.description||('攻撃+'+item.attack))}${m.gear[slot]===i+1?'（装備中・再選択で解除）':''}</option>`).join('')}</select>${m.gear[slot]?`<button type="button" class="btn sm" data-remove="${slot}" data-unit="${m.id}">装備解除・全額返金</button>`:''}</label>`).join('')}</div></div>`).join(''):'<p>獲得した傭兵はいません。</p>'}</div><div class="actions"><button class="btn primary" id="netEquipDone">装備購入を終了 →</button></div>`);
  app.querySelectorAll('select[data-slot]').forEach(select=>select.onchange=()=>{if(!select.value)return;guestSend('equip',{unitId:+select.dataset.unit,slot:select.dataset.slot,tier:+select.value});});app.querySelectorAll('button[data-remove]').forEach(b=>b.onclick=()=>guestSend('equip',{unitId:+b.dataset.unit,slot:b.dataset.remove,tier:0}));$('#netEquipDone').onclick=()=>{guestSend('equipDone');clientStage('wait',{message:'装備購入を確定しました。'});};}
 function clientPlacement(data){screen='placement';const units=data.unitList||[];const center=online.placeDraft?.round===data.round?{...online.placeDraft.center}:{x:100,y:100};const mp=data.map||'ruins';
- app.innerHTML=stageHtml(`第${data.round}試合 · 出撃準備`,`${data.error?`<p class="red">${safe(data.error)}</p>`:''}<p>今回の戦場：<strong>${mp==='ruins'?'古い遺跡':mp==='forest'?'深緑の森':'草原の古戦場'}</strong>。地図をクリックして自軍の出撃円を配置します。他陣営の位置は表示されません。</p><div class="net-deploy-grid"><div><canvas id="netDeployCanvas" width="640" height="640"></canvas><p id="netCoord" class="tiny muted">位置 X:100 / Y:100</p><button id="netPlaceConfirm" class="btn primary" ${online.placeDraft?.round===data.round?'':'disabled'}>この出撃位置で確定して戦闘へ →</button></div><div class="net-plans">${units.map(m=>{const tact=m.tactic||{stance:DEFAULT[m.type][0],target:DEFAULT[m.type][1]};return `<div class="tactic-unit"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="tactic-controls"><label>立ち回り<select class="input" data-unit="${m.id}" data-field="stance">${Object.entries(TACTICS.stance).map(([v,n])=>`<option value="${v}" ${tact.stance===v?'selected':''}>${n}</option>`).join('')}</select></label><label>攻撃優先<select class="input" data-unit="${m.id}" data-field="target">${Object.entries(TACTICS.target).map(([v,n])=>`<option value="${v}" ${tact.target===v?'selected':''}>${n}</option>`).join('')}</select></label>${m.type==='healer'?`<label>回復優先<select class="input" data-unit="${m.id}" data-field="heal">${Object.entries(TACTICS.heal).map(([v,n])=>`<option value="${v}" ${(tact.heal||'lowHp')===v?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div><label>必殺スキル<select class="input" data-unit="${m.id}" data-field="specialChoice">${SPECIAL[m.type].map((n,i)=>`<option value="${i}" ${(m.specialChoice??0)===i?'selected':''}>${n}</option>`).join('')}</select></label></div>`;}).join('')}</div></div>`);
- const cv=$('#netDeployCanvas'),ctxNet=cv.getContext('2d');const draw=()=>{let bg=new Image();let image=EMBEDDED_MAPS[mp];if(!cv._bg){cv._bg=new Image();cv._bg.src=image;cv._bg.onload=draw;}ctxNet.fillStyle='#142835';ctxNet.fillRect(0,0,640,640);if(cv._bg.complete&&cv._bg.naturalWidth){ctxNet.globalAlpha=.78;ctxNet.drawImage(cv._bg,0,0,640,640);ctxNet.globalAlpha=1;}ctxNet.fillStyle='#62d7eb47';ctxNet.strokeStyle='#9deeff';ctxNet.lineWidth=3;ctxNet.beginPath();ctxNet.arc(center.x*3.2,center.y*3.2,11.5*3.2,0,2*Math.PI);ctxNet.fill();ctxNet.stroke();};draw();
+ app.innerHTML=stageHtml(`第${data.round}試合 · 出撃準備`,`${data.error?`<p class="red">${safe(data.error)}</p>`:''}<p>今回の戦場：<strong>${mp==='ruins'?'古い遺跡':mp==='forest'?'深緑の森':'草原の古戦場'}</strong>。地図をクリックして自軍の出撃円を配置します。敵陣営の位置は約2秒遅れで更新されます。準備OKから5秒間は配置を変更できます。</p><div class="net-deploy-grid"><div><canvas id="netDeployCanvas" width="640" height="640"></canvas><p id="netCoord" class="tiny muted">位置 X:100 / Y:100</p><button id="netPlaceConfirm" class="btn primary" ${online.placeDraft?.round===data.round?'':'disabled'}>準備OK（5秒後に確定）</button></div><div class="net-plans">${units.map(m=>{const tact=m.tactic||{stance:DEFAULT[m.type][0],target:DEFAULT[m.type][1]};return `<div class="tactic-unit"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="tactic-controls"><label>立ち回り<select class="input" data-unit="${m.id}" data-field="stance">${Object.entries(TACTICS.stance).map(([v,n])=>`<option value="${v}" ${tact.stance===v?'selected':''}>${n}</option>`).join('')}</select></label><label>攻撃優先<select class="input" data-unit="${m.id}" data-field="target">${Object.entries(TACTICS.target).map(([v,n])=>`<option value="${v}" ${tact.target===v?'selected':''}>${n}</option>`).join('')}</select></label>${m.type==='healer'?`<label>回復優先<select class="input" data-unit="${m.id}" data-field="heal">${Object.entries(TACTICS.heal).map(([v,n])=>`<option value="${v}" ${(tact.heal||'lowHp')===v?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div><label>必殺スキル<select class="input" data-unit="${m.id}" data-field="specialChoice">${SPECIAL[m.type].map((n,i)=>`<option value="${i}" ${(m.specialChoice??0)===i?'selected':''}>${n}</option>`).join('')}</select></label></div>`;}).join('')}</div></div>`);
+ const cv=$('#netDeployCanvas'),ctxNet=cv.getContext('2d');const draw=()=>{let bg=new Image();let image=EMBEDDED_MAPS[mp];if(!cv._bg){cv._bg=new Image();cv._bg.src=image;cv._bg.onload=draw;}ctxNet.fillStyle='#142835';ctxNet.fillRect(0,0,640,640);if(cv._bg.complete&&cv._bg.naturalWidth){ctxNet.globalAlpha=.78;ctxNet.drawImage(cv._bg,0,0,640,640);ctxNet.globalAlpha=1;}ctxNet.fillStyle='#62d7eb47';ctxNet.strokeStyle='#9deeff';ctxNet.lineWidth=3;ctxNet.beginPath();ctxNet.arc(center.x*3.2,center.y*3.2,11.5*3.2,0,2*Math.PI);ctxNet.fill();ctxNet.stroke();;
+  for(const [key,pos] of Object.entries(online.spawns||{})){const other=data.players?.[Number(key)];if(!other||Number(key)===online.myPid)continue;ctxNet.beginPath();ctxNet.arc(pos.x*3.2,pos.y*3.2,11.5*3.2,0,Math.PI*2);ctxNet.strokeStyle=other.color||'#ecc581';ctxNet.fillStyle=(other.color||'#ecc581')+'33';ctxNet.lineWidth=2;ctxNet.fill();ctxNet.stroke();ctxNet.fillStyle='#fff';ctxNet.font='bold 12px system-ui';ctxNet.textAlign='center';ctxNet.fillText(other.name,pos.x*3.2,pos.y*3.2-44);}
+ };online.redrawPlacement=draw;draw();
  cv.onclick=e=>{let r=cv.getBoundingClientRect();center.x=Math.max(14,Math.min(186,(e.clientX-r.left)/r.width*200));center.y=Math.max(14,Math.min(186,(e.clientY-r.top)/r.height*200));online.placeDraft={round:data.round,center:{...center}};$('#netPlaceConfirm').disabled=false;$('#netCoord').textContent=`位置 X:${Math.round(center.x)} / Y:${Math.round(center.y)}`;draw();guestSend('place',{x:center.x,y:center.y});};
  app.querySelectorAll('[data-field]').forEach(el=>el.onchange=()=>{const card=el.closest('.tactic-unit');const unitId=+el.dataset.unit;let stance=card.querySelector('[data-field="stance"]').value,target=card.querySelector('[data-field="target"]').value,heal=card.querySelector('[data-field="heal"]')?.value||'lowHp',specialChoice=+card.querySelector('[data-field="specialChoice"]').value;guestSend('plan',{unitId,stance,target,heal,specialChoice});});
- $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');clientStage('wait',{message:'出撃位置と行動方針を確定しました。'});};
+ $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');const button=$('#netPlaceConfirm');if(button){button.disabled=true;button.textContent='準備確認中…（配置変更可能）';}};
 }
 function receiveBattle(snap){if(!online.active)return;const first=screen!=='battle';const prev=game?.sim?.selectedId??null;game={players:snap.players,world:snap.world||game?.world||{name:snap.map,obstacles:[],details:[]},sim:{...snap.sim,selectedId:prev},series:{round:snap.round,raceTo:snap.raceTo,scores:snap.scores,rounds:[]}};setup.map=snap.map;setup.raceTo=snap.raceTo;
  if(first){screen='battle';stageCam={x:WORLD_MID,y:WORLD_MID,yaw:-.65,tilt:.68,zoom:.78};renderBattle();if(!online.viewerStarted){online.viewerStarted=true;const frame=()=>{if(online.role!=='client'||screen!=='battle'){online.viewerStarted=false;return;}if(canvas&&performance.now()-(online._lastViewerDraw||0)>100){online._lastViewerDraw=performance.now();drawBattle();drawMini();}requestAnimationFrame(frame);};requestAnimationFrame(frame);}}
@@ -2004,6 +2068,20 @@ const v21Styles=`<style>
 .net-equipment{display:grid;gap:12px;margin:20px 0}.net-equips{display:grid;grid-template-columns:1fr 1fr;gap:10px}.net-equips label{font-size:12px;display:grid;gap:6px}.net-deploy-grid{display:grid;grid-template-columns:minmax(0,630px) minmax(270px,1fr);gap:20px}.net-deploy-grid canvas{width:100%;height:auto;border:1px solid #7893a6;cursor:crosshair;border-radius:10px}.net-plans{max-height:690px;overflow-y:auto;display:grid;gap:10px}.net-plans .tactic-unit{padding:9px}.net-plans label{font-size:11px;display:grid;gap:4px}.online-disconnect{position:fixed;bottom:12px;left:12px;right:12px;padding:12px;border:1px solid #dd9b79;background:#44251c;color:#fff;z-index:9999}
 @media(max-width:850px){.online-auc-main,.net-deploy-grid{grid-template-columns:1fr}.net-merc-profile{grid-template-columns:150px 1fr}.net-stat-grid{grid-template-columns:repeat(2,1fr)}.room-code{font-size:16px}}
 </style>`;
+// v2.31: enemy spawn-circle information is public after a two-second delay.
+window.mercPublishSpawn=function(pid,point){
+ const match=game;if(!match||match._storyRevealEnemies||!point)return;
+ const center={x:Number(point.x),y:Number(point.y)};
+ if(!Number.isFinite(center.x)||!Number.isFinite(center.y))return;
+ match._spawnVisible=match._spawnVisible||{};
+ setTimeout(()=>{if(game!==match)return;match._spawnVisible[pid]=center;if(screen==='placement')drawPlacement();},2000);
+ if(online.role==='host'&&online.active){
+  const last=match._spawnSentAt||{};match._spawnSentAt=last;
+  const now=performance.now();if(now-(last[pid]||-10000)<180)return;last[pid]=now;
+  const pkt={type:'spawnUpdate',pid,center,round:game.series?.round||0};
+  online.guests.forEach(g=>send(g.conn,pkt));
+ }
+};
 document.head.insertAdjacentHTML('beforeend',v21Styles);
 if(screen==='setup')renderSetup();
 })();
@@ -3239,12 +3317,308 @@ if(screen==='setup')renderSetup();
 .story-prep-skill{align-self:stretch;display:flex;align-items:center;background:#101b28;border-radius:8px;border:1px solid #546f803f;padding:8px;min-width:0}.story-prep-profile{grid-column:1/-1;padding:9px 12px;border-radius:9px;background:#0d1927;border:1px solid #52647877}.story-prep-profile summary{cursor:pointer;font-size:12px;color:#efd09a}.story-prep-profile .story-market-abilities{margin:9px 0 0}
 @media(max-width:760px){.story-market-abilities{grid-template-columns:1fr}.story-radar svg{max-width:220px}.story-topline{align-items:flex-start}.story-header-right{justify-content:flex-start}.story-choice{grid-template-columns:1fr 1fr}.story-prep-skill{grid-column:span 2}.story-slot-buttons .btn{min-height:42px}}
 </style>
+
+<style>
+.story-diplomacy{margin:18px 0;background:#132638ee;border:1px solid #9075498a}
+.story-diplomacy-options{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:14px}
+.story-diplomacy-button{border:1px solid #bfa5748a;background:#223247;color:#f4e6cb;padding:15px 12px;border-radius:12px;cursor:pointer;min-height:88px;text-align:left;display:flex;flex-direction:column;gap:8px;font:inherit}
+.story-diplomacy-button:hover,.story-diplomacy-button:focus-visible{background:#35485b;border-color:#ead199}
+.story-diplomacy-button small{font-size:12px;line-height:1.5;color:#ced8df}
+.story-retired-crest{width:48px;min-width:48px;height:48px;display:grid;place-items:center;border-radius:11px;background:#38434f;color:#f5dcab;font-size:27px}
+@media(max-width:760px){.story-diplomacy-options{grid-template-columns:1fr}.story-diplomacy-button{min-height:65px}}
+
+/* Ending gallery: independent of the three story save slots */
+.story-endings-modal{width:min(100%,850px)}
+.story-endings-overview{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 20px}
+.story-endings-progress{font-size:22px;color:#f4cc80;font-weight:800}
+.story-endings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.story-ending-card{border:1px solid #6c819470;background:#0d1d2d;padding:13px;border-radius:12px;min-width:0}
+.story-ending-card.unlocked{border-color:#d3af60a8;background:linear-gradient(120deg,#46382066,#122437)}
+.story-ending-card .ending-state{font-size:11px;letter-spacing:.07em;color:#8fa7bf;font-weight:700}
+.story-ending-card.unlocked .ending-state{color:#f1d59a}
+.story-ending-card h3{font-size:15px;line-height:1.5;margin:5px 0 8px;overflow-wrap:anywhere}
+.story-ending-card .ending-desc{color:#becbd8;font-size:12px;line-height:1.7}
+.story-ending-card .ending-meta{font-size:11px;color:#d8bd8b;margin-top:9px}
+@media(max-width:600px){.story-endings-grid{grid-template-columns:1fr}.story-endings-modal{padding:14px}}
+</style>
 <script>
 (function(){
 'use strict';
-const STORY_SAVE_KEY='mercenary-story-v214-save';
-const STORY_SLOT_PREFIX='mercenary-story-v216-slot-';
+const STORY_SAVE_KEY='mercenary-story-v235-save';
+const STORY_SLOT_PREFIX='mercenary-story-v235-slot-';
+const STORY_ENDING_GALLERY_KEY='mercenary-story-v235-ending-gallery';
+// Fixed IDs and order: a collection entry is never tied to an autosave or manual slot.
+// v2.36: Each choice changes the ongoing difficulty; every path also has its own story. Three choices yield 27 histories.
+const STORY_PLAN_CODES=['easy','normal','hard'];
+const STORY_PLAN_NAMES={easy:'イージー・生き延びる',normal:'ノーマル・国を守る',hard:'ハード・国を取り戻す'};
+const STORY_PLAN_LEVEL={easy:-1,normal:0,hard:1};
+const STORY_ACTS=[
+ {name:'第一幕　国の行き先',brief:'最初の危機を乗りこえました。次は何を目指しますか？',plans:{
+  easy:{title:'住民を安全な場所へ',summary:'大きな戦いを避け、住民と食べ物を守る。',stages:[['避難する村を守れ','避難民を追う野盗','森に入る人々を守り、安全な場所へ送り届けよう。','forest',2,4700],['食べ物を運ぶ道','小さな略奪団','避難先へ食べ物を運ぼう。野盗に道をふさがせない。','plain',3,5400],['小さな砦の新生活','見回りの野盗','古い小さな砦を使えるようにする。まず周囲の敵を追い払おう。','ruins',3,6200]]},
+  normal:{title:'国境の村を守れ','summary':'村と道を守り、ウサーギ国の小さな土地を守る。',stages:[['北街道を取り戻せ','街道の野盗','北の道を取り戻し、村へ食べ物を運べるようにしよう。','forest',4,6900],['国境の見張り台','敵の見張り部隊','敵が近づく前に見張り台を守ろう。','plain',5,8000],['国境の町を守れ','オオカミ国の先発隊','町を守り、ウサーギ国の土地をこれ以上取らせない。','ruins',5,9400]]},
+  hard:{title:'奪われた砦を取り返す',summary:'敵に先に攻め込み、国の土地を取り返す。敵は強い。',stages:[['石門砦を取り返せ','オオカミ国の砦守備隊','奪われた石門砦を正面から攻める。ここを取れば次の町へ進める。','ruins',6,11000],['北の国境をこえろ','オオカミ国の前衛軍','敵の部隊を追い払い、奪われた村へ進もう。','plain',7,13500],['旧王国の町を取り戻せ','オオカミ国の精鋭隊','故郷の町にウサーギ国の旗を立てよう。','forest',8,15800]]}
+ }},
+ {name:'第二幕　立て直すか、進むか',brief:'敵もこちらの動きを知りました。次はどの作戦で進みますか？',plans:{
+  easy:{title:'逃げる人を助ける',summary:'戦いを広げず、住民の命と新しい住まいを守る。',stages:[['夜の避難路','追いかけてくる野盗','大きな戦いを避け、逃げる人たちを助けよう。','forest',3,7900],['山あいの隠れ村','山賊の見張り','みんなが暮らせるよう、山の中の村を守ろう。','ruins',4,9000],['生きるための橋','橋を見張る小部隊','安全に川を渡れる橋を確保しよう。','plain',4,10400]]},
+  normal:{title:'取り戻した土地を守る',summary:'敵がもう一度攻めてこないように守りを固める。',stages:[['国境の見張り','オオカミ国の偵察隊','敵の動きを調べ、村を守る準備をしよう。','forest',6,12200],['敵の補給を止めろ','オオカミ国の補給隊','敵の食べ物を運ぶ部隊を止め、攻撃を弱めよう。','plain',7,14500],['町の門を守れ','オオカミ国の攻城隊','町の門を守り、国の人たちを家に帰そう。','ruins',8,17000]]},
+  hard:{title:'王都へ進む',summary:'強い敵を倒し、王都への道を開く。',stages:[['敵の大きな砦を落とせ','オオカミ国の城塞軍','王都へ向かうため、大きな砦を攻め落とそう。','ruins',9,18800],['武器工場を止めろ','オオカミ国の軍需守備隊','敵の武器が作られる場所をおさえよう。','plain',10,22400],['王都へ続く門','オオカミ国の近衛隊','王都の前にいる大軍を倒そう。','forest',11,26400]]}
+ }},
+ {name:'第三幕　王国の未来',brief:'最後の二つの戦いです。どんな未来を目指しますか？',plans:{
+  easy:{title:'小さくても国を残す',summary:'これ以上領土を広げず、安全な土地を守る。',stages:[['最後の避難先','避難民を狙う盗賊','住民が安心して暮らせる土地を守ろう。','forest',4,15000],['小さな国の約束','国境の略奪部隊','最後の国境を守り、ウサーギ国を小さくても残そう。','plain',5,19000]]},
+  normal:{title:'故郷を取り戻して守る',summary:'故郷の土地を取り返し、もう奪われないようにする。',stages:[['帰るための道','オオカミ国の国境守備隊','故郷へ戻る道を確保しよう。','ruins',9,25000],['国の新しい門','オオカミ国の進軍部隊','守れる土地を増やし、新しい国境を決めよう。','plain',10,30000]]},
+  hard:{title:'オオカミ国へ反撃する',summary:'祖国を取り戻したその先へ。敵の国に攻めこむ大作戦。',stages:[['王都を取り戻せ','王都を守るオオカミ国軍','王都にウサーギ国の旗を戻し、敵を国境の外へ追い出そう。','ruins',12,35000],['オオカミ国の王都へ進め','オオカミ王ヴァルグの近衛軍','オオカミ国の王都へ攻めこみ、王城を落として侵略を終わらせよう。','ruins',14,43000]]}
+ }}
+];
+const STORY_FIRST_STAGES=[
+ {title:'ウサーギ国の最後の門',foe:'北の野盗団',mission:'野盗が近づいています。最後の門を守り、村の人たちを助けよう。',map:'plain',enemies:3,reward:4200},
+ {title:'食料を運ぶ街道',foe:'街道の野盗',mission:'村に食べ物と薬を運ぶ荷車が、野盗に止められています。野盗を追い払って、荷車を通しましょう。',map:'forest',enemies:3,reward:5400}
+];
+// Each choice changes the difficulty by one step for every following battle.
+// Battle strength is based on the TOTAL of choices already made, not just the latest choice.
+function storyDifficultyAtChapter(ch=story?.chapter||0){
+ const act=storyActForChapter(ch);
+ if(act<0)return 0;
+ return (story?.plans||[]).slice(0,act+1).reduce((n,choice)=>n+(STORY_PLAN_LEVEL[choice]||0),0);
+}
+function storyDifficultyText(level){return level>0?`＋${level}`:level<0?`−${Math.abs(level)}`:'±0';}
+function storyDifficultyDescription(level){
+ if(level>=3)return '敵の本隊が相手です。正面からの戦いはかなり危険です。';
+ if(level===2)return '敵は強い部隊を集めています。十分な準備が必要です。';
+ if(level===1)return 'ふだんより手ごわい敵が出ます。';
+ if(level===0)return '敵の強さは標準です。';
+ if(level===-1)return '敵は小さな部隊が中心です。';
+ return '少人数の敵を相手にして、立て直すための戦いです。';
+}
+// Fixed normal benchmark for each chapter. Story text and location are determined separately by history.
+const STORY_BASE_ENEMIES=[3,3,4,5,6,6,7,8,9,10];
+const STORY_BASE_REWARDS=[4200,5400,6900,8000,9400,12200,14500,17000,25000,30000];
+const STORY_PRIOR_PATHS={
+ 'easy-easy':{where:'逃げてきた人たちの新しい村',past:'これまで逃げる人と食べ物を守ってきました。まだ王都へ進める軍はありません。'},
+ 'easy-normal':{where:'避難先のそばに取り戻した村',past:'避難した人たちが帰れるよう、村と道を少しずつ取り戻しました。'},
+ 'easy-hard':{where:'避難民を守りながら築いた前線の砦',past:'初めは人々を逃がしましたが、そのあと敵の砦を攻めて反撃の道を開きました。'},
+ 'normal-easy':{where:'国境の村から続く避難路',past:'国境の村を守ったあと、戦いを広げずに人々の避難を助けました。'},
+ 'normal-normal':{where:'守りを固めた国境の町',past:'村と街道を守り、敵の進軍を止めてきました。'},
+ 'normal-hard':{where:'奪い返した国境の砦',past:'守りを固めたあとで前に進み、敵の砦を取り戻しました。'},
+ 'hard-easy':{where:'取り戻した町の避難所',past:'最初に敵の砦を攻めましたが、今は人々の安全を優先して戦いを小さくしています。'},
+ 'hard-normal':{where:'奪還した町とその守りの門',past:'早い段階で町を取り戻し、その土地を失わないよう守ってきました。'},
+ 'hard-hard':{where:'王都の手前まで続く前線',past:'敵の砦を落とし、王都へ向かう道を開きました。ただし、王都はまだ敵の手にあります。'}
+};
+const STORY_FINAL_APPROACH={
+ easy:{order:'これ以上は攻めません。いま手にしている土地で、人々が安心して暮らせる場所を守ります。',goal:'住民の暮らしを守る戦い'},
+ normal:{order:'守れる場所を広げ、敵がもう一度来ても暮らしを守れるようにします。',goal:'取り戻した土地を守る戦い'},
+ hard:{order:'こちらから敵の拠点へ攻めます。強い敵を倒し、戦争を終わらせるために前へ進みます。',goal:'敵の拠点に攻めこむ戦い'}
+};
+// Exact outcome text for each actual mission; never report the mission title as a sentence.
+const STORY_MISSION_OUTCOMES={
+ 'ウサーギ国の最後の門':['門の前にいた野盗は逃げていきました。村の人たちは無事です。','今夜は門を閉めて眠れます。でも、ほかの道にも野盗が残っています。'],
+ '食料を運ぶ街道':['荷車を止めていた野盗を追い払いました。食べ物と薬を積んだ荷車が、村へ向かっています。','荷車が無事に通れました。村の人たちも、食べ物が届くと聞いて安心しています。'],
+ '避難する村を守れ':['野盗は退き、避難する人たちは森へ入れました。','小さな子どもたちも無事に出発しました。'],
+ '食べ物を運ぶ道':['荷車が野盗のいる道を抜け、避難先へ食べ物を運べました。','これで避難している人も、しばらく食べられます。'],
+ '小さな砦の新生活':['古い砦の周りから敵を追い出しました。','ここなら、家を失った人が雨をしのげます。'],
+ '北街道を取り戻せ':['北の道をふさいでいた野盗は逃げました。','道が開いたので、村へ荷車を通せます。'],
+ '国境の見張り台':['敵の見張りを退け、ウサーギ国の兵が見張り台を使えるようになりました。','遠くから敵が来ても、早く知らせられます。'],
+ '国境の町を守れ':['敵は町の門を破れず、引き返しました。','町の人たちを逃がさずにすみました。'],
+ '石門砦を取り返せ':['石門砦から敵を追い出し、ウサーギ国の旗を立てました。','ここを使えば、もっと先へ兵を送れます。'],
+ '北の国境をこえろ':['敵の前衛軍を退け、北の道を通れるようになりました。','まだ敵の本隊は残っています。気を抜かないでください。'],
+ '旧王国の町を取り戻せ':['町を守っていた敵が逃げ、かつての住民が戻れるようになりました。','帰ってきた人たちが、家の扉を開けています。'],
+ '夜の避難路':['追ってきた野盗を退けました。避難していた人たちは夜のうちに先へ進めました。','暗い道でしたが、みんな無事に渡れました。'],
+ '山あいの隠れ村':['山の村を見張っていた敵が逃げました。','この村なら、しばらく安心して暮らせそうです。'],
+ '生きるための橋':['橋の見張りを退け、川を渡れるようになりました。','橋が使えれば、食べ物も薬も運べます。'],
+ '国境の見張り':['敵の偵察隊を退けました。村の人たちに危険を知らせる時間ができました。','敵の大軍が来る前に、守りを固められます。'],
+ '敵の補給を止めろ':['敵の食べ物を運ぶ隊を止めました。敵の進軍は遅くなるはずです。','これで、村を守るための時間が増えました。'],
+ '町の門を守れ':['敵の攻城隊は門を破れず、引き返しました。','町の人たちが家に戻れます。'],
+ '敵の大きな砦を落とせ':['大きな砦の守備隊を倒し、敵の旗を下ろしました。','砦は取り戻せました。でも、ここを守る兵も必要です。'],
+ '武器工場を止めろ':['敵の武器工場を守っていた兵を追い払いました。','工場は止まりました。敵はすぐに武器を補充できません。'],
+ '王都へ続く門':['王都へ向かう門を守っていた敵は退きました。','門は開きました。でも、王都の中にはまだ敵がいます。'],
+ '最後の避難先':['避難先を狙っていた敵を退けました。','この場所で、住民たちは落ち着いて暮らせます。'],
+ '小さな国の約束':['国境に来た敵を追い払い、村を守りました。','国は小さくても、ここを守り続けられます。'],
+ '帰るための道':['帰郷する人たちが使う道から敵を退けました。','昔の家に戻るための道ができました。'],
+ '国の新しい門':['敵の進軍を止め、新しく守る門を確保しました。','ここを守れば、村に敵を入れずにすみます。'],
+ '王都を取り戻せ':['王都を守っていた敵を退け、城門を開きました。','ウサーギ国の旗が王都に戻ります。まだ戦いは終わりません。'],
+ 'オオカミ国の王都へ進め':['オオカミ国の王城を守る兵を倒し、王城を占領しました。','敵王の軍は降参しました。これでウサーギ国への大きな侵攻を止められます。']
+};
+
+function storyActForChapter(ch){return ch<2?-1:ch<5?0:ch<8?1:2;}
+function storyActivePlan(act){return act<0?null:(story?.plans?.[act]||null);}
+function storyPlanLabel(code){return STORY_PLAN_NAMES[code]||'未選択';}
+function storyChoicePath(){return Array.from({length:3},(_,i)=>story?.plans?.[i]||'normal');}
+function storyPlanBrief(){return storyChoicePath().map((p,i)=>`${i+1}回目：${storyPlanLabel(p)}`).join(' ／ ');}
+function storyStageScene(ch){
+ if(ch<2)return {...STORY_FIRST_STAGES[ch]};
+ const act=storyActForChapter(ch),code=storyActivePlan(act)||'normal',block=STORY_ACTS[act].plans[code];
+ const idx=ch-(act===0?2:act===1?5:8);
+ const [baseTitle,foe,mission,map]=block.stages[idx];
+ let title=baseTitle,desc=mission;
+ if(act===1){
+  const first=story.plans[0]||'normal';
+  const history={easy:'最初に人々を避難させました。',normal:'最初に国境の村を守りました。',hard:'最初に敵の砦まで攻めました。'}[first];
+  const step={easy:'今度は人々の暮らしを優先します。',normal:'今度は守れる土地を固めます。',hard:'今度は敵に先に攻撃します。'}[code];
+  desc=`${history}${step}${mission}`;
+  // Nine different second-act routes: the previously chosen operation remains part of the mission.
+  if(first==='easy'&&code==='hard'){
+   const episodes=[
+    ['国境の小さな砦を攻めろ','オオカミ国の国境守備隊','避難先の守りは仲間に任せ、国境の小さな砦を取り戻そう。'],
+    ['敵の荷車を止めろ','オオカミ国の補給隊','敵が使う食べ物と武器の荷車を止め、こちらが動く時間を作ろう。'],
+    ['反撃の道を開け','国境を守るオオカミ国兵','国境の先にある道を確保しよう。まだ王都まで進めるわけではない。']
+   ];
+   [title,,desc]=episodes[idx];
+   desc=`最初に人々を避難させました。今は少しずつ反撃します。 ${desc}`;
+  }
+  if(first==='normal'&&code==='hard'){
+   const episodes=[
+    ['敵の見張り砦を落とせ','オオカミ国の砦守備隊','村を守ったあと、敵の見張り砦へ反撃しよう。'],
+    ['国境の武器庫を止めろ','オオカミ国の武器庫守備隊','敵が国境に運んだ武器を使えなくしよう。'],
+    ['王都へ続く街道','王都の外の守備隊','王都へ向かう街道を確保しよう。王都の中はまだ敵に守られている。']
+   ];
+   [title,,desc]=episodes[idx];
+   desc=`国境の村を守りながら反撃を始めます。 ${desc}`;
+  }
+  if(first==='hard'&&code==='easy')desc+=' すでに取り戻した町は捨てず、そこへ住民を迎えます。';
+  if(first==='hard'&&code==='normal')desc+=' 最初に奪った砦が今回の守りの中心です。';
+ }
+ if(act===2){
+  const first=story.plans[0]||'normal',second=story.plans[1]||'normal';
+  const path=`${first}-${second}-${code}`,past=STORY_PRIOR_PATHS[`${first}-${second}`];
+  const goal=STORY_FINAL_APPROACH[code];
+  const difficulty=storyDifficultyAtChapter(ch);
+  title=`${baseTitle} ― ${past.where}`;
+  desc=`${past.past}${goal.order} ${mission}`;
+  if(code==='hard'){
+   if(path==='hard-hard-hard'){
+    title=idx===0?'ウサーギ国の王都を取り戻せ':'オオカミ国の王城を落とせ';
+    desc=idx===0?'敵の王都守備隊を倒し、ウサーギ国の王都を取り戻そう。ここで勝って初めて、敵国へ進む道ができます。':'王都奪還に成功しました。今度はオオカミ国の王城へ進み、敵王ヴァルグの軍を止めましょう。';
+   }else if(difficulty>=2){
+    title=idx===0?`王都の外まで進め ― ${past.where}`:`王都近くの大砦を攻めよ ― ${past.where}`;
+    desc=`${past.past}王都の周辺へ進みますが、まだ王都を手に入れたわけではありません。 ${mission}`;
+   }else{
+    title=idx===0?`敵の国境を突破せよ ― ${past.where}`:`敵の砦で反撃せよ ― ${past.where}`;
+    desc=`${past.past}まず敵の国境にある拠点を狙います。王都まで一気に攻めこめるわけではありません。 ${mission}`;
+   }
+  }
+  if(code==='easy'&&difficulty>=0){
+   title=idx===0?`取り戻した町を守れ ― ${past.where}`:`暮らしを守る門 ― ${past.where}`;
+   desc=`${past.past}これ以上攻めず、すでに手にした町や村を守ります。 ${mission}`;
+  }
+  if(code==='normal'&&difficulty>0){
+   title=idx===0?`王都へ続く道を守れ ― ${past.where}`:`奪還した土地の門 ― ${past.where}`;
+   desc=`${past.past}王都へ向かう道の周辺を取り戻し、敵が来ても守れるようにします。 ${mission}`;
+  }
+ }
+ let opponent=foe;
+ if(act===1&&code==='hard'&&story.plans[0]==='easy')opponent=['国境の守備隊','敵の補給隊','国境を守る部隊'][idx];
+ if(act===1&&code==='hard'&&story.plans[0]==='normal')opponent=['砦の守備隊','武器庫の守備隊','街道の警備兵'][idx];
+ return {title,baseTitle,foe:opponent,mission:desc,map,plan:code,act};
+}
+
+const STORY_TURNING_POINT={
+ 'easy-easy':['伝令ミラ','逃げた人たちはまだ安心できません。今回も大きな戦いは避けて、安全な住まいを守ります。'],
+ 'easy-normal':['斥候レオン','人を逃がすだけでは、住む土地がなくなってしまいます。小さな村から少しずつ取り戻すことにしました。'],
+ 'easy-hard':['財務官エルダ','住民は安全な場所に残しました。集め直した傭兵を使って、今度は敵の土地へ向かいます。危険ですが、道は開けます。'],
+ 'normal-easy':['伝令ミラ','村を守り続けるのは難しくなりました。住民を安全な場所へ移し、いったん戦いを小さくします。'],
+ 'normal-normal':['斥候レオン','守った村に人が戻ってきています。近くの道と見張り台を守れば、国は少しずつ強くなります。'],
+ 'normal-hard':['財務官エルダ','国境の村を守れたからこそ、前へ進めます。敵が次に攻めてくる前に、こちらから動きます。'],
+ 'hard-easy':['伝令ミラ','敵を攻めたことで兵たちも疲れています。今は進軍を止めて、帰ってきた住民の暮らしを守ります。'],
+ 'hard-normal':['斥候レオン','奪った土地をそのままにしては、また取られます。今回は守りを固め、敵の反撃を止めます。'],
+ 'hard-hard':['斥候レオン','これまでに開いた道を使い、さらに先へ進みます。危険ですが、敵の王もこちらを無視できません。']
+};
+function storySceneDrama(ch){
+ const act=storyActForChapter(ch),code=storyActivePlan(act)||'normal';
+ const role=act===0?'野盗の手下がまだ村を見張っています。':act===1?'オオカミ王ヴァルグの軍が、ウサーギ国の動きを調べています。':act===2?'王ヴァルグは、いまのウサーギ国を危険だと思い始めました。':'北の野盗は、少ない兵で守るこの国を狙っています。';
+ const concern=code==='easy'?'一番大切なのは住民が安全に暮らすことです。無理に遠くへ攻めこまなくても、国は残せます。':code==='normal'?'今ある土地を守るだけでは足りません。必要な場所を取り戻して、村を守りましょう。':'敵の大きな軍に正面から向かいます。失敗すれば危険ですが、勝てば国の未来が大きく変わります。';
+ const personal=story.heroRetired?'私はここから作戦を考える。戦うみんなには、無事に帰ってきてほしい。':'私も戦う。仲間が生きて帰れるよう、出撃場所をよく考えよう。';
+ return [['斥候レオン',role],['財務官エルダ',concern],[`指揮官 ${story.playerName}`,personal]];
+}
+function storyContinuityDialogue(){
+ const ps=story.plans||[],a=ps[0],b=ps[1],c=ps[2],rows=[];
+ if(story.chapter>=5&&a){
+  rows.push(['伝令ミラ',a==='easy'?'前は人々を逃がしました。助けた人たちは今、安全な村で暮らしています。':a==='hard'?'前は敵の砦や町を攻めました。勝ち取った場所を守るためにも、新しい作戦が必要です。':'前は国境の村を守りました。道や見張り台は、今も国を守る助けになっています。']);
+ }
+ if(story.chapter>=8&&b){
+  rows.push(['斥候レオン',b==='easy'?'最近は逃げる人を助けました。その人たちが暮らせる場所を残す必要があります。':b==='hard'?(a==='easy'?'国境の砦へ反撃しました。王都を取り戻すには、まだ時間が必要です。':'王都へ続く道を開きました。しかし、敵の軍はまだ残っています。'):'町を守る戦いが続きました。村の人たちが少しずつ戻っています。']);
+ }
+ if(story.chapter>=8&&a&&b&&a!==b)rows.push(['財務官エルダ',`最初は${storyPlanLabel(a)}を選び、次は${storyPlanLabel(b)}を選びました。作戦を変えても、昔の戦いがなかったことにはなりません。`]);
+ if(story.heroRetired)rows.push(['伝令ミラ',`${story.playerName}隊長はけがで戦えません。でも、作戦を決めるのは今も隊長です。`]);
+ return rows;
+}
+const STORY_ENDING_ROWS=[
+ ['easy-easy-easy','小さな旗が残る国','住民たちは安全な土地で暮らし始めた。国は小さい。でも、もう逃げ回る必要はない。'],
+ ['easy-easy-normal','避難先からの帰り道','避難先を守りぬいた人々が、少しずつ昔の家へ帰った。'],
+ ['easy-easy-hard','難民の反撃','逃げていた人々の国が、ついに敵の国境の砦を攻め落とした。'],
+ ['easy-normal-easy','村を守るための国','住民の避難と国境の守りを重ね、安全な小さな国をつくった。'],
+ ['easy-normal-normal','戻ってきた村人たち','昔の村を守ることに成功し、避難していた人たちが帰ってきた。'],
+ ['easy-normal-hard','守るだけでは終わらない','村を守った兵たちが最後は敵の国境へ進み、侵略を止めた。'],
+ ['easy-hard-easy','剣を収めた旗','人々を逃がしたあと国境へ反撃し、最後は取り戻した小さな土地を守ることに決めた。'],
+ ['easy-hard-normal','帰り道のその先に','避難から立ち上がり、国境で反撃したあと、故郷の村を守れるようになった。'],
+ ['easy-hard-hard','逃げた国の大反撃','かつて逃げた小国が、敵の砦を攻め落として反撃の始まりを告げた。'],
+ ['normal-easy-easy','傷ついた国境の村','最初に守った村々を、避難民の新しい住まいとして残した。'],
+ ['normal-easy-normal','二度目の故郷','人々を逃がしたあと、ふたたび古い村へ戻る道を取り戻した。'],
+ ['normal-easy-hard','帰還から反撃へ','国境を守り、避難を経て、最後は敵の土地に反撃した。'],
+ ['normal-normal-easy','守り抜いた小国','領土を広げる夢よりも、村人が眠れる夜を選んだ。'],
+ ['normal-normal-normal','ウサーギ国の新しい門','国境を守り続け、住民が安心して暮らせる町と門を取り戻した。'],
+ ['normal-normal-hard','守りから攻めへ','しっかり守った国を背に、敵の国境に反撃して新しい安全を得た。'],
+ ['normal-hard-easy','進軍を止めた王国','攻める力を持ちながら、小さな国を守ることを選んだ。'],
+ ['normal-hard-normal','故郷の守り手','王都に近づいた軍勢が、奪われた村を取り戻して守りを固めた。'],
+ ['normal-hard-hard','二つの国境に立つ旗','王都へ向かった軍勢は敵国の砦まで進み、長い戦いに終止符を打った。'],
+ ['hard-easy-easy','奪還した町の灯','最初の反攻で取り戻した町を守るため、小さな国の平和を選んだ。'],
+ ['hard-easy-normal','戦いのあとに帰る人々','早くに取り返した土地へ、避難民を呼び戻して新しい町をつくった。'],
+ ['hard-easy-hard','失った勢いを取り戻せ','一度戦いをやめた軍がふたたび剣を取り、敵国の砦へ進んだ。'],
+ ['hard-normal-easy','勝者の休戦','強い軍を持ちながら、それ以上の戦いをせず国を守り抜いた。'],
+ ['hard-normal-normal','国境を越えない勝利','奪った故郷を守り抜き、さらなる侵略を許さない国を築いた。'],
+ ['hard-normal-hard','鉄壁のあとに進軍','固い守りを完成させた軍が、敵国の国境に攻め入った。'],
+ ['hard-hard-easy','敵を退け、平和を選ぶ','王都への道を開いたあとも攻め続けず、国の人々の暮らしを選んだ。'],
+ ['hard-hard-normal','王都の門と新しい約束','王都を目指した軍勢が故郷を取り戻し、国境に平和の約束を刻んだ。'],
+ ['hard-hard-hard','ウサーギ国・大勝利','ウサーギ国は王都を取り戻し、さらにオオカミ国に攻めこんだ。敵王ヴァルグの王城を落とし、侵略を終わらせた。']
+];
+const STORY_ENDING_LOOKUP=Object.fromEntries(STORY_ENDING_ROWS.map(([id,title,desc])=>[id,{title,desc}]));
+
+const ENDING_CATALOG=STORY_ENDING_ROWS.map(([id,title,desc])=>[id,title,desc]);
+function readEndingGallery(){
+ try{
+  const data=JSON.parse(localStorage.getItem(STORY_ENDING_GALLERY_KEY)||'null');
+  return data&&data.version===1&&data.unlocked&&typeof data.unlocked==='object'?data:{version:1,unlocked:{}};
+ }catch(_){return {version:1,unlocked:{}};}
+}
+function unlockStoryEnding(){
+ if(!story||!ENDING_CATALOG.some(([id])=>id===story.ending))return;
+ const gallery=readEndingGallery(),key=story.ending,old=gallery.unlocked[key];
+ const runId=String(story.started||'legacy')+'|'+String(story.playerName||'');
+ const runs=Array.isArray(old?.runs)?old.runs:[];
+ const variant=story.heroRetired?'retired':'active';
+ if(runs.includes(runId))return;
+ const now=Date.now(),hist=story.history||[];
+ gallery.unlocked[key]={firstAt:old?.firstAt||now,lastAt:now,count:(old?.count||0)+1,
+  lastHero:String(story.playerName||'アレン').slice(0,16),wins:hist.filter(h=>h.win).length,losses:hist.filter(h=>!h.win).length,
+  variants:{...(old?.variants||{}),[variant]:true},
+  runs:[...runs,runId].slice(-250)};
+ try{localStorage.setItem(STORY_ENDING_GALLERY_KEY,JSON.stringify(gallery));}catch(_){}
+}
+function openEndingGallery(){
+ if(document.getElementById('storyEndingGalleryBackdrop'))return;
+ const gallery=readEndingGallery(),unlocked=gallery.unlocked;
+ const count=ENDING_CATALOG.filter(([key])=>unlocked[key]).length;
+ const variantCount=ENDING_CATALOG.reduce((n,[key])=>n+(unlocked[key]?.variants?.active?1:0)+(unlocked[key]?.variants?.retired?1:0),0);
+ const root=document.createElement('div');root.id='storyEndingGalleryBackdrop';root.className='story-slot-backdrop';
+ const cards=ENDING_CATALOG.map(([key,title,desc],i)=>{
+  const data=unlocked[key];
+  let last='';
+  if(data){
+   const date=Number.isFinite(data.lastAt)?new Date(data.lastAt).toLocaleDateString('ja-JP'):'';
+   last=`<div class="ending-meta">達成 ${data.count||1}回 · 最終達成 ${esc(date)}<div>主人公：${esc(data.lastHero||'記録なし')}　戦績 ${Number(data.wins)||0}勝 / ${Number(data.losses)||0}敗</div><div>前線に立つ結末：${data.variants?.active?'達成':'未達成'} ／ 戦線離脱の結末：${data.variants?.retired?'達成':'未達成'}</div></div>`;
+  }
+  return `<article class="story-ending-card ${data?'unlocked':'locked'}"><div class="ending-state">ENDING ${String(i+1).padStart(2,'0')} / ${ENDING_CATALOG.length} · ${data?'達成済み':'未達成'}</div><h3>${esc(title)}</h3><div class="ending-desc">${data?esc(desc):'まだ見ていない結末です。'}</div>${last}</article>`;
+ }).join('');
+ root.innerHTML=`<section class="story-slot-modal story-endings-modal" role="dialog" aria-modal="true" aria-label="エンディング記録"><div class="story-slot-title"><h2>王国の記録 · エンディング図鑑</h2><button id="storyEndingGalleryClose" type="button" class="btn sm">閉じる</button></div><div class="story-endings-overview"><span class="story-endings-progress">${count} / ${ENDING_CATALOG.length} 種類達成 · 主人公別 ${variantCount} / ${ENDING_CATALOG.length*2} 種類</span><span class="story-note">エンディングの達成記録は、セーブ3スロットや自動保存とは別にこのブラウザへ保管されます。</span></div><div class="story-endings-grid">${cards}</div></section>`;
+ document.body.appendChild(root);
+ const close=()=>{document.removeEventListener('keydown',escapeClose,true);root.remove()};
+ const escapeClose=e=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}};
+ document.addEventListener('keydown',escapeClose,true);
+ root.onclick=e=>{if(e.target===root)close();};
+ root.querySelector('#storyEndingGalleryClose').onclick=close;
+ root.querySelector('#storyEndingGalleryClose').focus();
+}
+
 const JOB_TACTICS=window.STORY_TACTICS; const SKILLS=window.STORY_SKILLS; const CHOICE=window.STORY_CHOICES; const packSquadAt=window.STORY_PACK;
+
 const EPISODES=[
  {title:'滅びかけの王国',foe:'北の野盗団',line:'北の街道から野盗が迫っています！ 王国軍の生存者は、あなたを含めてたった一人。急いで傭兵を集めなければ、最後の砦も失われます。',map:'plain',enemies:3,reward:4200,candidates:3},
  {title:'奪われた補給路',foe:'街道の略奪者',line:'前の襲撃は退けました。しかし街道を通る物資が略奪されています。交易路を取り戻せば、王国に新たな資金が入るはずです。',map:'forest',enemies:3,reward:5400,candidates:4},
@@ -3252,13 +3626,18 @@ const EPISODES=[
  {title:'国境の反攻',foe:'国境の混成軍',line:'噂を聞きつけた周辺勢力が国境へ集結しています。守るだけでは終われません。国境を押し返す戦いが始まります。',map:'plain',enemies:5,reward:8000,candidates:6},
  {title:'王国再建の兆し',foe:'野盗連合',line:'散り散りだった野盗が連合を結成しました。これを退ければ、王国はようやく復興への第一歩を踏み出せます。',map:'forest',enemies:6,reward:10400,candidates:6},
  {title:'灰の国境',foe:'灰狼傭兵団',line:'王国が立ち直りつつあることを知り、国境を越えて傭兵団が現れました。もはや相手は統率を知らぬ野盗ではありません。',map:'ruins',enemies:7,reward:12600,candidates:7},
- {title:'三旗の谷',foe:'鉄血の軍勢',line:'鉄血軍と白霧軍が峡谷で衝突するとの情報です。どちらも王国を見逃す気はありません。三つ巴の戦場を勝ち抜きましょう。',map:'forest',enemies:6,reward:16000,candidates:8,foes:[{name:'鉄血の軍勢',count:6},{name:'白霧の斥候団',count:5}]},
+ {title:'三旗の谷',foe:'鉄血の軍勢',line:'鉄血軍とハムスタ軍が峡谷で衝突するとの情報です。どちらも王国を見逃す気はありません。三つ巴の戦場を勝ち抜きましょう。',map:'forest',enemies:6,reward:16000,candidates:8,foes:[{name:'鉄血の軍勢',count:6},{name:'ハムスタの斥候団',count:5}]},
  {title:'奪還の代償',foe:'旧領を占領する守備隊',line:'かつての王国領へ進むと、敵の正規軍が待ち構えていました。守勢ではなく、奪還戦を挑みます。',map:'plain',enemies:10,reward:19000,candidates:9},
- {title:'王都を囲む四旗',foe:'朱槍の近衛軍',line:'王都への道に、三つの敵陣営が集結しています。敵同士も対立していますが、その矛先がこちらを向かないとは限りません。',map:'ruins',enemies:7,reward:23500,candidates:10,foes:[{name:'朱槍の近衛軍',count:7},{name:'蒼翼の魔導連隊',count:6},{name:'黒鴉の遊撃団',count:6}]},
+ {title:'王都を囲む四旗',foe:'朱槍の近衛軍',line:'王都への道に、三つの敵陣営が集結しています。敵同士も対立していますが、その矛先がこちらを向かないとは限りません。',map:'ruins',enemies:7,reward:23500,candidates:10,foes:[{name:'朱槍の近衛軍',count:7},{name:'モモンガの魔導連隊',count:6},{name:'黒鴉の遊撃団',count:6}]},
  {title:'王国の再旗揚げ',foe:'簒奪王の精鋭',line:'廃都の城壁に敵の旗が翻る。旧王国を滅ぼした簒奪王は、ついに自らの精鋭を差し向けてきました。この戦いに勝ち、王国の旗を取り戻しましょう。',map:'ruins',enemies:11,reward:30000,candidates:11,foes:[{name:'簒奪王の精鋭',count:11},{name:'黒鴉の残党',count:7}]}
 ];
+const CAMPAIGN_ROUTE_NAMES=["王道","劣勢","撤退","流浪","亡命"];
+const CAMPAIGN_SCRIPTS=[[{"title":"ウサーギ国最後の門","mission":"野盗が最後の門へ向かっています。傭兵を雇って村の人たちを守りましょう。","reason":"門が破られると、村の人たちは家を捨てて逃げなければなりません。","foe":"北の野盗団","enemies":3,"win":"野盗を追い払い、門を守りました。","loss":"野盗に門を破られました。人々は別の村へ逃げました。"},{"title":"ウサーギ国最後の門","mission":"野盗が最後の門へ向かっています。傭兵を雇って村の人たちを守りましょう。","reason":"門が破られると、村の人たちは家を捨てて逃げなければなりません。","foe":"北の野盗団","enemies":3,"win":"野盗を追い払い、門を守りました。","loss":"野盗に門を破られました。人々は別の村へ逃げました。"},{"title":"ウサーギ国最後の門","mission":"野盗が最後の門へ向かっています。傭兵を雇って村の人たちを守りましょう。","reason":"門が破られると、村の人たちは家を捨てて逃げなければなりません。","foe":"北の野盗団","enemies":3,"win":"野盗を追い払い、門を守りました。","loss":"野盗に門を破られました。人々は別の村へ逃げました。"},{"title":"ウサーギ国最後の門","mission":"野盗が最後の門へ向かっています。傭兵を雇って村の人たちを守りましょう。","reason":"門が破られると、村の人たちは家を捨てて逃げなければなりません。","foe":"北の野盗団","enemies":3,"win":"野盗を追い払い、門を守りました。","loss":"野盗に門を破られました。人々は別の村へ逃げました。"},{"title":"ウサーギ国最後の門","mission":"野盗が最後の門へ向かっています。傭兵を雇って村の人たちを守りましょう。","reason":"門が破られると、村の人たちは家を捨てて逃げなければなりません。","foe":"北の野盗団","enemies":3,"win":"野盗を追い払い、門を守りました。","loss":"野盗に門を破られました。人々は別の村へ逃げました。"}],[{"title":"北の街道を取り戻せ","mission":"野盗が食べ物を運ぶ道をふさいでいます。野盗を追い払いましょう。","reason":"門を守ったので、今度は村に食べ物を届ける道が必要です。","foe":"街道の略奪団","enemies":3,"win":"北の道を取り戻しました。食べ物が届くようになります。","loss":"道を取り戻せませんでした。食べ物は別の道から運びます。"},{"title":"川を渡る人を守れ","mission":"砦から逃げた人たちが川を渡っています。追ってくる野盗を止めましょう。","reason":"砦を失ったので、今は道を取り戻すより人を逃がすことが大切です。","foe":"追撃の野盗","enemies":2,"win":"川を渡る人たちを守りました。","loss":"敵を止められず、人々は別の道へ逃げました。"},{"title":"川を渡る人を守れ","mission":"砦から逃げた人たちが川を渡っています。追ってくる野盗を止めましょう。","reason":"砦を失ったので、今は道を取り戻すより人を逃がすことが大切です。","foe":"追撃の野盗","enemies":2,"win":"川を渡る人たちを守りました。","loss":"敵を止められず、人々は別の道へ逃げました。"},{"title":"川を渡る人を守れ","mission":"砦から逃げた人たちが川を渡っています。追ってくる野盗を止めましょう。","reason":"砦を失ったので、今は道を取り戻すより人を逃がすことが大切です。","foe":"追撃の野盗","enemies":2,"win":"川を渡る人たちを守りました。","loss":"敵を止められず、人々は別の道へ逃げました。"},{"title":"川を渡る人を守れ","mission":"砦から逃げた人たちが川を渡っています。追ってくる野盗を止めましょう。","reason":"砦を失ったので、今は道を取り戻すより人を逃がすことが大切です。","foe":"追撃の野盗","enemies":2,"win":"川を渡る人たちを守りました。","loss":"敵を止められず、人々は別の道へ逃げました。"}],[{"title":"石門砦を取り戻せ","mission":"昔のウサーギ国の砦に敵がいます。敵を倒して砦を取り戻しましょう。","reason":"道を取り戻せたので、今なら砦にも向かえます。","foe":"石門砦守備隊","enemies":4,"win":"石門砦を取り戻しました。ここを守る場所として使えます。","loss":"砦を取り戻せませんでした。部隊は山へ引き返しました。"},{"title":"砦の見張りを倒せ","mission":"砦の外にいる敵の見張りを追い払いましょう。","reason":"今の兵士の数では砦へ入れません。まず敵の見張りを減らします。","foe":"敵の斥候隊","enemies":3,"win":"敵の見張りを追い払いました。安全に歩ける道が増えました。","loss":"敵の見張りに負けました。別の道を探します。"},{"title":"食べ物と薬を取り戻せ","mission":"逃げた人たちが道に置いてきた食べ物と薬を取り戻しましょう。","reason":"前の戦いで多くの物を失いました。今は食べ物を集めます。","foe":"荷車を荒らす追剝","enemies":2,"win":"食べ物と薬を取り戻しました。","loss":"荷車に近づけず、食べ物と薬を取り戻せませんでした。"},{"title":"食べ物と薬を取り戻せ","mission":"逃げた人たちが道に置いてきた食べ物と薬を取り戻しましょう。","reason":"前の戦いで多くの物を失いました。今は食べ物を集めます。","foe":"荷車を荒らす追剝","enemies":2,"win":"食べ物と薬を取り戻しました。","loss":"荷車に近づけず、食べ物と薬を取り戻せませんでした。"},{"title":"食べ物と薬を取り戻せ","mission":"逃げた人たちが道に置いてきた食べ物と薬を取り戻しましょう。","reason":"前の戦いで多くの物を失いました。今は食べ物を集めます。","foe":"荷車を荒らす追剝","enemies":2,"win":"食べ物と薬を取り戻しました。","loss":"荷車に近づけず、食べ物と薬を取り戻せませんでした。"}],[{"title":"となりの国の使いを守れ","mission":"ハムスタ国かモモンガ国の使いが敵に襲われています。無事に送り届けましょう。","reason":"となりの国が、ウサーギ国を助けるか考えています。","foe":"国から来た使いを狙う雇われ兵","enemies":5,"win":"国の使いを安全に送り届けました。","loss":"使いを守れませんでした。話し合いが難しくなりました。"},{"title":"食べ物を運ぶ荷車を守れ","mission":"となりの国から来る荷車を、村まで安全に送りましょう。","reason":"今は大きな戦いをする力がありません。まず食べ物を届けます。","foe":"食べ物や武器狙いの傭兵崩れ","enemies":3,"win":"食べ物を積んだ荷車が村に届きました。","loss":"荷車を守れず、食べ物が届きませんでした。"},{"title":"国境の書類を守れ","mission":"国境の場所を示す大切な書類を、敵から守りましょう。","reason":"今は土地を守れなくても、ウサーギ国の土地だという証拠は守りたいのです。","foe":"国境のしるしの野盗","enemies":3,"win":"国境の大切な書類を守りました。","loss":"大切な書類を一部失いました。"},{"title":"森に消えた使いを助けろ","mission":"となりの国の使いが森で行方不明になりました。探して助けましょう。","reason":"使いを助ければ、となりの国も私たちを信用してくれるかもしれません。","foe":"森の待ち伏せ部隊","enemies":2,"win":"行方不明だった使いを助けました。","loss":"使いを助けられませんでした。"},{"title":"森に消えた使いを助けろ","mission":"となりの国の使いが森で行方不明になりました。探して助けましょう。","reason":"使いを助ければ、となりの国も私たちを信用してくれるかもしれません。","foe":"森の待ち伏せ部隊","enemies":2,"win":"行方不明だった使いを助けました。","loss":"使いを助けられませんでした。"}],[{"title":"帰ってきた人の村","mission":"戻ってきた人たちが暮らす村に野盗が迫っています。村を守りましょう。","reason":"少しずつ人が帰ってきました。もう家を失わせたくありません。","foe":"野盗連合の強い部隊","enemies":6,"win":"野盗を追い払い、村を守りました。","loss":"村を守れませんでした。村の人たちは逃げました。"},{"title":"村への夜の攻撃","mission":"今夜、野盗の小部隊が村を襲います。木の柵の内側で戦いましょう。","reason":"今は村全部を守るだけの兵士がいません。目の前の敵を止めましょう。","foe":"野盗連合の先に来る小さな部隊","enemies":4,"win":"夜に来た野盗を追い払いました。","loss":"敵に負け、村の人たちは逃げました。"},{"title":"木の橋を落とせ","mission":"逃げる人たちを守るため、橋を壊すまで追手を足止めしましょう。","reason":"ここで敵を止めれば、味方が安全に逃げられます。","foe":"野盗の追撃隊","enemies":3,"win":"橋を落とす時間を作れました。味方は安全に逃げられます。","loss":"敵を止められず、味方は急いで逃げました。"},{"title":"森の小屋を守れ","mission":"森の小屋に逃げてきた人たちがいます。野盗から守りましょう。","reason":"家を失った人たちには、この小屋が今の家です。","foe":"森の野盗","enemies":2,"win":"森の小屋にいる人たちを守りました。","loss":"小屋を守れず、人々はさらに山へ逃げました。"},{"title":"山道の案内人","mission":"山を越えて逃げる人たちの案内人を守りましょう。","reason":"安全な道を知っている人がいなければ、みんな逃げられません。","foe":"山道の追剝","enemies":2,"win":"案内人を守り、山道を安全に進めます。","loss":"案内人を守れず、別の道を探すことになりました。"}],[{"title":"灰の国境","mission":"王都をうばったヴァルグが雇った灰狼傭兵団を止めましょう。","reason":"今度の敵は野盗ではありません。しっかり訓練された兵士たちです。","foe":"灰狼傭兵団の本隊","enemies":7,"win":"灰狼軍を止め、国境を守りました。","loss":"灰狼軍に負け、国境の場所を失いました。"},{"title":"見張り台を守れ","mission":"灰狼軍の小さな部隊が見張り台を狙っています。守りましょう。","reason":"敵の大軍には勝てなくても、小さな部隊なら倒せるかもしれません。","foe":"灰狼の突撃小隊","enemies":5,"win":"見張り台を守りました。","loss":"見張り台を取られました。"},{"title":"敵の荷車を止めろ","mission":"灰狼軍が運ぶ食べ物と武器を奪い、敵の進軍を遅らせましょう。","reason":"大軍を正面から倒せないので、食べ物を運ぶ隊を狙います。","foe":"灰狼の護送兵","enemies":3,"win":"敵の荷車を止めました。敵の進みが遅くなります。","loss":"敵の荷車を止められませんでした。"},{"title":"つかまった人を助けろ","mission":"敵につかまった村の人たちが運ばれています。助け出しましょう。","reason":"土地を取り戻せなくても、人の命なら守れます。","foe":"灰狼の監視兵","enemies":3,"win":"つかまっていた人たちを助け出しました。","loss":"助け出せませんでした。敵が向かった先を探します。"},{"title":"逃げる人の最後尾","mission":"国から逃げる人たちの後ろに敵が迫っています。追手を止めましょう。","reason":"みんなが逃げる時間を作れば、またやり直す機会が残ります。","foe":"追跡騎兵の斥候","enemies":2,"win":"追手を止め、人々を逃がせました。","loss":"追手を止められず、人々は別々に逃げました。"}],[{"title":"三つの軍が戦う谷","mission":"鉄血軍と黒鴉傭兵団が戦う谷に入り、通り道を手に入れましょう。","reason":"この二つの敵軍は、お互いにも戦っています。協力している国は別の場所で敵を止めてくれます。","foe":"鉄血軍・黒鴉傭兵団","enemies":6,"win":"谷を通る道を手に入れました。","loss":"谷を通れませんでした。別の道を探します。"},{"title":"谷のわき道を取れ","mission":"大軍が戦う場所を避けて、わき道にいる敵を追い払いましょう。","reason":"小さな道でも通れれば、次の土地へ進めます。","foe":"わき道守備隊","enemies":5,"win":"谷のわき道を取りました。","loss":"わき道を取れませんでした。"},{"title":"古い道の門を開け","mission":"谷のはしにある古い門を通れるようにしましょう。","reason":"今の部隊が敵の大軍に見つからずに進むためには、別の道が必要です。","foe":"昔の道の番兵","enemies":3,"win":"古い道の門を通れるようになりました。","loss":"門を通れず、遠回りすることになりました。"},{"title":"谷にいる人を助けろ","mission":"谷に取り残された人たちを、安全な場所へ逃がしましょう。","reason":"大軍には勝てなくても、逃げている人は助けられます。","foe":"とらわれた人狩りの一団","enemies":2,"win":"谷にいた人たちを助けました。","loss":"人々を助けられませんでした。"},{"title":"大切な手紙を届けろ","mission":"ハムスタ国とモモンガ国が話し合うための手紙を届けましょう。","reason":"私たちだけでは戦い続けられません。助けを求める手紙です。","foe":"密書を狙う追手","enemies":2,"win":"手紙を相手の国に届けました。","loss":"手紙を敵に取られました。"}],[{"title":"王都への道を開け","mission":"王都へ向かう途中にある敵の場所を取り戻しましょう。","reason":"谷を越えたので、王都へ進むための場所が必要です。","foe":"王都外側の守備隊","enemies":10,"win":"王都へ進む道を手に入れました。","loss":"王都へ進めず、部隊は引き返しました。"},{"title":"村を取り戻せ","mission":"王都へ向かう途中の村から敵を追い払いましょう。","reason":"村を守れば、そこに住む人たちが助けてくれます。","foe":"集落の占領兵","enemies":6,"win":"村から敵を追い出しました。","loss":"村を取り戻せませんでした。"},{"title":"敵の倉庫から物を取れ","mission":"敵の倉庫を襲って、食べ物と武器を手に入れましょう。","reason":"今はお城を攻められません。まず次の戦いに必要な物を集めます。","foe":"倉庫の警備兵","enemies":4,"win":"敵の倉庫から食べ物と武器を手に入れました。","loss":"倉庫から物を持ち出せませんでした。"},{"title":"隠れた村を守れ","mission":"森の中に隠れて暮らす人たちを、少数の追手から守りましょう。","reason":"国の土地を取り戻せなくても、この村は守れます。","foe":"隠れ里の追手","enemies":3,"win":"森に隠れている人たちを守りました。","loss":"村を守れず、人々は別の場所へ逃げました。"},{"title":"国境を通る紙を守れ","mission":"国境を越える許可を書いた紙を、追手から守りましょう。","reason":"この紙がないと、逃げている人たちはとなりの国に入れません。","foe":"国境の追撃兵","enemies":2,"win":"国境を通る許可の紙を守りました。","loss":"許可の紙を敵に取られました。"}],[{"title":"王都の四つどもえ","mission":"王都の外で三つの敵軍が争っています。私たちも戦い、城へ進む道を開きましょう。","reason":"敵同士も仲が悪く、戦っています。どの軍が動いているか気をつけましょう。","foe":"朱槍・鉄血・黒鴉","enemies":7,"win":"敵の軍を倒して、王城へ進む道を開きました。","loss":"王都の前で負けました。お城へ進めません。"},{"title":"王都の荷物門を取れ","mission":"大軍と戦わず、荷物を運ぶ門だけを取り戻しましょう。","reason":"今の人数では城全体を攻められません。門を一つだけ狙います。","foe":"食べ物や武器門の守備兵","enemies":6,"win":"王都の荷物門を取りました。","loss":"荷物門を取れませんでした。"},{"title":"敵の伝令を止めろ","mission":"敵の命令を運ぶ兵士をつかまえ、追手が来るのを遅らせましょう。","reason":"大きな戦いは避け、味方が逃げる時間を作ります。","foe":"追撃命令の伝令隊","enemies":4,"win":"敵の伝令を止めました。追手の到着が遅れます。","loss":"伝令を止められず、追手が動き始めました。"},{"title":"森の逃げ道を守れ","mission":"王都から逃げる人たちが通る森の道を守りましょう。","reason":"お城は近くに見えます。でも今は人を守るほうが大切です。","foe":"避難民を狙う追手","enemies":3,"win":"森の道を守り、人々を逃がしました。","loss":"森の道を守れず、人々は別の道へ逃げました。"},{"title":"最後の船を守れ","mission":"川を渡って逃げる人たちの船を、追手から守りましょう。","reason":"みんなが国の外へ逃げられれば、生きのびることができます。","foe":"河岸の追撃隊","enemies":2,"win":"船を守り、人々を川の向こうへ逃がしました。","loss":"船を守れず、人々は山道を逃げます。"}],[{"title":"王城へ突入！","mission":"王都のお城に入り、ヴァルグ王を守る強い兵士を倒しましょう。","reason":"前の戦いで城への道が開きました。今ならお城を取り戻せます。","foe":"王都をうばった王の王さまを守る兵士軍","enemies":11,"win":"お城を取り戻しました！ ウサーギ国の旗を立てます。","loss":"お城を取り戻せませんでした。部隊は引き返しました。"},{"title":"最後の陣地を守れ","mission":"王都の近くに残る味方の場所を、敵の追手から守りましょう。","reason":"今はお城へ攻めこめません。まず味方の場所を守ります。","foe":"王都をうばった王の追いかける隊","enemies":7,"win":"味方の陣地を守りました。","loss":"味方の陣地を失い、別の場所へ逃げました。"},{"title":"国境の砦を守れ","mission":"ウサーギ国の古い国境の砦を、敵から守りましょう。","reason":"大きな町は失っても、この砦があれば国を続けられます。","foe":"追いかける軍の先に来る小さな部隊","enemies":5,"win":"国境の砦を守りました。ウサーギ国はここに残ります。","loss":"国境の砦を失いました。みんなは国外へ逃げます。"},{"title":"最後の村を守れ","mission":"国境に近い村へ敵が迫っています。村の人たちが逃げるまで守りましょう。","reason":"お城を取り戻すより、今は村の人たちの命が大切です。","foe":"追撃隊の小さな部隊","enemies":3,"win":"村の人たちを守り、逃がせました。","loss":"村を守れませんでした。人々は逃げ続けます。"},{"title":"国境を越える夜","mission":"最後に逃げる人たちを追ってくる敵を倒しましょう。","reason":"逃げる人たちが無事にとなりの国へ入れるようにします。","foe":"最後の追手","enemies":2,"win":"最後の追手を追い払い、人々は安全な場所へ逃げました。","loss":"追手に負けました。でも人々は別々の道で逃げられました。"}]];
+const CAMPAIGN_PEOPLE=["村の人たちは、門が破られたときのために逃げる荷物をまとめています。","村の子どもたちが食べ物を待っています。道を通せるようにしましょう。","逃げた人たちは薬と食べ物を必要としています。","となりの国から助けてもらえれば、村の人たちも安心できます。","家に帰りたがっている人がたくさんいます。","前の戦いで逃げた村の人たちは、今も帰る場所を探しています。","谷の近くには、戦いに巻きこまれた人が残されています。","王都の近くで暮らす人も、戦いが終わるのを待っています。","お城の近くにも逃げる場所がない人たちがいます。","最後の戦いの結果がどうなっても、ウサーギ国の人たちの暮らしは続きます。"];
+const CAMPAIGN_NEWS=["野盗が門へ向かっています。王都の兵士ではなく、村をおそう集団です。","北の道を野盗がふさいでいます。食べ物を運ぶ人が困っています。","石門砦には敵の見張りがいます。近づく前に人数を調べます。","ハムスタ国とモモンガ国から手紙が届きました。どちらも協力したがっています。","野盗たちが集まっています。村をおそうつもりのようです。","王都をうばったヴァルグ王が兵を送ってきました。今までより手ごわい敵です。","鉄血軍と黒鴉傭兵団が谷で戦っています。私たちも通り道を探さなければなりません。","王都の近くまで敵の見張りが広がっています。","王都の外で何組もの軍が戦っています。大きな戦いになりそうです。","最後の戦いが近づいています。敵もこちらの動きを見ています。"];
+const CAMPAIGN_FACTIONS={"6-0":[{"name":"鉄血軍","count":6},{"name":"黒鴉傭兵団","count":5}],"8-0":[{"name":"朱槍軍","count":7},{"name":"鉄血軍","count":6},{"name":"黒鴉傭兵団","count":6}],"9-0":[{"name":"簒奪王の近衛軍","count":11},{"name":"黒鴉の残党","count":5}]};
 const STAGE_CLEAR_LINES=[
- '野盗の第一波を退けました！ アレンの旗が、最後の城門から消えずに済みました。街の人々は久しぶりに歓声を上げています。',
+ '野盗の第一波を退けました！ ウサーギ国の旗が、最後の城門から消えずに済みました。街の人々は久しぶりに歓声を上げています。',
  '街道を取り戻しました！ 行商人たちが帰還し、王国への物資の流れが再開しました。軍資金も確保できます。',
  '廃城を奪還しました！ かつての砦に再び王国旗が掲げられます。国境の防衛線が一つ増えました。',
  '国境から敵を押し返しました！ もはやこの国は、ただ逃げ延びるだけの小国ではありません。',
@@ -3274,13 +3653,86 @@ let lastStage='';
 let storyFileLoaded=false;
 const esc=str=>escapeHtml(str);
 const money=n=>`${fmt(Math.max(0,Math.floor(n)))} G`;
-const epi=()=>EPISODES[Math.min(story.chapter,EPISODES.length-1)];
+const epi=()=>{
+ const ch=Math.min(story?.chapter||0,9),scene=storyStageScene(ch),base=EPISODES[ch];
+ const level=storyDifficultyAtChapter(ch);
+ const q={...base,...scene};
+ q.difficultyLevel=level;
+ q.enemies=ch<2?STORY_BASE_ENEMIES[ch]:Math.max(2,STORY_BASE_ENEMIES[ch]+level);
+ q.reward=ch<2?STORY_BASE_REWARDS[ch]:Math.round(STORY_BASE_REWARDS[ch]*(1+0.16*level)/100)*100;
+ const report=STORY_MISSION_OUTCOMES[scene.baseTitle||scene.title];
+ q.win=report?.[0]||'敵を追い払い、今回の作戦を終えることができました。';
+ q.winFollowUp=report?.[1]||'いま守った場所を、次の戦いにつなげましょう。';
+ if(ch>=5&&ch<8&&story.plans?.[1]==='hard'&&story.plans?.[0]!=='hard'){
+   const first=story.plans[0];
+   const acts=first==='easy'
+    ?[['国境の小さな砦を守る敵を退けました。ここから反撃を始められます。','避難した人たちの近くにも、守りの兵を残しています。'],['敵の荷車を止め、食べ物と武器を運ばせませんでした。','敵が補給を続けるのを遅らせました。'],['国境の先へ進む道を確保しました。王都はまだ遠くにあります。','反撃のための道を一つ手に入れました。']]
+    :[['敵の見張り砦を落とし、国境の村への攻撃を止めました。','取り戻した砦にも守りの兵を置きましょう。'],['敵の武器庫を守る兵を退けました。','国境の敵は、しばらく武器を集め直さなければなりません。'],['王都へ続く街道の守備隊を退けました。王都はまだ敵の手にあります。','進める道はできました。次はこの道を守りましょう。']];
+   [q.win,q.winFollowUp]=acts[ch-5];
+ }
+ if(ch>=8){
+   const fullPath=(story.plans||[]).join('-');
+   if(scene.plan==='hard'&&fullPath!=='hard-hard-hard'){
+     q.win=level>=2
+       ?(ch===8?'王都の手前で敵を退け、王都へ進むための道を手に入れました。まだ王都そのものは敵の手にあります。':'王都の近くにある大きな砦を制圧しました。敵の主力軍はまだ残っています。')
+       :(ch===8?'敵の国境にいる守備隊を倒し、反撃のための道を開きました。王都まではまだ遠いままです。':'国境の砦を守る敵を倒しました。ここを拠点にすれば、次はさらに前へ進めます。');
+     q.winFollowUp=ch===8?'これまでに守った場所を残し、少しずつ前へ進みましょう。':'今回の戦いで、敵がすぐに国境を越えられないようになりました。';
+   }
+   if(scene.plan==='easy'&&level>=0){
+     q.win='以前に取り戻した町や村へ近づいていた敵を退けました。住民たちは、ここに残って暮らせます。';
+     q.winFollowUp='これ以上遠くへ攻めず、今ある土地を大切に守りましょう。';
+   }
+   if(scene.plan==='normal'&&level>0){
+     q.win='王都へ続く道の周りから敵を追い出しました。取り戻した土地を守るための門を作れます。';
+     q.winFollowUp='ここを守れば、敵が村まで入り込むのを防げます。';
+   }
+ }
+
+ q.line=scene.mission;q.reason=scene.mission;
+ q.loss=`${scene.title}。味方の部隊は全滅しました。`;
+ q.candidates=ch===0?5:7;
+ q.foes=null;
+ q.routeName=ch<2?'共通の戦い':storyPlanLabel(storyActivePlan(storyActForChapter(ch)));
+ q.routeTier=0;
+ return q;
+};
+
 const fund=()=>story.funds;
 const contractRenewal=m=>Math.max(0,Math.round(m.storyEstimate??m.value??m.storyPrice??0));
 const job=m=>cls[m.type].name;
 const portrait=m=>artPortrait(m.type);
 function savedData(){try{const raw=localStorage.getItem(STORY_SAVE_KEY);return validateStory(raw?JSON.parse(raw):null);}catch(_){return null;}}
-function validateStory(v){if(!v||v.version!==1||!Array.isArray(v.units)||!Array.isArray(v.items)||!Number.isFinite(v.funds)||!Number.isInteger(v.chapter)||v.chapter<0||v.chapter>EPISODES.length)return null;return v;}
+function migrateCountryText(s){
+ if(typeof s!=='string')return s;
+ return s.replace(/白霧公国|白霧/g,'ハムスタ国').replace(/蒼翼連邦|蒼翼/g,'モモンガ国').replace(/王国最後の門/g,'ウサーギ国最後の門');
+}
+function validateStory(v){
+ if(!v||v.version!==1||!Array.isArray(v.units)||!Array.isArray(v.items)||!Number.isFinite(v.funds)||!Number.isInteger(v.chapter)||v.chapter<0||v.chapter>EPISODES.length)return null;
+ v.history=Array.isArray(v.history)?v.history:[];
+ for(const h of v.history){if(!h||typeof h!=='object')continue;h.title=migrateCountryText(h.title);h.report=migrateCountryText(h.report);}
+ if(v.outcome&&typeof v.outcome==='object'){
+  v.outcome.title=migrateCountryText(v.outcome.title);
+  v.outcome.report=migrateCountryText(v.outcome.report);
+ }
+ v.plans=Array.isArray(v.plans)?v.plans.slice(0,3):[null,null,null];
+ for(let a=0;a<3;a++){if(v.chapter>[2,5,8][a]&&!STORY_PLAN_CODES.includes(v.plans[a]))v.plans[a]='normal';}
+ v.storySchema=4;
+ v.diplomacy=v.diplomacy||{chapter4:null,chapter7:null,white:0,blue:0};
+ v.kingdom=v.kingdom||{people:0,outposts:0};
+ // Any recorded defeat ends the hero's combat career, even if the campaign later returns to the royal route.
+ v.heroRetired=!!v.heroRetired||v.history.some(entry=>entry.win===false);
+ v.routeTier=Number.isInteger(v.routeTier)?Math.max(0,Math.min(4,v.routeTier)):((v.history||[]).reduce((level,h)=>Math.max(0,Math.min(4,level+(h.win?-1:1))),0));
+ // Schema v3 keeps a defeated battle as a loadable defeat screen.
+ if(v.heroRetired){
+  const heroes=new Set(v.units.filter(u=>u.isHero).map(u=>u.id));
+  // Preserve items in old saves as treasury assets, rather than keeping them assigned to an absent hero.
+  for(const item of v.items)if(heroes.has(item.holderId))item.holderId=null;
+  v.units=v.units.filter(u=>!u.isHero);
+ }
+ if(v.phase==='defeat'&&!v.preBattleSnapshot){v.phase='prep';v.finalized=-1;v.outcome=null;}
+
+ return v;
+}
 function snapshotForStorage(){if(!story)return null;const data=JSON.parse(JSON.stringify(story));if(data.phase==='battle')data.phase='prep';data.inBattle=false;return data;}
 function getSlot(n){if(!Number.isInteger(n)||n<1||n>3)return null;try{return validateStory(JSON.parse(localStorage.getItem(STORY_SLOT_PREFIX+n)||'null'));}catch(_){return null;}}
 function saveToSlot(n){try{const x=snapshotForStorage();if(!x)return false;x.savedAt=Date.now();localStorage.setItem(STORY_SLOT_PREFIX+n,JSON.stringify(x));return true;}catch(_){return false;}}
@@ -3291,9 +3743,10 @@ function sceneRestore(){if(!story)return;story.inBattle=false;
  else if(story.phase==='shop')renderShop();
  else if(story.phase==='prep')renderPrep();
  else if(story.phase==='contracts')renderContracts();
- else if(story.phase==='contract-mode'||story.phase==='result')renderContractModeChoice();
- else if(story.phase==='defeat')renderStoryDefeat();
+ else if(story.phase==='contract-mode')renderContractModeChoice();
+ else if(story.phase==='result')renderStoryResult();
  else if(story.phase==='complete'&&story.chapter>=EPISODES.length)renderStoryVictory();
+ else if(story.phase==='gameover'||story.phase==='defeat')renderStoryGameOver();
  else renderStoryHub();}
 function loadFromData(data){const x=validateStory(data);if(!x)return false;story=JSON.parse(JSON.stringify(x));story.playerName=story.playerName||'アレン';
  for(const m of story.units){if(!Number.isInteger(m.specialChoice))m.specialChoice=0;}
@@ -3317,22 +3770,31 @@ function openSaveMenu(){
 function save(){try{const x=snapshotForStorage();if(x)localStorage.setItem(STORY_SAVE_KEY,JSON.stringify(x));}catch(_){}}
 function clear(){try{localStorage.removeItem(STORY_SAVE_KEY);}catch(_){}}
 function leaveConfirm(){if(!confirm('国家復興モードを終了しますか？ 進行は保存されます。'))return;story=null;renderSetup();}
-function header(title,desc=''){screen='story';setStage('STORY · KINGDOM');document.body.classList.remove('auction-active');return `<div class="story-topline"><div><div class="overline">KINGDOM RECLAMATION · CHAPTER ${story.chapter+1}</div><h1 class="story-heading">${title}</h1><div class="story-sub">${desc}</div></div><div class="story-header-right"><div class="story-money">国庫 ${money(fund())}</div><button id="storyManageSlots" type="button" class="btn sm">セーブ / ロード</button></div></div>`;}
-function renderShell(html){app.innerHTML=`<div class="story-root">${html}</div>`;document.getElementById('storyLeave')?.addEventListener('click',leaveConfirm);document.getElementById('storyManageSlots')?.addEventListener('click',openSaveMenu);window.scrollTo({top:0,behavior:'instant'});}
+function header(title,desc=''){screen='story';setStage('STORY · KINGDOM');document.body.classList.remove('auction-active');return `<div class="story-topline"><div><div class="overline">KINGDOM RECLAMATION · CHAPTER ${Math.min(story.chapter+1,EPISODES.length)}</div><h1 class="story-heading">${title}</h1><div class="story-sub">${desc}</div></div><div class="story-header-right"><div class="story-money">国庫 ${money(fund())}</div><button id="storyEndingGallery" type="button" class="btn sm">エンディング記録</button><button id="storyManageSlots" type="button" class="btn sm">セーブ / ロード</button></div></div>`;}
+function renderShell(html,keepScroll=false){
+ const oldScroll=keepScroll===true?window.scrollY:0;
+ app.innerHTML=`<div class="story-root">${html}</div>`;
+ document.getElementById('storyLeave')?.addEventListener('click',leaveConfirm);
+ document.getElementById('storyManageSlots')?.addEventListener('click',openSaveMenu);document.getElementById('storyEndingGallery')?.addEventListener('click',openEndingGallery);
+ window.scrollTo({top:oldScroll,behavior:'instant'});
+}
 function action(buttonId,fn){document.getElementById(buttonId)?.addEventListener('click',fn);}
 function btn(label,id,klass='primary'){return `<button type="button" class="btn ${klass}" id="${id}">${label}</button>`;}
 function stats(m){let s=enhancedStats(m);return `<div class="story-stats">${[['pa','物攻'],['pd','物防'],['ma','魔攻'],['md','魔防'],['ag','素早'],['dx','器用'],['hp','HP'],['mp','MP']].map(([key,n])=>`<div class="story-stat">${n}<strong>${s[key]}</strong></div>`).join('')}</div>`;}
 function skillLine(m){const idx=Number.isInteger(m.specialChoice)?m.specialChoice:0;const sk=SKILLS[m.type]?.[idx];return sk?`<span class="story-locked-skill">✦ 習得済み：<b>${esc(sk.name)}</b>　<span class="tiny muted">CT ${sk.cd??sk.cooldown??'—'}秒 / MP ${sk.cost??sk.mp??'—'}</span><br><small>${esc(sk.desc||sk.description||'習得した必殺技は契約中、変更できません。')}</small></span>`:'';}
 function storyRadar(m){const ids=['pa','pd','ma','md','ag','dx','hp','mp'],names=['物攻','物防','魔攻','魔防','素早','器用','HP','MP'];const max=[115,115,115,115,115,115,650,320];const c=112,r=75;const xy=(i,v)=>{const a=-Math.PI/2+i*Math.PI/4;return `${(c+Math.cos(a)*v).toFixed(1)},${(c+Math.sin(a)*v).toFixed(1)}`};const ring=p=>ids.map((_,i)=>xy(i,r*p)).join(' ');const vals=ids.map((k,i)=>xy(i,r*Math.max(.07,Math.min(1,(m.st[k]||0)/max[i])))).join(' ');return `<div class="story-radar"><div class="overline">STAT PROFILE</div><svg viewBox="0 0 224 224" role="img" aria-label="${esc(names.map((n,i)=>n+' '+m.st[ids[i]]).join('、'))}">${[.25,.5,.75,1].map(v=>`<polygon points="${ring(v)}" fill="none" stroke="#6d899967" stroke-width="1"/>`).join('')}${ids.map((_,i)=>`<line x1="${c}" y1="${c}" x2="${xy(i,r).split(',')[0]}" y2="${xy(i,r).split(',')[1]}" stroke="#6d899954"/>`).join('')}<polygon points="${vals}" fill="#deb66c88" stroke="#f3d18d" stroke-width="2.4" stroke-linejoin="round"/>${ids.map((_,i)=>{const p=xy(i,r+22).split(',');return `<text x="${p[0]}" y="${Number(p[1])+4}" text-anchor="middle" font-size="11.5" fill="#ebf5ff">${names[i]}</text>`}).join('')}</svg></div>`;}
-function roster(){return `<div class="story-roster">${story.units.length?story.units.map(m=>`<div class="story-roster-line"><img src="${portrait(m)}" alt=""><div><b>${esc(m.name)}</b> ${m.isHero?'<span class="gold">王国兵</span>':''}<div class="muted">${job(m)} / Lv.${m.level||1} / ${m.isHero?'常駐':`更新 ${money(contractRenewal(m))}`}</div></div></div>`).join(''):'<span class="muted small">傭兵はいません</span>'}</div>`;}
-function newHero(name='アレン'){const m=makeMerc(901);m.id=901;m.name='王国守備兵 '+name;m.type='warrior';m.st={pa:62,pd:58,ma:17,md:40,ag:50,dx:60,hp:490,mp:95};m.trait=traitPool[0];m.gear={weapon:0,armor:0};m.isHero=true;m.level=1;m.xp=0;m.specialChoice=RNG(0,2);m.tactic={...JOB_TACTICS.warrior};return m;}
-function begin(name='アレン'){const safe=String(name).trim().slice(0,16)||'アレン';story={version:1,playerName:safe,chapter:0,funds:6100,units:[newHero(safe)],items:[],nextId:1000,nextItem:1,market:[],marketIndex:0,phase:'intro',history:[],outcome:null,finalized:-1,started:Date.now(),contractQueue:[],contractStep:0};save();renderStoryIntro(true);}
+function roster(){
+ const retired=story.heroRetired?`<div class="story-roster-line"><span class="story-retired-crest">♜</span><div><b>ウサーギ国軍指揮官 ${esc(story.playerName||'アレン')}</b> <span class="gold">戦線離脱・指揮専任</span><div class="muted">負傷のため永久に出撃不可。外交と作戦指揮を担当</div></div></div>`:'';
+ return `<div class="story-roster">${retired}${story.units.length?story.units.map(m=>`<div class="story-roster-line"><img src="${portrait(m)}" alt=""><div><button type="button" class="story-roster-name" data-story-inspect="${m.id}" title="${esc(m.name)}のステータスを見る">${esc(m.name)}</button> ${m.isHero?'<span class="gold">王国兵</span>':m.storyVolunteer?'<span class="gold">義勇兵</span>':''}<div class="muted">${job(m)} / Lv.${m.level||1} / ${m.isHero?'常駐':m.storyVolunteer?'無償参加':`更新 ${money(contractRenewal(m))}`}</div></div></div>`).join(''):'<span class="muted small">出撃可能な兵はまだいません</span>'}</div>`;
+}
+function newHero(name='アレン'){const m=makeMerc(901);m.id=901;m.name='ウサーギ国軍指揮官 '+name;m.type='warrior';m.st={pa:62,pd:58,ma:17,md:40,ag:50,dx:60,hp:490,mp:95};m.trait=traitPool[0];m.gear={weapon:0,armor:0};m.isHero=true;m.level=1;m.xp=0;m.specialChoice=RNG(0,2);m.tactic={...JOB_TACTICS.warrior};return m;}
+function begin(name='アレン'){const safe=String(name).trim().slice(0,16)||'アレン';story={version:1,playerName:safe,chapter:0,funds:6100,units:[newHero(safe)],items:[],nextId:1000,nextItem:1,market:[],marketIndex:0,phase:'intro',history:[],diplomacy:{chapter4:null,chapter7:null,white:0,blue:0},kingdom:{people:0,outposts:0},heroRetired:false,routeTier:0,plans:[null,null,null],storySchema:4,outcome:null,finalized:-1,started:Date.now(),contractQueue:[],contractStep:0};save();renderStoryIntro(true);}
 function restore(){loadFromData(savedData());}
-function entry(){const saved=savedData(),hasSlots=[1,2,3].some(n=>getSlot(n));return `<div class="story-portal"><div><div class="overline">NEW MODE · STORY CHAPTER</div><strong>⚜ 国家復興ストーリー ─ 王国最後の守備兵</strong><p>最後の王国兵に名前をつけて、滅亡寸前の小国を守り抜こう。傭兵は契約時に必殺技を習得。敗北しても戦闘直前から再挑戦できる。</p></div><div class="story-portal-actions">${btn('新しい物語','storyStart')}${saved?btn('自動保存から再開','storyContinue',''):''}${hasSlots?btn('3スロットを開く','storySlotEntry',''):''}</div></div>`;}
+function entry(){const saved=savedData(),hasSlots=[1,2,3].some(n=>getSlot(n));return `<div class="story-portal"><div><div class="overline">NEW MODE · STORY CHAPTER</div><strong>⚜ 国家復興ストーリー ─ ウサーギ国最後の守備兵</strong><p>あなたはウサーギ国最後の正規兵であり、その軍を率いる指揮官。名前を決めて、滅亡寸前の祖国を守り抜こう。傭兵は契約時に必殺技を習得。大切な場面では、国の進む道を自分で選べます。イージーは国を守る戦い、ハードは敵の国へ攻める戦い。敗北するとゲームオーバーですが、戦闘前からやり直せます。 傭兵はどの作戦でも同じ基準の価格で紹介されます。</p></div><div class="story-portal-actions">${btn('新しい物語','storyStart')}${saved?btn('自動保存から再開','storyContinue',''):''}${hasSlots?btn('3スロットを開く','storySlotEntry',''):''}${btn('エンディング図鑑','storyGalleryEntry','')}</div></div>`;}
 const origRenderSetup=renderSetup;
-renderSetup=function(...args){story=null;const ret=origRenderSetup.apply(this,args);if(screen!=='setup')return ret;const intro=app.querySelector('.pageintro');if(intro){intro.insertAdjacentHTML('afterend',entry());action('storyStart',renderNameEntry);action('storyContinue',restore);action('storySlotEntry',openSaveMenu);}return ret;};
+renderSetup=function(...args){story=null;const ret=origRenderSetup.apply(this,args);if(screen!=='setup')return ret;const intro=app.querySelector('.pageintro');if(intro){intro.insertAdjacentHTML('afterend',entry());action('storyStart',renderNameEntry);action('storyContinue',restore);action('storySlotEntry',openSaveMenu);action('storyGalleryEntry',openEndingGallery);}return ret;};
 function renderNameEntry(){
- const saved=savedData();renderShell(`<section class="story-name-entry"><div class="overline">PROLOGUE · THE LAST DEFENDER</div><h1>王国最後の守備兵</h1><p class="story-sub">王国に残った兵士はただ1人。最初に主人公の名前を決めてください。</p><label for="storyHeroName">主人公の名前</label><input id="storyHeroName" class="input big" maxlength="16" value="アレン" autocomplete="off"><p class="tiny muted">1〜16文字で入力できます。王国兵の名前として物語に反映されます。</p><div class="story-actions">${btn('この名前で物語を始める','storyNameConfirm')}${btn('戻る','storyNameBack','')}</div></section>`);
+ const saved=savedData();renderShell(`<section class="story-name-entry"><div class="overline">PROLOGUE · THE LAST DEFENDER</div><h1>ウサーギ国最後の守備兵</h1><p class="story-sub"><b>あなたが指揮を執る国は、滅亡寸前の『ウサーギ国』です。</b>あなた自身が最後の正規兵であり、傭兵を雇い、戦いと外交を決める指揮官です。まず、主人公であるあなたの名前を決めてください。</p><label for="storyHeroName">主人公の名前</label><input id="storyHeroName" class="input big" maxlength="16" value="アレン" autocomplete="off"><p class="tiny muted">1〜16文字で入力できます。王国兵の名前として物語に反映されます。</p><div class="story-actions">${btn('この名前で物語を始める','storyNameConfirm')}${btn('戻る','storyNameBack','')}</div></section>`);
  const el=document.getElementById('storyHeroName');el.focus();el.select();
  const submit=()=>{const n=el.value.trim();if(!n){el.focus();return;}if(saved&&!confirm('新しく始めると現在の自動保存が上書きされます。よろしいですか？（手動3スロットは残ります）'))return;begin(n);};
  action('storyNameConfirm',submit);el.addEventListener('keydown',e=>{if(e.key==='Enter')submit()});action('storyNameBack',renderSetup);
@@ -3349,19 +3811,117 @@ function storySceneSequence(title,subtitle,script,onFinish,extras=''){
 }
 function renderStoryIntro(first){
  story.phase='intro';save();
- storySceneSequence('滅亡寸前の小国', '第1章 · 王国最後の守備兵',[
- {who:'語り手',text:'灰に覆われた国境。兵を失った小さな王国に、もう戦える者はほとんど残っていない。',map:'ruins'},
- {who:'王国軍伝令',text:'緊急報告！ 北の街道に野盗の集団！ 城門まで、もはや猶予がありません！',map:'plain'},
- {who:`王国守備兵 ${story.playerName||'アレン'}`,text:'残った正規兵は俺だけか……。一人では守り切れない。国庫を開け。傭兵市場に連絡を取る！',map:'ruins'},
- {who:'王国財務官',text:'国庫に残るのは6,100Gだけです。契約額が低ければ他国に取られるかもしれません。それでも……託しましょう。',map:'plain'}
- ],()=>openMarket(true),`<div class="story-card story-brief"><div class="overline">THE LAST DEFENDER</div>${roster()}<p class="story-sub">傭兵は永久死亡。主人公は契約更新不要です。最初の防衛戦が始まります。</p></div>`);
+ storySceneSequence('ウサーギ国が危ない！', '第1戦 · 最後の門を守ろう',[
+ {who:'語り手',text:'ここはウサーギ国。昔は大きなお城がありましたが、敵に国をうばわれました。今残っているのは、小さな砦だけです。',map:'ruins'},
+ {who:'伝令ミラ',text:`${story.playerName}、大変です！ 野盗が砦に向かっています！ このままだと、みんなの家も食べ物も取られてしまいます！`,map:'plain'},
+ {who:`指揮官 ${story.playerName||'アレン'}`,text:'この国の兵士は、もう私ひとりしかいない。ひとりでは守れない。お金を使って傭兵を雇おう！',map:'ruins'},
+ {who:'財務官エルダ',text:'国のお金は6,100Gだけです。傭兵に安すぎる金額を出すと、断られるかもしれません。大切に使いましょう。',map:'plain'},
+ {who:'斥候レオン',text:'野盗の数を調べてきます。門までの道は一つです。戦いが始まる前に配置を決めましょう。',map:'forest'},
+ {who:'伝令ミラ',text:'もし負けたら作戦は失敗です。そのときは戦いの前からやり直しましょう。',map:'ruins'},
+ {who:`指揮官 ${story.playerName||'アレン'}`,text:'ありがとう。私たちはウサーギ国を守る。まずは傭兵を集めて、野盗を追い払おう！',map:'ruins'},
+ {who:'語り手',text:'こうして、ウサーギ国を立て直す長い旅が始まりました。どこを守り、どこへ進むか。それを決めるのはあなたです。',map:'ruins'}
+ ],()=>openMarket(true),`<div class="story-card story-brief"><div class="overline">THE LAST DEFENDER</div>${roster()}<p class="story-sub">傭兵は戦死すると帰ってきません。主人公は大けがをすると生き残りますが、もう戦いには出られません。</p></div>`);
+}
+
+function lastResult(){return story.history?.find(h=>h.chapter===story.chapter-1)||null;}
+function diplomacyLabel(code){return code==='white'?'ハムスタ国':code==='blue'?'モモンガ国':code==='neutral'?'中立維持':code==='independent'?'独立行動':'未決定';}
+function recordDiplomacy(code){
+ const d=story.diplomacy;
+ if(story.chapter===3&&!d.chapter4){d.chapter4=code;if(code==='white'){d.white++;story.funds+=650;}else if(code==='blue'){d.blue++;story.funds+=650;}else story.kingdom.people++;}
+ else if(story.chapter===6&&!d.chapter7){d.chapter7=code;const former=d.chapter4;if(former==='white'&&code!=='white')d.white-=2;if(former==='blue'&&code!=='blue')d.blue-=2;if(code==='white'){d.white+=2;story.funds+=1100;}else if(code==='blue'){d.blue+=2;story.funds+=1100;}else story.kingdom.people++;}
+ save();renderStoryHub();
+}
+function ensureCampaignForce(){
+ // Reinforcements are never created out of nothing. Only a paid contract grants a deployable ally.
+ return story.units.length>0;
+}
+const CAMPAIGN_CHAPTER_LITERATURE=[["最後の門","野盗が門に向かっています。ここが破られると、村の人たちは逃げなければなりません。","門を守りましょう。もし勝てなくても、村の人を逃がす時間を作ります。"],["食べ物を運ぶ道","北の道が敵にふさがれています。このままでは食べ物や薬が届きません。","道を取り戻すか、逃げている人を守るか。今の兵力でできることを選びましょう。"],["石門砦に向かって","石門砦は昔、ウサーギ国が使っていた砦です。今は敵に取られています。","強い部隊なら砦を取り戻します。人数が足りなければ、まず食べ物や薬を探しましょう。"],["となりの国に助けを求める","ハムスタ国は国境の安全を、モモンガ国は商売に使う道を大切にしています。","どちらと協力するかは隊長が決めます。どちらも、ただで助けてくれるわけではありません。"],["村を守ろう","戦争で家を失った人たちが、少しずつ帰ってきました。ところが野盗も近くにいます。","今いる場所で守れる人を守りましょう。無理に大きな戦いをする必要はありません。"],["強い敵が来た","王都をうばった王ヴァルグが、兵士を送ってきました。野盗より強い相手です。","勝てそうな部隊は正面から止めます。人数が少なければ、敵の荷物を運ぶ隊を狙います。"],["谷の戦い","二つの敵軍が谷で戦っています。ウサーギ国も通り道を確保しなければなりません。","大軍と戦えないときは、小さな道を通ったり、谷にいる人を助けたりしましょう。"],["王都へ近づく","王都の近くまで来ました。しかし、兵士が足りなければ城へ向かうことはできません。","今の軍にできる任務を選びます。少しずつ王都に近づきましょう。"],["王都の大きな戦い","王都の周りで何組もの軍が戦っています。ここを越えれば、お城に近づけます。","軍が小さければ、大きな戦いを避けて住民を助けます。"],["最後の戦い","ウサーギ国を取り戻すための最後の作戦です。これまでの勝ち負けで、戦う場所が変わります。","お城を攻める人も、村を守る人もいます。今の部隊でできることを最後までやりましょう。"]];
+const CAMPAIGN_WIN_EPILOGUE=[["野盗を追い払いました。門も村の人たちも無事です。","ミラ「やりました！ でも、まだ危ない場所がたくさんあります。」"],["道を取り戻しました。食べ物と薬を運べるようになります。","ミラ「これで村のみんなが少し安心できます！」"],["敵を追い払い、砦へ戻れるようになりました。","ミラ「ここで亡くなった兵士たちのことも忘れません。」"],["使節を守りました。協力を約束した国との話が続きます。","エルダ「お金や兵士を借りるときは、相手との約束も守らなければなりません。」"],["村を守りました。逃げていた人たちも少しずつ帰ってきます。","ミラ「家に帰れる人が増えました！」"],["敵の進軍を止めました。でも敵の軍はまだ残っています。","レオン「次に来る敵にも気をつけましょう。」"],["谷を通る道を確保しました。次の場所へ進めます。","レオン「ほかの国もこの道を使いたいようです。見張りを置きましょう。」"],["王都の近くに、味方が使える場所を確保しました。","ミラ「あと少しで王都です。でも、あせらないでくださいね。」"],["王都の外にある敵を退けました。お城へ進む道が開けました。","ミラ「大きな戦いに勝ちました！ 次が最後です！」"],["最後の戦いに勝ちました。ウサーギ国には新しい道が開けます。","エルダ「ここからは、みんなが安心して暮らせる国を作りましょう。」"]];
+const CAMPAIGN_LOSS_EPILOGUE=[["門を守れませんでした。村の人たちは別の場所へ逃げました。","ミラ「全員は助けられませんでした。でも、まだ守れる人がいます。」"],["道を取り戻せませんでした。食べ物は別の細い道から運びます。","レオン「次はもっと少ない敵を相手にしましょう。」"],["砦を取り戻せませんでした。部隊は山の近くまで下がりました。","ミラ「次は安全な道を探します。」"],["使節を守れませんでした。でも、となりの国と話す道は残っています。","エルダ「また話し合いができるように準備します。」"],["村を守れませんでした。人々は別の村へ逃げました。","ミラ「次はもっと早く危険を知らせます。」"],["強い敵に負けました。次は小さな部隊からやり直します。","レオン「敵の大軍は避けましょう。」"],["谷では負けました。別の道を探します。","レオン「山の細い道なら通れるかもしれません。」"],["王都へ近づけませんでした。味方は安全な場所へ戻ります。","ミラ「少し休んで、次の戦いに備えましょう。」"],["王都の前で負けました。今のままではお城へ進めません。","エルダ「次は残っている村を守る作戦にしましょう。」"],["最後の戦いに負けました。でも、逃げのびた人たちの暮らしは続きます。","ミラ「ウサーギ国の名前を、みんなで覚えていましょう。」"]];
+function campaignJourney(){
+ const h=story.history||[],wins=h.filter(x=>x.win).length,losses=h.length-wins;
+ let peak=0,deep=0,streak=0,streakWon=null,longestWin=0,longestLoss=0;
+ for(const x of h){peak=Math.min(peak,x.routeBefore??0);deep=Math.max(deep,x.routeAfter??0);if(streakWon===x.win)streak++;else{streakWon=x.win;streak=1;}if(x.win)longestWin=Math.max(longestWin,streak);else longestLoss=Math.max(longestLoss,streak);}
+ const reachedCapital=h.some(x=>x.chapter>=7&&(x.routeBefore??4)===0);
+ const comeback=h.some((x,i)=>x.win&&i>0&&h.slice(0,i).some(y=>!y.win))&&story.routeTier<deep;
+ return {wins,losses,deep,reachedCapital,comeback,streak,streakWon,longestWin,longestLoss,everWon:wins>0};
+}
+function campaignContinuityLines(){
+ const j=campaignJourney(),h=story.history||[],prev=h[h.length-1],tier=story.routeTier||0,subject=CAMPAIGN_ROUTE_NAMES[tier];
+ let rows=[];
+ if(!prev){rows.push(['斥候レオン','正規軍の所在はまだ分かりません。今は最初の城門を守る小さな戦いです。']);return rows;}
+ if(j.losses===0)rows.push(['斥候レオン',`ここまで${j.wins}回勝っています。でも、まだ守りきれていない村があります。次の敵にも気をつけましょう。`]);
+ else if(j.streakWon===false&&j.streak>=2)rows.push(['斥候レオン',`${j.streak}回続けて負けました。大きな戦いは今は無理です。少人数でも勝てる任務を選びましょう。`]);
+ else if(j.streakWon===true&&j.streak>=2&&j.losses>0)rows.push(['斥候レオン',`${j.streak}回続けて勝ちました！ 失った土地はまだ全部戻りませんが、助けてくれる人が増えています。`]);
+ else if(prev.win)rows.push(['斥候レオン','前の戦いには勝ちました。でも、まだ安心できません。次の作戦も一つずつ成功させましょう。']);
+ else rows.push(['斥候レオン','前の戦いでは味方が全滅しました。傭兵はもう戻りません。次は新しい傭兵を雇いましょう。']);
+ if(j.reachedCapital&&tier>0)rows.push(['伝令ミラ','前は王都の近くまで進みました。でもその後に負けて、兵士がいなくなりました。今は雇い直した傭兵の人数に合う敵を選びましょう。']);
+ if(j.comeback&&tier<=1)rows.push(['財務官エルダ','前には負けました。でも、助けた人たちが力を貸してくれたおかげで、ここまで戻れました。']);
+ if(j.deep>=3&&tier===0)rows.push(['伝令ミラ','国から逃げるところまで追いつめられたのに、ここまで戻れました。亡くなった仲間のことも忘れないでください。']);
+ if(tier===0&&story.heroRetired&&j.losses>0)rows.push(['伝令ミラ',`王都へ進めるようになりました。でも${story.playerName}隊長は、もう戦えません。これからも私たちに指示をください。`]);
+ if(story.heroRetired)rows.push([`指揮官 ${story.playerName}`,'私はもう戦場に出られない。でも傭兵を集め、どこで戦うか決める。みんなを守るために指揮を続けるよ。']);
+ const d=story.diplomacy;
+ if(story.chapter>=4&&d.chapter4){const txt=d.chapter4==='neutral'?'あの日中立を守ったことで、どちらの国にも通行権を約束していません。支援には別の交渉が必要です。':`${diplomacyLabel(d.chapter4)}との協定はまだ記録に残っています。敗れたからといって署名が消えるわけではありません。`;rows.push(['財務官エルダ',txt]);}
+ if(story.chapter>=7&&d.chapter7&&d.chapter4!==d.chapter7&&['white','blue'].includes(d.chapter4))rows.push(['財務官エルダ',`第7戦で連携相手を改めました。${diplomacyLabel(d.chapter4)}の不信は今も残ります。相手を変えた理由は民に説明しなければなりません。`]);
+ if(tier>=3)rows.push(['伝令ミラ',`いまは${subject}の立場です。王都を奪う軍勢ではなく、残った人々を守る小隊として動きます。`]);
+ return rows;
+}
+function campaignAftermathScenes(o){
+ const pair=o.routeBefore===0?((o.won?CAMPAIGN_WIN_EPILOGUE:CAMPAIGN_LOSS_EPILOGUE)[o.chapter]||['戦いが終わりました。','次の作戦を考えましょう。']):[o.won?`今回の「${o.title}」では勝てました。少しずつ力を取り戻しています。`:`今回の「${o.title}」では負けました。今は次の戦いに備えます。`,o.won?'やりました！ 今の部隊でできることを一つずつ増やしましょう。':'負けました。でも、次は今より小さな戦いに変わります。新しい傭兵を集めましょう。'];
+ const j=campaignJourney();
+ const speaker=pair[1].startsWith('エルダ')?'財務官エルダ':pair[1].startsWith('レオン')?'斥候レオン':'伝令ミラ';
+ const second=pair[1].replace(/^(ミラ|エルダ|レオン)「(.+)」$/,'$2');
+ const rows=[['語り手',pair[0]],[speaker,second]];
+ if(o.won&&o.routeBefore>o.routeAfter)rows.push(['斥候レオン',`敵の大軍を一度に破ったわけではありません。${CAMPAIGN_ROUTE_NAMES[o.routeBefore]}から${CAMPAIGN_ROUTE_NAMES[o.routeAfter]}へ、一歩だけ押し戻すことに成功したのです。`]);
+ if(o.won&&j.deep>=2&&o.routeAfter<=1)rows.push(['財務官エルダ','かつて撤退した集落の人々も、この知らせを聞いています。ただし失った契約金や装備が返ってくるわけではありません。']);
+ if(!o.won&&o.routeBefore===0&&o.chapter>=5)rows.push(['斥候レオン','これまでの勝利が帳消しになったわけではありません。しかし前線を維持する部隊が消えました。次は今の戦力で勝てる任務に切り替えます。']);
+ if(!o.won&&j.streakWon===false&&j.streak>=2)rows.push(['財務官エルダ','王さまが残してくれたお金にも限りがあります。今は小さな戦いからやり直しましょう。']);
+ if(o.heroNewDown)rows.push(['語り手',`${story.playerName}は負傷して生還した。軍の勝敗とは関係なく、再び前線に立つ日は来ない。以後は各地の報告を受け、遠くから指揮を執る。`]);
+ return `<div class="story-dialogue-sequence story-extra-chronicle">${rows.map(([who,txt])=>`<div class="story-dialogue-entry"><b>${esc(who)}</b><p>${esc(txt)}</p></div>`).join('')}</div>`;
+}
+function chooseStoryPlan(code){
+ const act=storyActForChapter(story.chapter);
+ if(act<0||!STORY_PLAN_CODES.includes(code)||story.plans[act])return;
+ story.plans[act]=code;story.phase='hub';save();renderStoryHub();
 }
 function renderStoryHub(){
- story.phase='hub';save();const q=epi();
- renderShell(header(`${story.chapter+1}戦目 · ${q.title}`,story.chapter<5?'復興の道はまだ険しい。次の事件に備えて部隊を整えましょう。':'王国の旗が再び各地に見え始めた。敵勢力の規模も大きくなっている。')+`<div class="story-layout"><section class="story-scene"><div class="story-scene-kicker">⚔ NEW EPISODE · 第${story.chapter+1}戦</div><div class="story-speaker">王国軍伝令</div><div class="story-line story-event-line">「${esc(q.line)}」</div><div class="story-event-tag">${q.foes?`⚠ ${q.foes.length+1}陣営が交戦 · 混戦に注意`:'⚑ 新たな脅威 · 迫る交戦'}</div><div class="story-actions">${btn('新しい傭兵を探す →','storyToMarket')}</div></section><aside class="story-card"><div class="overline">YOUR KINGDOM FORCE</div>${roster()}<div class="story-divider"></div><div class="story-note">現在の装備在庫：${story.items.length}点 / 戦闘で得た資金は国庫へ蓄積</div></aside></div>`);action('storyToMarket',()=>openMarket(true));
+ story.phase='hub';save();
+ const ch=story.chapter,act=storyActForChapter(ch),hasChoice=act>=0&&!story.plans[act];
+ const q=epi(),prev=lastResult();
+ const title=hasChoice?STORY_ACTS[act].name:`第${ch+1}戦 · ${q.title}`;
+ let storyRows=[];
+ if(ch===0)storyRows.push(['語り手','ウサーギ国は敵に土地を取られ、最後の門だけが残りました。']);
+ else if(prev)storyRows.push(['伝令ミラ',`前の戦い「${prev.title}」に勝ちました。みんなのおかげで、次の戦いへ進めます。`]);
+ storyRows.push(...storyContinuityDialogue());
+ if(hasChoice){
+  storyRows.push(['財務官エルダ',STORY_ACTS[act].brief]);
+  storyRows.push(['斥候レオン',act===0?'敵はまだ、こちらがどの道を選ぶか知りません。大きな砦を攻めるか、村を守るか、民を逃がすか。選んだ道で敵も変わります。':act===1?'オオカミ国の王は兵を集めています。でも、国に残る人々の安全も大切です。今の部隊で何を優先するか決めてください。':'この先の二戦がウサーギ国の未来を決めます。生き残ることを目指すか、故郷を取り戻すか、オオカミ国まで攻めるかを選んでください。']);
+  storyRows.push([`指揮官 ${story.playerName}`,story.heroRetired?'私はもう戦えないけど、どんな未来を目指すかは自分で決める。':'みんなの命がかかっている。選んだ作戦は最後までやり通そう。']);
+  if(act>0){const before=story.plans[act-1];storyRows.push(['斥候レオン',before==='easy'?'前は人々を守りました。今から攻めるなら、新しい傭兵と場所が必要です。':before==='hard'?'前は敵の土地まで攻めました。でも、次も攻めるとは限りません。守りを固めることもできます。':'前は土地を守りました。この先、攻めることも逃げる人を助けることもできます。']);}
+ }else{
+  const code=storyActivePlan(act);
+  if(ch===2||ch===5||ch===8)storyRows.push(['伝令ミラ',`今回選んだのは「${storyPlanLabel(code)}」です。${STORY_ACTS[act].plans[code].summary}`]);
+  if((ch===5||ch===8)&&story.plans[act-1]&&code)storyRows.push(STORY_TURNING_POINT[`${story.plans[act-1]}-${code}`]);
+  storyRows.push(['斥候レオン',q.mission]);
+  storyRows.push(...storySceneDrama(ch));
+  storyRows.push(['財務官エルダ',`国庫は${money(story.funds)}です。傭兵の値段は、作戦や勝ち負けでは変わりません。`]);
+  storyRows.push([`指揮官 ${story.playerName}`,story.heroRetired?'私は戦えない。でも、みんながどこで戦うかを決める。':'よし。この作戦でいこう。みんなを守るぞ！']);
+ }
+ const options=hasChoice?`<div class="story-card story-plan-choices"><h2>これからの戦い方を選ぼう</h2><p class="story-note">難しさは選ぶたびに積み重なります。イージー −1 / ノーマル 0 / ハード ＋1。これまでの選択と今回の選択の合計で敵が強くなったり、弱くなったりします。</p><div class="story-plan-options">${['easy','normal','hard'].map(code=>{const p=STORY_ACTS[act].plans[code];return `<button type="button" data-story-plan="${code}" class="story-diplomacy-button story-plan-option ${code}"><span class="story-difficulty-label">${storyPlanLabel(code)}</span><b>${esc(p.title)}</b><small>${esc(p.summary)}</small><small>選択後の難しさ：${storyDifficultyText((act>0?storyDifficultyAtChapter(ch-1):0)+STORY_PLAN_LEVEL[code])}</small></button>`}).join('')}</div></div>`:'';
+ const lines=storyRows.map(([who,line])=>`<div class="story-dialogue-entry"><b>${esc(who)}</b><p>${esc(line)}</p></div>`).join('');
+ const progress=story.plans.map((code,i)=>`<div class="story-summary-row"><span>第${i+1}回作戦</span><b>${code?esc(storyPlanLabel(code)):'未選択'}</b></div>`).join('');
+ renderShell(header(title,hasChoice?'作戦を選ぶと、その後の戦いと結末が変わります。':q.mission)+`<div class="story-layout"><section class="story-scene"><div class="story-scene-kicker">ウサーギ国 · 第${ch+1}戦</div><div class="story-speaker">作戦会議</div><div class="story-dialogue-sequence">${lines}</div>${story.heroRetired?`<p class="story-warning">${esc(story.playerName)}は重傷のため出撃できません。指揮官として作戦を決めます。</p>`:''}${options}<div class="story-actions">${hasChoice?'<span class="story-note">作戦を選んでください。選んだあとに傭兵市場へ進みます。</span>':btn('傭兵市場へ →','storyToMarket')}</div></section><aside class="story-card"><h3>これまでの作戦</h3><p class="story-note">現在の難しさ：${storyDifficultyText(storyDifficultyAtChapter(ch))}　${storyDifficultyDescription(storyDifficultyAtChapter(ch))}</p>${progress}<p class="story-note">勝ち続けると強い部隊を育てられます。敗北した場合は戦闘前からやり直せます。</p>${roster()}</aside></div>`);
+ action('storyToMarket',()=>openMarket(true));
+ app.querySelectorAll('[data-story-plan]').forEach(b=>b.onclick=()=>chooseStoryPlan(b.dataset.storyPlan));
 }
+
 function openMarket(fresh){
- if(fresh){const q=epi();story.market=Array.from({length:q.candidates},(_,i)=>{let m=makeMerc(story.nextId++);m.value=Math.min(9000,Math.max(650,Math.round(m.value*(1+Math.max(0,story.chapter)*.10)/100)*100));m.level=1;m.xp=0;m.tactic={...JOB_TACTICS[m.type]};m.specialChoice=RNG(0,2);m.storyPrice=0;m.storyEstimate=m.value;return m;});story.marketIndex=0;}
+ if(fresh){const q=epi();story.market=Array.from({length:q.candidates},(_,i)=>{
+  let m=makeMerc(story.nextId++);
+  // Neutral, invariant market: estimates depend on the mercenary, not chapter, tier, wins or losses.
+  m.value=Math.max(650,Math.min(9000,Math.round(m.value/100)*100));
+  m.level=1;m.xp=0;m.tactic={...JOB_TACTICS[m.type]};m.specialChoice=RNG(0,2);m.storyPrice=0;m.storyEstimate=m.value;return m;
+ });story.marketIndex=0;}
  story.phase='market';save();renderMarket();
 }
 function chanceFor(bid,est){if(bid<=0)return 0;const r=bid/Math.max(1,est);if(r>=1.65)return 100;return Math.max(1,Math.min(99,Math.round(100/(1+Math.exp(-9.19*(r-1))))));}
@@ -3369,7 +3929,7 @@ function renderMarket(message=''){
  const q=epi(),m=story.market[story.marketIndex];story.phase='market';save();
  if(!m){renderMarketEnd(message);return;}
  const can=Math.min(story.funds,m.value),c=chanceFor(can,m.value);
- renderShell(header('国際傭兵市場',`紹介 ${story.marketIndex+1} / ${story.market.length}人。各国の契約条件と比較されるため、提示額によって契約成功率が変わります。`)+`<div class="story-layout"><section class="story-card"><div class="story-market-unit"><img class="story-market-img" src="${portrait(m)}" alt="${esc(job(m))}の立ち絵"><div><div class="overline">MERCENARY CONTRACT</div><h2 style="font-size:23px;margin:8px 0">${esc(m.name)}</h2><div class="muted">${job(m)} · ${m.trait.n} · 推定契約額 ${money(m.value)}</div><p class="story-sub">${cls[m.type].desc}</p></div></div><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div><div class="story-skill-summary">${skillLine(m)}</div><div class="story-divider"></div><label for="storyBid" class="small gold">契約金を提示する（推定額で成功率50%）</label><div class="story-actions"><input id="storyBid" class="input big" style="max-width:210px" type="number" min="0" max="${story.funds}" step="100" value="${can}"><div><div class="muted tiny">契約成功率</div><div id="storyChance" class="story-chance">${c}%</div></div></div><div class="story-chance-track"><div id="storyChanceFill" style="width:${c}%"></div></div><div class="small muted" id="storyBidHint">成功時のみ契約金を支払います。失敗時は全額返却。</div><div class="story-actions">${btn('この額で契約を申し込む','storyOffer')}${btn('見送る','storySkip','')}</div></section><aside class="story-card"><div class="overline">KINGDOM TREASURY</div><h2 class="gold">${money(fund())}</h2><div class="story-note">同じ価格での落札に成功する確率は50%。金額を引き上げれば成功率も上がり、推定額の165%以上なら確実に雇えます。</div><div class="story-divider"></div><b>現在の王国軍</b>${roster()}${message?`<div class="story-mission">${esc(message)}</div>`:''}</aside></div>`);
+ renderShell(header('国際傭兵市場',`紹介 ${story.marketIndex+1} / ${story.market.length}人。傭兵はほかの国の仕事も選べます。多くのお金を出すほど、雇いやすくなります。`)+`<div class="story-layout"><section class="story-card"><div class="story-market-unit"><img class="story-market-img" src="${portrait(m)}" alt="${esc(job(m))}の立ち絵"><div><div class="overline">MERCENARY CONTRACT</div><h2 style="font-size:23px;margin:8px 0">${esc(m.name)}</h2><div class="muted">${job(m)} · ${m.trait.n} · 推定契約額 ${money(m.value)}</div><p class="story-sub">${cls[m.type].desc}</p></div></div><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div><div class="story-skill-summary">${skillLine(m)}</div><div class="story-divider"></div><label for="storyBid" class="small gold">契約金を提示する（推定額で成功率50%）</label><div class="story-actions"><input id="storyBid" class="input big" style="max-width:210px" type="number" min="0" max="${story.funds}" step="100" value="${can}"><div><div class="muted tiny">契約成功率</div><div id="storyChance" class="story-chance">${c}%</div></div></div><div class="story-chance-track"><div id="storyChanceFill" style="width:${c}%"></div></div><div class="small muted" id="storyBidHint">成功時のみ契約金を支払います。失敗時は全額返却。</div><div class="story-actions">${btn('この額で契約を申し込む','storyOffer')}${btn('見送る','storySkip','')}</div></section><aside class="story-card"><div class="overline">KINGDOM TREASURY</div><h2 class="gold">${money(fund())}</h2><div class="story-note">表示された目安の金額なら、雇える確率は50%です。お金を多く出すほど成功しやすくなります。目安の1.65倍なら必ず雇えます。</div><div class="story-divider"></div><b>現在の王国軍</b>${roster()}${message?`<div class="story-mission">${esc(message)}</div>`:''}</aside></div>`);
  const inp=document.getElementById('storyBid'),odds=document.getElementById('storyChance'),fill=document.getElementById('storyChanceFill');
  inp.addEventListener('input',()=>{const amount=Math.max(0,Math.min(fund(),Number(inp.value)||0));const pct=chanceFor(amount,m.value);odds.textContent=pct+'%';fill.style.width=pct+'%';});
  action('storyOffer',()=>{const amount=Math.max(0,Math.floor(Number(inp.value)||0));if(!amount||amount>story.funds){alert('所持金の範囲内で1G以上を提示してください。');return;}
@@ -3377,21 +3937,23 @@ function renderMarket(message=''){
  action('storySkip',()=>{story.marketIndex++;save();renderMarket('今回は契約を見送りました。');});
 }
 function renderMarketEnd(message){
- renderShell(header('傭兵の募集が終了', '戦いに向けて物資を準備します。')+`<div class="story-layout"><section class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line">「契約の募集はここまでです。次は装備を確保しましょう。武器や防具は国の所有物になります。傭兵との契約が終わっても、装備は手元に残ります！」</div>${message?`<p class="gold">${esc(message)}</p>`:''}<div class="story-actions">${btn('装備の購入・割り当てへ →','storyToShop')}</div></section><aside class="story-card"><div class="overline">YOUR FORCE</div>${roster()}</aside></div>`);
+ if(!story.units.length){renderStoryGameOver();return;}
+ renderShell(header('傭兵の募集が終了', '戦いに向けて物資を準備します。')+`<div class="story-layout"><section class="story-scene"><div class="story-speaker">伝令ミラ</div><div class="story-line">「契約の募集はここまでです。次は装備を確保しましょう。武器や防具は国の所有物になります。傭兵との契約が終わっても、装備は手元に残ります！」</div>${message?`<p class="gold">${esc(message)}</p>`:''}<div class="story-actions">${btn('装備の購入・割り当てへ →','storyToShop')}</div></section><aside class="story-card"><div class="overline">YOUR FORCE</div>${roster()}</aside></div>`);
  action('storyToShop',renderShop);
 }
 function findItem(uid){return story.items.find(i=>i.uid===Number(uid));}
 function updateGear(){for(const m of story.units){m.gear={weapon:0,armor:0};for(const item of story.items){if(item.holderId===m.id)m.gear[item.slot]=item.index;}}}
-function renderShop(){
+function renderShop(preserveScroll=false){
  story.phase='shop';save();updateGear();const catalogs=[...gearCatalog.weapon.map((v,i)=>({...v,index:i+1,slot:'weapon'})),...gearCatalog.armor.map((v,i)=>({...v,index:i+1,slot:'armor'}))];
- renderShell(header('王国の兵站庫','装備は「購入」と「割り当て」を別々に行います。買った装備は在庫へ追加され、必要に応じて別の傭兵へ付け替えられます。')+`<div class="story-card"><h2 class="blocktitle">装備の購入 <small>ARMORY SHOP</small></h2><div class="story-grid-items">${catalogs.map(item=>`<div class="story-item"><strong>${item.slot==='weapon'?'⚔️':'🛡️'} ${esc(item.name)}</strong><div class="description">${esc(item.description)}</div><b class="gold">${money(item.price)}</b><button type="button" class="btn sm" data-story-buy="${item.slot}:${item.index}" ${item.price>fund()?'disabled':''}>購入</button></div>`).join('')}</div><div class="story-divider"></div><h2 class="blocktitle">装備の割り当て <small>WAREHOUSE ${story.items.length}点</small></h2><div class="story-note">装備を外すと手持ちに戻ります。各傭兵は武器と防具をそれぞれ1つまで装備可能です。防具は物理・魔法・両対応のいずれか1つ。</div>${story.units.map(m=>`<div class="story-assign-grid"><div><b>${esc(m.name)}</b><div class="tiny muted">${job(m)} · Lv.${m.level||1}</div></div>${['weapon','armor'].map(slot=>`<label class="tiny muted">${slot==='weapon'?'武器':'防具'}<select class="story-equip-select" data-assign="${m.id}:${slot}"><option value="0">なし（在庫へ戻す）</option>${story.items.filter(i=>i.slot===slot&&(i.holderId===null||i.holderId===m.id)).map(i=>`<option value="${i.uid}" ${i.holderId===m.id?'selected':''}>${esc(gearCatalog[slot][i.index-1].name)} #${i.uid}</option>`).join('')}</select></label>`).join('')}</div>`).join('')}<div class="story-divider"></div><div class="story-summary-row"><b>所持装備 ${story.items.length}点</b><span>未割当 ${story.items.filter(i=>i.holderId===null).length}点</span></div><div class="story-actions">${btn('作戦設定・戦闘準備へ →','storyToBattlePrep')}</div></div>`);
- app.querySelectorAll('[data-story-buy]').forEach(b=>b.addEventListener('click',()=>{const [slot,tier]=b.dataset.storyBuy.split(':'),item=gearCatalog[slot][Number(tier)-1];if(!item||story.funds<item.price)return;story.funds-=item.price;story.items.push({uid:story.nextItem++,slot,index:Number(tier),holderId:null});save();renderShop();}));
- app.querySelectorAll('[data-assign]').forEach(select=>select.addEventListener('change',()=>{let [id,slot]=select.dataset.assign.split(':'),m=story.units.find(m=>m.id===Number(id));if(!m)return;story.items.forEach(item=>{if(item.holderId===m.id&&item.slot===slot)item.holderId=null;});if(Number(select.value)){let item=findItem(select.value);if(item&&item.slot===slot&&item.holderId===null)item.holderId=m.id;}updateGear();save();renderShop();}));
+ renderShell(header('王国の兵站庫','装備は「購入」と「割り当て」を別々に行います。買った装備は在庫へ追加され、必要に応じて別の傭兵へ付け替えられます。')+`<div class="story-card"><h2 class="blocktitle">装備の購入 <small>ARMORY SHOP</small></h2><div class="story-grid-items">${catalogs.map(item=>`<div class="story-item"><strong>${item.slot==='weapon'?'⚔️':'🛡️'} ${esc(item.name)}</strong><div class="description">${esc(item.description)}</div><b class="gold">${money(item.price)}</b><button type="button" class="btn sm" data-story-buy="${item.slot}:${item.index}" ${item.price>fund()?'disabled':''}>購入</button></div>`).join('')}</div><div class="story-divider"></div><h2 class="blocktitle">装備の割り当て <small>WAREHOUSE ${story.items.length}点</small></h2><div class="story-note">装備を外すと手持ちに戻ります。各傭兵は武器と防具をそれぞれ1つまで装備可能です。防具は物理・魔法・両対応のいずれか1つ。</div>${story.units.map(m=>`<div class="story-assign-grid"><div><b>${esc(m.name)}</b><div class="tiny muted">${job(m)} · Lv.${m.level||1}</div></div>${['weapon','armor'].map(slot=>`<label class="tiny muted">${slot==='weapon'?'武器':'防具'}<select class="story-equip-select" data-assign="${m.id}:${slot}"><option value="0">なし（在庫へ戻す）</option>${story.items.filter(i=>i.slot===slot&&(i.holderId===null||i.holderId===m.id)).map(i=>`<option value="${i.uid}" ${i.holderId===m.id?'selected':''}>${esc(gearCatalog[slot][i.index-1].name)} #${i.uid}</option>`).join('')}</select></label>`).join('')}</div>`).join('')}<div class="story-divider"></div><div class="story-summary-row"><b>所持装備 ${story.items.length}点</b><span>未割当 ${story.items.filter(i=>i.holderId===null).length}点</span></div><div class="story-actions">${btn('作戦設定・戦闘準備へ →','storyToBattlePrep')}</div></div>`,preserveScroll===true);
+ app.querySelectorAll('[data-story-buy]').forEach(b=>b.addEventListener('click',()=>{const [slot,tier]=b.dataset.storyBuy.split(':'),item=gearCatalog[slot][Number(tier)-1];if(!item||story.funds<item.price)return;story.funds-=item.price;story.items.push({uid:story.nextItem++,slot,index:Number(tier),holderId:null});save();renderShop(true);}));
+ app.querySelectorAll('[data-assign]').forEach(select=>select.addEventListener('change',()=>{let [id,slot]=select.dataset.assign.split(':'),m=story.units.find(m=>m.id===Number(id));if(!m)return;story.items.forEach(item=>{if(item.holderId===m.id&&item.slot===slot)item.holderId=null;});if(Number(select.value)){let item=findItem(select.value);if(item&&item.slot===slot&&item.holderId===null)item.holderId=m.id;}updateGear();save();renderShop(true);}));
  action('storyToBattlePrep',renderPrep);
 }
 function renderPrep(){
+ if(!story.units.length){renderStoryGameOver();return;}
  story.phase='prep';save();const q=epi();
- renderShell(header('戦闘準備・部隊の作戦','行動方針は試合ごとに変更できます。必殺スキルは契約時に決まったものを使用し、変更できません。敵の装備やステータスは不明です。')+`<div class="story-layout"><section class="story-card"><div class="overline">BATTLE ORDERS</div><h2 class="blocktitle">出撃部隊 ${story.units.length}名</h2>${story.units.map(m=>`<div class="story-choice"><div><b>${esc(m.name)}</b><div class="tiny muted">${job(m)} · Lv.${m.level||1}</div></div><label class="tiny muted">行動方針<select data-story-stance="${m.id}">${Object.entries({engage:'突破・接近',normal:'標準行動',guard:'護衛・中衛',kite:'距離を確保',flank:'遊撃・側面',...(m.type==='warrior'||m.type==='rogue'?{rearGuard:'後衛を護衛'}:{})}).map(([k,v])=>`<option value="${k}" ${m.tactic?.stance===k?'selected':''}>${v}</option>`).join('')}</select></label><label class="tiny muted">攻撃優先<select data-story-target="${m.id}">${Object.entries({nearest:'近くの敵',frontline:'前衛優先',backline:'後衛優先',weak:'低HP優先',threat:'高火力優先'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.target||JOB_TACTICS[m.type].target)===k?'selected':''}>${v}</option>`).join('')}</select></label>${m.type==='healer'?`<label class="tiny muted">回復優先<select data-story-heal="${m.id}">${Object.entries({frontline:'前衛を優先',backline:'後衛を優先',lowHp:'HP残量が少ない味方',nearest:'近くにいる味方'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.heal||'lowHp')===k?'selected':''}>${v}</option>`).join('')}</select></label>`:''}<div class="story-prep-skill">${skillLine(m)}</div><details class="story-prep-profile"><summary>能力詳細・レーダーチャートを表示</summary><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div></details></div>`).join('')}<div class="story-actions">${btn('出撃地点を決める →','storyStartDeployment')}${btn('装備を見直す','storyBackShop','')}</div></section><aside class="story-card"><div class="overline">INCOMING THREAT</div><h3>${q.title}</h3><img src="${EMBEDDED_MAPS[q.map]}" alt="戦場のイメージ" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><p class="story-sub">${esc(q.foe)} / 敵影 ${q.enemies}名${q.foes?`<br>交戦勢力 ${q.foes.length+1}陣営（三つ巴・四つ巴）`:''}<br>勝利時の戦利金：<b class="gold">${money(q.reward)}</b></p><p class="muted small">戦死した傭兵は永久に失われます。戦闘で勝利した場合は戦死者の装備も回収できます。</p></aside></div>`);
+ renderShell(header('戦闘準備・部隊の作戦','行動方針は試合ごとに変更できます。必殺スキルは契約時に決まったものを使用し、変更できません。敵の装備やステータスは不明です。')+`<div class="story-layout"><section class="story-card"><div class="overline">BATTLE ORDERS</div><h2 class="blocktitle">出撃部隊 ${story.units.length}名</h2>${story.units.map(m=>`<div class="story-choice"><div><b>${esc(m.name)}</b><div class="tiny muted">${job(m)} · Lv.${m.level||1}</div></div><label class="tiny muted">行動方針<select data-story-stance="${m.id}">${Object.entries({engage:'突破・接近',normal:'標準行動',guard:'護衛・中衛',kite:'距離を確保',flank:'遊撃・側面',...(m.type==='warrior'||m.type==='rogue'?{rearGuard:'後衛を守る（自由行動）'}:{})}).map(([k,v])=>`<option value="${k}" ${m.tactic?.stance===k?'selected':''}>${v}</option>`).join('')}</select></label><label class="tiny muted">攻撃優先<select data-story-target="${m.id}">${Object.entries({nearest:'近くの敵',frontline:'前衛優先',backline:'後衛優先',weak:'低HP優先',threat:'高火力優先'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.target||JOB_TACTICS[m.type].target)===k?'selected':''}>${v}</option>`).join('')}</select></label>${m.type==='healer'?`<label class="tiny muted">回復優先<select data-story-heal="${m.id}">${Object.entries({frontline:'前衛を優先',backline:'後衛を優先',lowHp:'HP残量が少ない味方',nearest:'近くにいる味方'}).map(([k,v])=>`<option value="${k}" ${(m.tactic?.heal||'lowHp')===k?'selected':''}>${v}</option>`).join('')}</select></label>`:''}<div class="story-prep-skill">${skillLine(m)}</div><details class="story-prep-profile"><summary>能力詳細・レーダーチャートを表示</summary><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div></details></div>`).join('')}<div class="story-actions">${btn('出撃地点を決める →','storyStartDeployment')}${btn('装備を見直す','storyBackShop','')}</div></section><aside class="story-card"><div class="overline">INCOMING THREAT</div><h3>${q.title}</h3><img src="${EMBEDDED_MAPS[q.map]}" alt="戦場のイメージ" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><p class="story-sub">${esc(q.foe)} / 敵影 ${q.foes?q.foes.reduce((n,f)=>n+f.count,0):q.enemies}名${q.foes?`<br>交戦勢力 ${q.foes.length+1}陣営（三つ巴・四つ巴）`:''}<br>勝利時の戦利金：<b class="gold">${money(q.reward)}</b></p><p class="muted small">戦死した傭兵は永久に失われます。戦闘で勝利した場合は戦死者の装備も回収できます。</p></aside></div>`);
  app.querySelectorAll('[data-story-stance]').forEach(el=>el.addEventListener('change',()=>{const m=story.units.find(m=>m.id===Number(el.dataset.storyStance));if(m){m.tactic=m.tactic||{...JOB_TACTICS[m.type]};m.tactic.stance=el.value;save();}}));
  app.querySelectorAll('[data-story-target]').forEach(el=>el.addEventListener('change',()=>{const m=story.units.find(m=>m.id===Number(el.dataset.storyTarget));if(m){m.tactic=m.tactic||{...JOB_TACTICS[m.type]};m.tactic.target=el.value;save();}}));
  app.querySelectorAll('[data-story-heal]').forEach(el=>el.addEventListener('change',()=>{const m=story.units.find(m=>m.id===Number(el.dataset.storyHeal));if(m){m.tactic=m.tactic||{...JOB_TACTICS[m.type]};m.tactic.heal=el.value;save();}}));
@@ -3404,14 +3966,18 @@ function enemiesForChapter(ch, countOverride=null, faction=0){const q=epi(),arr=
   const m=makeMerc(140000+ch*200+faction*45+i);
   m.type=(ch===0?['rogue','warrior']:['warrior','archer','rogue','mage','warrior','healer'])[(i+ch*2)% (ch===0?2:6)];
   m.name=names[(i+ch+faction*3)%names.length];m.gear={weapon:0,armor:0};m.trait=traitPool[0];m.specialChoice=CHOICE[m.type]||0;m.tactic={...JOB_TACTICS[m.type]};
-  const factor=ch===0?.87:ch<=4?Math.min(1.25,.86+ch*.10):Math.min(1.92,1.12+(ch-4)*.16);
-  m.st.pa=Math.max(20,Math.round(m.st.pa*factor));m.st.ma=Math.max(18,Math.round(m.st.ma*factor));m.st.hp=Math.round(m.st.hp*(ch===0?.80:factor));m.st.pd=Math.round(m.st.pd*(ch===0?.85:factor));
-  if(ch>=5){m.st.md=Math.round(m.st.md*(1+(ch-4)*.045));m.st.dx=Math.round(m.st.dx*(1+(ch-4)*.045));if(i%3===0)m.gear.weapon=ch>=8?2:1;if(i%4===0)m.gear.armor=ch>=8?2:1;}m.storyEnemy=true;arr.push(m);
+  const difficulty=storyDifficultyAtChapter(ch);
+  const threatStage=Math.max(0,ch+difficulty*2);
+  const baseFactor=ch===0?.87:ch<=4?Math.min(1.25,.86+ch*.10):Math.min(1.92,1.12+(ch-4)*.16);
+  const factor=Math.max(.64,Math.min(2.25,baseFactor*(1+.14*difficulty)));
+  m.st.pa=Math.max(20,Math.round(m.st.pa*factor));m.st.ma=Math.max(18,Math.round(m.st.ma*factor));m.st.hp=Math.round(m.st.hp*(threatStage===0?.80:factor));m.st.pd=Math.round(m.st.pd*(threatStage===0?.85:factor));
+  if(threatStage>=5){m.st.md=Math.round(m.st.md*(1+(threatStage-4)*.045));m.st.dx=Math.round(m.st.dx*(1+(threatStage-4)*.045));if(i%3===0)m.gear.weapon=threatStage>=8?2:1;if(i%4===0)m.gear.armor=threatStage>=8?2:1;}m.storyEnemy=true;arr.push(m);
  }
  return arr;
 }
 function prepareBattle(){
- const q=epi();const snapshot=JSON.parse(JSON.stringify({...story,inBattle:false,phase:'prep',preBattleSnapshot:null}));story.preBattleSnapshot=JSON.stringify(snapshot);save();setup.map=q.map;setup.count=2;setup.humans=1;setup.raceTo=3;
+ if(!story.units.length){renderStoryGameOver();return;}
+const q=epi();const snapshot=JSON.parse(JSON.stringify({...story,inBattle:false,phase:'prep',preBattleSnapshot:null}));story.preBattleSnapshot=JSON.stringify(snapshot);save();setup.map=q.map;setup.count=2;setup.humans=1;setup.raceTo=3;
  const p={id:0,name:'残存王国軍',human:true,color:'#75c7ff',money:story.funds,units:story.units,spent:0,kills:0,personality:0};
  const foelist=q.foes||[{name:q.foe,count:q.enemies}];
  const colors=['#ef8474','#e0c17d','#b68eea'];
@@ -3425,10 +3991,10 @@ function prepareBattle(){
  let formations=participants.map((team,i)=>packSquadAt(centers[i],team));
  if(formations.some(x=>!x)){game.world.obstacles=[];formations=participants.map((team,i)=>packSquadAt(centers[i],team));}
  game.placements=formations.map((x,i)=>x||participants[i].units.map((_,j)=>({x:centers[i].x+(j%4)*1.5,y:centers[i].y+Math.floor(j/4)*1.5})));
- game.placeOrder=[0];game.placeTurn=0;selected=0;story.inBattle=true;story.phase='battle';save();
+ game.placeOrder=[0];game.placeTurn=0;selected=0;game._storyRevealEnemies=true;story.inBattle=true;story.phase='battle';save();
  renderPlacement();
  const h=app.querySelector('.pageintro .headline');if(h)h.innerHTML=`${story.chapter+1}戦目 <span class="gold">${esc(q.title)}</span>`;
- const intro=app.querySelector('.pageintro .lead');if(intro)intro.textContent='出撃円の位置を自由に動かしてください。敵の出撃位置は非公開です。行動方針は出撃準備画面で変更可能です。契約時に覚えた必殺スキルは変更できません。';
+ const intro=app.querySelector('.pageintro .lead');if(intro)intro.textContent='出撃円の位置を自由に動かしてください。敵チームの出撃位置は全て表示しています。行動方針は出撃準備画面で変更可能です。契約時に覚えた必殺スキルは変更できません。';
 }
 const storyPlacementWithLockedSkill=renderPlacement;
 renderPlacement=function(...args){
@@ -3449,42 +4015,109 @@ renderPlacement=function(...args){
 const origRenderBattle=renderBattle;
 renderBattle=function(...args){const r=origRenderBattle.apply(this,args);if(!story?.inBattle||screen!=='battle')return r;const h=app.querySelector('.pageintro .headline');if(h)h.innerHTML=`${esc(epi().title)} <span class="gold">防衛戦</span>`;const head=app.querySelector('.race-battlebar');if(head)head.innerHTML=`<span>第${story.chapter+1}戦 · ${esc(epi().foe)}</span><span>国庫 ${money(fund())}　生存傭兵を守れ</span>`;return r;};
 function gainXp(m,u){const gain=10+(u.kills||0)*14+Math.round((1-u.hp/Math.max(1,u.maxHp))*5);m.xp=(m.xp||0)+gain;m.level=m.level||1;let levels=0;while(m.xp>=28+m.level*16){m.xp-=28+m.level*16;m.level++;levels++;m.st.hp+=18;m.st.pd+=2;m.st.md+=2;m.st.ag+=1;m.st.dx+=1;if(['mage','healer','enchanter'].includes(m.type))m.st.ma+=3;else m.st.pa+=3;}return {gain,levels};}
+
+const WIN_REPORT=[
+ '野盗の先遣を退け、住民の避難路を守りました。砦にはまだ王国の旗が残っています。',
+ '街道を取り戻し、危険な物資の輸送が再開されました。',
+ '旧王国の廃城を確保しました。周辺の住民が仮の駐屯地を設けています。',
+ '無所属の混成軍を退けました。選んだ外交相手との協力は継続します。',
+ '野盗連合を撃退しました。離散していた住民が少しずつ戻ってきます。',
+ '灰狼傭兵団の侵攻を防ぎ、国境の拠点を守りました。',
+ '鉄血軍と黒鴉傭兵団を制し、峡谷の通行権を確保しました。',
+ '王国旧領の前進拠点を奪還し、王都に近づく足場を得ました。',
+ '四つ巴の混戦を突破し、王都外郭に突破口を開きました。',
+ '敵の主力を退け、戦いの結果に応じた未来を選び取ることになりました。'
+];
+const LOSS_REPORT=[
+ '砦を守りきれず、住民と国庫の残りを抱えて後方の集落へ撤退しました。王国そのものはまだ滅んでいません。',
+ '街道を奪い返せませんでした。住民は獣道の迂回路で食糧を運びます。',
+ '廃城の奪還に失敗しました。別の山道を利用して兵を進めます。',
+ '国境の混成軍を突破できず撤退しました。協力国との交渉は続きますが、信用を損ねました。',
+ '野盗連合の攻撃で村が被害を受けました。難民が自主的な守備隊を組織し始めています。',
+ '灰狼傭兵団に国境の拠点を明け渡しました。王国軍は内陸へ退きます。',
+ '峡谷から退却しました。交戦勢力が互いに争う間に、斥候が古道を探し出しました。',
+ '旧領の奪還に失敗しました。残った兵は王都外郭に至る別の進路を探索します。',
+ '王都外郭で敗北。城門への突入は不可能となり、最後の防衛線まで撤退しました。',
+ '敵の攻勢を止められませんでした。それでも生き延びた人々は、次の時代に王国の旗を託します。'
+];
+function applyCampaignConsequences(won,route){
+ const ch=story.chapter,k=story.kingdom,d=story.diplomacy;
+ k.people=Math.max(-6,Math.min(8,k.people+(won?1:-1)));
+
+ if(ch===0&&won&&route===0)k.outposts++; // The last border refuge is preserved.
+ if(ch===0&&!won)k.outposts=Math.max(0,k.outposts-1);
+ if((ch===2||ch===5||ch===7)&&route<=1){k.outposts=Math.max(0,Math.min(5,k.outposts+(won?1:-1)));}
+ if(ch===3){const which=d.chapter4;const n=won?1:-1;if(which==='white')d.white+=n;if(which==='blue')d.blue+=n;}
+ if(ch===6){const which=d.chapter7;const n=won?1:-1;if(which==='white')d.white+=n;if(which==='blue')d.blue+=n;}
+}
 function finishStoryBattle(){
- if(!story||!game?.sim)return;
- const s=game.sim,heroDead=s.units.some(u=>u.owner===0&&(u.id===901||u.isHero)&&!u.alive),battlefieldWon=s.winner===0,won=battlefieldWon&&!heroDead;
+ if(!story||!game?.sim||story.finalized===story.chapter)return;
+ const sim=game.sim,q=epi(),won=sim.winner===0;
+ story.finalized=story.chapter;
  if(!won){
-   story.inBattle=false;story.phase='defeat';story.outcome={won:false,chapter:story.chapter,heroDead,teamWon:battlefieldWon};
-   save();renderStoryDefeat();return;
+  story.inBattle=false;
+  story.outcome={won:false,chapter:story.chapter,title:q.title,report:`${q.title}に敗れました。戦いの前からやり直せます。`};
+  story.phase='defeat';save();renderStoryGameOver();return;
  }
- if(story.finalized!==story.chapter){
-  story.finalized=story.chapter;const deaths=[],growth=[];
-  for(const m of [...story.units]){
-   const u=s.units.find(u=>u.id===m.id&&u.owner===0);
-   if(!u||!u.alive){deaths.push({...m});story.units=story.units.filter(v=>v.id!==m.id);for(const item of story.items)if(item.holderId===m.id)item.holderId=null;continue;}
-   const xp=gainXp(m,u);growth.push({name:m.name,xp:xp.gain,level:m.level,up:xp.levels,kills:u.kills||0});
+ const deaths=[],growth=[];let heroNewDown=false;
+ for(const m of [...story.units]){
+  const u=sim.units.find(u=>u.id===m.id&&u.owner===0);
+  if(!u||!u.alive){
+   if(m.isHero){heroNewDown=true;story.heroRetired=true;}else deaths.push({...m});
+   story.units=story.units.filter(v=>v.id!==m.id);
+   for(const item of story.items)if(item.holderId===m.id)item.holderId=null;
+   continue;
   }
-  story.funds+=epi().reward;
-  story.outcome={won:true,deaths,growth,reward:epi().reward,heroDead:deaths.some(m=>m.isHero),chapter:story.chapter};
-  story.inBattle=false;story.history.push({chapter:story.chapter,win:true,deaths:deaths.map(m=>m.name),reward:epi().reward});
-  updateGear();save();
+  const xp=gainXp(m,u);growth.push({name:m.name,xp:xp.gain,level:m.level,up:xp.levels,kills:u.kills||0});
  }
- story.phase='result';save();const o=story.outcome;
- renderShell(header('勝利！ 王国の旗は守られた',`${story.chapter+1}戦目・${epi().title}`)+`<div class="story-clear-banner victory"><div class="story-clear-kicker">⚜ STAGE CLEARED · ${story.chapter+1} / ${EPISODES.length}</div><div class="story-clear-title">王国軍、勝利！</div><div class="story-clear-stage">${esc(epi().title)}　戦利金 +${money(o.reward)}</div></div><div class="story-layout"><section class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line story-event-line">「${esc((STAGE_CLEAR_LINES[story.chapter]||'王国軍の勝利です！').replaceAll('アレン',story.playerName||'アレン'))}」</div>${o.deaths.length?`<p class="story-warning">戦死：${o.deaths.map(m=>esc(m.name)).join('、')}（復活不可）</p>`:'<p class="green">全員が生還しました。</p>'}<div class="story-actions">${o.heroDead?btn('戦闘前からコンテニュー','storyRetryHero'):btn('契約更新へ進む →','storyToContracts')}</div></section><aside class="story-card"><div class="overline">BATTLE REPORT</div><h2>戦利金 ${money(o.reward)}</h2>${o.growth.map(g=>`<div class="story-summary-row"><span>${esc(g.name)} / Lv.${g.level}${g.up?' <b class="gold">LEVEL UP!</b>':''}</span><span>経験 +${g.xp} · 撃破 ${g.kills}</span></div>`).join('')}<p class="muted small">戦死者の装備は勝利後に回収され、国の在庫へ戻ります。</p></aside></div>`);
- action('storyRetryHero',retryStoryBattle);action('storyToContracts',()=>{story.contractQueue=[];story.contractStep=0;renderContractModeChoice()});
+ const reward=q.reward;story.funds+=reward;
+ story.history.push({chapter:story.chapter,title:q.title,win:true,reward,heroNewDown,plan:storyActivePlan(storyActForChapter(story.chapter))});
+ story.outcome={won:true,chapter:story.chapter,title:q.title,heroNewDown,growth,deaths,reward,report:q.win,followUp:q.winFollowUp};
+ story.inBattle=false;story.phase='result';story.preBattleSnapshot=null;
+ if(story.chapter===9)story.ending=decideStoryEnding();
+ updateGear();save();renderStoryResult();
 }
-function renderStoryDefeat(){
- if(!story)return;story.phase='defeat';save();
- const special=!!story.outcome?.teamWon&&!!story.outcome?.heroDead;
- const heroName=story.units.find(m=>m.isHero)?.name||'主人公';
- renderShell(header(special?'敵軍を退けたが、主人公が戦死': '敗戦 ― 王国の危機',`${story.chapter+1}戦目・${epi().title}`)+`<div class="story-clear-banner defeat"><div class="story-clear-kicker">⚔ MISSION FAILED</div><div class="story-clear-title">${special?'戦闘勝利・任務失敗':'防衛線、突破される'}</div><div class="story-clear-stage">${esc(epi().title)}</div></div><div class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line">${special?`「敵軍は全滅しました。しかし、${esc(heroName)}が戦死してしまいました……！ 王国の命運を託された主人公を失ったため、この戦いは敗北扱いです。」`:'「まだ終わりではありません！ 部隊を立て直し、もう一度戦いましょう！」'}</div><p class="story-note">コンテニューでは出撃直前へ戻ります。敗戦中の傭兵の死亡・装備損失・資金の変化は確定しません。装備と行動方針を見直して再挑戦できます。</p><div class="story-actions">${btn('コンテニュー・戦闘準備へ','storyRetryBattle')}${btn('セーブデータをロード','storyDefeatLoad','')}</div></div>`);
- action('storyRetryBattle',retryStoryBattle);action('storyDefeatLoad',openSaveMenu);
+function renderStoryResult(){
+ if(!story||!story.outcome)return renderStoryHub();
+ if(!story.outcome.won)return renderStoryGameOver();
+ story.phase='result';save();
+ const o=story.outcome,ch=o.chapter,act=storyActForChapter(ch),code=act<0?null:storyActivePlan(act);
+ const note=o.heroNewDown?`<div class="story-dialogue-entry"><b>伝令ミラ</b><p>${esc(story.playerName)}隊長は命を取り留めました。でも、これからは戦場へ出られません。隊長はこのまま私たちの指揮をお願いします。</p></div>`:'';
+ const next=ch===9?'これが最後の戦いでした。どんな国になったか、結末を見ましょう。':ch===1||ch===4||ch===7?'次は国の進む道を選びます。あなたが選んだ作戦で未来が変わります。':code==='easy'?'人々はまだ危険な場所にいます。次も安全な道を守りましょう。':code==='normal'?'勝った場所を守る兵も必要です。次の戦いで敵の反撃を止めましょう。':code==='hard'?'敵は兵を集め直しています。まだ戦いは終わりません。次の場所へ進みましょう。':'次の戦いに備えましょう.';
+ renderShell(header('勝利！ '+o.title,`第${ch+1}戦 · 作戦成功`)+`<div class="story-clear-banner victory"><div class="story-clear-kicker">WAR CHRONICLE · 第${ch+1}戦</div><div class="story-clear-title">作戦成功${o.heroNewDown?'・主人公戦線離脱':''}</div><div class="story-clear-stage">戦利金 ＋${money(o.reward)}</div></div><div class="story-layout"><section class="story-scene"><div class="story-dialogue-entry"><b>斥候レオン</b><p>${esc(o.report)}</p></div><div class="story-dialogue-entry"><b>伝令ミラ</b><p>${esc(o.followUp||'みんなが帰ってくるのを待っています。')}</p></div><div class="story-dialogue-entry"><b>財務官エルダ</b><p>${esc(next)}</p></div>${note}${o.deaths.length?`<p class="story-warning">戦死者：${o.deaths.map(x=>esc(x.name)).join('、')}</p>`:''}<div class="story-actions">${btn(ch===9?'エンディングへ →':'生存者の契約更新へ →','storyAfterResult')}</div></section><aside class="story-card"><h3>勝利の記録</h3><p>戦利金 ${money(o.reward)}</p><p>選んだ作戦：${code?esc(storyPlanLabel(code)):'共通の戦い'}</p>${o.growth.map(g=>`<div class="story-summary-row"><span>${esc(g.name)}</span><span>経験＋${g.xp} · Lv.${g.level}</span></div>`).join('')}</aside></div>`);
+ action('storyAfterResult',()=>{if(ch===9){story.chapter=10;renderStoryVictory();return;}story.contractQueue=[];story.contractStep=0;renderContractModeChoice();});
 }
-function retryStoryBattle(){
- const raw=story?.preBattleSnapshot;
- if(!raw){alert('戦闘直前の記録が見つかりません。セーブデータから再開してください。');openSaveMenu();return;}
- try{const saved=JSON.parse(raw);if(!validateStory(saved))throw new Error('invalid checkpoint');story=saved;story.phase='prep';story.inBattle=false;story.outcome=null;story.finalized=-1;game=null;save();renderPrep();}
- catch(_){alert('コンテニュー用の記録を読み込めませんでした。');openSaveMenu();}
+
+function decideStoryEnding(){
+ const path=storyChoicePath().join('-');return STORY_ENDING_LOOKUP[path]?path:'normal-normal-normal';
 }
+
+function advanceCampaignChapter(){
+ for(const t of story.units.filter(u=>!u.isHero&&u.renewDecision!=='renew'))for(const item of story.items)if(item.holderId===t.id)item.holderId=null;
+ story.units=story.units.filter(u=>u.isHero||u.renewDecision==='renew');
+ story.units.forEach(u=>delete u.renewDecision);
+ story.contractQueue=[];story.contractStep=0;story.chapter++;story.finalized=-1;story.outcome=null;story.preBattleSnapshot=null;
+ if(story.chapter>=EPISODES.length)renderStoryVictory();else renderStoryHub();save();
+}
+function storyRetryBattle(){
+ if(!story?.preBattleSnapshot){alert('戦闘前の記録がありません。セーブ＆ロードから戦闘前のデータを読み込んでください。');return;}
+ try{
+  const before=JSON.parse(story.preBattleSnapshot);
+  before.inBattle=false;before.phase='prep';before.finalized=-1;before.outcome=null;
+  if(!loadFromData(before))throw new Error('invalid battle snapshot');
+  save();renderPrep();
+ }catch(e){alert('戦闘前の記録を読み込めませんでした。手動セーブからロードしてください。');}
+}
+function renderStoryGameOver(){
+ const lostFight=story.phase==='defeat'||story.outcome?.won===false;
+ if(!lostFight)story.phase='gameover';else story.phase='defeat';
+ save();
+ const title=lostFight?'ゲームオーバー · 作戦失敗':'ゲームオーバー · 出撃できる仲間がいない';
+ const message=lostFight?'味方の部隊は敗れました。でも、戦闘前の状態に戻って、もう一度挑戦できます。資金も装備も戦闘前に戻ります。':'戦える兵がいません。傭兵を雇えずにここまで来たため、これ以上進めません。セーブを読み込み、別の雇い方でやり直してください。';
+ renderShell(header(title,'この敗北では次の章へ進みません。')+`<section class="story-scene"><div class="story-scene-kicker">BATTLE RESULT · DEFEAT</div><div class="story-speaker">伝令ミラ</div><div class="story-line">「${esc(message)}」</div><p class="story-note">コンテニューは直前の戦闘準備画面から。勝たない限り、章・エンディングの進行やクリア記録は更新されません。</p><div class="story-actions">${lostFight&&story.preBattleSnapshot?btn('コンテニュー · 戦闘前へ','storyOverRetry'):''}${btn('セーブ＆ロード','storyOverLoad','')}${btn('タイトルへ戻る','storyOverExit','')}</div></section>`);
+ action('storyOverRetry',storyRetryBattle);action('storyOverLoad',openSaveMenu);action('storyOverExit',leaveConfirm);
+}
+
 function renderContractModeChoice(){
  if(!story)return;
  story.phase='contract-mode';
@@ -3525,7 +4158,7 @@ function renderContracts(){
  const m=idx<count?story.units.find(u=>u.id===story.contractQueue[idx]):null;
  if(!m){
   renderShell(header('契約の更新が終了','すべての傭兵について継続・解除を決定しました。')+`<div class="story-layout"><section class="story-card"><h2>契約手続き完了</h2><p class="story-sub">傭兵団の再編成が終わりました。装備は国の兵站庫に保管されます。</p>${roster()}<div class="story-actions">${btn('次の事件へ →','storyNext')}</div></section><aside class="story-card"><div class="overline">KINGDOM TREASURY</div><h2 class="gold">${money(fund())}</h2><p class="story-note">継続した傭兵のレベル・成長・習得スキルは引き継がれます。</p></aside></div>`);
-  action('storyNext',()=>{for(const t of story.units.filter(u=>!u.isHero&&u.renewDecision!=='renew'))for(const item of story.items)if(item.holderId===t.id)item.holderId=null;story.units=story.units.filter(u=>u.isHero||u.renewDecision==='renew');story.units.forEach(u=>delete u.renewDecision);story.contractQueue=[];story.contractStep=0;story.chapter++;story.finalized=-1;story.outcome=null;story.preBattleSnapshot=null;if(story.chapter>=EPISODES.length)renderStoryVictory();else renderStoryHub();save();});return;
+  action('storyNext',advanceCampaignChapter);return;
  }
  const price=contractRenewal(m);
  renderShell(header('傭兵との契約を更新',`契約判定 ${idx+1} / ${count}人目。今回は ${m.name} の進退を決めます。`)+`<div class="story-layout"><section class="story-card"><div class="overline">CONTRACT REVIEW · ${idx+1}/${count}</div><h2>「${esc(m.name)}との契約を継続しようか？」</h2><div class="story-market-unit"><img class="story-market-img" src="${portrait(m)}" alt="${esc(m.name)}の姿"><div><h3>${esc(m.name)}</h3><p class="muted">${job(m)}　Lv.${m.level||1} / 経験値 ${m.xp||0}</p><p>契約更新料 <strong class="gold">${money(price)}</strong></p><p class="tiny muted">初回の契約金：${money(m.storyPrice||0)} / 推定契約額：${money(price)}</p></div></div><div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div><div class="story-skill-summary">${skillLine(m)}</div><div class="story-actions">${btn(`継続する（${money(price)}）`,'storyConfirmRenew')}${btn('契約を解除する','storyConfirmRelease','')}</div>${story.funds<price?'<p class="story-warning">国庫が不足しています。契約を更新できません。</p>':''}</section><aside class="story-card"><div class="overline">CURRENT KINGDOM FORCE</div>${roster()}<div class="story-note">契約を解除した傭兵の装備は兵站庫へ戻ります。判断後は次の傭兵へ進みます。</div></aside></div>`);
@@ -3533,10 +4166,90 @@ function renderContracts(){
  action('storyConfirmRenew',()=>{const u=story.units.find(x=>x.id===m.id);if(!u||u.renewDecision||story.funds<price)return;story.funds-=price;u.renewDecision='renew';story.contractStep++;save();renderContracts();});
  action('storyConfirmRelease',()=>{const u=story.units.find(x=>x.id===m.id);if(!u)return;for(const i of story.items)if(i.holderId===u.id)i.holderId=null;story.units=story.units.filter(x=>x.id!==u.id);story.contractStep++;save();renderContracts();});
 }
-function renderStoryVictory(){story.phase='complete';save();renderShell(header('国家復興編・第一幕 完', '奪還した王都に、ようやく王国の旗が掲げられた。')+`<div class="story-scene"><div class="story-speaker">王国軍伝令</div><div class="story-line">「王都を奪還しました！ 城壁には再び王国の旗が翻っています。……ですが、国を治める仕事はここからです。次は民の暮らしを取り戻しましょう！」</div><p class="gold">第一部クリア · 現在の国庫 ${money(story.funds)} · 生存隊員 ${story.units.length}名</p><div class="story-actions">${btn('タイトルへ戻る','storyCompleteExit')}${btn('新たな物語を始める','storyCompleteRestart','')}</div></div>`);action('storyCompleteExit',leaveConfirm);action('storyCompleteRestart',()=>{if(confirm('新規に物語を始めますか？')){clear();begin();}});}
+function renderStoryVictory(){
+ story.chapter=10;story.phase='complete';story.ending=decideStoryEnding();save();unlockStoryEnding();
+ const code=story.ending,entry=STORY_ENDING_LOOKUP[code]||STORY_ENDING_LOOKUP['normal-normal-normal'];
+ const heroActive=!story.heroRetired;
+ const heroScene=heroActive
+  ?`${story.playerName}は最後まで部隊の先頭に立ち、仲間たちとウサーギ国の旗を掲げました。自分の手で戦って、国の未来を決めたのです。`
+  :`${story.playerName}は戦いで大けがをして、もう剣を握れません。それでも後方から仲間に指示を出し、国の未来を決めました。`;
+ const a=story.plans||[],p=a.map(x=>STORY_PLAN_NAMES[x]||'未選択');
+ const intro=`最初に「${p[0]}」、次に「${p[1]}」、最後に「${p[2]}」を選びました。違う選び方なら、別の未来になっていたでしょう。`;
+ const first=STORY_ACTS[0].plans[a[0]]?.title||'国を守る';
+ const second=STORY_ACTS[1].plans[a[1]]?.title||'立て直す';
+ const third=STORY_ACTS[2].plans[a[2]]?.title||'国の未来';
+ const memory=story.plans[0]==='easy'?'最初に守った避難民たちも、この知らせを聞いています。':story.plans[0]==='normal'?'最初に守った国境の村では、今日も人々が暮らしています。':'最初の反撃で取り戻した土地では、ウサーギ国の旗が残っています。';
+ const middle=story.plans[1]==='easy'?'途中で助けた人たちは、新しい家を建てています。':story.plans[1]==='normal'?'途中で守った町や道は、これからも国の暮らしを支えます。':(story.plans[0]==='easy'?'途中で国境に開いた反撃の道は、私たちが一歩ずつ立ち直った証です。':'途中で開いた王都への道は、この国の大切な歴史になりました。');
+ const path=story.history.map(h=>`<span class="story-path-chip won">第${h.chapter+1}戦　勝利</span>`).join('');
+ const finale=code==='hard-hard-hard'?'ウサーギ国の王都は取り戻されました。さらに敵国オオカミ国の王城を攻め落とし、侵略を終わらせました。':code==='easy-easy-easy'?'国は小さなままです。それでも人々は家に帰り、安心して暮らせる土地が残りました。':entry.desc;
+ renderShell(header('エンディング · '+entry.title,'あなたが選んだ三つの作戦が、ウサーギ国の未来を変えました。')+`<div class="story-scene"><div class="story-scene-kicker">ENDING ${ENDING_CATALOG.findIndex(v=>v[0]===code)+1} / 27 · ${heroActive?'前線に立つ指揮官':'後方で指揮する隊長'}</div><h2>${esc(entry.title)}</h2><div class="story-dialogue-entry"><b>語り手</b><p>${esc(intro)} ${esc(memory)} ${esc(middle)}</p></div><div class="story-dialogue-entry"><b>伝令ミラ</b><p>最初は「${esc(first)}」でした。次は「${esc(second)}」。最後は「${esc(third)}」を目指しました。</p></div><div class="story-dialogue-entry"><b>語り手</b><p>${esc(finale)}</p></div><div class="story-dialogue-entry"><b>財務官エルダ</b><p>たくさんの人が力を貸してくれました。この国で、これからの毎日をつくっていきましょう。</p></div><div class="story-dialogue-entry"><b>語り手</b><p>${esc(heroScene)}</p></div><div class="story-divider"></div><h3>これまでの10戦</h3><div class="story-path-history">${path}</div><div class="story-actions">${btn('エンディング図鑑','storyCompleteGallery')}${btn('新しい物語を始める','storyCompleteRestart','')}${btn('タイトルへ戻る','storyCompleteExit','')}</div></div>`);
+ action('storyCompleteGallery',openEndingGallery);action('storyCompleteExit',leaveConfirm);action('storyCompleteRestart',()=>{if(confirm('新しく始めますか？')){clear();begin();}});
+}
+
 const beforeEnding=renderEnding;
 renderEnding=function(...args){if(story?.inBattle&&game?.sim)return finishStoryBattle();return beforeEnding.apply(this,args);};
 // Recover the campaign entry only when the normal setup is currently displayed.
+// Auction: the names of current members open a proper in-game profile dialog.
+// A single delegated handler survives re-rendering after every bid.
+(function(){
+ let activeModal=null;
+ let previousFocus=null;
+ let previousBodyOverflow='';
+ function closeProfile(){
+   if(!activeModal)return;
+   activeModal.remove();activeModal=null;
+   document.removeEventListener('keydown',onModalKey,true);
+   document.body.style.overflow=previousBodyOverflow;
+   if(previousFocus?.isConnected)previousFocus.focus();
+   previousFocus=null;
+ }
+ function onModalKey(e){
+   if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeProfile();return;}
+   if(e.key==='Tab'&&activeModal){
+     const focusables=[...activeModal.querySelectorAll('button:not([disabled]),[href],input:not([disabled])')];
+     if(!focusables.length)return;
+     const i=focusables.indexOf(document.activeElement);
+     if(e.shiftKey&&(i<=0)){e.preventDefault();focusables[focusables.length-1].focus();}
+     else if(!e.shiftKey&&i===focusables.length-1){e.preventDefault();focusables[0].focus();}
+   }
+ }
+ function gearLabel(m,slot){
+   const index=m.gear?.[slot]||0;
+   const g=index?gearCatalog[slot]?.[index-1]:null;
+   return g?escapeHtml(g.name):'なし';
+ }
+ function openProfile(id){
+   if(!story||screen!=='story')return;
+   const m=story.units?.find(u=>u.id===Number(id));
+   if(!m)return;
+   closeProfile();
+   previousFocus=document.activeElement;
+   previousBodyOverflow=document.body.style.overflow;
+   document.body.style.overflow='hidden';
+   const root=document.createElement('div');
+   root.id='storyMemberProfileBackdrop';
+   root.className='story-slot-backdrop';
+   root.innerHTML=`<section class="story-slot-modal story-inspect-modal" role="dialog" aria-modal="true" aria-labelledby="storyMemberProfileTitle">
+     <div class="story-slot-title"><h2 id="storyMemberProfileTitle">傭兵のステータス</h2><button type="button" class="btn sm" id="storyMemberProfileClose">閉じる ×</button></div>
+     <div class="story-inspect-hero"><img class="story-inspect-portrait" src="${portrait(m)}" alt="${esc(m.name)}の立ち絵"><div><div class="overline">KINGDOM FORCE · MEMBER PROFILE</div><h2 style="margin:5px 0;color:#f5daaa">${esc(m.name)}</h2><div class="story-inspect-meta"><b>${esc(job(m))}</b>　Lv.${m.level||1}<br>経験値：${Math.round(m.xp||0)}<br>特性：<b>${esc(m.trait?.n||'なし')}</b> ${esc(m.trait?.d||'')}<br>${m.isHero?'ウサーギ国軍の指揮官':`次の契約更新：${money(contractRenewal(m))}`}</div></div></div>
+     <h3 class="blocktitle">能力値・レーダーチャート</h3>
+     <div class="story-market-abilities">${stats(m)}${storyRadar(m)}</div>
+     <h3 class="blocktitle">装備</h3><div class="story-inspect-gear"><span>武器：${gearLabel(m,'weapon')}</span><span>防具：${gearLabel(m,'armor')}</span></div>
+     <h3 class="blocktitle">習得スキル</h3><div class="story-skill-summary">${skillLine(m)}</div>
+   </section>`;
+   document.body.appendChild(root);activeModal=root;
+   root.querySelector('#storyMemberProfileClose').addEventListener('click',closeProfile);
+   root.addEventListener('click',ev=>{if(ev.target===root)closeProfile();});
+   document.addEventListener('keydown',onModalKey,true);
+   root.querySelector('#storyMemberProfileClose').focus();
+ }
+ document.addEventListener('click',e=>{
+   const trigger=e.target.closest?.('[data-story-inspect]');
+   if(trigger&&story?.phase==='market'){
+     e.preventDefault();openProfile(trigger.dataset.storyInspect);
+   }
+ });
+})();
 if(screen==='setup'){renderSetup();}
 })();
 </script>
@@ -3747,8 +4460,13 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
 (function(){
  const previousDamage=doDamage;
  doDamage=function(target,amount,attacker,color,critical){
-   if(target?.type==='warrior' && (attacker?.type==='archer'||attacker?.type==='rogue') && Number.isFinite(amount) && amount>0){
-     amount=Math.max(1,Math.round(amount*.70));
+   if(Number.isFinite(amount)&&amount>0){
+     if(target?.type==='warrior' && (attacker?.type==='archer'||attacker?.type==='rogue'))amount=Math.max(1,Math.round(amount*.70));
+     if(target?.type==='mage' && attacker?.type==='archer')amount=Math.max(1,Math.round(amount*1.20));
+     if(attacker&&target?.alive&&target.owner!==attacker.owner){
+       target._lastDamagingAttackerId=attacker.id;
+       target._lastDamagedAt=game.sim?.time??0;
+     }
    }
    return previousDamage(target,amount,attacker,color,critical);
  };
@@ -3819,4 +4537,158 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
 })();
 </script>
 
+
+<script id="v237-active-recovery-combat">
+'use strict';
+// v2.37: Low-HP allies fight and move inside a living healer's coverage zone.
+// They retreat at <=30% HP, and the restriction ends after reaching >=55% HP.
+// This logic is shared by story, battle royale, CPU and authoritative host.
+(function(){
+ const RETREAT_AT=.30, RETURN_AT=.55;
+ const HEAL_RANGE=32, SAFE_RADIUS=27.0, REJOIN_RADIUS=24.5;
+ const normalAiTick=aiTick;
+ const normalDirMove=dirMove;
+ const normalNearestEnemy=nearestEnemy;
+ function currentMedic(u,sim){
+   return sim?.units?.find(v=>v.alive&&v.owner===u.owner&&v.type==='healer'&&v.id===u._recoveryMedicId)||null;
+ }
+ function selectMedic(u,sim){
+   const medics=sim.units.filter(v=>v.alive&&v.owner===u.owner&&v.type==='healer'&&v.id!==u.id);
+   if(!medics.length)return null;
+   const previous=currentMedic(u,sim);
+   const closest=medics.reduce((a,b)=>!a||dist(u,b)<dist(u,a)?b:a,null);
+   // Avoid constantly switching healer targets as they reposition.
+   return previous&&dist(u,previous)<dist(u,closest)+12?previous:closest;
+ }
+ // In recovery mode prefer enemies that can be pursued without leaving healing range.
+ // If none are in the area, ranged units can still fire outward from the boundary.
+ nearestEnemy=function(u,enemies){
+   if(u?._healingFallback&&u.type!=='healer'&&enemies?.length){
+     const medic=currentMedic(u,game?.sim);
+     if(medic){
+       const accessible=enemies.filter(v=>v.alive&&dist(v,medic)<=SAFE_RADIUS);
+       if(accessible.length)return normalNearestEnemy(u,accessible);
+     }
+   }
+   return normalNearestEnemy(u,enemies);
+ };
+ // Preserve all regular attack and ultimate logic. Only steer the movement command
+ // into a safe zone instead of suppressing the AI while wounded.
+ dirMove=function(u,vx,vy,dt){
+   if(!u?._healingFallback||u.type==='healer')return normalDirMove(u,vx,vy,dt);
+   const sim=game?.sim,medic=currentMedic(u,sim);
+   if(!medic)return normalDirMove(u,vx,vy,dt);
+   const dx=u.x-medic.x,dy=u.y-medic.y,gap=Math.hypot(dx,dy);
+   const escapingStorm=sim?.time>=46&&Math.hypot(u.x-WORLD_MID,u.y-WORLD_MID)>sim.storm-3;
+   if(escapingStorm)return normalDirMove(u,vx,vy,dt);
+   if(gap>REJOIN_RADIUS){
+     const nx=dx/Math.max(gap,.001),ny=dy/Math.max(gap,.001);
+     const outward=vx*nx+vy*ny;
+     if(gap>=SAFE_RADIUS){
+       // Outside coverage: return toward the medic, but retain tangential motion
+       // so units can still dodge and fight along the edge of the healing zone.
+       vx-=Math.max(0,outward)*nx;
+       vy-=Math.max(0,outward)*ny;
+       const pull=Math.min(15,Math.max(5,(gap-REJOIN_RADIUS)*2));
+       vx-=nx*pull;vy-=ny*pull;
+     }else if(outward>0){
+       // Gradually turn parallel to the boundary rather than stopping at it.
+       const weight=Math.min(1,(gap-REJOIN_RADIUS)/(SAFE_RADIUS-REJOIN_RADIUS));
+       vx-=outward*nx*weight;
+       vy-=outward*ny*weight;
+     }
+   }
+   const beforeX=u.x,beforeY=u.y;
+   const result=normalDirMove(u,vx,vy,dt);
+   const afterGap=dist(u,medic);
+   if(afterGap>SAFE_RADIUS&&gap<=SAFE_RADIUS){
+     // An unusually large speed buff may jump over the border. Clip the new
+     // position to the edge without sending the character inside obstacles.
+     const vx2=u.x-medic.x,vy2=u.y-medic.y;
+     const candidateX=medic.x+vx2*SAFE_RADIUS/afterGap;
+     const candidateY=medic.y+vy2*SAFE_RADIUS/afterGap;
+     if(walkable(candidateX,candidateY,.57)){u.x=candidateX;u.y=candidateY;}
+     else{u.x=beforeX;u.y=beforeY;}
+   }
+   return result;
+ };
+ aiTick=function(u,dt,sim){
+   if(!u?.alive||u.type==='healer')return normalAiTick(u,dt,sim);
+   const ratio=u.maxHp>0?u.hp/u.maxHp:1;
+   if(ratio>=RETURN_AT){u._healingFallback=false;u._recoveryMedicId=null;}
+   if(ratio<=RETREAT_AT||u._healingFallback){
+     const medic=selectMedic(u,sim);
+     if(medic){u._healingFallback=true;u._recoveryMedicId=medic.id;}
+     else{u._healingFallback=false;u._recoveryMedicId=null;}
+   }
+   // Normal AI continues to move, attack, use class abilities and play
+   // animations; dirMove enforces healer coverage only while recovering.
+   return normalAiTick(u,dt,sim);
+ };
+})();
+</script>
+
+<style id="v238-market-roster-modal-style">
+.story-roster-name{display:inline-block;max-width:100%;padding:2px 0;border:0;border-bottom:1px dashed #dcb97a;background:transparent;color:#f6dfb1;font:inherit;font-size:13px;font-weight:800;text-align:left;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.story-roster-name:hover,.story-roster-name:focus-visible{color:#fff4dc;border-bottom-color:#ffe1a0;outline-offset:3px}
+.story-roster-name::after{content:' ◇';font-size:10px;color:#cfbc96}
+.story-inspect-modal{width:min(100%,780px)}
+.story-inspect-hero{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center;gap:18px;margin:14px 0}
+.story-inspect-portrait{width:150px;max-height:185px;object-fit:contain;object-position:center;border:1px solid #d6b77955;border-radius:12px;background:#101d2d}
+.story-inspect-meta{line-height:1.8;font-size:13px;color:#c3d2df}
+.story-inspect-meta b{color:#fae5bb}
+.story-inspect-section{margin:14px 0}
+.story-inspect-gear{display:flex;gap:10px;flex-wrap:wrap;margin:9px 0}
+.story-inspect-gear span{border:1px solid #72879b88;background:#102436;border-radius:9px;padding:9px 12px;font-size:12px}
+.story-inspect-modal .story-market-abilities{margin:12px 0}
+@media(max-width:600px){.story-inspect-hero{grid-template-columns:100px minmax(0,1fr);gap:10px}.story-inspect-portrait{width:100px;max-height:140px}.story-inspect-modal .story-market-abilities{grid-template-columns:1fr;gap:12px}.story-inspect-modal .story-radar svg{max-height:205px}.story-inspect-modal{padding:15px}}
+</style>
+<script id="v238-healer-wait">
+'use strict';
+// Low-HP units no longer chase an enemy they cannot fight inside the healer zone.
+// They regroup beside their healer and wait until a viable enemy appears or HP reaches 55%.
+(function(){
+ const formerMove=dirMove;
+ const ACTIVE_RADIUS=25.5;
+ const WAIT_RADIUS=5.2;
+ dirMove=function(u,vx,vy,dt){
+   if(!u?._healingFallback||u.type==='healer')return formerMove(u,vx,vy,dt);
+   const sim=game?.sim;
+   const medic=sim?.units?.find(h=>h.alive&&h.owner===u.owner&&h.type==='healer'&&h.id===u._recoveryMedicId);
+   if(!medic)return formerMove(u,vx,vy,dt);
+   const enemies=sim.units.filter(v=>v.alive&&v.owner!==u.owner);
+   // Melee units fight opponents inside the healing circle. Ranged units may
+   // also shoot beyond that circle, provided the shot is already available
+   // WITHOUT chasing toward the circle's edge.
+   const isMelee=u.type==='warrior'||u.type==='rogue';
+   const inZone=enemies.some(v=>dist(v,medic)<=ACTIVE_RADIUS);
+   const canFireHere=!isMelee&&enemies.some(v=>dist(u,v)<=cls[u.type].range-.5&&!firstObstruction(u,v,true));
+   if(!inZone&&!canFireHere){
+     u._recoveryWaiting=true;
+     const needStormExit=sim.time>=46&&Math.hypot(u.x-WORLD_MID,u.y-WORLD_MID)>sim.storm-3;
+     if(needStormExit)return formerMove(u,vx,vy,dt);
+     // Return all the way to the healer rather than orbiting the 27-unit leash.
+     const gap=dist(u,medic);
+     if(gap>WAIT_RADIUS)return formerMove(u,medic.x-u.x,medic.y-u.y,dt);
+     return; // pause movement, not attack/skills: normal AI still runs.
+   }
+   u._recoveryWaiting=false;
+   return formerMove(u,vx,vy,dt);
+ };
+ // Recheck the wait state even in frames without movement (e.g. when a
+ // close-range target is already within strike distance).
+ const beforeAi=aiTick;
+ aiTick=function(u,dt,sim){
+   const ret=beforeAi(u,dt,sim);
+   if(!u?.alive||u.type==='healer'||!u._healingFallback){if(u)u._recoveryWaiting=false;return ret;}
+   const medic=sim?.units?.find(h=>h.alive&&h.owner===u.owner&&h.type==='healer'&&h.id===u._recoveryMedicId);
+   if(!medic){u._recoveryWaiting=false;return ret;}
+   const foes=sim.units.filter(v=>v.alive&&v.owner!==u.owner);
+   const near=foes.some(v=>dist(v,medic)<=ACTIVE_RADIUS);
+   const canShoot=!['warrior','rogue'].includes(u.type)&&foes.some(v=>dist(u,v)<=cls[u.type].range-.5&&!firstObstruction(u,v,true));
+   u._recoveryWaiting=!near&&!canShoot;
+   return ret;
+ };
+})();
+</script>
 </body></html>
