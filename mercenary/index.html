@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.38 — 傭兵詳細・回復待機AI改善版</title>
+<title>傭兵競売戦記 v2.41 — スキル固定・魔攻依存・出撃地点公開版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -108,7 +108,7 @@ main{max-width:1510px;margin:0 auto;padding:28px 28px 44px}.overline{font-size:1
 </head>
 <body>
 <header><div class="top"><div class="mark">♜</div><div><div class="brand">傭兵競売戦記</div><div class="subbrand">MERCENARY DRAFT · ART EDITION</div></div><div class="topright"><span class="tag">戦略オークション × 自動戦闘</span><span class="tag live" id="headerStage">NEW GAME</span><div id="soundControls" class="sound-controls" aria-label="サウンド設定"><button type="button" id="toggleMusic" title="BGMをオン・オフ">♫ BGM</button><button type="button" id="toggleFx" title="効果音をオン・オフ">♪ SE</button><label title="音量">🔊 <input type="range" id="soundVolume" min="0" max="100" value="48" aria-label="全体音量"></label></div></div></div></header>
-<main id="app"></main><div class="footer">Prototype ver. 2.38 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
+<main id="app"></main><div class="footer">Prototype ver. 2.39 · ローカル版はオフライン動作 · オンライン版はインターネット接続が必要です</div>
 <script>
 'use strict';
 // Mercenary Draft: single-file, no runtime dependencies.
@@ -142,7 +142,7 @@ function makeMerc(index){let types=Object.keys(cls),type=types[RNG(0,types.lengt
  if(type==='rogue'){bump('pa',3,19);bump('ag',27,44);bump('dx',22,37);bump('pd',-25,-4)}
  let trait=traitPool[RNG(0,traitPool.length-1)];if(trait.id==='tough')st.hp=Math.round(st.hp*1.15);
  let m={id:index,type,st,trait,gear:{weapon:0,armor:0},name:titles[RNG(0,titles.length-1)]+'の'+first[RNG(0,first.length-1)]};
- const power=powerOf(m);m.rating=Math.round(power);m.value=clamp(Math.round((power-24)*4.35*0.7/10)*10,50,320)*10;return m;}
+ const power=powerOf(m);m.rating=Math.round(power);m.value=clamp(Math.round((power-24)*4.35*0.7/10)*10,50,320)*10;m.specialChoice=RNG(0,2);return m;}
 function makePlayers(){return Array.from({length:setup.count},(_,i)=>({id:i,name:i<setup.humans?'プレイヤー'+(i+1):'CPU '+(i+1),human:i<setup.humans,color:palette[i],money:setup.budget,units:[],spent:0,kills:0,personality:RNG(0,3)}));}
 function beginGame(){game={players:makePlayers(),lots:[],lotIndex:0,auction:null,placements:[],placeTurn:0,sim:null,history:[],initFunds:setup.budget};let lots=clamp(setup.count*5+RNG(-2,2),Math.max(2,setup.count),setup.count*5+2);game.lots=Array.from({length:lots},(_,i)=>makeMerc(i+1));game.placeOrder=game.players.filter(p=>p.human&&p.units.length).map(p=>p.id);newLot();}
 function privatePlayerPanel(p){return `<div class="playerrow"><i class="dot" style="color:${p.color};background:${p.color}"></i><div><div class="pname">${escapeHtml(p.name)} の軍資金</div><div class="pmeta">雇用した傭兵 ${p.units.length}名</div></div><div class="pside"><div class="pbank">${fmt(p.money)} G</div><div class="rosterline">あなたの残り予算</div></div></div><div class="small muted" style="margin-top:13px;line-height:1.9">他陣営の落札額と残金は非公開。落札者の名前だけ公開されます。<br>競売後に残金で装備を購入できます。</div>`;}
@@ -328,12 +328,13 @@ function skillCost(u,base){return Math.ceil(base*(u.trait.id==='thrifty'?.75:1))
 // cannot stack with itself; different enchanters provide independent stacks.
 function passiveBuffStacks(u,at){
  if(!u||!u._passiveEnchantments)return 0;
- let n=0;
- for(const [caster,until] of Object.entries(u._passiveEnchantments)){
-  if(until>at)n++;
+ let power=0;
+ for(const [caster,rec] of Object.entries(u._passiveEnchantments)){
+  const until=typeof rec==='number'?rec:rec?.until;
+  if(until>at)power+=typeof rec==='number'?1:Math.max(.1,Number(rec.power)||1);
   else delete u._passiveEnchantments[caster];
  }
- return n;
+ return power;
 }
 function effectiveDmg(u,isMagic){let st=u.st;const t=game.sim?.time??0;return (isMagic?st.ma:st.pa)*(u.trait.id==='mighty'?1.12:1)*(u.buffUntil>t?1.21:1)*(1+.21*passiveBuffStacks(u,t));}
 function strike(att,target,magic=false,mult=1,splash=false){let s=game.sim;if(!target.alive||!att.alive)return;let hit=clamp(.76+(att.st.dx-55)*.0038+(att.trait.id==='precise'?.12:0)-(target.st.ag-50)*.0028-(target.trait.id==='instinct'?.09:0),.43,.985);if(Math.random()>hit){floatText(target.x,target.y,'MISS','#a4bece');effect(target.x,target.y,'#c0d3e9',.3);return;}
@@ -361,7 +362,7 @@ function aiTick(u,dt,s){if(!u.alive)return;u.battleTime=s.time;
  // Ranged combatants try to leave full cover instead of attacking through stone walls.
  if(c.range>4.2&&tgt&&d<c.range+9){let wall=firstObstruction(u,tgt,true);if(wall){let tx=tgt.x-u.x,ty=tgt.y-u.y,L=Math.max(.1,Math.hypot(tx,ty));let side=(u.id%2?1:-1);vx+=(-ty/L)*side*12+(wall.x-u.x)*.16;vy+=(tx/L)*side*12+(wall.y-u.y)*.16;}}
  if(Math.hypot(vx,vy)>.1)dirMove(u,vx,vy,dt);
- if(u.type==='healer'&&u.nextAction<=0){if(healTarget&&dist(u,healTarget)<12){let h=(14+u.st.ma*.50)*(u.buffUntil>s.time?1.18:1)*(1+.18*passiveBuffStacks(u,s.time))*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);effect(healTarget.x,healTarget.y,'#94f7ca',.9);floatText(healTarget.x,healTarget.y,`+${Math.round(h)}`,'#97ebc0');u.nextAction=clamp(2.3-u.st.ag*.009,1.2,2.4);return;}}
+ if(u.type==='healer'&&u.nextAction<=0){if(healTarget&&dist(u,healTarget)<12){let h=(14+50*.50)*Math.max(.1,u.st.ma/70)*(u.buffUntil>s.time?1.18:1)*(1+.18*passiveBuffStacks(u,s.time))*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);effect(healTarget.x,healTarget.y,'#94f7ca',.9);floatText(healTarget.x,healTarget.y,`+${Math.round(h)}`,'#97ebc0');u.nextAction=clamp(2.3-u.st.ag*.009,1.2,2.4);return;}}
  if(u.type==='enchanter'&&u.nextSpecial<=0&&u.mp>=skillCost(u,15)){let near=allies.filter(v=>dist(u,v)<17);if(near.length){u.mp-=skillCost(u,15);near.forEach(a=>{a.buffUntil=Math.max(a.buffUntil,s.time+6.5);effect(a.x,a.y,'#f3d989',.8)});u.nextSpecial=8.5;u.nextAction=Math.min(u.nextAction,.16);}}
  if(u.nextAction>0)return;
  tgt=nearestEnemy(u,enemies);d=dist(u,tgt);if(!tgt||d>c.range+1.4)return;
@@ -1198,7 +1199,7 @@ aiTick=function(u,dt,s){
   // moderate injuries are healed intermittently with magical attacks mixed in.
   const canAttack=tgt&&d<=c.range+1.4;
   if(canHeal&&(urgent||!canAttack||Math.random()<.61)){
-   let h=(14+u.st.ma*.50)*(u.buffUntil>s.time?1.18:1)*(1+.18*passiveBuffStacks(u,s.time))*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);
+   let h=(14+50*.50)*Math.max(.1,u.st.ma/70)*(u.buffUntil>s.time?1.18:1)*(1+.18*passiveBuffStacks(u,s.time))*.5;healTarget.hp=Math.min(healTarget.maxHp,healTarget.hp+h);
    effect(healTarget.x,healTarget.y,'#94f7ca',.9);floatText(healTarget.x,healTarget.y,`+${Math.round(h)}`,'#97ebc0');u.nextAction=clamp(2.3-u.st.ag*.009,1.2,2.4);
   }
  }
@@ -1210,7 +1211,7 @@ aiTick=function(u,dt,s){
    if(near.length&&u.mp>=cost){
     u.mp-=cost;
     for(const a of near){
-     (a._passiveEnchantments??={})[String(u.id)]=s.time+6.5;
+     (a._passiveEnchantments??={})[String(u.id)]={until:s.time+6.5,power:Math.max(.1,u.st.ma/70)};
      effect(a.x,a.y,'#f3d989',.8);
     }
     u._passiveEnchantReadyAt=s.time+8.5;
@@ -1457,13 +1458,13 @@ const SKILLS={
   {id:'meteor',name:'流星群',desc:'敵が2体以上固まる場所に範囲魔法',cd:10.5,cost:29},
   {id:'veil',name:'幻影の衣',desc:'狙われた時、5秒間ターゲットになりにくい',cd:12,cost:18}],
  healer:[
-  {id:'emergency',name:'緊急治療',desc:'HP50%以下の味方を大きく回復',cd:8,cost:24},
-  {id:'group_regen',name:'再生の祈り',desc:'味方複数が傷つくと6秒間継続回復',cd:12,cost:31},
-  {id:'sanctuary',name:'聖域結界',desc:'味方が攻撃を受けると周囲へ6秒間軽減効果',cd:12,cost:29}],
+  {id:'emergency',name:'緊急治療',desc:'HP50%以下の味方を大きく回復。回復量は魔攻に比例（魔攻70基準）',cd:8,cost:24},
+  {id:'group_regen',name:'再生の祈り',desc:'味方複数が傷つくと6秒間継続回復。回復量は魔攻に比例（魔攻70基準）',cd:12,cost:31},
+  {id:'sanctuary',name:'聖域結界',desc:'味方が攻撃を受けると周囲へ6秒間軽減効果。軽減率は魔攻に比例（魔攻70基準）',cd:12,cost:29}],
  enchanter:[
-  {id:'might',name:'戦神の加護',desc:'交戦中の味方に6秒間攻撃力+23%',cd:11,cost:24},
-  {id:'aegis',name:'守護の刻印',desc:'被弾した味方に6秒間ダメージ軽減',cd:11.5,cost:22},
-  {id:'march',name:'疾風の祝福',desc:'接近中の味方に6秒間移動速度+30%',cd:11.5,cost:24}],
+  {id:'might',name:'戦神の加護',desc:'交戦中の味方に6秒間攻撃力上昇（魔攻70なら+23%、魔攻に比例）',cd:11,cost:24},
+  {id:'aegis',name:'守護の刻印',desc:'被弾した味方に6秒間ダメージ軽減（魔攻70なら33%、魔攻に比例）',cd:11.5,cost:22},
+  {id:'march',name:'疾風の祝福',desc:'接近中の味方に6秒間移動速度上昇（魔攻70基準、魔攻に比例）',cd:11.5,cost:24}],
  rogue:[
   {id:'smoke',name:'煙幕潜行',desc:'敵に接近した時、5秒間ターゲットになりにくい',cd:11.5,cost:16},
   {id:'shadow_run',name:'影走り',desc:'敵を追跡中に5秒間移動速度+60%',cd:9,cost:13},
@@ -1496,7 +1497,7 @@ function enhanceAuction(){
  if(image&&profile&&m&&!root.querySelector('.auc-radar')){
   const col=document.createElement('div');col.className='auc-art-column';image.replaceWith(col);col.appendChild(image);col.insertAdjacentHTML('beforeend',makeRadar(m));
   const info=root.querySelector('.auc-info');if(info){const weak=IDS.filter(k=>m.st[k]<(k==='hp'?300:k==='mp'?115:55)).sort((a,b)=>(m.st[a]/(a==='hp'?590:a==='mp'?310:112))-(m.st[b]/(b==='hp'?590:b==='mp'?310:112)))[0];
-   info.insertAdjacentHTML('beforeend',`<div class="auc-class-specials"><div class="auc-class-specials-title">✦ 習得候補の必殺スキル <small>出撃前に1つだけ選択</small></div>${SKILLS[m.type].map((sk,i)=>`<div class="auc-skill-preview"><b>${i+1}. ${sk.name}</b><span>${sk.desc}</span><em>CT ${sk.cd}秒</em></div>`).join('')}</div>`);}
+   info.insertAdjacentHTML('beforeend',`<div class="auc-class-specials"><div class="auc-class-specials-title">✦ 習得済みの必殺スキル <small>競売時に確定・変更不可</small></div>${[spec(m)].map(sk=>`<div class="auc-skill-preview"><b>${sk.name}</b><span>${sk.desc} / 消費MP ${sk.cost}</span><em>CT ${sk.cd}秒</em></div>`).join('')}</div>`);}
  }
  const inp=root.querySelector('#bidInput');
  if(inp && !root.querySelector('.auc-bid-adjust')){
@@ -1521,9 +1522,8 @@ renderPlacement=function(){
  for(const [i,m] of p.units.entries()){
   const card=app.querySelectorAll('.tactic-unit')[i];if(!card)continue;
   const box=document.createElement('div');box.className='ultimate-select-box';
-  box.innerHTML=`<div class="ultimate-label">✦ 習得する必殺スキル <small>3つから1つだけ選択</small></div><select class="input ultimate-select" aria-label="${escapeHtml(m.name)} の必殺スキル">${SKILLS[m.type].map((s,j)=>`<option value="${j}" ${j===choice(m)?'selected':''}>${s.name} / CT ${s.cd}秒</option>`).join('')}</select><div class="ultimate-description">${escapeHtml(spec(m).desc)}</div>`;
+  box.innerHTML=`<div class="ultimate-label">✦ 習得済みスキル <small>変更不可</small></div><b>${escapeHtml(spec(m).name)}</b> <span class="tiny muted">CT ${spec(m).cd}秒 / 消費MP ${spec(m).cost}</span><div class="ultimate-description">${escapeHtml(spec(m).desc)}</div>`;
   const footer=card.querySelector('.tactic-footer');if(footer)footer.before(box);else card.appendChild(box);
-  box.querySelector('select').addEventListener('change',e=>{m.specialChoice=Number(e.target.value);box.querySelector('.ultimate-description').textContent=spec(m).desc;});
  }
 };
 const beforeLaunch=launchBattle;
@@ -1551,8 +1551,8 @@ function contextualSkill(u,s){
  const hasLOS=target&&!firstObstruction(u,target,true);
  let ok=false;
  switch(skill.id){
-  case 'battle_cry':ok=!!target&&d<range+4;if(ok)status(u,'_atkBuffUntil',s.time+7);break;
-  case 'iron_wall':ok=(recentHit||u.hp/u.maxHp<.65)&&!!target&&d<8;if(ok)status(u,'_defBuffUntil',s.time+7);break;
+  case 'battle_cry':ok=!!target&&d<range+4;if(ok)status(u,'_atkBuffUntil',s.time+7);u._atkBuffFromEnchant=false;break;
+  case 'iron_wall':ok=(recentHit||u.hp/u.maxHp<.65)&&!!target&&d<8;if(ok){status(u,'_defBuffUntil',s.time+7);u._defBuffPower=0;}break;
   case 'rush':ok=!!target&&d>6&&d<32&&u.tactic?.stance!=='guard';if(ok)status(u,'_speedBuffUntil',s.time+6);break;
   case 'power_arrow':ok=hasLOS&&d<=range+1;if(ok)fireProjectile(u,target,false,2.1,false);break;
   case 'rain_arrows':ok=hasLOS&&d<=range+1&&clusterCount(target,s,6)>=2;if(ok)fireProjectile(u,target,false,1.28,true);break;
@@ -1560,12 +1560,12 @@ function contextualSkill(u,s){
   case 'arcane_lance':ok=hasLOS&&d<=range+1;if(ok)fireProjectile(u,target,true,2.5,false);break;
   case 'meteor':ok=hasLOS&&d<=range+1&&clusterCount(target,s,6)>=2;if(ok)fireProjectile(u,target,true,1.65,true);break;
   case 'veil':ok=!!target&&(recentHit||d<12)&&u.hp>0;if(ok)status(u,'_stealthUntil',s.time+5);break;
-  case 'emergency':{const ally=friends.filter(a=>a.hp<a.maxHp*.5).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];ok=!!ally;if(ok){let amount=Math.min(ally.maxHp-ally.hp,Math.round((ally.maxHp*.36+u.st.ma*.32)*.5));ally.hp+=amount;effect(ally.x,ally.y,'#93ffd4',1.8);floatText(ally.x,ally.y,'+'+amount,'#8bf3ba');}}break;
-  case 'group_regen':ok=damaged.length>=2;if(ok)friends.filter(a=>a.hp<a.maxHp*.95).forEach(a=>status(a,'_regenUntil',s.time+6));break;
-  case 'sanctuary':ok=friends.filter(a=>s.time-(a._lastHitAt??-100)<1.5).length>=1;if(ok)friends.forEach(a=>status(a,'_sanctuaryUntil',s.time+6));break;
-  case 'might':ok=!!target&&d<25&&friends.filter(a=>a.type!=='healer').length>=2;if(ok)friends.forEach(a=>status(a,'_atkBuffUntil',s.time+6));break;
-  case 'aegis':ok=friends.some(a=>s.time-(a._lastHitAt??-100)<1.5);if(ok)friends.forEach(a=>status(a,'_defBuffUntil',s.time+6));break;
-  case 'march':ok=!!target&&d>11&&d<39&&friends.length>=2;if(ok)friends.forEach(a=>status(a,'_speedBuffUntil',s.time+6));break;
+  case 'emergency':{const ally=friends.filter(a=>a.hp<a.maxHp*.5).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];ok=!!ally;if(ok){let amount=Math.min(ally.maxHp-ally.hp,Math.round((ally.maxHp*.36+50*.32)*.5*Math.max(.1,u.st.ma/70)));ally.hp+=amount;effect(ally.x,ally.y,'#93ffd4',1.8);floatText(ally.x,ally.y,'+'+amount,'#8bf3ba');}}break;
+  case 'group_regen':ok=damaged.length>=2;if(ok)friends.filter(a=>a.hp<a.maxHp*.95).forEach(a=>(status(a,'_regenUntil',s.time+6),a._regenPower=Math.max(.1,u.st.ma/70)));break;
+  case 'sanctuary':ok=friends.filter(a=>s.time-(a._lastHitAt??-100)<1.5).length>=1;if(ok)friends.forEach(a=>(status(a,'_sanctuaryUntil',s.time+6),a._sanctuaryPower=Math.max(.1,u.st.ma/70)));break;
+  case 'might':ok=!!target&&d<25&&friends.filter(a=>a.type!=='healer').length>=2;if(ok)friends.forEach(a=>(status(a,'_atkBuffUntil',s.time+6),a._atkBuffFromEnchant=true,a._atkBuffPower=Math.max(.1,u.st.ma/70)));break;
+  case 'aegis':ok=friends.some(a=>s.time-(a._lastHitAt??-100)<1.5);if(ok)friends.forEach(a=>(status(a,'_defBuffUntil',s.time+6),a._defBuffPower=Math.max(.1,u.st.ma/70)));break;
+  case 'march':ok=!!target&&d>11&&d<39&&friends.length>=2;if(ok)friends.forEach(a=>(status(a,'_speedBuffUntil',s.time+6),a._speedBuffPower=Math.max(.1,u.st.ma/70)));break;
   case 'smoke':ok=!!target&&d>=3.4&&d<16;if(ok)status(u,'_stealthUntil',s.time+5);break;
   case 'shadow_run':ok=!!target&&d>6&&d<33;if(ok)status(u,'_speedBuffUntil',s.time+5);break;
   case 'shadow_step':if(target&&d>5.5&&d<23){let len=d,dirX=(target.x-u.x)/len,dirY=(target.y-u.y)/len;for(const advance of [Math.min(8.5,d-2.4),Math.min(6,d-2.4),Math.min(4,d-2.4)]){const nx=u.x+dirX*advance,ny=u.y+dirY*advance;if(walkable(nx,ny,.85)){u.x=nx;u.y=ny;ok=true;effect(nx,ny,'#b183f8',1.5);break;}}}break;
@@ -1577,7 +1577,7 @@ function contextualSkill(u,s){
 const beforeAi=aiTick;
 aiTick=function(u,dt,s){
  if(!u.alive)return;
- if(u._regenUntil>s.time)u.hp=Math.min(u.maxHp,u.hp+u.maxHp*.009*dt);
+ if(u._regenUntil>s.time)u.hp=Math.min(u.maxHp,u.hp+u.maxHp*.009*dt*(u._regenPower||1));
  contextualSkill(u,s);
  beforeAi(u,dt,s);
 };
@@ -1586,15 +1586,15 @@ aiTick=function(u,dt,s){
 const oldDmg=doDamage;
 doDamage=function(u,dmg,att,color,crit){
  if(u.alive&&dmg>0){u._lastHitAt=game.sim?.time??0;const t=game.sim?.time??0;
-  if(u._defBuffUntil>t)dmg*=.67;
-  if(u._sanctuaryUntil>t)dmg*=.78;
+  if(u._defBuffUntil>t)dmg*=u._defBuffPower?Math.max(.12,1-.33*u._defBuffPower):.67;
+  if(u._sanctuaryUntil>t)dmg*=Math.max(.12,1-.22*(u._sanctuaryPower||1));
   dmg=Math.max(1,Math.round(dmg));
  }
  return oldDmg(u,dmg,att,color,crit);
 };
 const oldPower=effectiveDmg;
 effectiveDmg=function(u,magic){let base=oldPower(u,magic),t=game.sim?.time??0;
- if(u._atkBuffUntil>t)base*=u.type==='warrior'?1.3:1.23;
+ if(u._atkBuffUntil>t)base*=u._atkBuffFromEnchant?1+.23*(u._atkBuffPower||1):u.type==='warrior'?1.3:1.23;
  if(u._aimBuffUntil>t&&!magic)base*=1.28;
  return base;
 };
@@ -1607,7 +1607,7 @@ strike=function(att,target,magic=false,mult=1,splash=false){
  try{return oldStrike(att,target,magic,mult,splash);}finally{att.st.dx=oldDex;}
 };
 const oldDir=dirMove;
-dirMove=function(u,vx,vy,dt){const t=game.sim?.time??0;return oldDir(u,vx,vy,dt*(u._speedBuffUntil>t?u.type==='rogue'?1.6:1.4:1));};
+dirMove=function(u,vx,vy,dt){const t=game.sim?.time??0;return oldDir(u,vx,vy,dt*(u._speedBuffUntil>t?1+(u.type==='rogue'?.6:.4)*(u._speedBuffPower||1):1));};
 const oldNearest=nearestEnemy;
 nearestEnemy=function(u,enemies){const now=game.sim?.time??0,visible=enemies.filter(v=>v._stealthUntil<=now||!v._stealthUntil);return oldNearest(u,visible.length?visible:enemies);};
 const oldDetail=updateBattleDetail;
@@ -1617,7 +1617,7 @@ updateBattleDetail=function(){oldDetail();const s=game.sim;if(!s)return;const u=
 };
 // Add a concise skill label to battle HUD without exposing any secret prep.
 const oldBattleCommands=renderBattleCommands;
-renderBattleCommands=function(){oldBattleCommands();const box=document.querySelector('#battleCommandBox');if(box&&!box.querySelector('.special-rules'))box.insertAdjacentHTML('beforeend','<div class="special-rules">✦ 必殺スキルは出撃前に各傭兵1つだけ習得。発動条件を満たすと自動で使用します。</div>');};
+renderBattleCommands=function(){oldBattleCommands();const box=document.querySelector('#battleCommandBox');if(box&&!box.querySelector('.special-rules'))box.insertAdjacentHTML('beforeend','<div class="special-rules">✦ 各傭兵の必殺スキルは競売時に1つ確定します。変更できず、戦闘中は自動で発動します。</div>');};
 
  document.head.insertAdjacentHTML('beforeend',`<style>
  /* Auction compact portrait / radar */
@@ -1823,12 +1823,12 @@ renderBattleCommands=function(){oldBattleCommands();const box=document.querySele
   const result=oldPlacement230.apply(this,args);
   if(screen!=='placement'||!game?.players)return result;
   const storyBattle=!!game._storyRevealEnemies;
-  const k=app.querySelector('.pageintro .overline');if(k)k.textContent=storyBattle?'BATTLEFIELD INTELLIGENCE':'DELAYED FIELD INTELLIGENCE';
+  const k=app.querySelector('.pageintro .overline');if(k)k.textContent=storyBattle?'BATTLEFIELD INTELLIGENCE':'VISIBLE DEPLOYMENT';
   const description=app.querySelector('.pageintro .lead');
-  if(description)description.textContent=storyBattle?'敵の出撃位置は最初から見えます。好きな場所に出撃円を動かし、準備OKでそのまま戦闘を始めます。':'敵チームの出撃位置は約2秒遅れで表示・更新されます。準備OK後も5秒のカウントダウン中は位置・行動方針を変更できます。';
-  const ribbon=app.querySelector('.placement-art-ribbon .meta');if(ribbon)ribbon.innerHTML=storyBattle?'敵の出撃位置は公開。障害物を避けて自軍の出撃円を配置してください。':'敵の出撃円は約2秒遅れで表示。準備OK後の5秒間も変更できます。';
-  const badge=app.querySelector('#circleInfo');if(badge)badge.textContent=storyBattle?'敵チームの出撃円も表示されています。出撃位置を選択してください。':'敵の出撃円は2秒遅れで更新されます。自軍は即時反映。';
-  for(const node of app.querySelectorAll('.playerrow .pside .tiny'))if(node.textContent.includes('位置非公開'))node.textContent=storyBattle?'位置公開':'約2秒遅れで公開';
+  if(description)description.textContent=storyBattle?'敵の出撃位置は最初から見えます。好きな場所に出撃円を動かし、準備OKでそのまま戦闘を始めます。':'敵チームの出撃位置は最初から表示され、すぐに更新されます。準備OK後も5秒のカウントダウン中は位置・行動方針を変更できます。';
+  const ribbon=app.querySelector('.placement-art-ribbon .meta');if(ribbon)ribbon.innerHTML=storyBattle?'敵の出撃位置は公開。障害物を避けて自軍の出撃円を配置してください。':'敵の出撃円は最初から表示されます。準備OK後の5秒間も変更できます。';
+  const badge=app.querySelector('#circleInfo');if(badge)badge.textContent=storyBattle?'敵チームの出撃円も表示されています。出撃位置を選択してください。':'敵の出撃円も表示されています。配置変更もすぐに反映されます。';
+  for(const node of app.querySelectorAll('.playerrow .pside .tiny'))if(node.textContent.includes('位置非公開'))node.textContent=storyBattle?'位置公開':'位置公開';
   const ready=app.querySelector('#nextDeploy');
   if(ready){
    const original=ready.onclick;
@@ -1867,7 +1867,7 @@ const send=(conn,msg)=>{try{if(conn&&conn.open)conn.send(msg);}catch(e){console.
 const cast=msg=>online.guests.forEach(g=>send(g.conn,msg));
 const roomCode=()=> 'mab-'+Math.random().toString(36).slice(2,8).toUpperCase();
 const stageHtml=(heading,body,extra='')=>`<div class="net-stage surface pad"><div class="overline">ONLINE MERCENARY BATTLE</div><h2 class="headline" style="font-size:25px">${heading}</h2>${body}${extra}</div>`;
-function renderIntro(){if(online.role==='client'&&online.active)return;const section=document.createElement('section');section.className='online-intro surface pad';section.innerHTML=`<div class="overline">HOW TO PLAY</div><h2>傭兵を競り落とし、最後まで勝ち残ろう</h2><p>① 予算内で傭兵を競売で獲得（最高額が同額なら全員再入札）　② 残金で武器と防具を購入　③ 各試合でホストがマップを選択　④ 出撃地点・行動方針・必殺スキルを決定　⑤ 自動戦闘で最後の一陣営を目指す。<strong>3・5・10勝先取</strong>で優勝です。</p><p class="muted tiny">傭兵の操作はできませんが、戦闘中に優先攻撃する陣営は変更できます。競売額と残金は他のプレイヤーには公開されません。</p></section>`;
+function renderIntro(){if(online.role==='client'&&online.active)return;const section=document.createElement('section');section.className='online-intro surface pad';section.innerHTML=`<div class="overline">HOW TO PLAY</div><h2>傭兵を競り落とし、最後まで勝ち残ろう</h2><p>① 予算内で傭兵を競売で獲得（最高額が同額なら全員再入札）　② 残金で武器と防具を購入　③ 各試合でホストがマップを選択　④ 出撃地点・行動方針・習得済みの必殺スキルを確認　⑤ 自動戦闘で最後の一陣営を目指す。<strong>3・5・10勝先取</strong>で優勝です。</p><p class="muted tiny">傭兵の操作はできませんが、戦闘中に優先攻撃する陣営は変更できます。競売額と残金は他のプレイヤーには公開されません。</p></section>`;
  const intro=app.querySelector('.pageintro');if(intro)intro.after(section);else app.prepend(section);
  const onlineBox=document.createElement('section');onlineBox.className='surface pad online-menu';onlineBox.innerHTML=`<h2 class="blocktitle">オンライン対戦（試作） <small>2〜6陣営・CPU補充可</small></h2><p class="tiny muted">全員が同じバージョンのHTMLを開き、インターネットに接続してください。ホストが部屋を作成し、表示されたコードを参加者に伝えます。</p><div class="online-menu-actions"><label>プレイヤー名<input class="input" id="netName" maxlength="16" value="${safe(online.myName||'プレイヤー')}"></label><label>部屋コード<input class="input" id="netRoom" placeholder="MAB-XXXXXX" value="${safe(online.room)}"></label><button class="btn primary" id="netHost">部屋を作る</button><button class="btn" id="netJoin">部屋に参加</button></div><div id="netStatus" class="small muted"></div><div id="netLobby"></div></section>`;
  section.after(onlineBox);
@@ -1889,8 +1889,8 @@ function hostConnect(conn){conn.on('data',msg=>{if(!msg||typeof msg!=='object')r
  conn.on('close',()=>{const idx=online.guests.findIndex(x=>x.conn===conn);if(idx<0)return;if(!online.active){online.guests.splice(idx,1);online.guests.forEach((g,i)=>g.pid=i+1);hostLobby();}else{const g=online.guests[idx];let warn=document.querySelector('#onlineWarning');if(!warn){warn=document.createElement('div');warn.id='onlineWarning';warn.className='online-disconnect';document.body.append(warn);}warn.textContent=`${g.name}の接続が切れました。進行は一時的に相手の操作待ちになる場合があります。`;}});
 }
 function publicPlayers(pid,forBattle=false){return game.players.map(p=>({id:p.id,name:p.name,color:p.color,human:p.human,money:p.id===pid?p.money:null,units:p.units.map(m=>forBattle?m:{id:m.id,name:m.name,type:m.type,st:p.id===pid?m.st:undefined,gear:p.id===pid?m.gear:undefined,tactic:p.id===pid?m.tactic:undefined,specialChoice:p.id===pid?m.specialChoice:undefined}),spent:p.id===pid?p.spent:undefined,kills:p.kills||0}));}
-function waiting(label){if(online.role!=='host'||!online.active)return;document.body.classList.remove('auction-active');screen='online-wait';setStage('ONLINE');app.innerHTML=stageHtml('参加プレイヤーの操作を待機中',`<div class="net-wait-symbol">⌛</div><p>${safe(label)} が操作しています。操作が終わると自動で次へ進みます。</p><p class="muted small">ほかのプレイヤーの入札額・予算は非公開。出撃地点は配置画面で約2秒遅れに公開されます。</p>`);}
-function packFor(pid,kind,extra={}){let p=game.players[pid];return {type:'stage',kind,pid,players:publicPlayers(pid),money:p.money,lotIndex:game.lotIndex,lotTotal:game.lots.length,lot:['auction','intro','bid','result'].includes(kind)?game.lots[game.lotIndex]:null,auctionRound:game.auction?.round??0,results:game.history.slice(0,7).map(h=>({owner:h.owner,merc:{id:h.merc.id,name:h.merc.name,type:h.merc.type}})),unitList:p.units.map(m=>({id:m.id,name:m.name,type:m.type,st:m.st,trait:m.trait,gear:m.gear,tactic:m.tactic,specialChoice:m.specialChoice})),map:setup.map,round:game.series?.round||0,raceTo:setup.raceTo,scores:game.series?.scores||{},...extra};}
+function waiting(label){if(online.role!=='host'||!online.active)return;document.body.classList.remove('auction-active');screen='online-wait';setStage('ONLINE');app.innerHTML=stageHtml('参加プレイヤーの操作を待機中',`<div class="net-wait-symbol">⌛</div><p>${safe(label)} が操作しています。操作が終わると自動で次へ進みます。</p><p class="muted small">ほかのプレイヤーの入札額・予算は非公開。出撃地点は配置画面で最初から公開されます。</p>`);}
+function packFor(pid,kind,extra={}){let p=game.players[pid];return {type:'stage',kind,pid,players:publicPlayers(pid),money:p.money,lotIndex:game.lotIndex,lotTotal:game.lots.length,lot:['auction','intro','bid','result'].includes(kind)?game.lots[game.lotIndex]:null,auctionRound:game.auction?.round??0,results:game.history.slice(0,7).map(h=>({owner:h.owner,merc:{id:h.merc.id,name:h.merc.name,type:h.merc.type}})),unitList:p.units.map(m=>({id:m.id,name:m.name,type:m.type,st:m.st,trait:m.trait,gear:m.gear,tactic:m.tactic,specialChoice:m.specialChoice})),spawnPoints:game.spawnPoints?.map(at=>at?{x:at.x,y:at.y}:null),map:setup.map,round:game.series?.round||0,raceTo:setup.raceTo,scores:game.series?.scores||{},...extra};}
 function transmit(pid,kind,extra={}){const g=online.guests.find(g=>g.pid===pid);if(!g)return;send(g.conn,packFor(pid,kind,extra));}
 function announceWait(which,pid){online.guests.forEach(g=>{if(g.pid!==pid)send(g.conn,packFor(g.pid,'wait',{message:which}));});}
 const baseView=viewTurn;
@@ -1921,7 +1921,6 @@ function hostAction(pid,msg){if(!online.active||online.role!=='host'||!game)retu
  if(kind==='plan'&&isPlace()){
   const m=p.units.find(u=>u.id===msg.unitId);if(!m)return;
   if(TACTICS.stance[msg.stance]&&TACTICS.target[msg.target]){m.tactic={...m.tactic,stance:msg.stance,target:msg.target};if(m.type==='healer'&&TACTICS.heal[msg.heal])m.tactic.heal=msg.heal;}
-  if(Number.isInteger(msg.specialChoice)&&msg.specialChoice>=0&&msg.specialChoice<3)m.specialChoice=msg.specialChoice;
   transmit(pid,'placement');return;
  }
  if(kind==='place'&&isPlace()){
@@ -1999,7 +1998,7 @@ function clientReceive(msg){if(!msg||typeof msg!=='object')return;
   const round=msg.round;if(round!==online._spawnRound){online._spawnRound=round;online.spawns={};}
   const team=Number(msg.pid),center=msg.center;if(!Number.isInteger(team)||!center||!Number.isFinite(center.x)||!Number.isFinite(center.y))return;
   const snapshot={x:center.x,y:center.y};
-  setTimeout(()=>{if(online._spawnRound!==round)return;online.spawns=online.spawns||{};online.spawns[team]=snapshot;online.redrawPlacement?.();},2000);
+  if(online._spawnRound===round){online.spawns=online.spawns||{};online.spawns[team]=snapshot;online.redrawPlacement?.();}
   return;
  }
  if(msg.type==='readyCountdown'){
@@ -2017,7 +2016,7 @@ function clientReceive(msg){if(!msg||typeof msg!=='object')return;
 function guestSend(kind,fields={}){send(online.hostConn,{type:'action',kind,...fields});}
 function clientStage(kind,data={}){online.stage=kind;
  if(kind==='lobby'){screen='online-lobby';app.innerHTML=stageHtml('ロビーに参加中',`<p>部屋コード <strong>${safe(data.room)}</strong></p><h3>参加者</h3><div class="room-members">${(data.names||[]).map(n=>`<div>● ${safe(n)}</div>`).join('')}</div><p>ホストがCPU人数・勝利条件を決めて開始します。</p>`);return;}
- if(['wait','mapwait'].includes(kind)){if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面では他人の入札額・所持金は非公開。配置画面では出撃地点を約2秒遅れで確認できます。</p>`);return;}
+ if(['wait','mapwait'].includes(kind)){if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面では他人の入札額・所持金は非公開。配置画面では敵陣営の出撃円も確認できます。</p>`);return;}
  if(kind==='intro'||kind==='bid'||kind==='result'){clientAuction(kind,data);return;}
  if(kind==='equip'){clientEquip(data);return;}
  if(kind==='placement'){if(screen==='placement'&&online.currentPlacementRound===data.round){if(data.error){const node=$('#netCoord');if(node)node.textContent=data.error;}return;}online.currentPlacementRound=data.round;clientPlacement(data);return;}
@@ -2025,7 +2024,7 @@ function clientStage(kind,data={}){online.stage=kind;
 }
 function rosterList(data){return `<section class="surface pad" style="min-width:220px"><div class="blocktitle">契約済みの傭兵一覧</div>${(data.players||[]).map(p=>`<div class="member-card"><strong style="color:${p.color}">● ${safe(p.name)}</strong> <span class="tiny">${p.units.length}名</span><div class="member-roster">${p.units.length?p.units.map(m=>`<div class="member-merc">${cls[m.type].icon} ${safe(m.name)}</div>`).join(''):'<div class="tiny muted">未契約</div>'}</div></div>`).join('')}</section>`;}
 function clientAuction(kind,data){screen=kind==='result'?'lot-result':'auction';document.body.classList.remove('auction-active');let m=data.lot||{},p=data.players?.[online.myPid]||{},round=data.auctionRound||0;
- const profile=`<div class="net-merc-profile"><img src="${artPortrait(m.type)}" alt="${roleLabel[m.type]||''}の立ち絵"><div><h2>${safe(m.name)}</h2><p>${roleLabel[m.type]} / 推定落札額 <strong>${m.value}G</strong></p><div class="net-stat-grid">${Object.entries({pa:'物攻',pd:'物防',ma:'魔攻',md:'魔防',ag:'素早',dx:'器用',hp:'HP',mp:'MP'}).map(([k,label])=>`<span>${label}<b>${m.st?.[k]??'-'}</b></span>`).join('')}</div><p class="tiny gold">固有特性：${safe(m.trait?.n||'')}</p></div></div>`;
+ const profile=`<div class="net-merc-profile"><img src="${artPortrait(m.type)}" alt="${roleLabel[m.type]||''}の立ち絵"><div><h2>${safe(m.name)}</h2><p>${roleLabel[m.type]} / 推定落札額 <strong>${m.value}G</strong></p><div class="net-stat-grid">${Object.entries({pa:'物攻',pd:'物防',ma:'魔攻',md:'魔防',ag:'素早',dx:'器用',hp:'HP',mp:'MP'}).map(([k,label])=>`<span>${label}<b>${m.st?.[k]??'-'}</b></span>`).join('')}</div><p class="tiny gold">固有特性：${safe(m.trait?.n||'')}</p><p class="tiny gold">✦ 習得済み：${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}</p><p class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</p></div></div>`;
  let actions='';
  if(kind==='intro'){actions='<button class="btn primary" id="netEnterBid">説明を読んで入札へ →</button>';
  }else if(kind==='bid'){actions=`<div class="net-bid-bar"><div>所持金 <b class="gold">${data.money}G</b>　/ 第${round+1}回入札</div><div class="net-bid-row"><input id="netBidInput" class="input" type="number" min="0" max="${data.money}" step="1" value="${Math.min(data.money,m.value)}"><button id="netBidSubmit" class="btn primary">入札を確定</button></div><div class="net-adjust">${[-100,-10,-1,0,1,10,100].map(v=>`<button class="btn sm ghost" data-delta="${v}">${v>0?'+':''}${v}</button>`).join('')}</div><div id="netError" class="red tiny">${safe(data.error||'')}</div></div>`;
@@ -2035,15 +2034,16 @@ function clientAuction(kind,data){screen=kind==='result'?'lot-result':'auction';
  if(kind==='bid'){const inp=$('#netBidInput');$('#netBidSubmit').onclick=()=>{let n=Number(inp.value);if(!Number.isSafeInteger(n)||n<0||n>data.money){$('#netError').textContent='提示できる範囲を確認してください';return;}guestSend('bid',{value:n});clientStage('wait',{message:'入札を確定しました。全員の提示を待っています…'});};app.querySelectorAll('[data-delta]').forEach(b=>b.onclick=()=>{let d=+b.dataset.delta;inp.value=d===0?'0':String(Math.max(0,Math.min(data.money,(Number(inp.value)||0)+d)));});}
  if(kind==='result')$('#netResultNext').onclick=()=>{guestSend('result');clientStage('wait',{message:'次の傭兵を待っています…'});};
 }
-function clientEquip(data){screen='equipment';const units=data.unitList||[];app.innerHTML=stageHtml('装備購入',`<p>あなたの残金 <strong class="gold">${data.money}G</strong>。装備は1人につき武器1個と防具1個です。</p>${data.error?`<p class="red">${safe(data.error)}</p>`:''}<div class="net-equipment">${units.length?units.map(m=>`<div class="surface pad"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><p class="tiny muted">武器：${m.gear.weapon?gearCatalog.weapon[m.gear.weapon-1]?.name:'未装備'}　防具：${m.gear.armor?gearCatalog.armor[m.gear.armor-1]?.name:'未装備'}</p><div class="net-equips">${['weapon','armor'].map(slot=>`<label>${slot==='weapon'?'武器':'防具'}<select class="input" data-unit="${m.id}" data-slot="${slot}"><option value="">購入する装備を選択</option>${gearCatalog[slot].map((item,i)=>`<option value="${i+1}">${safe(item.name)} ${item.price}G　${safe(item.description||('攻撃+'+item.attack))}${m.gear[slot]===i+1?'（装備中・再選択で解除）':''}</option>`).join('')}</select>${m.gear[slot]?`<button type="button" class="btn sm" data-remove="${slot}" data-unit="${m.id}">装備解除・全額返金</button>`:''}</label>`).join('')}</div></div>`).join(''):'<p>獲得した傭兵はいません。</p>'}</div><div class="actions"><button class="btn primary" id="netEquipDone">装備購入を終了 →</button></div>`);
+function clientEquip(data){screen='equipment';const units=data.unitList||[];app.innerHTML=stageHtml('装備購入',`<p>あなたの残金 <strong class="gold">${data.money}G</strong>。装備は1人につき武器1個と防具1個です。</p>${data.error?`<p class="red">${safe(data.error)}</p>`:''}<div class="net-equipment">${units.length?units.map(m=>`<div class="surface pad"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="net-fixed-skill">✦ ${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}<div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div><p class="tiny muted">武器：${m.gear.weapon?gearCatalog.weapon[m.gear.weapon-1]?.name:'未装備'}　防具：${m.gear.armor?gearCatalog.armor[m.gear.armor-1]?.name:'未装備'}</p><div class="net-equips">${['weapon','armor'].map(slot=>`<label>${slot==='weapon'?'武器':'防具'}<select class="input" data-unit="${m.id}" data-slot="${slot}"><option value="">購入する装備を選択</option>${gearCatalog[slot].map((item,i)=>`<option value="${i+1}">${safe(item.name)} ${item.price}G　${safe(item.description||('攻撃+'+item.attack))}${m.gear[slot]===i+1?'（装備中・再選択で解除）':''}</option>`).join('')}</select>${m.gear[slot]?`<button type="button" class="btn sm" data-remove="${slot}" data-unit="${m.id}">装備解除・全額返金</button>`:''}</label>`).join('')}</div></div>`).join(''):'<p>獲得した傭兵はいません。</p>'}</div><div class="actions"><button class="btn primary" id="netEquipDone">装備購入を終了 →</button></div>`);
  app.querySelectorAll('select[data-slot]').forEach(select=>select.onchange=()=>{if(!select.value)return;guestSend('equip',{unitId:+select.dataset.unit,slot:select.dataset.slot,tier:+select.value});});app.querySelectorAll('button[data-remove]').forEach(b=>b.onclick=()=>guestSend('equip',{unitId:+b.dataset.unit,slot:b.dataset.remove,tier:0}));$('#netEquipDone').onclick=()=>{guestSend('equipDone');clientStage('wait',{message:'装備購入を確定しました。'});};}
 function clientPlacement(data){screen='placement';const units=data.unitList||[];const center=online.placeDraft?.round===data.round?{...online.placeDraft.center}:{x:100,y:100};const mp=data.map||'ruins';
- app.innerHTML=stageHtml(`第${data.round}試合 · 出撃準備`,`${data.error?`<p class="red">${safe(data.error)}</p>`:''}<p>今回の戦場：<strong>${mp==='ruins'?'古い遺跡':mp==='forest'?'深緑の森':'草原の古戦場'}</strong>。地図をクリックして自軍の出撃円を配置します。敵陣営の位置は約2秒遅れで更新されます。準備OKから5秒間は配置を変更できます。</p><div class="net-deploy-grid"><div><canvas id="netDeployCanvas" width="640" height="640"></canvas><p id="netCoord" class="tiny muted">位置 X:100 / Y:100</p><button id="netPlaceConfirm" class="btn primary" ${online.placeDraft?.round===data.round?'':'disabled'}>準備OK（5秒後に確定）</button></div><div class="net-plans">${units.map(m=>{const tact=m.tactic||{stance:DEFAULT[m.type][0],target:DEFAULT[m.type][1]};return `<div class="tactic-unit"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="tactic-controls"><label>立ち回り<select class="input" data-unit="${m.id}" data-field="stance">${Object.entries(TACTICS.stance).map(([v,n])=>`<option value="${v}" ${tact.stance===v?'selected':''}>${n}</option>`).join('')}</select></label><label>攻撃優先<select class="input" data-unit="${m.id}" data-field="target">${Object.entries(TACTICS.target).map(([v,n])=>`<option value="${v}" ${tact.target===v?'selected':''}>${n}</option>`).join('')}</select></label>${m.type==='healer'?`<label>回復優先<select class="input" data-unit="${m.id}" data-field="heal">${Object.entries(TACTICS.heal).map(([v,n])=>`<option value="${v}" ${(tact.heal||'lowHp')===v?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div><label>必殺スキル<select class="input" data-unit="${m.id}" data-field="specialChoice">${SPECIAL[m.type].map((n,i)=>`<option value="${i}" ${(m.specialChoice??0)===i?'selected':''}>${n}</option>`).join('')}</select></label></div>`;}).join('')}</div></div>`);
+ online._spawnRound=data.round;online.spawns={...Object.fromEntries((data.spawnPoints||[]).map((at,i)=>[i,at]).filter(([i,at])=>at)),...(online.spawns||{})};
+ app.innerHTML=stageHtml(`第${data.round}試合 · 出撃準備`,`${data.error?`<p class="red">${safe(data.error)}</p>`:''}<p>今回の戦場：<strong>${mp==='ruins'?'古い遺跡':mp==='forest'?'深緑の森':'草原の古戦場'}</strong>。地図をクリックして自軍の出撃円を配置します。敵陣営の出撃円は最初から表示され、移動もすぐ更新されます。準備OKから5秒間は配置を変更できます。</p><div class="net-deploy-grid"><div><canvas id="netDeployCanvas" width="640" height="640"></canvas><p id="netCoord" class="tiny muted">位置 X:100 / Y:100</p><button id="netPlaceConfirm" class="btn primary" ${online.placeDraft?.round===data.round?'':'disabled'}>準備OK（5秒後に確定）</button></div><div class="net-plans">${units.map(m=>{const tact=m.tactic||{stance:DEFAULT[m.type][0],target:DEFAULT[m.type][1]};return `<div class="tactic-unit"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="tactic-controls"><label>立ち回り<select class="input" data-unit="${m.id}" data-field="stance">${Object.entries(TACTICS.stance).map(([v,n])=>`<option value="${v}" ${tact.stance===v?'selected':''}>${n}</option>`).join('')}</select></label><label>攻撃優先<select class="input" data-unit="${m.id}" data-field="target">${Object.entries(TACTICS.target).map(([v,n])=>`<option value="${v}" ${tact.target===v?'selected':''}>${n}</option>`).join('')}</select></label>${m.type==='healer'?`<label>回復優先<select class="input" data-unit="${m.id}" data-field="heal">${Object.entries(TACTICS.heal).map(([v,n])=>`<option value="${v}" ${(tact.heal||'lowHp')===v?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div><div class="net-fixed-skill">✦ 習得済み：<b>${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||SPECIAL[m.type]?.[m.specialChoice??0])}</b><div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / 消費MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div></div>`;}).join('')}</div></div>`);
  const cv=$('#netDeployCanvas'),ctxNet=cv.getContext('2d');const draw=()=>{let bg=new Image();let image=EMBEDDED_MAPS[mp];if(!cv._bg){cv._bg=new Image();cv._bg.src=image;cv._bg.onload=draw;}ctxNet.fillStyle='#142835';ctxNet.fillRect(0,0,640,640);if(cv._bg.complete&&cv._bg.naturalWidth){ctxNet.globalAlpha=.78;ctxNet.drawImage(cv._bg,0,0,640,640);ctxNet.globalAlpha=1;}ctxNet.fillStyle='#62d7eb47';ctxNet.strokeStyle='#9deeff';ctxNet.lineWidth=3;ctxNet.beginPath();ctxNet.arc(center.x*3.2,center.y*3.2,11.5*3.2,0,2*Math.PI);ctxNet.fill();ctxNet.stroke();;
   for(const [key,pos] of Object.entries(online.spawns||{})){const other=data.players?.[Number(key)];if(!other||Number(key)===online.myPid)continue;ctxNet.beginPath();ctxNet.arc(pos.x*3.2,pos.y*3.2,11.5*3.2,0,Math.PI*2);ctxNet.strokeStyle=other.color||'#ecc581';ctxNet.fillStyle=(other.color||'#ecc581')+'33';ctxNet.lineWidth=2;ctxNet.fill();ctxNet.stroke();ctxNet.fillStyle='#fff';ctxNet.font='bold 12px system-ui';ctxNet.textAlign='center';ctxNet.fillText(other.name,pos.x*3.2,pos.y*3.2-44);}
  };online.redrawPlacement=draw;draw();
  cv.onclick=e=>{let r=cv.getBoundingClientRect();center.x=Math.max(14,Math.min(186,(e.clientX-r.left)/r.width*200));center.y=Math.max(14,Math.min(186,(e.clientY-r.top)/r.height*200));online.placeDraft={round:data.round,center:{...center}};$('#netPlaceConfirm').disabled=false;$('#netCoord').textContent=`位置 X:${Math.round(center.x)} / Y:${Math.round(center.y)}`;draw();guestSend('place',{x:center.x,y:center.y});};
- app.querySelectorAll('[data-field]').forEach(el=>el.onchange=()=>{const card=el.closest('.tactic-unit');const unitId=+el.dataset.unit;let stance=card.querySelector('[data-field="stance"]').value,target=card.querySelector('[data-field="target"]').value,heal=card.querySelector('[data-field="heal"]')?.value||'lowHp',specialChoice=+card.querySelector('[data-field="specialChoice"]').value;guestSend('plan',{unitId,stance,target,heal,specialChoice});});
+ app.querySelectorAll('[data-field]').forEach(el=>el.onchange=()=>{const card=el.closest('.tactic-unit');const unitId=+el.dataset.unit;let stance=card.querySelector('[data-field="stance"]').value,target=card.querySelector('[data-field="target"]').value,heal=card.querySelector('[data-field="heal"]')?.value||'lowHp';guestSend('plan',{unitId,stance,target,heal});});
  $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');const button=$('#netPlaceConfirm');if(button){button.disabled=true;button.textContent='準備確認中…（配置変更可能）';}};
 }
 function receiveBattle(snap){if(!online.active)return;const first=screen!=='battle';const prev=game?.sim?.selectedId??null;game={players:snap.players,world:snap.world||game?.world||{name:snap.map,obstacles:[],details:[]},sim:{...snap.sim,selectedId:prev},series:{round:snap.round,raceTo:snap.raceTo,scores:snap.scores,rounds:[]}};setup.map=snap.map;setup.raceTo=snap.raceTo;
@@ -2074,7 +2074,7 @@ window.mercPublishSpawn=function(pid,point){
  const center={x:Number(point.x),y:Number(point.y)};
  if(!Number.isFinite(center.x)||!Number.isFinite(center.y))return;
  match._spawnVisible=match._spawnVisible||{};
- setTimeout(()=>{if(game!==match)return;match._spawnVisible[pid]=center;if(screen==='placement')drawPlacement();},2000);
+ match._spawnVisible[pid]=center;if(screen==='placement')drawPlacement();
  if(online.role==='host'&&online.active){
   const last=match._spawnSentAt||{};match._spawnSentAt=last;
   const now=performance.now();if(now-(last[pid]||-10000)<180)return;last[pid]=now;
@@ -3021,9 +3021,9 @@ if(screen==='setup')renderSetup();
   }
   function skillFor(u){
     const index=Number.isInteger(u.specialChoice)?u.specialChoice:(u.type==='rogue'?2:0);
-    const name=skillList[u.type]?.[index];
-    // The skill selection lives in the battle snapshot. Names are mirrored here for the inspector.
-    return name?{name,desc:skillDescriptions[u.type]?.[index]||'状況に応じて自動発動'}:null;
+    const sk=window.STORY_SKILLS?.[u.type]?.[index];
+    const name=sk?.name||skillList[u.type]?.[index];
+    return name?{name,desc:`${sk?.desc||skillDescriptions[u.type]?.[index]||'状況に応じて自動発動'} / CT ${sk?.cd??'—'}秒・消費MP ${sk?.cost??'—'}`}:null;
   }
   function statusText(u){
     if(!u.alive)return '戦闘不能';
@@ -4689,6 +4689,149 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
    u._recoveryWaiting=!near&&!canShoot;
    return ret;
  };
+})();
+</script>
+<script id="v239-healer-formation-recovery-fix">
+'use strict';
+// If every surviving melee frontline is in recovery, the healers must not
+// retreat behind those same recovering units: doing so creates a feedback
+// loop in which the healers flee and their patients follow them forever.
+// This applies equally to story, solo/CPU and online host simulation.
+(function(){
+ const originalTick=aiTick;
+ const originalMove=dirMove;
+ const SAFE_EVADE_RADIUS=6.5;
+ const CLOSE_THREAT_RADIUS=7.0;
+ const HEALED=.55;
+ function frontlinesRecovering(healer,sim){
+   if(!sim?.units)return false;
+   const fronts=sim.units.filter(v=>v.alive&&v.owner===healer.owner&&
+     (v.type==='warrior'||v.type==='rogue'));
+   if(!fronts.length)return false;
+   return fronts.every(v=>v._healingFallback&&
+     v.maxHp>0&&v.hp/v.maxHp<HEALED&&
+     sim.units.some(h=>h.alive&&h.owner===healer.owner&&h.type==='healer'));
+ }
+ function updateHold(healer,sim){
+   const hold=frontlinesRecovering(healer,sim);
+   if(hold){
+     // Latch a position once; do not update this every frame as that would
+     // let the center drift across the entire map while kiting.
+     if(!healer._squadRecoveryHold || !healer._squadRecoveryHold.active){
+       healer._squadRecoveryHold={active:true,x:healer.x,y:healer.y};
+     }
+   }else{
+     healer._squadRecoveryHold=null;
+   }
+   return hold;
+ }
+ aiTick=function(u,dt,sim){
+   if(u?.alive&&u.type==='healer')updateHold(u,sim);
+   return originalTick(u,dt,sim);
+ };
+ dirMove=function(u,vx,vy,dt){
+   if(!u?.alive||u.type!=='healer'||!u._squadRecoveryHold?.active){
+     return originalMove(u,vx,vy,dt);
+   }
+   const sim=game?.sim;
+   if(!sim||!frontlinesRecovering(u,sim)){
+     u._squadRecoveryHold=null;
+     return originalMove(u,vx,vy,dt);
+   }
+   // Surviving the shrinking safe zone always takes priority over holding
+   // formation in battle royale.
+   const stormUnsafe=sim.time>=46&&
+     Math.hypot(u.x-WORLD_MID,u.y-WORLD_MID)>sim.storm-4;
+   if(stormUnsafe){
+     u._squadRecoveryHold={active:true,x:u.x,y:u.y};
+     return originalMove(u,vx,vy,dt);
+   }
+   const threat=sim.units.some(v=>v.alive&&v.owner!==u.owner&&
+     (v.type==='warrior'||v.type==='rogue')&&dist(u,v)<CLOSE_THREAT_RADIUS);
+   // With no immediate close-combat danger, heal from a stable position.
+   // Attacks, heals and skill timers still run in originalTick().
+   if(!threat)return;
+   // Allow evasive steps close to the original position, without turning the
+   // retreat into a whole-map chase. The injured front line can catch up.
+   const center=u._squadRecoveryHold;
+   const dx=u.x-center.x,dy=u.y-center.y;
+   const radius=Math.hypot(dx,dy);
+   if(radius>=SAFE_EVADE_RADIUS){
+     const nx=dx/Math.max(radius,.001),ny=dy/Math.max(radius,.001);
+     const outward=vx*nx+vy*ny;
+     if(outward>0){vx-=outward*nx;vy-=outward*ny;}
+     vx-=nx*Math.min(9,Math.max(2,(radius-SAFE_EVADE_RADIUS+1)*3));
+     vy-=ny*Math.min(9,Math.max(2,(radius-SAFE_EVADE_RADIUS+1)*3));
+   }
+   const px=u.x,py=u.y;
+   const result=originalMove(u,vx,vy,dt);
+   const after=Math.hypot(u.x-center.x,u.y-center.y);
+   if(after>SAFE_EVADE_RADIUS){
+     // Keep the movement legal even at high movement speeds / narrow terrain.
+     const nx=(u.x-center.x)/after,ny=(u.y-center.y)/after;
+     const x=center.x+nx*SAFE_EVADE_RADIUS;
+     const y=center.y+ny*SAFE_EVADE_RADIUS;
+     if(walkable(x,y,.57)){u.x=x;u.y=y;}
+     else{u.x=px;u.y=py;}
+   }
+   return result;
+ };
+})();
+</script>
+
+<script>
+'use strict';
+// v2.41: enemy deployment visibility, CPU placement motion, and fixed-skill readouts.
+(()=>{
+ const skills=window.STORY_SKILLS;
+ function sk(m){const options=skills?.[m?.type];return options?.[Number.isInteger(m?.specialChoice)?m.specialChoice:0]||null;}
+ function badge(m){const s=sk(m);return s?`<div class="v240-skill"><b>✦ 習得済み：${escapeHtml(s.name)}</b><div>${escapeHtml(s.desc)}<br>CT ${s.cd}秒 / 消費MP ${s.cost}${m.type==='healer'||m.type==='enchanter'?' / 魔攻70を基準に回復・強化量が増減':''}</div></div>`:'';}
+ const previousEquipment=renderEquipment;
+ renderEquipment=function(...args){const result=previousEquipment.apply(this,args);if(screen!=='equipment')return result;const p=game?.players?.[game.equipOrder?.[game.equipTurn]];const m=p?.units?.[game.shopSelected||0],host=app.querySelector('.equip-main');if(m&&host)host.insertAdjacentHTML('afterend',badge(m));return result;};
+ const previousDrawPlacement=drawPlacement;
+ // Every team's initial circle is public. Seed visibility *before* the canvas is painted.
+ drawPlacement=function(...args){
+   if(game?.spawnPoints&&!game._storyRevealEnemies){
+     game._spawnVisible=game._spawnVisible||{};
+     for(const p of game.players){const at=game.spawnPoints[p.id];
+       if(at)game._spawnVisible[p.id]={x:at.x,y:at.y};
+     }
+   }
+   return previousDrawPlacement.apply(this,args);
+ };
+ const previousRenderPlacement=renderPlacement;
+ renderPlacement=function(...args){
+   const r=previousRenderPlacement.apply(this,args);
+   if(screen!=='placement'||!game||game._storyRevealEnemies||!game.spawnPoints)return r;
+   const match=game;
+   if(!match._v240CpuCountdown){
+     match._v240CpuCountdown=setInterval(()=>{
+       if(game!==match||match.sim||!match.spawnPoints){clearInterval(match._v240CpuCountdown);return;}
+       // Optional CPU choices: visible movement during the 5-second ready countdown.
+       if(screen!=='placement'||!document.getElementById('nextDeploy')?.dataset.counting)return;
+       let moved=false;
+       for(const cpu of match.players.filter(p=>!p.human&&p.units.length)){
+         if(Math.random()>.7)continue;
+         const before=match.spawnPoints[cpu.id];if(!before)continue;
+         const angle=Math.random()*Math.PI*2,len=2.5+Math.random()*5;
+         const at={x:Math.max(14,Math.min(186,before.x+Math.cos(angle)*len)),y:Math.max(14,Math.min(186,before.y+Math.sin(angle)*len))};
+         if(match.spawnPoints.some((other,i)=>i!==cpu.id&&other&&Math.hypot(other.x-at.x,other.y-at.y)<28))continue;
+         const formation=window.STORY_PACK?.(at,cpu);if(!formation)continue;
+         match.spawnPoints[cpu.id]=at;match.placements[cpu.id]=formation;
+         match._spawnVisible[cpu.id]={...at};window.mercPublishSpawn?.(cpu.id,at);moved=true;
+       }
+       if(moved&&screen==='placement')drawPlacement();
+     },850);
+   }
+   drawPlacement();
+   return r;
+ };
+ const previousAuction=renderAuction;
+ renderAuction=function(...args){const r=previousAuction.apply(this,args);return r;};
+ document.head.insertAdjacentHTML('beforeend',`<style>
+ .v240-skill,.net-fixed-skill{border:1px solid #95764e8c;border-radius:9px;padding:10px;margin:8px 0 10px;background:#1e2e3c;color:#e7ca99;font-size:12px;line-height:1.75}
+ .v240-skill div,.net-fixed-skill .muted{color:#c4d1df;font-size:11px;margin-top:3px}
+ </style>`);
 })();
 </script>
 </body></html>
