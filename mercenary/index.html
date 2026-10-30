@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.41 — スキル固定・魔攻依存・出撃地点公開版</title>
+<title>傭兵競売戦記 v2.42 — オンライン同時進行・戦闘共有版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -1912,6 +1912,7 @@ function hostAction(pid,msg){if(!online.active||online.role!=='host'||!game)retu
  const isBid=()=>currentHuman()?.id===pid;
  const isEquip=()=>game.equipOrder?.[game.equipTurn]===pid;
  const isPlace=()=>game.placeOrder?.[game.placeTurn]===pid;
+ if(online.parallel?.phase&&handleParallelAction(pid,msg))return;
  if(kind==='intro'&&isBid()){game.auction.introSeen=`${game.lotIndex}-${game.auction.round}-${pid}`;transmit(pid,'bid');return;}
  if(kind==='bid'&&isBid()){if(!Number.isSafeInteger(n)||n<0||n>p.money){transmit(pid,'bid',{error:'入札額を確認してください'});return;}game.auction.bids[pid]=n;game.auction.currentHumanIndex++;offerNext();return;}
  if(kind==='result'&&game.resultTurn===pid){game.resultTurn++;showNextResult();return;}
@@ -1938,7 +1939,7 @@ function hostAction(pid,msg){if(!online.active||online.role!=='host'||!game)retu
   setTimeout(()=>{if(game!==current||!online.active||!isPlace())return;game.placeTurn++;selected=0;if(game.placeTurn>=game.placeOrder.length)launchBattle();else viewTurn('placement',game.placeOrder[game.placeTurn]);},5000);
   return;
  }
- if(kind==='focus'&&screen==='battle'&&game.sim){const target=n===null?null:Number(n);if(target===null||(Number.isInteger(target)&&game.players[target]&&target!==pid)){game.sim.orders[pid].focus=target;transmit(pid,'focusAck',{focus:target});}return;}
+ if(kind==='focus'&&screen==='battle'&&game.sim){const target=n===null?null:Number(n);if(target===null||(Number.isInteger(target)&&game.players[target]&&target!==pid)){game.sim.orders[pid].focus=target;if(pid===0)renderBattleCommands();else transmit(pid,'focusAck',{focus:target});}return;}
 }
 const oldStartPlacement=startPlacement;
 startPlacement=function(){
@@ -1950,14 +1951,15 @@ startPlacement=function(){
 const oldRenderBattleOnline=renderBattle;
 renderBattle=function(){oldRenderBattleOnline();if(online.role==='host'&&online.active&&screen==='battle'){broadcastBattle(true);}if(online.role==='client'&&online.active&&screen==='battle'){$('#pauseBattle')?.remove();$('#speedBattle')?.remove();}};
 const baseRenderCommands=renderBattleCommands;
-renderBattleCommands=function(){if(online.role!=='client'||!online.active)return baseRenderCommands();
+renderBattleCommands=function(){if(!online.active||!['host','client'].includes(online.role))return baseRenderCommands();return parallelRenderCommands();
+ /* Legacy target UI (kept for offline fallback) */
  const el=$('#battleCommandBox');if(!el||!game.sim)return;const pid=online.myPid,order=game.sim.orders?.[pid],active=order?.focus??null;
  el.innerHTML=`<div class="command-panel"><div class="command-title">優先攻撃する陣営（自分のみ）</div><div class="focus-buttons"><button class="focus-btn ${active===null?'chosen':''}" data-focus="-1">優先なし</button>${game.players.filter(p=>p.id!==pid).map(p=>`<button class="focus-btn ${active===p.id?'chosen':''}" data-focus="${p.id}" style="--team-color:${p.color}"><i style="background:${p.color}"></i>${safe(p.name)}</button>`).join('')}</div></div>`;
  el.querySelectorAll('[data-focus]').forEach(b=>b.onclick=()=>{const id=+b.dataset.focus;send(online.hostConn,{type:'action',kind:'focus',value:id<0?null:id});});
 };
 // In multiplayer host alone runs all simulation ticks. Guests receive safe battle snapshots.
 function battleSnapshot(force=false){if(!game?.sim)return null;let s=game.sim;return {type:'battle',map:setup.map,round:game.series?.round||1,scores:game.series?.scores||{},raceTo:game.series?.raceTo||setup.raceTo,players:publicPlayers(-1,true),world:force?{name:game.world?.name,obstacles:game.world?.obstacles||[],details:game.world?.details||[]}:undefined,sim:{units:s.units,projectiles:s.projectiles,effects:s.effects,texts:s.texts,orders:s.orders,events:s.events,selectedId:null,teamGuides:s.teamGuides,time:s.time,storm:s.storm,paused:s.paused,speed:s.speed,ended:s.ended,winner:s.winner,commandOwner:0}};}
-function broadcastBattle(force=false){if(online.role!=='host'||!online.active||!game?.sim)return;let now=performance.now();if(!force&&now-online.lastFrame<380)return;online.lastFrame=now;let snap=battleSnapshot(force);online.guests.forEach(g=>send(g.conn,snap));}
+function broadcastBattle(force=false){if(online.role!=='host'||!online.active||!game?.sim)return;let now=performance.now();if(!force&&now-online.lastFrame<180)return;online.lastFrame=now;let snap=battleSnapshot(force);online.guests.forEach(g=>send(g.conn,snap));}
 
 // Cache the static projected ground. A 200x200 map otherwise re-renders thousands
 // of floor polygons every frame and makes online combat progress too slowly.
@@ -1989,6 +1991,7 @@ battleLoop=function(stamp){
 const baseEndingOnline=renderEnding;
 renderEnding=function(){baseEndingOnline();if(online.role==='host'&&online.active&&game?.series){cast({type:'end',round:game.series.round,rounds:game.series.rounds,scores:game.series.scores,champion:game.series.champion,raceTo:game.series.raceTo,players:game.players.map(p=>({id:p.id,name:p.name,color:p.color}))});}};
 function clientReceive(msg){if(!msg||typeof msg!=='object')return;
+ if(msg.type==='parallelProgress'){online.lastProgress=msg;showParallelProgress(msg);return;}
  if(msg.type==='welcome'){online.myPid=msg.pid;online.room=msg.room;clientStage('wait',{message:`参加しました。あなたはプレイヤー${msg.pid+1}です。`});return;}
  if(msg.type==='reject'){clientStage('wait',{message:msg.message});return;}
  if(msg.type==='lobby'){clientStage('lobby',msg);return;}
@@ -2013,7 +2016,7 @@ function clientReceive(msg){if(!msg||typeof msg!=='object')return;
  if(msg.type==='battle'){online.active=true;receiveBattle(msg);return;}
  if(msg.type==='end'){clientEnd(msg);return;}
 }
-function guestSend(kind,fields={}){send(online.hostConn,{type:'action',kind,...fields});}
+function guestSend(kind,fields={}){if(online.role==='host')onlineHostBid(kind,fields);else send(online.hostConn,{type:'action',kind,...fields});}
 function clientStage(kind,data={}){online.stage=kind;
  if(kind==='lobby'){screen='online-lobby';app.innerHTML=stageHtml('ロビーに参加中',`<p>部屋コード <strong>${safe(data.room)}</strong></p><h3>参加者</h3><div class="room-members">${(data.names||[]).map(n=>`<div>● ${safe(n)}</div>`).join('')}</div><p>ホストがCPU人数・勝利条件を決めて開始します。</p>`);return;}
  if(['wait','mapwait'].includes(kind)){if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面では他人の入札額・所持金は非公開。配置画面では敵陣営の出撃円も確認できます。</p>`);return;}
@@ -2027,18 +2030,19 @@ function clientAuction(kind,data){screen=kind==='result'?'lot-result':'auction';
  const profile=`<div class="net-merc-profile"><img src="${artPortrait(m.type)}" alt="${roleLabel[m.type]||''}の立ち絵"><div><h2>${safe(m.name)}</h2><p>${roleLabel[m.type]} / 推定落札額 <strong>${m.value}G</strong></p><div class="net-stat-grid">${Object.entries({pa:'物攻',pd:'物防',ma:'魔攻',md:'魔防',ag:'素早',dx:'器用',hp:'HP',mp:'MP'}).map(([k,label])=>`<span>${label}<b>${m.st?.[k]??'-'}</b></span>`).join('')}</div><p class="tiny gold">固有特性：${safe(m.trait?.n||'')}</p><p class="tiny gold">✦ 習得済み：${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}</p><p class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</p></div></div>`;
  let actions='';
  if(kind==='intro'){actions='<button class="btn primary" id="netEnterBid">説明を読んで入札へ →</button>';
- }else if(kind==='bid'){actions=`<div class="net-bid-bar"><div>所持金 <b class="gold">${data.money}G</b>　/ 第${round+1}回入札</div><div class="net-bid-row"><input id="netBidInput" class="input" type="number" min="0" max="${data.money}" step="1" value="${Math.min(data.money,m.value)}"><button id="netBidSubmit" class="btn primary">入札を確定</button></div><div class="net-adjust">${[-100,-10,-1,0,1,10,100].map(v=>`<button class="btn sm ghost" data-delta="${v}">${v>0?'+':''}${v}</button>`).join('')}</div><div id="netError" class="red tiny">${safe(data.error||'')}</div></div>`;
+ }else if(kind==='bid'){actions=`<div class="net-bid-bar"><div>所持金 <b class="gold">${data.money}G</b>　/ 第${round+1}回入札 ${data.bidMode==='overtime'?`（前回 ${data.previousBid}G / 差額を入力）`:''}</div><div class="net-bid-row"><input id="netBidInput" class="input" type="number" min="${data.bidMode==='overtime'?-data.previousBid:0}" max="${data.bidMode==='overtime'?data.money-data.previousBid:data.money}" step="1" value="${data.bidMode==='overtime'?0:Math.min(data.money,m.value)}"><button id="netBidSubmit" class="btn primary">入札を確定</button></div><div class="net-adjust">${[-100,-10,-1,0,1,10,100].map(v=>`<button class="btn sm ghost" data-delta="${v}">${v>0?'+':''}${v}</button>`).join('')}</div><div id="netError" class="red tiny">${safe(data.error||'')}</div></div>`;
  }else{const got=data.winner===online.myPid;actions=`<div><h3>${data.withdrawn?'三度の最高額重複で退場':data.winner===null?'流札':`${safe(data.players[data.winner]?.name)} が落札！`}</h3><p>${got?`あなたの契約額 ${data.price}G`:'落札額は非公開です。'}</p><button class="btn primary" id="netResultNext">結果を確認して次へ</button></div>`;}
  app.innerHTML=`<div class="online-auc-main"><section class="surface pad"><div class="overline">GRAND MERCENARY AUCTION · ${data.lotIndex+1}/${data.lotTotal}</div>${profile}<div class="net-actions">${actions}</div><div class="novel-box"><div class="novel-speaker">競売人</div><div class="novel-text">${kind==='result'?(data.withdrawn?'最高額が3回連続で重複！ この傭兵は退場だ。':`落札者が決まったぞ！ 落札額は本人だけの秘密だ。`):`さあ、${data.lotIndex+1}人目の紹介だ。${safe(m.name)}、${roleLabel[m.type]}の傭兵だ。推定額は ${m.value}G だ。`}</div></div></section>${rosterList(data)}</div>`;
  if(kind==='intro')$('#netEnterBid').onclick=()=>{guestSend('intro');clientStage('wait',{message:'入札画面を準備しています…'});};
- if(kind==='bid'){const inp=$('#netBidInput');$('#netBidSubmit').onclick=()=>{let n=Number(inp.value);if(!Number.isSafeInteger(n)||n<0||n>data.money){$('#netError').textContent='提示できる範囲を確認してください';return;}guestSend('bid',{value:n});clientStage('wait',{message:'入札を確定しました。全員の提示を待っています…'});};app.querySelectorAll('[data-delta]').forEach(b=>b.onclick=()=>{let d=+b.dataset.delta;inp.value=d===0?'0':String(Math.max(0,Math.min(data.money,(Number(inp.value)||0)+d)));});}
+ if(kind==='bid'){const inp=$('#netBidInput');$('#netBidSubmit').onclick=()=>{let n=Number(inp.value),total=(data.bidMode==='overtime'?data.previousBid:0)+n;if(!Number.isSafeInteger(n)||!Number.isSafeInteger(total)||total<0||total>data.money){$('#netError').textContent='提示できる範囲を確認してください';return;}guestSend('bid',{value:n});clientStage('wait',{message:'入札を確定しました。全員の提示を待っています…'});};app.querySelectorAll('[data-delta]').forEach(b=>b.onclick=()=>{let d=+b.dataset.delta;inp.value=d===0?'0':String(Math.max(data.bidMode==='overtime'?-data.previousBid:0,Math.min(data.bidMode==='overtime'?data.money-data.previousBid:data.money,(Number(inp.value)||0)+d)));});}
  if(kind==='result')$('#netResultNext').onclick=()=>{guestSend('result');clientStage('wait',{message:'次の傭兵を待っています…'});};
 }
 function clientEquip(data){screen='equipment';const units=data.unitList||[];app.innerHTML=stageHtml('装備購入',`<p>あなたの残金 <strong class="gold">${data.money}G</strong>。装備は1人につき武器1個と防具1個です。</p>${data.error?`<p class="red">${safe(data.error)}</p>`:''}<div class="net-equipment">${units.length?units.map(m=>`<div class="surface pad"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="net-fixed-skill">✦ ${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}<div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div><p class="tiny muted">武器：${m.gear.weapon?gearCatalog.weapon[m.gear.weapon-1]?.name:'未装備'}　防具：${m.gear.armor?gearCatalog.armor[m.gear.armor-1]?.name:'未装備'}</p><div class="net-equips">${['weapon','armor'].map(slot=>`<label>${slot==='weapon'?'武器':'防具'}<select class="input" data-unit="${m.id}" data-slot="${slot}"><option value="">購入する装備を選択</option>${gearCatalog[slot].map((item,i)=>`<option value="${i+1}">${safe(item.name)} ${item.price}G　${safe(item.description||('攻撃+'+item.attack))}${m.gear[slot]===i+1?'（装備中・再選択で解除）':''}</option>`).join('')}</select>${m.gear[slot]?`<button type="button" class="btn sm" data-remove="${slot}" data-unit="${m.id}">装備解除・全額返金</button>`:''}</label>`).join('')}</div></div>`).join(''):'<p>獲得した傭兵はいません。</p>'}</div><div class="actions"><button class="btn primary" id="netEquipDone">装備購入を終了 →</button></div>`);
  app.querySelectorAll('select[data-slot]').forEach(select=>select.onchange=()=>{if(!select.value)return;guestSend('equip',{unitId:+select.dataset.unit,slot:select.dataset.slot,tier:+select.value});});app.querySelectorAll('button[data-remove]').forEach(b=>b.onclick=()=>guestSend('equip',{unitId:+b.dataset.unit,slot:b.dataset.remove,tier:0}));$('#netEquipDone').onclick=()=>{guestSend('equipDone');clientStage('wait',{message:'装備購入を確定しました。'});};}
-function clientPlacement(data){screen='placement';const units=data.unitList||[];const center=online.placeDraft?.round===data.round?{...online.placeDraft.center}:{x:100,y:100};const mp=data.map||'ruins';
- online._spawnRound=data.round;online.spawns={...Object.fromEntries((data.spawnPoints||[]).map((at,i)=>[i,at]).filter(([i,at])=>at)),...(online.spawns||{})};
- app.innerHTML=stageHtml(`第${data.round}試合 · 出撃準備`,`${data.error?`<p class="red">${safe(data.error)}</p>`:''}<p>今回の戦場：<strong>${mp==='ruins'?'古い遺跡':mp==='forest'?'深緑の森':'草原の古戦場'}</strong>。地図をクリックして自軍の出撃円を配置します。敵陣営の出撃円は最初から表示され、移動もすぐ更新されます。準備OKから5秒間は配置を変更できます。</p><div class="net-deploy-grid"><div><canvas id="netDeployCanvas" width="640" height="640"></canvas><p id="netCoord" class="tiny muted">位置 X:100 / Y:100</p><button id="netPlaceConfirm" class="btn primary" ${online.placeDraft?.round===data.round?'':'disabled'}>準備OK（5秒後に確定）</button></div><div class="net-plans">${units.map(m=>{const tact=m.tactic||{stance:DEFAULT[m.type][0],target:DEFAULT[m.type][1]};return `<div class="tactic-unit"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="tactic-controls"><label>立ち回り<select class="input" data-unit="${m.id}" data-field="stance">${Object.entries(TACTICS.stance).map(([v,n])=>`<option value="${v}" ${tact.stance===v?'selected':''}>${n}</option>`).join('')}</select></label><label>攻撃優先<select class="input" data-unit="${m.id}" data-field="target">${Object.entries(TACTICS.target).map(([v,n])=>`<option value="${v}" ${tact.target===v?'selected':''}>${n}</option>`).join('')}</select></label>${m.type==='healer'?`<label>回復優先<select class="input" data-unit="${m.id}" data-field="heal">${Object.entries(TACTICS.heal).map(([v,n])=>`<option value="${v}" ${(tact.heal||'lowHp')===v?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div><div class="net-fixed-skill">✦ 習得済み：<b>${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||SPECIAL[m.type]?.[m.specialChoice??0])}</b><div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / 消費MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div></div>`;}).join('')}</div></div>`);
+function clientPlacement(data){screen='placement';const units=data.unitList||[];const center=online.placeDraft?.round===data.round?{...online.placeDraft.center}:{...(data.spawnPoints?.[online.myPid]||{x:100,y:100})};const mp=data.map||'ruins';
+ const sameRound=online._spawnRound===data.round;const incoming=Object.fromEntries((data.spawnPoints||[]).map((at,i)=>[i,at]).filter(([i,at])=>at));
+ online.spawns={...incoming,...(sameRound?(online.spawns||{}):{})};online._spawnRound=data.round;
+ app.innerHTML=stageHtml(`第${data.round}試合 · 出撃準備`,`${data.error?`<p class="red">${safe(data.error)}</p>`:''}<p>今回の戦場：<strong>${mp==='ruins'?'古い遺跡':mp==='forest'?'深緑の森':'草原の古戦場'}</strong>。地図をクリックして自軍の出撃円を配置します。敵陣営の出撃円は最初から表示され、移動もすぐ更新されます。全員準備OKになると共通の5秒カウントダウンが始まり、その間も配置を変更できます。</p><div class="net-deploy-grid"><div><canvas id="netDeployCanvas" width="640" height="640"></canvas><p id="netCoord" class="tiny muted">位置 X:100 / Y:100</p><button id="netPlaceConfirm" class="btn primary" ${data.noUnits?'disabled':''}>${data.noUnits?'傭兵なし・観戦':'準備OK（全員OK後に5秒）'}</button></div><div class="net-plans">${units.map(m=>{const tact=m.tactic||{stance:DEFAULT[m.type][0],target:DEFAULT[m.type][1]};return `<div class="tactic-unit"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="tactic-controls"><label>立ち回り<select class="input" data-unit="${m.id}" data-field="stance">${Object.entries(TACTICS.stance).map(([v,n])=>`<option value="${v}" ${tact.stance===v?'selected':''}>${n}</option>`).join('')}</select></label><label>攻撃優先<select class="input" data-unit="${m.id}" data-field="target">${Object.entries(TACTICS.target).map(([v,n])=>`<option value="${v}" ${tact.target===v?'selected':''}>${n}</option>`).join('')}</select></label>${m.type==='healer'?`<label>回復優先<select class="input" data-unit="${m.id}" data-field="heal">${Object.entries(TACTICS.heal).map(([v,n])=>`<option value="${v}" ${(tact.heal||'lowHp')===v?'selected':''}>${n}</option>`).join('')}</select></label>`:''}</div><div class="net-fixed-skill">✦ 習得済み：<b>${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||SPECIAL[m.type]?.[m.specialChoice??0])}</b><div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / 消費MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div></div>`;}).join('')}</div></div>`);
  const cv=$('#netDeployCanvas'),ctxNet=cv.getContext('2d');const draw=()=>{let bg=new Image();let image=EMBEDDED_MAPS[mp];if(!cv._bg){cv._bg=new Image();cv._bg.src=image;cv._bg.onload=draw;}ctxNet.fillStyle='#142835';ctxNet.fillRect(0,0,640,640);if(cv._bg.complete&&cv._bg.naturalWidth){ctxNet.globalAlpha=.78;ctxNet.drawImage(cv._bg,0,0,640,640);ctxNet.globalAlpha=1;}ctxNet.fillStyle='#62d7eb47';ctxNet.strokeStyle='#9deeff';ctxNet.lineWidth=3;ctxNet.beginPath();ctxNet.arc(center.x*3.2,center.y*3.2,11.5*3.2,0,2*Math.PI);ctxNet.fill();ctxNet.stroke();;
   for(const [key,pos] of Object.entries(online.spawns||{})){const other=data.players?.[Number(key)];if(!other||Number(key)===online.myPid)continue;ctxNet.beginPath();ctxNet.arc(pos.x*3.2,pos.y*3.2,11.5*3.2,0,Math.PI*2);ctxNet.strokeStyle=other.color||'#ecc581';ctxNet.fillStyle=(other.color||'#ecc581')+'33';ctxNet.lineWidth=2;ctxNet.fill();ctxNet.stroke();ctxNet.fillStyle='#fff';ctxNet.font='bold 12px system-ui';ctxNet.textAlign='center';ctxNet.fillText(other.name,pos.x*3.2,pos.y*3.2-44);}
  };online.redrawPlacement=draw;draw();
@@ -2047,7 +2051,7 @@ function clientPlacement(data){screen='placement';const units=data.unitList||[];
  $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');const button=$('#netPlaceConfirm');if(button){button.disabled=true;button.textContent='準備確認中…（配置変更可能）';}};
 }
 function receiveBattle(snap){if(!online.active)return;const first=screen!=='battle';const prev=game?.sim?.selectedId??null;game={players:snap.players,world:snap.world||game?.world||{name:snap.map,obstacles:[],details:[]},sim:{...snap.sim,selectedId:prev},series:{round:snap.round,raceTo:snap.raceTo,scores:snap.scores,rounds:[]}};setup.map=snap.map;setup.raceTo=snap.raceTo;
- if(first){screen='battle';stageCam={x:WORLD_MID,y:WORLD_MID,yaw:-.65,tilt:.68,zoom:.78};renderBattle();if(!online.viewerStarted){online.viewerStarted=true;const frame=()=>{if(online.role!=='client'||screen!=='battle'){online.viewerStarted=false;return;}if(canvas&&performance.now()-(online._lastViewerDraw||0)>100){online._lastViewerDraw=performance.now();drawBattle();drawMini();}requestAnimationFrame(frame);};requestAnimationFrame(frame);}}
+ if(first){screen='battle';stageCam={x:WORLD_MID,y:WORLD_MID,yaw:-.65,tilt:.68,zoom:.78};renderBattle();if(!online.viewerStarted){online.viewerStarted=true;const frame=()=>{if(online.role!=='client'||screen!=='battle'){online.viewerStarted=false;return;}if(canvas&&performance.now()-(online._lastViewerDraw||0)>45){online._lastViewerDraw=performance.now();drawBattle();drawMini();}requestAnimationFrame(frame);};requestAnimationFrame(frame);}}
  else {if(typeof updateBattleHUD==='function')updateBattleHUD();if(typeof renderBattleCommands==='function')renderBattleCommands();}
 }
 function clientEnd(data){online.stage='end';online.viewerStarted=false;screen='online-end';let winner=data.champion===null?null:data.players.find(p=>p.id===data.champion);
@@ -2065,7 +2069,7 @@ const v21Styles=`<style>
 .online-settings{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.online-settings label{min-width:150px;font-size:12px;color:#d7dfe8;display:grid;gap:5px}.online-settings select{min-height:40px}
 .room-members{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.room-members>div{border:1px solid #586c84;border-radius:8px;padding:9px 14px;background:#1b2c40;font-size:13px}.room-code{font-size:24px;letter-spacing:.1em}.net-stage{max-width:1100px;margin:30px auto;padding:28px!important}.net-wait-symbol{font-size:42px;margin:20px 0}
 .online-auc-main{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;margin:18px auto}.net-merc-profile{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start}.net-merc-profile>img{width:100%;aspect-ratio:1;object-fit:contain;background:linear-gradient(140deg,#354057,#131e2d);border-radius:13px}.net-merc-profile h2{font-size:20px;margin:3px 0}.net-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.net-stat-grid>span{font-size:11px;display:grid;padding:8px;background:#142236;border-radius:8px}.net-stat-grid b{font-size:20px;color:#efc780}.net-actions{padding:15px 0}.net-bid-bar{display:grid;gap:10px}.net-bid-row{display:flex;gap:8px}.net-bid-row input{flex:1}.net-adjust{display:flex;gap:7px;flex-wrap:wrap}.online-auc-main .member-card{margin:8px 0}.online-auc-main .surface.pad{min-width:0}
-.net-equipment{display:grid;gap:12px;margin:20px 0}.net-equips{display:grid;grid-template-columns:1fr 1fr;gap:10px}.net-equips label{font-size:12px;display:grid;gap:6px}.net-deploy-grid{display:grid;grid-template-columns:minmax(0,630px) minmax(270px,1fr);gap:20px}.net-deploy-grid canvas{width:100%;height:auto;border:1px solid #7893a6;cursor:crosshair;border-radius:10px}.net-plans{max-height:690px;overflow-y:auto;display:grid;gap:10px}.net-plans .tactic-unit{padding:9px}.net-plans label{font-size:11px;display:grid;gap:4px}.online-disconnect{position:fixed;bottom:12px;left:12px;right:12px;padding:12px;border:1px solid #dd9b79;background:#44251c;color:#fff;z-index:9999}
+.net-equipment{display:grid;gap:12px;margin:20px 0}.net-equips{display:grid;grid-template-columns:1fr 1fr;gap:10px}.net-equips label{font-size:12px;display:grid;gap:6px}.net-deploy-grid{display:grid;grid-template-columns:minmax(0,630px) minmax(270px,1fr);gap:20px}.net-deploy-grid canvas{width:100%;height:auto;border:1px solid #7893a6;cursor:crosshair;border-radius:10px}.net-plans{max-height:690px;overflow-y:auto;display:grid;gap:10px}.net-plans .tactic-unit{padding:9px}.net-plans label{font-size:11px;display:grid;gap:4px}.net-parallel-status{margin:8px 0 16px;border:1px solid #638c9a6b!important;grid-column:1/-1}.net-parallel-members{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.net-parallel-members span{border-radius:7px;border:1px solid #5c6e83;padding:5px 8px;font-size:12px}.net-ready{color:#9ee7b6;background:#163b33}.net-pending{color:#d7dce9;background:#243244}.online-disconnect{position:fixed;bottom:12px;left:12px;right:12px;padding:12px;border:1px solid #dd9b79;background:#44251c;color:#fff;z-index:9999}
 @media(max-width:850px){.online-auc-main,.net-deploy-grid{grid-template-columns:1fr}.net-merc-profile{grid-template-columns:150px 1fr}.net-stat-grid{grid-template-columns:repeat(2,1fr)}.room-code{font-size:16px}}
 </style>`;
 // v2.31: enemy spawn-circle information is public after a two-second delay.
@@ -2082,6 +2086,189 @@ window.mercPublishSpawn=function(pid,point){
   online.guests.forEach(g=>send(g.conn,pkt));
  }
 };
+// v2.42 — Online-only simultaneous auction, result, equipment and deployment.
+// Host owns all money, bids, placements, simulation and battle orders.
+const parallelOldOfferNext=offerNext;
+const parallelOldShowNextResult=showNextResult;
+const parallelOldViewTurn=viewTurn;
+const parallelHumans=()=>game.players.filter(p=>p.human).map(p=>p.id);
+function parallelNew(phase,required){
+ online.parallel={phase,required:new Set(required),done:new Set(),round:game.series?.round||0,lot:game.lotIndex,epoch:(online.parallel?.epoch||0)+1,counting:false};
+ return online.parallel;
+}
+function parallelDeliver(pid,kind,fields={}){
+ const msg=packFor(pid,kind,fields);
+ if(pid===0){online.myPid=0;clientStage(kind,msg);}else transmit(pid,kind,fields);
+}
+function parallelNotify(){
+ const q=online.parallel;if(!q)return;
+ const humans=game.players.filter(p=>p.human).map(p=>({id:p.id,name:p.name}));
+ const data={type:'parallelProgress',phase:q.phase,epoch:q.epoch,lot:q.lot,round:q.round,required:[...q.required],done:[...q.done],humans,counting:q.counting};
+ cast(data);showParallelProgress(data);
+}
+function showParallelProgress(d){
+ const root=app.querySelector('.online-auc-main,.net-stage')||app;
+ if(!root||!d)return;
+ let node=document.getElementById('netParallelStatus');if(!node){node=document.createElement('div');node.id='netParallelStatus';node.className='net-parallel-status surface pad';root.prepend(node);}
+ const title={bid:'入札',result:'落札結果の確認',equip:'装備購入',placement:'出撃準備'}[d.phase]||'準備';
+ node.innerHTML=`<strong>${title}：${d.required.filter(x=>d.done.includes(x)).length}/${d.required.length}人 完了</strong><div class="net-parallel-members">${d.humans.map(p=>`<span class="${d.done.includes(p.id)?'net-ready':'net-pending'}">${safe(p.name)}：${!d.required.includes(p.id)?'対象外':d.done.includes(p.id)?'OK':'操作中'}</span>`).join('')}</div>${d.counting?'<div class="tiny gold">全員準備完了。配置を動かせる5秒間の最終確認中</div>':''}`;
+}
+function parallelComplete(){const q=online.parallel;return q&&[...q.required].every(id=>q.done.has(id));}
+function parallelMark(pid){const q=online.parallel;if(!q||!q.required.has(pid)||q.done.has(pid))return false;q.done.add(pid);parallelNotify();return true;}
+function parallelWait(pid,message){if(pid===0)clientStage('wait',{message});else transmit(pid,'wait',{message});parallelNotify();}
+function parallelAllBids(){
+ if(online.role!=='host'||!online.active)return;
+ const a=game.auction,ids=eligible().filter(p=>p.human).map(p=>p.id),q=parallelNew('bid',ids);
+ for(const p of eligible().filter(p=>!p.human))a.bids[p.id]=a.mode==='initial'?cpuInitialBid(p,game.lots[game.lotIndex]):cpuOvertimeBid(p);
+ for(const pid of parallelHumans()){
+  if(q.required.has(pid))parallelDeliver(pid,'bid',{bidMode:a.mode,previousBid:a.prices[pid]??0});
+  else parallelDeliver(pid,'wait',{message:'最高額が同額のため、該当するプレイヤーが再入札しています。'});
+ }
+ parallelNotify();if(parallelComplete())resolveOffers();
+}
+offerNext=function(){if(online.role==='host'&&online.active)return parallelAllBids();return parallelOldOfferNext();};
+showNextResult=function(){
+ if(online.role!=='host'||!online.active)return parallelOldShowNextResult();
+ const q=parallelNew('result',parallelHumans());
+ for(const pid of q.required)parallelDeliver(pid,'result',{winner:game.settlement.winner,price:game.settlement.winner===pid?game.settlement.price:null,withdrawn:!!game.auction.withdrawn});
+ parallelNotify();if(parallelComplete()){game.lotIndex++;newLot();}
+};
+function parallelStartEquip(){
+ const q=parallelNew('equip',parallelHumans());
+ for(const pid of q.required)parallelDeliver(pid,'equip');
+ parallelNotify();if(parallelComplete())startPlacement();
+}
+function parallelStartPlacement(){
+ const q=parallelNew('placement',parallelHumans());
+ game._netReady={};game.netPlacementConfirmed={};
+ online.spawns={};online._spawnRound=q.round;
+ for(const p of game.players){
+  const loc=game.spawnPoints?.[p.id];if(loc){online.spawns[p.id]={x:loc.x,y:loc.y};game._spawnVisible=game._spawnVisible||{};game._spawnVisible[p.id]={x:loc.x,y:loc.y};}
+ }
+ for(const pid of q.required){
+  // Players without mercenaries can observe the battlefield, but have no deployment to adjust.
+  if(!game.players[pid].units.length){q.done.add(pid);parallelDeliver(pid,'placement',{noUnits:true});}
+  else parallelDeliver(pid,'placement',{placeOk:true});
+ }
+ parallelNotify();if(parallelComplete())parallelCountdown(q);
+}
+viewTurn=function(kind,pid){
+ if(online.role==='host'&&online.active){
+  if(kind==='equip'){if(online.parallel?.phase!=='equip')parallelStartEquip();return;}
+  if(kind==='placement'){if(online.parallel?.phase!=='placement'||online.parallel?.round!==(game.series?.round||0))parallelStartPlacement();return;}
+ }
+ return parallelOldViewTurn(kind,pid);
+};
+function parallelCountdown(q){
+ if(!q||q.counting||online.parallel!==q)return;
+ q.counting=true;parallelNotify();
+ const data={type:'readyCountdown',seconds:5};cast(data);clientReceive(data);
+ const epoch=q.epoch,match=game;
+ // CPU shifts its visible deployment circle while everybody is making final adjustments.
+ const cpuTimer=setInterval(()=>{
+  if(game!==match||online.parallel!==q||!q.counting){clearInterval(cpuTimer);return;}
+  for(const p of game.players.filter(p=>!p.human&&p.units.length)){
+   if(Math.random()>.75)continue;
+   const before=game.spawnPoints?.[p.id];if(!before)continue;
+   const dir=Math.random()*Math.PI*2,steps=1.8+Math.random()*6.5;
+   const candidate={x:clamp(before.x+Math.cos(dir)*steps,14,186),y:clamp(before.y+Math.sin(dir)*steps,14,186)};
+   if(game.spawnPoints.some((c,i)=>i!==p.id&&c&&dist(c,candidate)<26))continue;
+   const packed=window.STORY_PACK?.(candidate,p);
+   if(!packed||packed.length!==p.units.length)continue;
+   game.spawnPoints[p.id]=candidate;game.placements[p.id]=packed;online.spawns[p.id]=candidate;
+   window.mercPublishSpawn?.(p.id,candidate);online.redrawPlacement?.();
+  }
+ },850);
+ setTimeout(()=>{
+  clearInterval(cpuTimer);
+  if(game!==match||!online.active||online.parallel!==q||q.epoch!==epoch)return;
+  q.counting=false;online.parallel={...q,phase:'battle',counting:false};
+  launchBattle();
+ },5000);
+}
+function handleParallelAction(pid,msg){
+ const q=online.parallel,p=game?.players?.[pid];if(!q||!p?.human||!q.required.has(pid))return false;
+ const kind=msg.kind;
+ if(q.phase==='bid'&&kind==='bid'){
+  if(q.done.has(pid))return true;
+  const a=game.auction,number=Number(msg.value),previous=a.mode==='overtime'?(a.prices?.[pid]||0):0;
+  const total=previous+number;
+  if(!Number.isSafeInteger(number)||!Number.isSafeInteger(total)||(a.mode==='initial'&&number<0)||total<0||total>p.money){
+   parallelDeliver(pid,'bid',{bidMode:a.mode,previousBid:previous,error:'提示できる合計金額は 0 ～ '+fmt(p.money)+' G です。'});parallelNotify();return true;
+  }
+  a.bids[pid]=total;parallelMark(pid);
+  if(parallelComplete())resolveOffers();else parallelWait(pid,'入札を確定しました。ほかの参加者の入札を待っています。');
+  return true;
+ }
+ if(q.phase==='result'&&kind==='result'){
+  if(parallelMark(pid)){
+   if(parallelComplete()){game.lotIndex++;newLot();}
+   else parallelWait(pid,'結果を確認しました。全員の確認を待っています。');
+  }return true;
+ }
+ if(q.phase==='equip'){
+  if(kind==='equip'){
+   if(q.done.has(pid))return true;
+   const m=p.units.find(u=>u.id===msg.unitId),slot=msg.slot,tier=Number(msg.tier);
+   if(!m||!['weapon','armor'].includes(slot)||!Number.isInteger(tier))return true;
+   if(!buyEquipment(p,m,slot,tier))parallelDeliver(pid,'equip',{error:'残金か装備条件を確認してください'});
+   else parallelDeliver(pid,'equip');
+   parallelNotify();return true;
+  }
+  if(kind==='equipDone'){
+   if(parallelMark(pid)){
+    if(parallelComplete())startPlacement();else parallelWait(pid,'装備を確定しました。ほかの参加者の装備購入を待っています。');
+   }return true;
+  }
+ }
+ if(q.phase==='placement'){
+  if(kind==='plan'){
+   if(q.counting===false&&q.done.has(pid))return true; // Ready players may still edit tactics during countdown.
+   const m=p.units.find(u=>u.id===msg.unitId);if(!m)return true;
+   if(TACTICS.stance[msg.stance]&&TACTICS.target[msg.target]){
+    m.tactic={...m.tactic,stance:msg.stance,target:msg.target};
+    if(m.type==='healer'&&TACTICS.heal[msg.heal])m.tactic.heal=msg.heal;
+   }
+   return true;
+  }
+  if(kind==='place'){
+   const x=Number(msg.x),y=Number(msg.y);
+   if(!Number.isFinite(x)||!Number.isFinite(y)||x<14||x>WORLD_SIZE-14||y<14||y>WORLD_SIZE-14){parallelDeliver(pid,'placement',{error:'戦場内の位置を指定してください'});return true;}
+   const oldCenter=game.spawnPoints[pid],oldLoc=game.placements[pid];game.spawnPoints[pid]={x,y};
+   const next=window.STORY_PACK?.({x,y},p)||randomizedPlacement(pid,p.units.length);
+   const valid=next.length===p.units.length&&next.every((v,i)=>Number.isFinite(v.x)&&Number.isFinite(v.y)&&Math.hypot(v.x-x,v.y-y)<=11.5&&walkable(v.x,v.y,.85)&&next.every((u,j)=>i===j||dist(v,u)>=.8));
+   if(!valid){game.spawnPoints[pid]=oldCenter;game.placements[pid]=oldLoc;parallelDeliver(pid,'placement',{error:'障害物が多く配置できません。別の場所にしてください'});return true;}
+   game.placements[pid]=next;game.netPlacementConfirmed[pid]=true;online.spawns[pid]={x,y};
+   window.mercPublishSpawn?.(pid,{x,y});online.redrawPlacement?.();
+   return true;
+  }
+  if(kind==='placeDone'){
+   if(q.done.has(pid))return true;
+   if(!game.players[pid].units.length){parallelMark(pid);return true;}
+   // The initially visible formation is already valid; a click is optional.
+   if(!game.placements[pid]?.length){parallelDeliver(pid,'placement',{error:'出撃位置を指定してください'});return true;}
+   if(parallelMark(pid)){if(parallelComplete())parallelCountdown(q);}
+   return true;
+  }
+ }
+ return false;
+}
+// Keep host's own action path identical to other participants, but without a network loop.
+// Host calls are deferred so their own waiting screen cannot overwrite the next stage.
+function onlineHostBid(kind,fields){queueMicrotask(()=>{if(online.role==='host'&&online.active)hostAction(0,{type:'action',kind,...fields});});}
+// At the battle stage, both host and clients may command only their own team.
+function parallelRenderCommands(){
+ const el=$('#battleCommandBox');if(!el||!game?.sim)return;
+ const pid=online.role==='host'?0:online.myPid;
+ const order=game.sim.orders?.[pid];if(!order)return;
+ const live=new Set(game.sim.units.filter(u=>u.alive).map(u=>u.owner));
+ const focus=order.focus??null;
+ const signature=pid+'|'+String(focus)+'|'+[...live].join(',');
+ if(el.dataset.parallelSignature===signature)return;
+ el.dataset.parallelSignature=signature;
+ el.innerHTML=`<div class="command-panel"><div class="command-title">優先攻撃する陣営（自軍のみ）</div><div class="focus-buttons"><button class="focus-btn ${focus===null?'chosen':''}" data-focus="-1">優先なし</button>${game.players.filter(p=>p.id!==pid&&live.has(p.id)).map(p=>`<button class="focus-btn ${focus===p.id?'chosen':''}" data-focus="${p.id}" style="--team-color:${p.color}"><i style="background:${p.color}"></i>${safe(p.name)}</button>`).join('')}</div></div>`;
+ el.querySelectorAll('[data-focus]').forEach(b=>b.onclick=()=>{const id=+b.dataset.focus;guestSend('focus',{value:id<0?null:id});if(online.role==='host'&&game?.sim?.orders?.[0]){game.sim.orders[0].focus=id<0?null:id;parallelRenderCommands();}});
+}
 document.head.insertAdjacentHTML('beforeend',v21Styles);
 if(screen==='setup')renderSetup();
 })();
@@ -4781,7 +4968,7 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
 
 <script>
 'use strict';
-// v2.41: enemy deployment visibility, CPU placement motion, and fixed-skill readouts.
+// v2.42: enemy deployment visibility, CPU placement motion, and fixed-skill readouts.
 (()=>{
  const skills=window.STORY_SKILLS;
  function sk(m){const options=skills?.[m?.type];return options?.[Number.isInteger(m?.specialChoice)?m.specialChoice:0]||null;}
