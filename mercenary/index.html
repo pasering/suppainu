@@ -1849,9 +1849,9 @@ renderBattleCommands=function(){oldBattleCommands();const box=document.querySele
 </script>
 <script>
 'use strict';
-// Online battle prototype v2.1: host-authoritative PeerJS room / private player actions.
+// Online battle v2.43: host-authoritative PeerJS room, private seats, and reconnection.
 (function(){
-const online={role:'off',peer:null,hostConn:null,room:'',guests:[],myPid:0,myName:'',cpu:1,connected:false,active:false,stage:'',seq:0,lastFrame:0,roomError:'',isRendering:false};
+const online={role:'off',peer:null,hostConn:null,room:'',guests:[],myPid:0,myName:'',cpu:1,connected:false,active:false,stage:'',seq:0,lastFrame:0,roomError:'',isRendering:false,retryTimer:null,retryCount:0,connectSerial:0,recoveryKey:'',reconnecting:false};
 window.mercOnlineDebug=()=>({role:online.role,room:online.room,guests:online.guests.map(x=>({id:x.pid,open:x.conn?.open})),stage:online.stage,active:online.active});
 const safe=s=>escapeHtml(String(s??''));
 const roleLabel={warrior:'戦士',archer:'弓師',mage:'魔法使い',healer:'ヒーラー',enchanter:'付与術師',rogue:'盗賊'};
@@ -1866,29 +1866,166 @@ const peerReady=async(id)=>{
 const send=(conn,msg)=>{try{if(conn&&conn.open)conn.send(msg);}catch(e){console.warn('[online]',e);}};
 const cast=msg=>online.guests.forEach(g=>send(g.conn,msg));
 const roomCode=()=> 'mab-'+Math.random().toString(36).slice(2,8).toUpperCase();
+// A seat belongs to a secret room-specific token, NOT a display name or a PeerJS id.
+// The host retains its seat/token mapping in RAM; the guest stores only its own token.
+const RECOVERY_STORAGE='mercenary_online_recovery_v243';
+const normRoom=v=>String(v||'').trim().toLowerCase();
+function readRecovery(room=''){
+ try{
+  const raw=JSON.parse(localStorage.getItem(RECOVERY_STORAGE)||'null');
+  if(raw&&typeof raw==='object'&&typeof raw.key==='string'&&raw.key.length>=32&&
+    (!room||normRoom(raw.room)===normRoom(room)))return raw;
+ }catch(e){}return null;
+}
+function rememberRecovery(entry){
+ if(!entry?.room||!entry.key)return;
+ try{localStorage.setItem(RECOVERY_STORAGE,JSON.stringify({room:entry.room,name:entry.name,key:entry.key,pid:entry.pid??null}));}catch(e){console.warn('復帰情報を保存できません',e);}
+}
+function createRecoveryKey(){
+ const bytes=new Uint8Array(24);
+ if(window.crypto?.getRandomValues)window.crypto.getRandomValues(bytes);
+ else throw Error('安全な復帰キーを作成できません。HTTPSで起動してください。');
+ return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+}
+function recoveryBanner(message,showRetry=true){
+ let n=document.getElementById('netRecoveryBanner');
+ if(!n){n=document.createElement('div');n.id='netRecoveryBanner';n.className='net-recovery-banner';document.body.appendChild(n);}
+ n.innerHTML=`<strong>オンライン対戦</strong><span>${safe(message)}</span>${showRetry?'<button class="btn sm" id="netRetryNow">今すぐ再接続</button>':''}`;
+ n.querySelector('#netRetryNow')?.addEventListener('click',()=>{clearTimeout(online.retryTimer);online.retryTimer=null;online.retryCount=0;retryClientConnection();});
+}
+function dismissRecoveryBanner(){document.getElementById('netRecoveryBanner')?.remove();}
+function clearClientRetry(){clearTimeout(online.retryTimer);online.retryTimer=null;online.retryCount=0;online.reconnecting=false;}
+function scheduleClientRetry(message){
+ if(!['client','connecting'].includes(online.role)||!online.room)return;
+ online.connected=false;online.reconnecting=true;
+ recoveryBanner(message||'通信が切れました。自動的に再接続しています…');
+ if(online.retryTimer)return;
+ if(online.retryCount>=12){recoveryBanner('自動再接続を終了しました。ホストが部屋を開いている場合は再接続を押してください。');return;}
+ const delay=Math.min(10000,1200*Math.pow(1.45,online.retryCount++));
+ online.retryTimer=setTimeout(()=>{online.retryTimer=null;retryClientConnection();},delay);
+}
+async function retryClientConnection(){
+ if(!['client','connecting'].includes(online.role)||!online.room)return;
+ if(online.hostConn?.open&&!online.reconnecting)return;
+ const attempt=++online.connectSerial;
+ recoveryBanner('元の部屋へ接続しています…');
+ try{
+  let peer=online.peer;
+  if(!peer||peer.destroyed){peer=await peerReady();online.peer=peer;}
+  else if(peer.disconnected){
+   try{peer.reconnect();}catch(e){}
+   await Promise.race([new Promise((resolve,reject)=>{if(peer.open&&!peer.disconnected)return resolve();peer.once('open',resolve);peer.once('error',reject);}),timeout(9000)]);
+  }
+  if(attempt!==online.connectSerial)return;
+  const c=peer.connect(online.room,{reliable:true,serialization:'json'});
+  online.hostConn=c;
+  let opened=false;
+  const watchdog=setTimeout(()=>{if(!opened&&online.hostConn===c){try{c.close();}catch(e){}scheduleClientRetry('ホストへの接続待ちです。再試行します…');}},11000);
+  c.on('open',()=>{
+   clearTimeout(watchdog);if(online.hostConn!==c){c.close();return;}
+   opened=true;online.role='client';online.connected=true;
+   send(c,{type:'hello',name:online.myName,key:online.recoveryKey});
+   // Keep reconnect overlay until host confirms ownership of the original seat.
+   recoveryBanner('ホストに復帰キーを照合しています…',false);
+  });
+  c.on('data',msg=>{if(online.hostConn===c)clientReceive(msg);});
+  c.on('close',()=>{clearTimeout(watchdog);if(online.hostConn===c)scheduleClientRetry('通信が切れました。元の席へ再接続しています…');});
+  c.on('error',e=>{clearTimeout(watchdog);if(online.hostConn===c)scheduleClientRetry('通信エラーが発生しました。再試行しています…');});
+ }catch(e){if(attempt===online.connectSerial)scheduleClientRetry('再接続できませんでした。再試行しています…');}
+}
+function hostRecoveryStatus(){
+ const absent=online.guests.filter(g=>!g.conn?.open);
+ const banner=document.getElementById('onlineWarning');
+ if(!absent.length){banner?.remove();return;}
+ let n=banner;
+ if(!n){n=document.createElement('div');n.id='onlineWarning';n.className='online-disconnect';document.body.append(n);}
+ n.textContent=absent.map(g=>g.name).join('、')+' が切断中です。席を保持し、同じ端末からの復帰を待っています。';
+}
+function welcomeAndSync(conn,g,recovered){
+ send(conn,{type:'welcome',pid:g.pid,room:online.room,active:online.active,recovered:!!recovered});
+ if(!online.active||!game){send(conn,{type:'lobby',room:online.room,names:[online.myName,...online.guests.map(x=>x.name)]});return;}
+ const q=online.parallel;
+ // The host is authoritative, so a returning player resumes the CURRENT phase,
+ // rather than the phase shown when their browser disconnected.
+ if(screen==='map-select'){send(conn,packFor(g.pid,'mapwait',{message:'ホストが今回の戦場を選択しています。'}));}
+ else if(screen==='ending'||screen==='online-end'){
+  const series=game.series||{};
+  send(conn,{type:'end',round:series.round,rounds:series.rounds,scores:series.scores||{},champion:series.champion??null,raceTo:series.raceTo||setup.raceTo,players:game.players.map(p=>({id:p.id,name:p.name,color:p.color}))});
+ }else if(screen==='battle'&&game.sim){send(conn,battleSnapshot(true));}
+ else if(q?.phase==='bid'){
+  if(q.required.has(g.pid)&&!q.done.has(g.pid))send(conn,packFor(g.pid,'bid',{bidMode:game.auction.mode,previousBid:game.auction.prices?.[g.pid]??0,resume:true}));
+  else send(conn,packFor(g.pid,'wait',{message:q.done.has(g.pid)?'入札済みです。全員の入札を待っています。':'対象プレイヤーの再入札を待っています。'}));
+ }else if(q?.phase==='result'){
+  if(!q.done.has(g.pid))send(conn,packFor(g.pid,'result',{winner:game.settlement?.winner??null,price:game.settlement?.winner===g.pid?game.settlement.price:null,withdrawn:!!game.auction?.withdrawn,resume:true}));
+  else send(conn,packFor(g.pid,'wait',{message:'結果確認済みです。全員の確認を待っています。'}));
+ }else if(q?.phase==='equip'){
+  if(!q.done.has(g.pid))send(conn,packFor(g.pid,'equip',{resume:true}));
+  else send(conn,packFor(g.pid,'wait',{message:'装備購入完了済みです。全員の確定を待っています。'}));
+ }else if(q?.phase==='placement'){
+  send(conn,packFor(g.pid,'placement',{noUnits:!game.players[g.pid]?.units.length,alreadyReady:q.done.has(g.pid),resume:true}));
+  if(q.counting)send(conn,{type:'readyCountdown',seconds:Math.max(0,Math.ceil((q.countdownDeadline-Date.now())/1000))});
+ }else{
+  send(conn,packFor(g.pid,'mapwait',{message:'ホストが次の戦場を選択しています。'}));
+ }
+ if(q){send(conn,{type:'parallelProgress',phase:q.phase,epoch:q.epoch,lot:q.lot,round:q.round,required:[...q.required],done:[...q.done],humans:game.players.filter(p=>p.human).map(p=>({id:p.id,name:p.name})),counting:q.counting});}
+}
+
 const stageHtml=(heading,body,extra='')=>`<div class="net-stage surface pad"><div class="overline">ONLINE MERCENARY BATTLE</div><h2 class="headline" style="font-size:25px">${heading}</h2>${body}${extra}</div>`;
 function renderIntro(){if(online.role==='client'&&online.active)return;const section=document.createElement('section');section.className='online-intro surface pad';section.innerHTML=`<div class="overline">HOW TO PLAY</div><h2>傭兵を競り落とし、最後まで勝ち残ろう</h2><p>① 予算内で傭兵を競売で獲得（最高額が同額なら全員再入札）　② 残金で武器と防具を購入　③ 各試合でホストがマップを選択　④ 出撃地点・行動方針・習得済みの必殺スキルを確認　⑤ 自動戦闘で最後の一陣営を目指す。<strong>3・5・10勝先取</strong>で優勝です。</p><p class="muted tiny">傭兵の操作はできませんが、戦闘中に優先攻撃する陣営は変更できます。競売額と残金は他のプレイヤーには公開されません。</p></section>`;
  const intro=app.querySelector('.pageintro');if(intro)intro.after(section);else app.prepend(section);
- const onlineBox=document.createElement('section');onlineBox.className='surface pad online-menu';onlineBox.innerHTML=`<h2 class="blocktitle">オンライン対戦（試作） <small>2〜6陣営・CPU補充可</small></h2><p class="tiny muted">全員が同じバージョンのHTMLを開き、インターネットに接続してください。ホストが部屋を作成し、表示されたコードを参加者に伝えます。</p><div class="online-menu-actions"><label>プレイヤー名<input class="input" id="netName" maxlength="16" value="${safe(online.myName||'プレイヤー')}"></label><label>部屋コード<input class="input" id="netRoom" placeholder="MAB-XXXXXX" value="${safe(online.room)}"></label><button class="btn primary" id="netHost">部屋を作る</button><button class="btn" id="netJoin">部屋に参加</button></div><div id="netStatus" class="small muted"></div><div id="netLobby"></div></section>`;
+ const saved=readRecovery();if(saved){online.room=online.room||saved.room;online.myName=online.myName||saved.name;}
+  const onlineBox=document.createElement('section');onlineBox.className='surface pad online-menu';onlineBox.innerHTML=`<h2 class="blocktitle">オンライン対戦（試作） <small>2〜6陣営・CPU補充可</small></h2><p class="tiny muted">全員が同じバージョンのHTMLを開き、インターネットに接続してください。ホストが部屋を作成し、表示されたコードを参加者に伝えます。通信切断後は自動復帰を試み、再読み込み時は「前回の対戦に復帰」を押せます（同じブラウザ）。ホストはページを閉じないでください。</p><div class="online-menu-actions"><label>プレイヤー名<input class="input" id="netName" maxlength="16" value="${safe(online.myName||'プレイヤー')}"></label><label>部屋コード<input class="input" id="netRoom" placeholder="MAB-XXXXXX" value="${safe(online.room)}"></label><button class="btn primary" id="netHost">部屋を作る</button><button class="btn" id="netJoin">部屋に参加</button>${saved?'<button class="btn" id="netResume">前回の対戦に復帰</button>':''}</div><div id="netStatus" class="small muted"></div><div id="netLobby"></div></section>`;
  section.after(onlineBox);
  const status=(s)=>{let n=document.querySelector('#netStatus');if(n)n.textContent=s;};
- $('#netHost').onclick=async()=>{if(online.role!=='off')return;online.myName=($('#netName').value||'ホスト').trim().slice(0,16);online.role='connecting';status('部屋を作成しています…');try{const peer=await peerReady(roomCode());online.peer=peer;online.role='host';online.room=peer.id;online.connected=true;peer.on('connection',c=>hostConnect(c));peer.on('disconnected',()=>{status('シグナリングサーバーとの接続が切れました');});peer.on('error',e=>status('通信エラー: '+e.message));hostLobby();}catch(e){online.role='off';status('部屋作成失敗: '+e.message);}};
- $('#netJoin').onclick=async()=>{if(online.role!=='off')return;online.myName=($('#netName').value||'参加者').trim().slice(0,16);online.room=($('#netRoom').value||'').trim();if(!online.room){status('部屋コードを入力してください');return;}online.role='connecting';status('部屋へ接続しています…');try{online.peer=await peerReady();let c=online.peer.connect(online.room,{reliable:true,serialization:'json'});online.hostConn=c;c.on('open',()=>{online.role='client';online.connected=true;send(c,{type:'hello',name:online.myName});clientStage('wait',{message:'入室を確認しています…'});});c.on('data',clientReceive);c.on('close',()=>clientStage('wait',{message:'ホストとの接続が切れました。再接続にはゲームの再起動が必要です。'}));c.on('error',e=>clientStage('wait',{message:'通信エラー: '+e.message}));}catch(e){online.role='off';status('参加失敗: '+e.message);}};
+ $('#netHost').onclick=async()=>{if(online.role!=='off')return;online.myName=($('#netName').value||'ホスト').trim().slice(0,16);online.role='connecting';status('部屋を作成しています…');try{const peer=await peerReady(roomCode());online.peer=peer;online.role='host';online.room=peer.id;online.connected=true;peer.on('connection',c=>hostConnect(c));peer.on('disconnected',()=>{recoveryBanner('ホストの通信を復旧しています。ページは閉じないでください。',false);try{if(!peer.destroyed)peer.reconnect();}catch(e){};});peer.on('open',()=>dismissRecoveryBanner());peer.on('error',e=>recoveryBanner('ホストの通信エラー：'+e.message,false));hostLobby();}catch(e){online.role='off';status('部屋作成失敗: '+e.message);}};
+ $('#netJoin').onclick=()=>{
+   if(online.role!=='off')return;
+   const room=($('#netRoom').value||'').trim();if(!room){status('部屋コードを入力してください');return;}
+   const last=readRecovery(room);
+   online.myName=last?.name||($('#netName').value||'参加者').trim().slice(0,16);
+   online.room=room;online.recoveryKey=last?.key||createRecoveryKey();
+   rememberRecovery({room,name:online.myName,key:online.recoveryKey});
+   online.role='connecting';online.retryCount=0;retryClientConnection();
+  };
+  $('#netResume')?.addEventListener('click',()=>{const stored=readRecovery();if(!stored)return;$('#netRoom').value=stored.room;$('#netName').value=stored.name;$('#netJoin').click();});
 }
-function hostLobby(){screen='online-lobby';setStage('ONLINE LOBBY');let count=1+online.guests.length;app.innerHTML=stageHtml('オンラインロビー',`<p>部屋コード <strong class="gold room-code">${safe(online.room)}</strong>　<button class="btn sm" id="roomCopy">コピー</button></p><p>接続中のプレイヤー ${count}人（最大6人）。CPU人数を設定して試合を開始します。</p><div class="room-members">${[online.myName,...online.guests.map(x=>x.name)].map((n,i)=>`<div>● ${safe(n)} ${i===0?'（ホスト）':''}</div>`).join('')}</div><div class="online-settings"><label>CPU人数 <select id="netCpu" class="input">${Array.from({length:Math.max(0,7-count)},(_,i)=>`<option value="${i}" ${i===online.cpu?'selected':''}>${i}人</option>`).join('')}</select></label><label>勝利条件 <select id="netRace" class="input">${[3,5,10].map(n=>`<option value="${n}" ${setup.raceTo===n?'selected':''}>${n}本先取</option>`).join('')}</select></label><label>初期予算 <select id="netBudget" class="input">${[10500,15000,21000].map(n=>`<option value="${n}" ${setup.budget===n?'selected':''}>${n.toLocaleString()}G</option>`).join('')}</select></label></div><p class="small muted" id="hostHint">接続済みのプレイヤーは、開始後に自分の端末で入札・装備・出撃地点を操作します。</p><div class="actions"><button id="netStart" class="btn primary" ${count+online.cpu<2?'disabled':''}>オンライン対戦開始</button><button id="netClose" class="btn">部屋を閉じる</button></div>`);
+function hostLobby(){screen='online-lobby';setStage('ONLINE LOBBY');let count=1+online.guests.length;app.innerHTML=stageHtml('オンラインロビー',`<p>部屋コード <strong class="gold room-code">${safe(online.room)}</strong>　<button class="btn sm" id="roomCopy">コピー</button></p><p>接続中のプレイヤー ${count}人（最大6人）。CPU人数を設定して試合を開始します。</p><div class="room-members">${[online.myName,...online.guests.map(x=>x.name)].map((n,i)=>`<div>● ${safe(n)} ${i===0?'（ホスト）':''}</div>`).join('')}</div><div class="online-settings"><label>CPU人数 <select id="netCpu" class="input">${Array.from({length:Math.max(0,7-count)},(_,i)=>`<option value="${i}" ${i===online.cpu?'selected':''}>${i}人</option>`).join('')}</select></label><label>勝利条件 <select id="netRace" class="input">${[3,5,10].map(n=>`<option value="${n}" ${setup.raceTo===n?'selected':''}>${n}本先取</option>`).join('')}</select></label><label>初期予算 <select id="netBudget" class="input">${[10500,15000,21000].map(n=>`<option value="${n}" ${setup.budget===n?'selected':''}>${n.toLocaleString()}G</option>`).join('')}</select></label></div><p class="small muted" id="hostHint">接続済みのプレイヤーは、開始後に自分の端末で入札・装備・出撃地点を操作します。参加者は再接続で復帰できます。ホストはページを閉じると試合データが失われます。</p><div class="actions"><button id="netStart" class="btn primary" ${count+online.cpu<2?'disabled':''}>オンライン対戦開始</button><button id="netClose" class="btn">部屋を閉じる</button></div>`);
  $('#roomCopy').onclick=()=>navigator.clipboard?.writeText(online.room).catch(()=>window.prompt('部屋コード',online.room));
  $('#netCpu').onchange=e=>{online.cpu=+e.target.value;hostLobby();};$('#netRace').onchange=e=>setup.raceTo=+e.target.value;$('#netBudget').onchange=e=>setup.budget=+e.target.value;
  $('#netStart').onclick=()=>{if(online.guests.length+1+online.cpu<2)return;online.active=true;setup.humans=online.guests.length+1;setup.count=setup.humans+online.cpu;const origMake=makePlayers;makePlayers=function(){let people=origMake();people[0].name=online.myName||'ホスト';online.guests.forEach((g,i)=>{people[i+1].name=g.name;});return people;};cast({type:'started',players:[online.myName,...online.guests.map(x=>x.name)]});beginGame();};
  $('#netClose').onclick=()=>{online.guests.forEach(g=>g.conn.close());online.peer?.destroy();online.role='off';online.active=false;online.guests=[];renderSetup();};
  cast({type:'lobby',room:online.room,names:[online.myName,...online.guests.map(g=>g.name)]});
 }
-function hostConnect(conn){conn.on('data',msg=>{if(!msg||typeof msg!=='object')return;if(msg.type==='hello'){
- if(online.active||online.guests.length>=5){send(conn,{type:'reject',message:'満員、または試合開始後です。'});conn.close();return;}
- let pid=online.guests.length+1;let guest={conn,pid,name:String(msg.name||'参加者').slice(0,16)};online.guests.push(guest);online.cpu=Math.min(online.cpu,6-online.guests.length-1);send(conn,{type:'welcome',pid,room:online.room});hostLobby();return;
- }const g=online.guests.find(x=>x.conn===conn);if(g&&online.active&&msg.type==='action')hostAction(g.pid,msg);});
- conn.on('close',()=>{const idx=online.guests.findIndex(x=>x.conn===conn);if(idx<0)return;if(!online.active){online.guests.splice(idx,1);online.guests.forEach((g,i)=>g.pid=i+1);hostLobby();}else{const g=online.guests[idx];let warn=document.querySelector('#onlineWarning');if(!warn){warn=document.createElement('div');warn.id='onlineWarning';warn.className='online-disconnect';document.body.append(warn);}warn.textContent=`${g.name}の接続が切れました。進行は一時的に相手の操作待ちになる場合があります。`;}});
-}
-function publicPlayers(pid,forBattle=false){return game.players.map(p=>({id:p.id,name:p.name,color:p.color,human:p.human,money:p.id===pid?p.money:null,units:p.units.map(m=>forBattle?m:{id:m.id,name:m.name,type:m.type,st:p.id===pid?m.st:undefined,gear:p.id===pid?m.gear:undefined,tactic:p.id===pid?m.tactic:undefined,specialChoice:p.id===pid?m.specialChoice:undefined}),spent:p.id===pid?p.spent:undefined,kills:p.kills||0}));}
+function hostConnect(conn){
+  conn.on('data',msg=>{
+   if(!msg||typeof msg!=='object')return;
+   if(msg.type==='hello'){
+    const key=typeof msg.key==='string'?msg.key:'';
+    if(!/^[0-9a-f]{48}$/.test(key)){send(conn,{type:'reject',message:'復帰キーが不正です。全員v2.43を使用してください。'});setTimeout(()=>conn.close(),450);return;}
+    // Match an existing seat only by its secret key; duplicate names do not qualify.
+    const returning=online.guests.find(g=>g.key===key);
+    if(returning){
+     const previous=returning.conn;returning.conn=conn;
+     if(previous&&previous!==conn)try{previous.close();}catch(e){}
+     welcomeAndSync(conn,returning,true);hostRecoveryStatus();return;
+    }
+    if(online.active||online.guests.length>=5){send(conn,{type:'reject',message:'試合が始まっています。以前の参加端末から復帰してください。'});setTimeout(()=>conn.close(),450);return;}
+    const pid=online.guests.length+1;
+    const guest={conn,pid,key,name:String(msg.name||'参加者').slice(0,16)};
+    online.guests.push(guest);online.cpu=Math.min(online.cpu,6-online.guests.length-1);
+    welcomeAndSync(conn,guest,false);hostLobby();return;
+   }
+   const g=online.guests.find(x=>x.conn===conn);
+   if(g&&online.active&&msg.type==='action')hostAction(g.pid,msg);
+  });
+  conn.on('close',()=>{
+   const idx=online.guests.findIndex(x=>x.conn===conn);
+   if(idx<0)return; // An old connection was replaced by the recovering player.
+   if(!online.active){online.guests.splice(idx,1);online.guests.forEach((g,i)=>g.pid=i+1);hostLobby();}
+   else hostRecoveryStatus();
+  });
+  conn.on('error',()=>hostRecoveryStatus());
+ }function publicPlayers(pid,forBattle=false){return game.players.map(p=>({id:p.id,name:p.name,color:p.color,human:p.human,money:p.id===pid?p.money:null,units:p.units.map(m=>forBattle?m:{id:m.id,name:m.name,type:m.type,st:p.id===pid?m.st:undefined,gear:p.id===pid?m.gear:undefined,tactic:p.id===pid?m.tactic:undefined,specialChoice:p.id===pid?m.specialChoice:undefined}),spent:p.id===pid?p.spent:undefined,kills:p.kills||0}));}
 function waiting(label){if(online.role!=='host'||!online.active)return;document.body.classList.remove('auction-active');screen='online-wait';setStage('ONLINE');app.innerHTML=stageHtml('参加プレイヤーの操作を待機中',`<div class="net-wait-symbol">⌛</div><p>${safe(label)} が操作しています。操作が終わると自動で次へ進みます。</p><p class="muted small">ほかのプレイヤーの入札額・予算は非公開。出撃地点は配置画面で最初から公開されます。</p>`);}
 function packFor(pid,kind,extra={}){let p=game.players[pid];return {type:'stage',kind,pid,players:publicPlayers(pid),money:p.money,lotIndex:game.lotIndex,lotTotal:game.lots.length,lot:['auction','intro','bid','result'].includes(kind)?game.lots[game.lotIndex]:null,auctionRound:game.auction?.round??0,results:game.history.slice(0,7).map(h=>({owner:h.owner,merc:{id:h.merc.id,name:h.merc.name,type:h.merc.type}})),unitList:p.units.map(m=>({id:m.id,name:m.name,type:m.type,st:m.st,trait:m.trait,gear:m.gear,tactic:m.tactic,specialChoice:m.specialChoice})),spawnPoints:game.spawnPoints?.map(at=>at?{x:at.x,y:at.y}:null),map:setup.map,round:game.series?.round||0,raceTo:setup.raceTo,scores:game.series?.scores||{},...extra};}
 function transmit(pid,kind,extra={}){const g=online.guests.find(g=>g.pid===pid);if(!g)return;send(g.conn,packFor(pid,kind,extra));}
@@ -1992,8 +2129,8 @@ const baseEndingOnline=renderEnding;
 renderEnding=function(){baseEndingOnline();if(online.role==='host'&&online.active&&game?.series){cast({type:'end',round:game.series.round,rounds:game.series.rounds,scores:game.series.scores,champion:game.series.champion,raceTo:game.series.raceTo,players:game.players.map(p=>({id:p.id,name:p.name,color:p.color}))});}};
 function clientReceive(msg){if(!msg||typeof msg!=='object')return;
  if(msg.type==='parallelProgress'){online.lastProgress=msg;showParallelProgress(msg);return;}
- if(msg.type==='welcome'){online.myPid=msg.pid;online.room=msg.room;clientStage('wait',{message:`参加しました。あなたはプレイヤー${msg.pid+1}です。`});return;}
- if(msg.type==='reject'){clientStage('wait',{message:msg.message});return;}
+ if(msg.type==='welcome'){online.myPid=msg.pid;online.room=msg.room;online.active=!!msg.active;online.connected=true;clearClientRetry();dismissRecoveryBanner();rememberRecovery({room:online.room,name:online.myName,key:online.recoveryKey,pid:msg.pid});clientStage('wait',{message:msg.recovered?'元の席に復帰しました。現在の対戦状況を同期しています…':`参加しました。あなたはプレイヤー${msg.pid+1}です。`});return;}
+ if(msg.type==='reject'){clearClientRetry();online.role='off';online.connected=false;dismissRecoveryBanner();clientStage('wait',{message:msg.message+'　部屋が終了している場合はホストに確認してください。'});return;}
  if(msg.type==='lobby'){clientStage('lobby',msg);return;}
  if(msg.type==='started'){online.active=true;clientStage('wait',{message:'ホストが競売を開始しました。順番を待っています。'});return;}
  if(msg.type==='stage'){online.active=true;clientStage(msg.kind,msg);return;}
@@ -2006,9 +2143,9 @@ function clientReceive(msg){if(!msg||typeof msg!=='object')return;
  }
  if(msg.type==='readyCountdown'){
   const button=$('#netPlaceConfirm');if(!button)return;button.disabled=true;
-  const start=performance.now(),loop=setInterval(()=>{
+  const seconds=Math.max(0,Number(msg.seconds)||0),start=performance.now(),loop=setInterval(()=>{
    if(screen!=='placement'||!document.contains(button)){clearInterval(loop);return;}
-   const n=Math.max(0,5-Math.floor((performance.now()-start)/1000));button.textContent=`戦闘開始まで ${n}秒 · 位置変更可能`;
+   const n=Math.max(0,seconds-Math.floor((performance.now()-start)/1000));button.textContent=`戦闘開始まで ${n}秒 · 位置変更可能`;
    if(n===0)clearInterval(loop);
   },100);
   return;
@@ -2022,7 +2159,7 @@ function clientStage(kind,data={}){online.stage=kind;
  if(['wait','mapwait'].includes(kind)){if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面では他人の入札額・所持金は非公開。配置画面では敵陣営の出撃円も確認できます。</p>`);return;}
  if(kind==='intro'||kind==='bid'||kind==='result'){clientAuction(kind,data);return;}
  if(kind==='equip'){clientEquip(data);return;}
- if(kind==='placement'){if(screen==='placement'&&online.currentPlacementRound===data.round){if(data.error){const node=$('#netCoord');if(node)node.textContent=data.error;}return;}online.currentPlacementRound=data.round;clientPlacement(data);return;}
+ if(kind==='placement'){if(!data.resume&&screen==='placement'&&online.currentPlacementRound===data.round){if(data.error){const node=$('#netCoord');if(node)node.textContent=data.error;}return;}online.currentPlacementRound=data.round;clientPlacement(data);return;}
  if(kind==='focusAck'&&screen==='battle'){game.sim.orders[online.myPid].focus=data.focus;renderBattleCommands();}
 }
 function rosterList(data){return `<section class="surface pad" style="min-width:220px"><div class="blocktitle">契約済みの傭兵一覧</div>${(data.players||[]).map(p=>`<div class="member-card"><strong style="color:${p.color}">● ${safe(p.name)}</strong> <span class="tiny">${p.units.length}名</span><div class="member-roster">${p.units.length?p.units.map(m=>`<div class="member-merc">${cls[m.type].icon} ${safe(m.name)}</div>`).join(''):'<div class="tiny muted">未契約</div>'}</div></div>`).join('')}</section>`;}
@@ -2046,9 +2183,10 @@ function clientPlacement(data){screen='placement';const units=data.unitList||[];
  const cv=$('#netDeployCanvas'),ctxNet=cv.getContext('2d');const draw=()=>{let bg=new Image();let image=EMBEDDED_MAPS[mp];if(!cv._bg){cv._bg=new Image();cv._bg.src=image;cv._bg.onload=draw;}ctxNet.fillStyle='#142835';ctxNet.fillRect(0,0,640,640);if(cv._bg.complete&&cv._bg.naturalWidth){ctxNet.globalAlpha=.78;ctxNet.drawImage(cv._bg,0,0,640,640);ctxNet.globalAlpha=1;}ctxNet.fillStyle='#62d7eb47';ctxNet.strokeStyle='#9deeff';ctxNet.lineWidth=3;ctxNet.beginPath();ctxNet.arc(center.x*3.2,center.y*3.2,11.5*3.2,0,2*Math.PI);ctxNet.fill();ctxNet.stroke();;
   for(const [key,pos] of Object.entries(online.spawns||{})){const other=data.players?.[Number(key)];if(!other||Number(key)===online.myPid)continue;ctxNet.beginPath();ctxNet.arc(pos.x*3.2,pos.y*3.2,11.5*3.2,0,Math.PI*2);ctxNet.strokeStyle=other.color||'#ecc581';ctxNet.fillStyle=(other.color||'#ecc581')+'33';ctxNet.lineWidth=2;ctxNet.fill();ctxNet.stroke();ctxNet.fillStyle='#fff';ctxNet.font='bold 12px system-ui';ctxNet.textAlign='center';ctxNet.fillText(other.name,pos.x*3.2,pos.y*3.2-44);}
  };online.redrawPlacement=draw;draw();
- cv.onclick=e=>{let r=cv.getBoundingClientRect();center.x=Math.max(14,Math.min(186,(e.clientX-r.left)/r.width*200));center.y=Math.max(14,Math.min(186,(e.clientY-r.top)/r.height*200));online.placeDraft={round:data.round,center:{...center}};$('#netPlaceConfirm').disabled=false;$('#netCoord').textContent=`位置 X:${Math.round(center.x)} / Y:${Math.round(center.y)}`;draw();guestSend('place',{x:center.x,y:center.y});};
+ cv.onclick=e=>{let r=cv.getBoundingClientRect();center.x=Math.max(14,Math.min(186,(e.clientX-r.left)/r.width*200));center.y=Math.max(14,Math.min(186,(e.clientY-r.top)/r.height*200));online.placeDraft={round:data.round,center:{...center}};$('#netPlaceConfirm').disabled=!!data.alreadyReady;$('#netCoord').textContent=`位置 X:${Math.round(center.x)} / Y:${Math.round(center.y)}`;draw();guestSend('place',{x:center.x,y:center.y});};
  app.querySelectorAll('[data-field]').forEach(el=>el.onchange=()=>{const card=el.closest('.tactic-unit');const unitId=+el.dataset.unit;let stance=card.querySelector('[data-field="stance"]').value,target=card.querySelector('[data-field="target"]').value,heal=card.querySelector('[data-field="heal"]')?.value||'lowHp';guestSend('plan',{unitId,stance,target,heal});});
- $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');const button=$('#netPlaceConfirm');if(button){button.disabled=true;button.textContent='準備確認中…（配置変更可能）';}};
+ if(data.alreadyReady){const btn=$('#netPlaceConfirm');if(btn){btn.disabled=true;btn.textContent='準備OK済み（位置変更可能）';}}
+  $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');const button=$('#netPlaceConfirm');if(button){button.disabled=true;button.textContent='準備確認中…（配置変更可能）';}};
 }
 function receiveBattle(snap){if(!online.active)return;const first=screen!=='battle';const prev=game?.sim?.selectedId??null;game={players:snap.players,world:snap.world||game?.world||{name:snap.map,obstacles:[],details:[]},sim:{...snap.sim,selectedId:prev},series:{round:snap.round,raceTo:snap.raceTo,scores:snap.scores,rounds:[]}};setup.map=snap.map;setup.raceTo=snap.raceTo;
  if(first){screen='battle';stageCam={x:WORLD_MID,y:WORLD_MID,yaw:-.65,tilt:.68,zoom:.78};renderBattle();if(!online.viewerStarted){online.viewerStarted=true;const frame=()=>{if(online.role!=='client'||screen!=='battle'){online.viewerStarted=false;return;}if(canvas&&performance.now()-(online._lastViewerDraw||0)>45){online._lastViewerDraw=performance.now();drawBattle();drawMini();}requestAnimationFrame(frame);};requestAnimationFrame(frame);}}
@@ -2069,6 +2207,8 @@ const v21Styles=`<style>
 .online-settings{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.online-settings label{min-width:150px;font-size:12px;color:#d7dfe8;display:grid;gap:5px}.online-settings select{min-height:40px}
 .room-members{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.room-members>div{border:1px solid #586c84;border-radius:8px;padding:9px 14px;background:#1b2c40;font-size:13px}.room-code{font-size:24px;letter-spacing:.1em}.net-stage{max-width:1100px;margin:30px auto;padding:28px!important}.net-wait-symbol{font-size:42px;margin:20px 0}
 .online-auc-main{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;margin:18px auto}.net-merc-profile{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start}.net-merc-profile>img{width:100%;aspect-ratio:1;object-fit:contain;background:linear-gradient(140deg,#354057,#131e2d);border-radius:13px}.net-merc-profile h2{font-size:20px;margin:3px 0}.net-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.net-stat-grid>span{font-size:11px;display:grid;padding:8px;background:#142236;border-radius:8px}.net-stat-grid b{font-size:20px;color:#efc780}.net-actions{padding:15px 0}.net-bid-bar{display:grid;gap:10px}.net-bid-row{display:flex;gap:8px}.net-bid-row input{flex:1}.net-adjust{display:flex;gap:7px;flex-wrap:wrap}.online-auc-main .member-card{margin:8px 0}.online-auc-main .surface.pad{min-width:0}
+.net-recovery-banner{position:fixed;z-index:99999;left:50%;top:12px;transform:translateX(-50%);width:min(95vw,690px);background:#183247;color:#edf6fa;border:2px solid #ddbb77;border-radius:10px;padding:12px 14px;box-shadow:0 4px 28px #000a;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px}.net-recovery-banner strong{color:#f7d99f}.net-recovery-banner span{flex:1;min-width:180px}
+.online-disconnect{position:fixed;bottom:15px;left:50%;transform:translateX(-50%);z-index:10000;max-width:90vw;background:#463826;color:#fff0d0;padding:11px 18px;border:1px solid #c6a565;border-radius:10px}
 .net-equipment{display:grid;gap:12px;margin:20px 0}.net-equips{display:grid;grid-template-columns:1fr 1fr;gap:10px}.net-equips label{font-size:12px;display:grid;gap:6px}.net-deploy-grid{display:grid;grid-template-columns:minmax(0,630px) minmax(270px,1fr);gap:20px}.net-deploy-grid canvas{width:100%;height:auto;border:1px solid #7893a6;cursor:crosshair;border-radius:10px}.net-plans{max-height:690px;overflow-y:auto;display:grid;gap:10px}.net-plans .tactic-unit{padding:9px}.net-plans label{font-size:11px;display:grid;gap:4px}.net-parallel-status{margin:8px 0 16px;border:1px solid #638c9a6b!important;grid-column:1/-1}.net-parallel-members{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.net-parallel-members span{border-radius:7px;border:1px solid #5c6e83;padding:5px 8px;font-size:12px}.net-ready{color:#9ee7b6;background:#163b33}.net-pending{color:#d7dce9;background:#243244}.online-disconnect{position:fixed;bottom:12px;left:12px;right:12px;padding:12px;border:1px solid #dd9b79;background:#44251c;color:#fff;z-index:9999}
 @media(max-width:850px){.online-auc-main,.net-deploy-grid{grid-template-columns:1fr}.net-merc-profile{grid-template-columns:150px 1fr}.net-stat-grid{grid-template-columns:repeat(2,1fr)}.room-code{font-size:16px}}
 </style>`;
@@ -2086,7 +2226,7 @@ window.mercPublishSpawn=function(pid,point){
   online.guests.forEach(g=>send(g.conn,pkt));
  }
 };
-// v2.42 — Online-only simultaneous auction, result, equipment and deployment.
+// v2.43 — Online-only simultaneous auction, result, equipment and deployment.
 // Host owns all money, bids, placements, simulation and battle orders.
 const parallelOldOfferNext=offerNext;
 const parallelOldShowNextResult=showNextResult;
@@ -2161,7 +2301,7 @@ viewTurn=function(kind,pid){
 };
 function parallelCountdown(q){
  if(!q||q.counting||online.parallel!==q)return;
- q.counting=true;parallelNotify();
+ q.counting=true;q.countdownDeadline=Date.now()+5000;parallelNotify();
  const data={type:'readyCountdown',seconds:5};cast(data);clientReceive(data);
  const epoch=q.epoch,match=game;
  // CPU shifts its visible deployment circle while everybody is making final adjustments.
