@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>傭兵競売戦記 v2.42 — オンライン同時進行・戦闘共有版</title>
+<title>傭兵競売戦記 v2.44 — 戦闘同期・ステータス確認版</title>
 <style>
 :root{--bg:#101723;--base:#172233;--panel:#1b293a;--panel2:#233449;--line:#35465a;--line2:#46576b;--text:#f1f2ec;--muted:#9aaabd;--gold:#e8bd73;--gold2:#af7e3c;--blue:#70bce8;--red:#fa857b;--green:#83d7ab;--shadow:0 14px 55px #0209127a}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',system-ui,-apple-system,sans-serif}body{background:radial-gradient(ellipse at 12% 0%,#233347 0%,transparent 40%),radial-gradient(ellipse at 89% 20%,#2c2730 0%,transparent 36%),#101723}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.34;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -126,7 +126,7 @@ const first=['アレン','ミラ','ゼイン','リリィ','レオン','フィオ
 const titles=['灰狼','白銀','深緑','紅蓮','月影','蒼風','鉄壁','琥珀','夜明け','無音','黄昏','星詠み','黒翼','蒼雷','疾風','暁光','静寂','紫電','流浪','彗星'];
 const gearCatalog={weapon:[{name:'軽装武器',price:400,attack:12,description:'攻撃力 +12'},{name:'上質武器',price:1000,attack:28,description:'攻撃力 +28'},{name:'名工武器',price:1850,attack:48,description:'攻撃力 +48'}],armor:[{name:'軽量物理鎧',type:'physical',tier:1,price:400,pd:20,md:0,hp:20,description:'物防 +20・HP +20'}, {name:'上質物理鎧',type:'physical',tier:2,price:1000,pd:45,md:0,hp:50,description:'物防 +45・HP +50'}, {name:'重装物理鎧',type:'physical',tier:3,price:1850,pd:75,md:0,hp:85,description:'物防 +75・HP +85'}, {name:'軽量魔法衣',type:'magical',tier:1,price:400,pd:0,md:20,hp:20,description:'魔防 +20・HP +20'}, {name:'上質魔法衣',type:'magical',tier:2,price:1000,pd:0,md:45,hp:50,description:'魔防 +45・HP +50'}, {name:'秘術魔法衣',type:'magical',tier:3,price:1850,pd:0,md:75,hp:85,description:'魔防 +75・HP +85'}, {name:'軽量複合鎧',type:'hybrid',tier:1,price:400,pd:10,md:10,hp:20,description:'物防/魔防 +10・HP +20'}, {name:'上質複合鎧',type:'hybrid',tier:2,price:1000,pd:23,md:23,hp:50,description:'物防/魔防 +23・HP +50'}, {name:'名工複合鎧',type:'hybrid',tier:3,price:1850,pd:38,md:38,hp:85,description:'物防/魔防 +38・HP +85'}]};
 const magicalJobs=new Set(['mage','healer','enchanter']);
-let game=null,setup={count:4,humans:1,budget:15000,map:'ruins'},screen='setup',uiRAF=0,battleRAF=0,canvas=null,ctx=null,selected=0,drag=null,lastStamp=0,lastHud=0;
+let game=null,setup={count:4,humans:1,budget:15000,map:'ruins',maxMerc:6},screen='setup',uiRAF=0,battleRAF=0,canvas=null,ctx=null,selected=0,drag=null,lastStamp=0,lastHud=0;
 function escapeHtml(str){return String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function setStage(label){$('#headerStage').textContent=label;}
 function steps(s){let labels=['ルール設定','傭兵の競売','装備の購入','部隊の配置','生存戦'];let ix=labels.indexOf(s);return `<div class="steps">${labels.map((n,i)=>`<div class="step ${i===ix?'on':i<ix?'done':''}"><span class="stepnumber">${i+1}</span>${n}</div>`).join('')}</div>`}
@@ -181,11 +181,11 @@ function mercHTML(m){let role=jobSummary[m.type];return `<div class="mercbox">${
 function publicAuctionFeed(){let recent=game.history.slice(0,6);return recent.length?recent.map(h=>{let w=h.owner===null?null:game.players[h.owner];return `<div class="auction-feed-item"><span class="auction-feed-icon">${cls[h.merc.type].icon}</span><div class="auction-feed-body"><b>${escapeHtml(h.merc.name)}</b><small>${h.owner===null?'契約は成立しませんでした':`<span style="color:${w.color}">● ${escapeHtml(w.name)}</span> が落札`}</small></div><span class="auction-feed-secret">金額非公開</span></div>`;}).join(''):'<div class="small muted">まだ落札記録はありません。</div>';}
 
 function renderSetup(){screen='setup';setStage('NEW GAME');app.innerHTML=`<div class="pageintro"><div class="overline">A TACTICAL AUCTION GAME</div><div class="headline">競り落とせ。編成せよ。<br><span class="gold">最後の一隊</span>まで生き残れ。</div><div class="lead">限られた軍資金で傭兵と装備を購入し、200 × 200 の戦場へ配置。<br>入札での決断と部隊編成が、全自動で繰り広げられる戦いの明暗を分ける。</div>${steps('ルール設定')}</div>
-<div class="split"><section class="surface pad"><h2 class="blocktitle">戦場の設定 <small>GAME SETTINGS</small></h2><div class="configcols"><div class="cfgbox"><h3>参加人数</h3><div class="field"><label for="playerCount">合計プレイヤー数（2～6名）</label><select id="playerCount">${[2,3,4,5,6].map(i=>`<option value="${i}" ${i===setup.count?'selected':''}>${i}名</option>`).join('')}</select></div><div class="field"><label for="humanCount">人間プレイヤー数（残りはCPU）</label><select id="humanCount"></select></div><div class="helptext">人間が複数人の場合は、1台の端末を交代で使って非公開入札します。落札者は公開。落札額と他人の残金は非公開です。</div></div><div class="cfgbox"><h3>競売の条件</h3><div class="field"><label for="budget">各プレイヤーの初期軍資金</label><select id="budget"><option value="10500" ${setup.budget===10500?'selected':''}>10,500 G / 人　緊縮戦</option><option value="15000" ${setup.budget===15000?'selected':''}>15,000 G / 人　標準</option><option value="21000" ${setup.budget===21000?'selected':''}>21,000 G / 人　大規模戦</option></select></div><div class="field"><label for="mapChoice">戦場マップ</label><select id="mapChoice"><option value="ruins" ${setup.map==='ruins'?'selected':''}>古い遺跡（遮蔽物が多い）</option><option value="forest" ${setup.map==='forest'?'selected':''}>深緑の森（木による半遮蔽）</option><option value="plain" ${setup.map==='plain'?'selected':''}>草原の古戦場（遮蔽物が少ない）</option></select></div><div class="field"><label>登場する傭兵の人数</label><div style="font-size:20px;font-weight:900" id="lotEstimate">—</div><div class="tiny muted" style="margin-top:5px">参加人数 × 5名を基準に、±2名で毎回変化</div><div class="helptext" style="margin-top:11px">装備の価格（武器・防具共通）<br>弱 400 G ／ 中 1,000 G ／ 強 1,850 G<br>競売で予算を使い切ると装備を購入できません。</div></div></div></div><div class="divider"></div><div class="actions"><button id="start" class="btn primary">傭兵競売を開始　→</button><span class="muted tiny">ランダム生成 · CPU自動入札 · リアルタイム戦闘</span></div></section>
+<div class="split"><section class="surface pad"><h2 class="blocktitle">戦場の設定 <small>GAME SETTINGS</small></h2><div class="configcols"><div class="cfgbox"><h3>参加人数</h3><div class="field"><label for="playerCount">合計プレイヤー数（2～6名）</label><select id="playerCount">${[2,3,4,5,6].map(i=>`<option value="${i}" ${i===setup.count?'selected':''}>${i}名</option>`).join('')}</select></div><div class="field"><label for="humanCount">人間プレイヤー数（残りはCPU）</label><select id="humanCount"></select></div><div class="helptext">人間が複数人の場合は、1台の端末を交代で使って非公開入札します。落札者は公開。落札額と他人の残金は非公開です。</div></div><div class="cfgbox"><h3>競売の条件</h3><div class="field"><label for="budget">各プレイヤーの初期軍資金</label><select id="budget"><option value="10500" ${setup.budget===10500?'selected':''}>10,500 G / 人　緊縮戦</option><option value="15000" ${setup.budget===15000?'selected':''}>15,000 G / 人　標準</option><option value="21000" ${setup.budget===21000?'selected':''}>21,000 G / 人　大規模戦</option></select></div><div class="field"><label for="mapChoice">戦場マップ</label><select id="mapChoice"><option value="ruins" ${setup.map==='ruins'?'selected':''}>古い遺跡（遮蔽物が多い）</option><option value="forest" ${setup.map==='forest'?'selected':''}>深緑の森（木による半遮蔽）</option><option value="plain" ${setup.map==='plain'?'selected':''}>草原の古戦場（遮蔽物が少ない）</option></select></div><div class="field"><label for="maxMerc">1陣営の最大落札人数</label><select id="maxMerc">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${setup.maxMerc===n?'selected':''}>${n}人${n===6?'（標準）':''}</option>`).join('')}</select></div><div class="field"><label>登場する傭兵の人数</label><div style="font-size:20px;font-weight:900" id="lotEstimate">—</div><div class="tiny muted" style="margin-top:5px">参加人数 × 5名を基準に、±2名で毎回変化</div><div class="helptext" style="margin-top:11px">装備の価格（武器・防具共通）<br>弱 400 G ／ 中 1,000 G ／ 強 1,850 G<br>競売で予算を使い切ると装備を購入できません。</div></div></div></div><div class="divider"></div><div class="actions"><button id="start" class="btn primary">傭兵競売を開始　→</button><span class="muted tiny">ランダム生成 · CPU自動入札 · リアルタイム戦闘</span></div></section>
 <aside class="surface pad sidebar"><h2 class="blocktitle">戦いの流れ <small>HOW TO PLAY</small></h2><div class="rules"><div class="rule"><span class="ruleicon">Ⅰ</span><div><strong>オークション</strong><br>傭兵を順番に紹介。誰でも入札でき、最高額を提示した陣営が契約。落札者は公開、落札額は非公開。</div></div><div class="rule"><span class="ruleicon">Ⅱ</span><div><strong>同額なら全員再入札</strong><br>最高額が重複したら全員再入札。3回連続で重複した傭兵は退場。</div></div><div class="rule"><span class="ruleicon">Ⅲ</span><div><strong>装備購入</strong><br>残金を使って傭兵ごとに武器・防具を購入。物理・魔法・両対応の防具は1種類だけ装備可能。</div></div><div class="rule"><span class="ruleicon">Ⅳ</span><div><strong>出撃地点・必殺設定</strong><br>出撃円を自由に配置し、傭兵ごとに3種類から必殺スキルを1つ選択。</div></div><div class="rule"><span class="ruleicon">Ⅴ</span><div><strong>リアルタイムの乱戦</strong><br>前衛・後衛・回復・支援・遊撃が職業に応じて自律行動。戦闘中は優先攻撃する敵陣営を指定可能。</div></div></div><div class="divider"></div><div class="smallheading">登場する職業</div><div class="classlegend">${Object.values(cls).map(c=>`<span class="pill">${c.icon} ${c.name}</span>`).join('')}</div></aside></div>`;
-const pc=$('#playerCount'),hc=$('#humanCount'),bu=$('#budget');function sync(){setup.count=+pc.value;setup.humans=clamp(setup.humans,1,setup.count);hc.innerHTML=Array.from({length:setup.count},(_,i)=>`<option value="${i+1}" ${i+1===setup.humans?'selected':''}>${i+1}人 ${i+1===setup.count?'（CPUなし）':''}</option>`).join('');$('#lotEstimate').textContent=`${Math.max(2,setup.count*5-2)} ～ ${setup.count*5+2}名`};pc.addEventListener('change',sync);hc.addEventListener('change',()=>setup.humans=+hc.value);bu.addEventListener('change',()=>setup.budget=+bu.value);$('#mapChoice').addEventListener('change',e=>setup.map=e.target.value);$('#start').onclick=beginGame;sync();}
+const pc=$('#playerCount'),hc=$('#humanCount'),bu=$('#budget');function sync(){setup.count=+pc.value;setup.humans=clamp(setup.humans,1,setup.count);hc.innerHTML=Array.from({length:setup.count},(_,i)=>`<option value="${i+1}" ${i+1===setup.humans?'selected':''}>${i+1}人 ${i+1===setup.count?'（CPUなし）':''}</option>`).join('');$('#lotEstimate').textContent=`${Math.max(2,setup.count*5-2)} ～ ${setup.count*5+2}名`};pc.addEventListener('change',sync);hc.addEventListener('change',()=>setup.humans=+hc.value);bu.addEventListener('change',()=>setup.budget=+bu.value);$('#maxMerc').addEventListener('change',e=>setup.maxMerc=+e.target.value);$('#mapChoice').addEventListener('change',e=>setup.map=e.target.value);$('#start').onclick=beginGame;sync();}
 function newLot(){if(game.lotIndex>=game.lots.length){startEquipment();return;}game.auction={mode:'initial',round:0,bids:{},tied:[],prices:{},currentHumanIndex:0,records:[]};offerNext();}
-function eligible(){const a=game.auction;if(a.mode==='initial')return game.players;return game.players.filter(p=>a.tied.includes(p.id));}
+function eligible(){const a=game.auction;const canHire=p=>p.units.length<Math.max(1,setup.maxMerc||6);if(a.mode==='initial')return game.players.filter(canHire);return game.players.filter(p=>a.tied.includes(p.id)&&canHire(p));}
 function currentHuman(){const a=game.auction;let people=eligible().filter(p=>p.human);return people[a.currentHumanIndex]||null;}
 function offerNext(){let human=currentHuman();if(human){viewTurn('auction',human.id);return;}for(let p of eligible().filter(p=>!p.human)){if(game.auction.mode==='initial')game.auction.bids[p.id]=cpuInitialBid(p,game.lots[game.lotIndex]);else game.auction.bids[p.id]=cpuOvertimeBid(p);}
  resolveOffers();}
@@ -1366,7 +1366,7 @@ document.head.insertAdjacentHTML('beforeend',`<style>
     return `<div class="auc-profile"><div class="auc-art"><img src="${artPortrait(m.type)}" alt="${cls[m.type].name}のイラスト"><div class="auc-role">${cls[m.type].icon} ${cls[m.type].name} / ${escapeHtml(m.trait.n)}</div></div><div class="auc-info"><div class="auc-sub">MERCENARY · ${jobSummary[m.type]}</div><div class="auc-name">${escapeHtml(m.name)}</div><div class="auc-sub">${escapeHtml(m.trait.n)}：${escapeHtml(m.trait.d)}</div><div class="auc-primary">${prim.map(k=>`<div class="auc-stat"><span>${shortNames[k]}</span><strong>${m.st[k]}</strong></div>`).join('')}</div><div class="auc-allstats">${types.map(k=>`<div>${shortNames[k]}<b>${m.st[k]}</b></div>`).join('')}</div><div class="auc-valuation"><span class="auc-note">競売人の推定落札額<br>実際の落札価格は非公開</span><b>${fmt(m.value)} G</b></div></div></div>`;
   }
   function rosterRows(){
-    return game.players.map(pl=>`<div class="auc-team"><div class="auc-team-title"><span style="color:${pl.color}">● ${escapeHtml(pl.name)}</span><span class="auc-team-count">${pl.units.length}名</span></div>${pl.units.length?pl.units.map(m=>`<div class="auc-mercrow">${cls[m.type].icon} ${escapeHtml(m.name)} <span style="color:#9fb0c4">/ ${cls[m.type].name}</span></div>`).join(''):'<div class="auc-note">契約済み傭兵なし</div>'}</div>`).join('');
+    return game.players.map(pl=>`<div class="auc-team"><div class="auc-team-title"><span style="color:${pl.color}">● ${escapeHtml(pl.name)}</span><span class="auc-team-count">${pl.units.length}名</span></div>${pl.units.length?pl.units.map(m=>`<div class="auc-mercrow" data-merc-preview="${m.id}" data-player-index="${pl.id}">${cls[m.type].icon} ${escapeHtml(m.name)} <span style="color:#9fb0c4">/ ${cls[m.type].name}</span></div>`).join(''):'<div class="auc-note">契約済み傭兵なし</div>'}</div>`).join('');
   }
   function modalHtml(){
     const rows=slot=>gearCatalog[slot].map(it=>`<div class="auc-gear-row"><span>${escapeHtml(it.name)}<br><span class="auc-note">${escapeHtml(it.description)}</span></span><b>${it.price} G</b></div>`).join('');
@@ -1849,7 +1849,7 @@ renderBattleCommands=function(){oldBattleCommands();const box=document.querySele
 </script>
 <script>
 'use strict';
-// Online battle v2.43: host-authoritative PeerJS room, private seats, and reconnection.
+// Online battle v2.44: host-authoritative PeerJS room, private seats, and reconnection.
 (function(){
 const online={role:'off',peer:null,hostConn:null,room:'',guests:[],myPid:0,myName:'',cpu:1,connected:false,active:false,stage:'',seq:0,lastFrame:0,roomError:'',isRendering:false,retryTimer:null,retryCount:0,connectSerial:0,recoveryKey:'',reconnecting:false};
 window.mercOnlineDebug=()=>({role:online.role,room:online.room,guests:online.guests.map(x=>({id:x.pid,open:x.conn?.open})),stage:online.stage,active:online.active});
@@ -1954,13 +1954,13 @@ function welcomeAndSync(conn,g,recovered){
  }else if(screen==='battle'&&game.sim){send(conn,battleSnapshot(true));}
  else if(q?.phase==='bid'){
   if(q.required.has(g.pid)&&!q.done.has(g.pid))send(conn,packFor(g.pid,'bid',{bidMode:game.auction.mode,previousBid:game.auction.prices?.[g.pid]??0,resume:true}));
-  else send(conn,packFor(g.pid,'wait',{message:q.done.has(g.pid)?'入札済みです。全員の入札を待っています。':'対象プレイヤーの再入札を待っています。'}));
+  else send(conn,packFor(g.pid,'bid',{bidMode:game.auction.mode,previousBid:game.auction.prices?.[g.pid]??0,alreadyDone:true,skipReason:q.done.has(g.pid)?'入札済みです。全員の入札を待っています。':'再入札の対象外です。'}));
  }else if(q?.phase==='result'){
   if(!q.done.has(g.pid))send(conn,packFor(g.pid,'result',{winner:game.settlement?.winner??null,price:game.settlement?.winner===g.pid?game.settlement.price:null,withdrawn:!!game.auction?.withdrawn,resume:true}));
-  else send(conn,packFor(g.pid,'wait',{message:'結果確認済みです。全員の確認を待っています。'}));
+  else send(conn,packFor(g.pid,'result',{winner:game.settlement?.winner??null,price:game.settlement?.winner===g.pid?game.settlement.price:null,withdrawn:!!game.auction?.withdrawn,alreadyDone:true}));
  }else if(q?.phase==='equip'){
   if(!q.done.has(g.pid))send(conn,packFor(g.pid,'equip',{resume:true}));
-  else send(conn,packFor(g.pid,'wait',{message:'装備購入完了済みです。全員の確定を待っています。'}));
+  else send(conn,packFor(g.pid,'equip',{alreadyDone:true}));
  }else if(q?.phase==='placement'){
   send(conn,packFor(g.pid,'placement',{noUnits:!game.players[g.pid]?.units.length,alreadyReady:q.done.has(g.pid),resume:true}));
   if(q.counting)send(conn,{type:'readyCountdown',seconds:Math.max(0,Math.ceil((q.countdownDeadline-Date.now())/1000))});
@@ -1989,9 +1989,9 @@ function renderIntro(){if(online.role==='client'&&online.active)return;const sec
   };
   $('#netResume')?.addEventListener('click',()=>{const stored=readRecovery();if(!stored)return;$('#netRoom').value=stored.room;$('#netName').value=stored.name;$('#netJoin').click();});
 }
-function hostLobby(){screen='online-lobby';setStage('ONLINE LOBBY');let count=1+online.guests.length;app.innerHTML=stageHtml('オンラインロビー',`<p>部屋コード <strong class="gold room-code">${safe(online.room)}</strong>　<button class="btn sm" id="roomCopy">コピー</button></p><p>接続中のプレイヤー ${count}人（最大6人）。CPU人数を設定して試合を開始します。</p><div class="room-members">${[online.myName,...online.guests.map(x=>x.name)].map((n,i)=>`<div>● ${safe(n)} ${i===0?'（ホスト）':''}</div>`).join('')}</div><div class="online-settings"><label>CPU人数 <select id="netCpu" class="input">${Array.from({length:Math.max(0,7-count)},(_,i)=>`<option value="${i}" ${i===online.cpu?'selected':''}>${i}人</option>`).join('')}</select></label><label>勝利条件 <select id="netRace" class="input">${[3,5,10].map(n=>`<option value="${n}" ${setup.raceTo===n?'selected':''}>${n}本先取</option>`).join('')}</select></label><label>初期予算 <select id="netBudget" class="input">${[10500,15000,21000].map(n=>`<option value="${n}" ${setup.budget===n?'selected':''}>${n.toLocaleString()}G</option>`).join('')}</select></label></div><p class="small muted" id="hostHint">接続済みのプレイヤーは、開始後に自分の端末で入札・装備・出撃地点を操作します。参加者は再接続で復帰できます。ホストはページを閉じると試合データが失われます。</p><div class="actions"><button id="netStart" class="btn primary" ${count+online.cpu<2?'disabled':''}>オンライン対戦開始</button><button id="netClose" class="btn">部屋を閉じる</button></div>`);
+function hostLobby(){screen='online-lobby';setStage('ONLINE LOBBY');let count=1+online.guests.length;app.innerHTML=stageHtml('オンラインロビー',`<p>部屋コード <strong class="gold room-code">${safe(online.room)}</strong>　<button class="btn sm" id="roomCopy">コピー</button></p><p>接続中のプレイヤー ${count}人（最大6人）。CPU人数を設定して試合を開始します。</p><div class="room-members">${[online.myName,...online.guests.map(x=>x.name)].map((n,i)=>`<div>● ${safe(n)} ${i===0?'（ホスト）':''}</div>`).join('')}</div><div class="online-settings"><label>CPU人数 <select id="netCpu" class="input">${Array.from({length:Math.max(0,7-count)},(_,i)=>`<option value="${i}" ${i===online.cpu?'selected':''}>${i}人</option>`).join('')}</select></label><label>勝利条件 <select id="netRace" class="input">${[3,5,10].map(n=>`<option value="${n}" ${setup.raceTo===n?'selected':''}>${n}本先取</option>`).join('')}</select></label><label>最大落札人数 <select id="netMaxMerc" class="input">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${setup.maxMerc===n?'selected':''}>${n}人${n===6?'（標準）':''}</option>`).join('')}</select></label><label>初期予算 <select id="netBudget" class="input">${[10500,15000,21000].map(n=>`<option value="${n}" ${setup.budget===n?'selected':''}>${n.toLocaleString()}G</option>`).join('')}</select></label></div><p class="small muted" id="hostHint">接続済みのプレイヤーは、開始後に自分の端末で入札・装備・出撃地点を操作します。参加者は再接続で復帰できます。ホストはページを閉じると試合データが失われます。</p><div class="actions"><button id="netStart" class="btn primary" ${count+online.cpu<2?'disabled':''}>オンライン対戦開始</button><button id="netClose" class="btn">部屋を閉じる</button></div>`);
  $('#roomCopy').onclick=()=>navigator.clipboard?.writeText(online.room).catch(()=>window.prompt('部屋コード',online.room));
- $('#netCpu').onchange=e=>{online.cpu=+e.target.value;hostLobby();};$('#netRace').onchange=e=>setup.raceTo=+e.target.value;$('#netBudget').onchange=e=>setup.budget=+e.target.value;
+ $('#netCpu').onchange=e=>{online.cpu=+e.target.value;hostLobby();};$('#netRace').onchange=e=>setup.raceTo=+e.target.value;$('#netBudget').onchange=e=>setup.budget=+e.target.value;$('#netMaxMerc').onchange=e=>setup.maxMerc=+e.target.value;
  $('#netStart').onclick=()=>{if(online.guests.length+1+online.cpu<2)return;online.active=true;setup.humans=online.guests.length+1;setup.count=setup.humans+online.cpu;const origMake=makePlayers;makePlayers=function(){let people=origMake();people[0].name=online.myName||'ホスト';online.guests.forEach((g,i)=>{people[i+1].name=g.name;});return people;};cast({type:'started',players:[online.myName,...online.guests.map(x=>x.name)]});beginGame();};
  $('#netClose').onclick=()=>{online.guests.forEach(g=>g.conn.close());online.peer?.destroy();online.role='off';online.active=false;online.guests=[];renderSetup();};
  cast({type:'lobby',room:online.room,names:[online.myName,...online.guests.map(g=>g.name)]});
@@ -2001,7 +2001,7 @@ function hostConnect(conn){
    if(!msg||typeof msg!=='object')return;
    if(msg.type==='hello'){
     const key=typeof msg.key==='string'?msg.key:'';
-    if(!/^[0-9a-f]{48}$/.test(key)){send(conn,{type:'reject',message:'復帰キーが不正です。全員v2.43を使用してください。'});setTimeout(()=>conn.close(),450);return;}
+    if(!/^[0-9a-f]{48}$/.test(key)){send(conn,{type:'reject',message:'復帰キーが不正です。全員同じ最新版を使用してください。'});setTimeout(()=>conn.close(),450);return;}
     // Match an existing seat only by its secret key; duplicate names do not qualify.
     const returning=online.guests.find(g=>g.key===key);
     if(returning){
@@ -2025,9 +2025,9 @@ function hostConnect(conn){
    else hostRecoveryStatus();
   });
   conn.on('error',()=>hostRecoveryStatus());
- }function publicPlayers(pid,forBattle=false){return game.players.map(p=>({id:p.id,name:p.name,color:p.color,human:p.human,money:p.id===pid?p.money:null,units:p.units.map(m=>forBattle?m:{id:m.id,name:m.name,type:m.type,st:p.id===pid?m.st:undefined,gear:p.id===pid?m.gear:undefined,tactic:p.id===pid?m.tactic:undefined,specialChoice:p.id===pid?m.specialChoice:undefined}),spent:p.id===pid?p.spent:undefined,kills:p.kills||0}));}
+ }function publicPlayers(pid,forBattle=false){return game.players.map(p=>({id:p.id,name:p.name,color:p.color,human:p.human,money:p.id===pid?p.money:null,units:p.units.map(m=>forBattle?m:{id:m.id,name:m.name,type:m.type,st:m.st,gear:m.gear,trait:m.trait,tactic:m.tactic,specialChoice:m.specialChoice}),spent:p.id===pid?p.spent:undefined,kills:p.kills||0}));}
 function waiting(label){if(online.role!=='host'||!online.active)return;document.body.classList.remove('auction-active');screen='online-wait';setStage('ONLINE');app.innerHTML=stageHtml('参加プレイヤーの操作を待機中',`<div class="net-wait-symbol">⌛</div><p>${safe(label)} が操作しています。操作が終わると自動で次へ進みます。</p><p class="muted small">ほかのプレイヤーの入札額・予算は非公開。出撃地点は配置画面で最初から公開されます。</p>`);}
-function packFor(pid,kind,extra={}){let p=game.players[pid];return {type:'stage',kind,pid,players:publicPlayers(pid),money:p.money,lotIndex:game.lotIndex,lotTotal:game.lots.length,lot:['auction','intro','bid','result'].includes(kind)?game.lots[game.lotIndex]:null,auctionRound:game.auction?.round??0,results:game.history.slice(0,7).map(h=>({owner:h.owner,merc:{id:h.merc.id,name:h.merc.name,type:h.merc.type}})),unitList:p.units.map(m=>({id:m.id,name:m.name,type:m.type,st:m.st,trait:m.trait,gear:m.gear,tactic:m.tactic,specialChoice:m.specialChoice})),spawnPoints:game.spawnPoints?.map(at=>at?{x:at.x,y:at.y}:null),map:setup.map,round:game.series?.round||0,raceTo:setup.raceTo,scores:game.series?.scores||{},...extra};}
+function packFor(pid,kind,extra={}){let p=game.players[pid];return {type:'stage',kind,pid,players:publicPlayers(pid),money:p.money,lotIndex:game.lotIndex,lotTotal:game.lots.length,lot:['auction','intro','bid','result'].includes(kind)?game.lots[game.lotIndex]:null,auctionRound:game.auction?.round??0,results:game.history.slice(0,7).map(h=>({owner:h.owner,merc:{id:h.merc.id,name:h.merc.name,type:h.merc.type}})),unitList:p.units.map(m=>({id:m.id,name:m.name,type:m.type,st:m.st,trait:m.trait,gear:m.gear,tactic:m.tactic,specialChoice:m.specialChoice})),spawnPoints:game.spawnPoints?.map(at=>at?{x:at.x,y:at.y}:null),map:setup.map,round:game.series?.round||0,maxMerc:setup.maxMerc||6,raceTo:setup.raceTo,scores:game.series?.scores||{},...extra};}
 function transmit(pid,kind,extra={}){const g=online.guests.find(g=>g.pid===pid);if(!g)return;send(g.conn,packFor(pid,kind,extra));}
 function announceWait(which,pid){online.guests.forEach(g=>{if(g.pid!==pid)send(g.conn,packFor(g.pid,'wait',{message:which}));});}
 const baseView=viewTurn;
@@ -2049,6 +2049,7 @@ function hostAction(pid,msg){if(!online.active||online.role!=='host'||!game)retu
  const isBid=()=>currentHuman()?.id===pid;
  const isEquip=()=>game.equipOrder?.[game.equipTurn]===pid;
  const isPlace=()=>game.placeOrder?.[game.placeTurn]===pid;
+ if(kind==='battleSync'&&game?.sim){send(online.guests.find(g=>g.pid===pid)?.conn,battleSnapshot(true));return;}
  if(online.parallel?.phase&&handleParallelAction(pid,msg))return;
  if(kind==='intro'&&isBid()){game.auction.introSeen=`${game.lotIndex}-${game.auction.round}-${pid}`;transmit(pid,'bid');return;}
  if(kind==='bid'&&isBid()){if(!Number.isSafeInteger(n)||n<0||n>p.money){transmit(pid,'bid',{error:'入札額を確認してください'});return;}game.auction.bids[pid]=n;game.auction.currentHumanIndex++;offerNext();return;}
@@ -2095,8 +2096,8 @@ renderBattleCommands=function(){if(!online.active||!['host','client'].includes(o
  el.querySelectorAll('[data-focus]').forEach(b=>b.onclick=()=>{const id=+b.dataset.focus;send(online.hostConn,{type:'action',kind:'focus',value:id<0?null:id});});
 };
 // In multiplayer host alone runs all simulation ticks. Guests receive safe battle snapshots.
-function battleSnapshot(force=false){if(!game?.sim)return null;let s=game.sim;return {type:'battle',map:setup.map,round:game.series?.round||1,scores:game.series?.scores||{},raceTo:game.series?.raceTo||setup.raceTo,players:publicPlayers(-1,true),world:force?{name:game.world?.name,obstacles:game.world?.obstacles||[],details:game.world?.details||[]}:undefined,sim:{units:s.units,projectiles:s.projectiles,effects:s.effects,texts:s.texts,orders:s.orders,events:s.events,selectedId:null,teamGuides:s.teamGuides,time:s.time,storm:s.storm,paused:s.paused,speed:s.speed,ended:s.ended,winner:s.winner,commandOwner:0}};}
-function broadcastBattle(force=false){if(online.role!=='host'||!online.active||!game?.sim)return;let now=performance.now();if(!force&&now-online.lastFrame<180)return;online.lastFrame=now;let snap=battleSnapshot(force);online.guests.forEach(g=>send(g.conn,snap));}
+function battleSnapshot(force=false){if(!game?.sim)return null;let s=game.sim;return {type:'battle',map:setup.map,round:game.series?.round||1,frameId:online.battleFrameId=(online.battleFrameId||0)+1,scores:game.series?.scores||{},raceTo:game.series?.raceTo||setup.raceTo,players:publicPlayers(-1,true),world:force?{name:game.world?.name,obstacles:game.world?.obstacles||[],details:[]}:undefined,sim:{units:s.units,projectiles:s.projectiles,effects:s.effects,texts:s.texts,orders:s.orders,events:s.events,selectedId:null,teamGuides:s.teamGuides,time:s.time,storm:s.storm,paused:s.paused,speed:s.speed,ended:s.ended,winner:s.winner,commandOwner:0}};}
+function broadcastBattle(force=false){if(online.role!=='host'||!online.active||!game?.sim)return;let now=performance.now();if(!force&&now-online.lastFrame<150)return;online.lastFrame=now;let keyframe=force||!online._lastWorldAt||now-online._lastWorldAt>9000;if(keyframe)online._lastWorldAt=now;let snap=battleSnapshot(keyframe);online.guests.forEach(g=>send(g.conn,snap));}
 
 // Cache the static projected ground. A 200x200 map otherwise re-renders thousands
 // of floor polygons every frame and makes online combat progress too slowly.
@@ -2118,7 +2119,7 @@ const baseBattleLoop=battleLoop;
 battleLoop=function(stamp){
  if(online.role!=='host'||!online.active)return baseBattleLoop(stamp);
  if(screen!=='battle'||!game?.sim)return;
- let sim=game.sim,dt=Math.min(.28,Math.max(.001,(stamp-lastStamp)/1000));lastStamp=stamp;
+ let sim=game.sim,dt=Math.min(.075,Math.max(.001,(stamp-lastStamp)/1000));lastStamp=stamp;
  updateCameraKeyboard(dt);
  if(!sim.paused&&!sim.ended){let remaining=dt*sim.speed;while(remaining>0){let tick=Math.min(.04,remaining);simTick(tick);remaining-=tick;if(sim.ended)break;}}
  drawBattle();
@@ -2127,8 +2128,13 @@ battleLoop=function(stamp){
 };
 const baseEndingOnline=renderEnding;
 renderEnding=function(){baseEndingOnline();if(online.role==='host'&&online.active&&game?.series){cast({type:'end',round:game.series.round,rounds:game.series.rounds,scores:game.series.scores,champion:game.series.champion,raceTo:game.series.raceTo,players:game.players.map(p=>({id:p.id,name:p.name,color:p.color}))});}};
+function requestBattleRecovery(){
+ if(online.role!=='client'||!online.active||!online.hostConn?.open||online._battleSyncPending)return;
+ online._battleSyncPending=true;guestSend('battleSync');
+ setTimeout(()=>{online._battleSyncPending=false;if(online.active&&online.role==='client'&&screen!=='battle')requestBattleRecovery();},1800);
+}
 function clientReceive(msg){if(!msg||typeof msg!=='object')return;
- if(msg.type==='parallelProgress'){online.lastProgress=msg;showParallelProgress(msg);return;}
+ if(msg.type==='parallelProgress'){online.lastProgress=msg;showParallelProgress(msg);if(msg.phase==='battle'&&online.role==='client'&&screen!=='battle')requestBattleRecovery();return;}
  if(msg.type==='welcome'){online.myPid=msg.pid;online.room=msg.room;online.active=!!msg.active;online.connected=true;clearClientRetry();dismissRecoveryBanner();rememberRecovery({room:online.room,name:online.myName,key:online.recoveryKey,pid:msg.pid});clientStage('wait',{message:msg.recovered?'元の席に復帰しました。現在の対戦状況を同期しています…':`参加しました。あなたはプレイヤー${msg.pid+1}です。`});return;}
  if(msg.type==='reject'){clearClientRetry();online.role='off';online.connected=false;dismissRecoveryBanner();clientStage('wait',{message:msg.message+'　部屋が終了している場合はホストに確認してください。'});return;}
  if(msg.type==='lobby'){clientStage('lobby',msg);return;}
@@ -2150,32 +2156,42 @@ function clientReceive(msg){if(!msg||typeof msg!=='object')return;
   },100);
   return;
  }
- if(msg.type==='battle'){online.active=true;receiveBattle(msg);return;}
+ if(msg.type==='battle'){online.active=true;try{receiveBattle(msg);online._battleSyncPending=false;}catch(e){console.error('[online battle render]',e);online._battleSyncPending=false;requestBattleRecovery();}return;}
+ if(msg.type==='battleStarting'){online.active=true;requestBattleRecovery();return;}
  if(msg.type==='end'){clientEnd(msg);return;}
 }
 function guestSend(kind,fields={}){if(online.role==='host')onlineHostBid(kind,fields);else send(online.hostConn,{type:'action',kind,...fields});}
+function markWaitingInline(message){
+ const panel=app.querySelector('.net-actions,.net-stage .actions,.auc-bidpanel,.online-auc-main,.net-stage');
+ if(!panel)return;
+ let status=document.getElementById('netInlineWait');
+ if(!status){status=document.createElement('div');status.id='netInlineWait';status.className='net-inline-wait';const anchor=panel.querySelector('button.btn.primary,button.auc-btn')||panel.querySelector('button');if(anchor){anchor.insertAdjacentElement('afterend',status);}else panel.prepend(status);}
+ status.textContent='✓ 操作済み・'+message;
+ panel.querySelectorAll('#netBidInput,#netBidSubmit,#netResultNext,#netEquipDone,#netEnterBid').forEach(el=>el.disabled=true);if(screen==='equipment')app.querySelectorAll('.net-equipment select,.net-equipment button[data-remove]').forEach(el=>el.disabled=true);
+}
 function clientStage(kind,data={}){online.stage=kind;
  if(kind==='lobby'){screen='online-lobby';app.innerHTML=stageHtml('ロビーに参加中',`<p>部屋コード <strong>${safe(data.room)}</strong></p><h3>参加者</h3><div class="room-members">${(data.names||[]).map(n=>`<div>● ${safe(n)}</div>`).join('')}</div><p>ホストがCPU人数・勝利条件を決めて開始します。</p>`);return;}
- if(['wait','mapwait'].includes(kind)){if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">この画面では他人の入札額・所持金は非公開。配置画面では敵陣営の出撃円も確認できます。</p>`);return;}
+ if(['wait','mapwait'].includes(kind)){if(kind==='wait'&&data.keepScreen&&['auction','lot-result','equipment','placement'].includes(screen)){markWaitingInline(data.message||'ほかの参加者を待っています');return;}if(kind==='mapwait'){online.spawns={};online.currentPlacementRound=null;}screen='online-wait';document.body.classList.remove('auction-active');app.innerHTML=stageHtml(kind==='mapwait'?'戦場選択中':'順番を待っています',`<div class="net-wait-symbol">⌛</div><p>${safe(data.message||'ほかのプレイヤーが操作中です。')}</p><p class="small muted">現在の対戦状況が届くと自動で画面を更新します。</p>`);return;}
  if(kind==='intro'||kind==='bid'||kind==='result'){clientAuction(kind,data);return;}
  if(kind==='equip'){clientEquip(data);return;}
  if(kind==='placement'){if(!data.resume&&screen==='placement'&&online.currentPlacementRound===data.round){if(data.error){const node=$('#netCoord');if(node)node.textContent=data.error;}return;}online.currentPlacementRound=data.round;clientPlacement(data);return;}
  if(kind==='focusAck'&&screen==='battle'){game.sim.orders[online.myPid].focus=data.focus;renderBattleCommands();}
 }
-function rosterList(data){return `<section class="surface pad" style="min-width:220px"><div class="blocktitle">契約済みの傭兵一覧</div>${(data.players||[]).map(p=>`<div class="member-card"><strong style="color:${p.color}">● ${safe(p.name)}</strong> <span class="tiny">${p.units.length}名</span><div class="member-roster">${p.units.length?p.units.map(m=>`<div class="member-merc">${cls[m.type].icon} ${safe(m.name)}</div>`).join(''):'<div class="tiny muted">未契約</div>'}</div></div>`).join('')}</section>`;}
+function rosterList(data){window.mercRosterCache={players:data.players};return `<section class="surface pad" style="min-width:220px"><div class="blocktitle">契約済みの傭兵一覧</div>${(data.players||[]).map(p=>`<div class="member-card"><strong style="color:${p.color}">● ${safe(p.name)}</strong> <span class="tiny">${p.units.length}名</span><div class="member-roster">${p.units.length?p.units.map(m=>`<div class="member-merc">${cls[m.type].icon} <button class="member-merc-button" type="button" data-merc-preview="${m.id}" data-player-index="${p.id}">${safe(m.name)}</button></div>`).join(''):'<div class="tiny muted">未契約</div>'}</div></div>`).join('')}</section>`;}
 function clientAuction(kind,data){screen=kind==='result'?'lot-result':'auction';document.body.classList.remove('auction-active');let m=data.lot||{},p=data.players?.[online.myPid]||{},round=data.auctionRound||0;
  const profile=`<div class="net-merc-profile"><img src="${artPortrait(m.type)}" alt="${roleLabel[m.type]||''}の立ち絵"><div><h2>${safe(m.name)}</h2><p>${roleLabel[m.type]} / 推定落札額 <strong>${m.value}G</strong></p><div class="net-stat-grid">${Object.entries({pa:'物攻',pd:'物防',ma:'魔攻',md:'魔防',ag:'素早',dx:'器用',hp:'HP',mp:'MP'}).map(([k,label])=>`<span>${label}<b>${m.st?.[k]??'-'}</b></span>`).join('')}</div><p class="tiny gold">固有特性：${safe(m.trait?.n||'')}</p><p class="tiny gold">✦ 習得済み：${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}</p><p class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</p></div></div>`;
  let actions='';
  if(kind==='intro'){actions='<button class="btn primary" id="netEnterBid">説明を読んで入札へ →</button>';
  }else if(kind==='bid'){actions=`<div class="net-bid-bar"><div>所持金 <b class="gold">${data.money}G</b>　/ 第${round+1}回入札 ${data.bidMode==='overtime'?`（前回 ${data.previousBid}G / 差額を入力）`:''}</div><div class="net-bid-row"><input id="netBidInput" class="input" type="number" min="${data.bidMode==='overtime'?-data.previousBid:0}" max="${data.bidMode==='overtime'?data.money-data.previousBid:data.money}" step="1" value="${data.bidMode==='overtime'?0:Math.min(data.money,m.value)}"><button id="netBidSubmit" class="btn primary">入札を確定</button></div><div class="net-adjust">${[-100,-10,-1,0,1,10,100].map(v=>`<button class="btn sm ghost" data-delta="${v}">${v>0?'+':''}${v}</button>`).join('')}</div><div id="netError" class="red tiny">${safe(data.error||'')}</div></div>`;
  }else{const got=data.winner===online.myPid;actions=`<div><h3>${data.withdrawn?'三度の最高額重複で退場':data.winner===null?'流札':`${safe(data.players[data.winner]?.name)} が落札！`}</h3><p>${got?`あなたの契約額 ${data.price}G`:'落札額は非公開です。'}</p><button class="btn primary" id="netResultNext">結果を確認して次へ</button></div>`;}
- app.innerHTML=`<div class="online-auc-main"><section class="surface pad"><div class="overline">GRAND MERCENARY AUCTION · ${data.lotIndex+1}/${data.lotTotal}</div>${profile}<div class="net-actions">${actions}</div><div class="novel-box"><div class="novel-speaker">競売人</div><div class="novel-text">${kind==='result'?(data.withdrawn?'最高額が3回連続で重複！ この傭兵は退場だ。':`落札者が決まったぞ！ 落札額は本人だけの秘密だ。`):`さあ、${data.lotIndex+1}人目の紹介だ。${safe(m.name)}、${roleLabel[m.type]}の傭兵だ。推定額は ${m.value}G だ。`}</div></div></section>${rosterList(data)}</div>`;
- if(kind==='intro')$('#netEnterBid').onclick=()=>{guestSend('intro');clientStage('wait',{message:'入札画面を準備しています…'});};
- if(kind==='bid'){const inp=$('#netBidInput');$('#netBidSubmit').onclick=()=>{let n=Number(inp.value),total=(data.bidMode==='overtime'?data.previousBid:0)+n;if(!Number.isSafeInteger(n)||!Number.isSafeInteger(total)||total<0||total>data.money){$('#netError').textContent='提示できる範囲を確認してください';return;}guestSend('bid',{value:n});clientStage('wait',{message:'入札を確定しました。全員の提示を待っています…'});};app.querySelectorAll('[data-delta]').forEach(b=>b.onclick=()=>{let d=+b.dataset.delta;inp.value=d===0?'0':String(Math.max(data.bidMode==='overtime'?-data.previousBid:0,Math.min(data.bidMode==='overtime'?data.money-data.previousBid:data.money,(Number(inp.value)||0)+d)));});}
- if(kind==='result')$('#netResultNext').onclick=()=>{guestSend('result');clientStage('wait',{message:'次の傭兵を待っています…'});};
+ app.innerHTML=`<div class="online-auc-main"><section class="surface pad"><div class="overline">GRAND MERCENARY AUCTION · ${data.lotIndex+1}/${data.lotTotal}</div>${profile}<div class="tiny muted" style="margin-top:6px">契約人数 ${p.units?.length||0} / ${data.maxMerc||6}名まで</div><div class="net-actions">${actions}</div><div class="novel-box"><div class="novel-speaker">競売人</div><div class="novel-text">${kind==='result'?(data.withdrawn?'最高額が3回連続で重複！ この傭兵は退場だ。':`落札者が決まったぞ！ 落札額は本人だけの秘密だ。`):`さあ、${data.lotIndex+1}人目の紹介だ。${safe(m.name)}、${roleLabel[m.type]}の傭兵だ。推定額は ${m.value}G だ。`}</div></div></section>${rosterList(data)}</div>`;
+ if(kind==='intro')$('#netEnterBid').onclick=()=>{guestSend('intro');markWaitingInline('入札画面を準備しています…');};
+ if(kind==='bid'){const inp=$('#netBidInput');$('#netBidSubmit').onclick=()=>{let n=Number(inp.value),total=(data.bidMode==='overtime'?data.previousBid:0)+n;if(!Number.isSafeInteger(n)||!Number.isSafeInteger(total)||total<0||total>data.money){$('#netError').textContent='提示できる範囲を確認してください';return;}guestSend('bid',{value:n});markWaitingInline('入札確定。ほかの参加者を待っています…');};app.querySelectorAll('[data-delta]').forEach(b=>b.onclick=()=>{let d=+b.dataset.delta;inp.value=d===0?'0':String(Math.max(data.bidMode==='overtime'?-data.previousBid:0,Math.min(data.bidMode==='overtime'?data.money-data.previousBid:data.money,(Number(inp.value)||0)+d)));});}
+ if(data.alreadyDone){markWaitingInline(data.skipReason||'操作済み。ほかの参加者を待っています。');}
+ if(kind==='result')$('#netResultNext').onclick=()=>{guestSend('result');markWaitingInline('確認済み。全員の確認を待っています…');};
 }
-function clientEquip(data){screen='equipment';const units=data.unitList||[];app.innerHTML=stageHtml('装備購入',`<p>あなたの残金 <strong class="gold">${data.money}G</strong>。装備は1人につき武器1個と防具1個です。</p>${data.error?`<p class="red">${safe(data.error)}</p>`:''}<div class="net-equipment">${units.length?units.map(m=>`<div class="surface pad"><strong>${cls[m.type].icon} ${safe(m.name)}</strong><div class="net-fixed-skill">✦ ${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}<div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div><p class="tiny muted">武器：${m.gear.weapon?gearCatalog.weapon[m.gear.weapon-1]?.name:'未装備'}　防具：${m.gear.armor?gearCatalog.armor[m.gear.armor-1]?.name:'未装備'}</p><div class="net-equips">${['weapon','armor'].map(slot=>`<label>${slot==='weapon'?'武器':'防具'}<select class="input" data-unit="${m.id}" data-slot="${slot}"><option value="">購入する装備を選択</option>${gearCatalog[slot].map((item,i)=>`<option value="${i+1}">${safe(item.name)} ${item.price}G　${safe(item.description||('攻撃+'+item.attack))}${m.gear[slot]===i+1?'（装備中・再選択で解除）':''}</option>`).join('')}</select>${m.gear[slot]?`<button type="button" class="btn sm" data-remove="${slot}" data-unit="${m.id}">装備解除・全額返金</button>`:''}</label>`).join('')}</div></div>`).join(''):'<p>獲得した傭兵はいません。</p>'}</div><div class="actions"><button class="btn primary" id="netEquipDone">装備購入を終了 →</button></div>`);
- app.querySelectorAll('select[data-slot]').forEach(select=>select.onchange=()=>{if(!select.value)return;guestSend('equip',{unitId:+select.dataset.unit,slot:select.dataset.slot,tier:+select.value});});app.querySelectorAll('button[data-remove]').forEach(b=>b.onclick=()=>guestSend('equip',{unitId:+b.dataset.unit,slot:b.dataset.remove,tier:0}));$('#netEquipDone').onclick=()=>{guestSend('equipDone');clientStage('wait',{message:'装備購入を確定しました。'});};}
+function clientEquip(data){screen='equipment';const units=data.unitList||[];window.mercRosterCache={players:[...Array.from({length:online.myPid},()=>({units:[]})),{name:data.players?.[online.myPid]?.name||'自軍',units}]};app.innerHTML=stageHtml('装備購入',`<p>あなたの残金 <strong class="gold">${data.money}G</strong>。装備は1人につき武器1個と防具1個です。</p>${data.error?`<p class="red">${safe(data.error)}</p>`:''}<div class="net-equipment">${units.length?units.map(m=>`<div class="surface pad"><strong>${cls[m.type].icon} <button class="equip-preview-name" type="button" data-merc-preview="${m.id}" data-player-index="${online.myPid}">${safe(m.name)}</button></strong><div class="net-fixed-skill">✦ ${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.name||'')}<div class="tiny muted">${safe(window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.desc||'')} / CT ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cd||'—'}秒 / MP ${window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0]?.cost||'—'}</div></div><p class="tiny muted">武器：${m.gear.weapon?gearCatalog.weapon[m.gear.weapon-1]?.name:'未装備'}　防具：${m.gear.armor?gearCatalog.armor[m.gear.armor-1]?.name:'未装備'}</p><div class="net-equips">${['weapon','armor'].map(slot=>`<label>${slot==='weapon'?'武器':'防具'}<select class="input" data-unit="${m.id}" data-slot="${slot}"><option value="">購入する装備を選択</option>${gearCatalog[slot].map((item,i)=>`<option value="${i+1}">${safe(item.name)} ${item.price}G　${safe(item.description||('攻撃+'+item.attack))}${m.gear[slot]===i+1?'（装備中・再選択で解除）':''}</option>`).join('')}</select>${m.gear[slot]?`<button type="button" class="btn sm" data-remove="${slot}" data-unit="${m.id}">装備解除・全額返金</button>`:''}</label>`).join('')}</div></div>`).join(''):'<p>獲得した傭兵はいません。</p>'}</div><div class="actions"><button class="btn primary" id="netEquipDone">装備購入を終了 →</button></div>`);
+ app.querySelectorAll('select[data-slot]').forEach(select=>select.onchange=()=>{if(!select.value)return;guestSend('equip',{unitId:+select.dataset.unit,slot:select.dataset.slot,tier:+select.value});});app.querySelectorAll('button[data-remove]').forEach(b=>b.onclick=()=>guestSend('equip',{unitId:+b.dataset.unit,slot:b.dataset.remove,tier:0}));$('#netEquipDone').onclick=()=>{guestSend('equipDone');markWaitingInline('装備購入終了。全員を待っています…');};if(data.alreadyDone)markWaitingInline('購入終了済み。全員を待っています…');}
 function clientPlacement(data){screen='placement';const units=data.unitList||[];const center=online.placeDraft?.round===data.round?{...online.placeDraft.center}:{...(data.spawnPoints?.[online.myPid]||{x:100,y:100})};const mp=data.map||'ruins';
  const sameRound=online._spawnRound===data.round;const incoming=Object.fromEntries((data.spawnPoints||[]).map((at,i)=>[i,at]).filter(([i,at])=>at));
  online.spawns={...incoming,...(sameRound?(online.spawns||{}):{})};online._spawnRound=data.round;
@@ -2188,8 +2204,20 @@ function clientPlacement(data){screen='placement';const units=data.unitList||[];
  if(data.alreadyReady){const btn=$('#netPlaceConfirm');if(btn){btn.disabled=true;btn.textContent='準備OK済み（位置変更可能）';}}
   $('#netPlaceConfirm').onclick=()=>{guestSend('placeDone');const button=$('#netPlaceConfirm');if(button){button.disabled=true;button.textContent='準備確認中…（配置変更可能）';}};
 }
-function receiveBattle(snap){if(!online.active)return;const first=screen!=='battle';const prev=game?.sim?.selectedId??null;game={players:snap.players,world:snap.world||game?.world||{name:snap.map,obstacles:[],details:[]},sim:{...snap.sim,selectedId:prev},series:{round:snap.round,raceTo:snap.raceTo,scores:snap.scores,rounds:[]}};setup.map=snap.map;setup.raceTo=snap.raceTo;
- if(first){screen='battle';stageCam={x:WORLD_MID,y:WORLD_MID,yaw:-.65,tilt:.68,zoom:.78};renderBattle();if(!online.viewerStarted){online.viewerStarted=true;const frame=()=>{if(online.role!=='client'||screen!=='battle'){online.viewerStarted=false;return;}if(canvas&&performance.now()-(online._lastViewerDraw||0)>45){online._lastViewerDraw=performance.now();drawBattle();drawMini();}requestAnimationFrame(frame);};requestAnimationFrame(frame);}}
+function receiveBattle(snap){if(!online.active)return;if(snap.frameId&&snap.frameId<=(online._lastFrameId||0))return;online._lastFrameId=snap.frameId||online._lastFrameId||0;if(screen!=='battle'&&!snap.world){online._battleSyncPending=false;requestBattleRecovery();return;}const first=screen!=='battle';const prev=game?.sim?.selectedId??null;const lastUnits=screen==='battle'?new Map((game?.sim?.units||[]).map(u=>[u.id,{x:u.x,y:u.y}])):null;const incomingAt=performance.now();const prevIncoming=online.lastBattleFrameAt||0;game={players:snap.players,world:snap.world||game?.world||{name:snap.map,obstacles:[],details:[]},sim:{...snap.sim,selectedId:prev},series:{round:snap.round,raceTo:snap.raceTo,scores:snap.scores,rounds:[]}};setup.map=snap.map;setup.raceTo=snap.raceTo;online.lastBattleFrameAt=incomingAt;
+ // The host and story mode run identical AI simulation. Interpolate only the
+ // spectator's drawing positions between snapshots so movement looks fluid.
+ if(lastUnits){
+  const targets=new Map(game.sim.units.map(u=>[u.id,{x:u.x,y:u.y}]));
+  for(const u of game.sim.units){const prev=lastUnits.get(u.id);if(prev&&u.alive){u.x=prev.x;u.y=prev.y;}}
+  online._interpolated={from:lastUnits,to:targets,start:incomingAt,duration:Math.min(200,Math.max(105,(prevIncoming?incomingAt-prevIncoming:110)+16))};
+ }else online._interpolated=null;
+
+ if(first){screen='battle';stageCam={x:WORLD_MID,y:WORLD_MID,yaw:-.65,tilt:.68,zoom:.78};renderBattle();if(!online.viewerStarted){online.viewerStarted=true;const frame=()=>{if(online.role!=='client'||screen!=='battle'){online.viewerStarted=false;return;}if(canvas&&performance.now()-(online._lastViewerDraw||0)>30){
+  const t=performance.now();online._lastViewerDraw=t;
+  const tween=online._interpolated;if(tween&&game?.sim?.units){const alpha=Math.min(1,Math.max(0,(t-tween.start)/tween.duration));for(const u of game.sim.units){const a=tween.from.get(u.id),b=tween.to.get(u.id);if(a&&b&&u.alive){u.x=a.x+(b.x-a.x)*alpha;u.y=a.y+(b.y-a.y)*alpha;}}}
+  drawBattle();drawMini();}
+requestAnimationFrame(frame);};requestAnimationFrame(frame);}}
  else {if(typeof updateBattleHUD==='function')updateBattleHUD();if(typeof renderBattleCommands==='function')renderBattleCommands();}
 }
 function clientEnd(data){online.stage='end';online.viewerStarted=false;screen='online-end';let winner=data.champion===null?null:data.players.find(p=>p.id===data.champion);
@@ -2255,14 +2283,14 @@ function showParallelProgress(d){
 }
 function parallelComplete(){const q=online.parallel;return q&&[...q.required].every(id=>q.done.has(id));}
 function parallelMark(pid){const q=online.parallel;if(!q||!q.required.has(pid)||q.done.has(pid))return false;q.done.add(pid);parallelNotify();return true;}
-function parallelWait(pid,message){if(pid===0)clientStage('wait',{message});else transmit(pid,'wait',{message});parallelNotify();}
+function parallelWait(pid,message){if(pid===0)clientStage('wait',{message,keepScreen:true});else transmit(pid,'wait',{message,keepScreen:true});parallelNotify();}
 function parallelAllBids(){
  if(online.role!=='host'||!online.active)return;
  const a=game.auction,ids=eligible().filter(p=>p.human).map(p=>p.id),q=parallelNew('bid',ids);
  for(const p of eligible().filter(p=>!p.human))a.bids[p.id]=a.mode==='initial'?cpuInitialBid(p,game.lots[game.lotIndex]):cpuOvertimeBid(p);
  for(const pid of parallelHumans()){
   if(q.required.has(pid))parallelDeliver(pid,'bid',{bidMode:a.mode,previousBid:a.prices[pid]??0});
-  else parallelDeliver(pid,'wait',{message:'最高額が同額のため、該当するプレイヤーが再入札しています。'});
+  else parallelDeliver(pid,'bid',{bidMode:a.mode,previousBid:a.prices?.[pid]??0,alreadyDone:true,skipReason:'今回は再入札の対象外です。該当者の入札を待っています。'});
  }
  parallelNotify();if(parallelComplete())resolveOffers();
 }
@@ -2323,7 +2351,9 @@ function parallelCountdown(q){
   clearInterval(cpuTimer);
   if(game!==match||!online.active||online.parallel!==q||q.epoch!==epoch)return;
   q.counting=false;online.parallel={...q,phase:'battle',counting:false};
+  cast({type:'battleStarting',round:q.round});parallelNotify();
   launchBattle();
+  broadcastBattle(true);
  },5000);
 }
 function handleParallelAction(pid,msg){
@@ -5159,6 +5189,37 @@ button img.ui-art-button-icon{width:1.4em!important;height:1.4em!important;max-w
  .v240-skill,.net-fixed-skill{border:1px solid #95764e8c;border-radius:9px;padding:10px;margin:8px 0 10px;background:#1e2e3c;color:#e7ca99;font-size:12px;line-height:1.75}
  .v240-skill div,.net-fixed-skill .muted{color:#c4d1df;font-size:11px;margin-top:3px}
  </style>`);
+})();
+</script>
+
+<style id="v244-status-modal-style">
+.net-inline-wait{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;margin:7px 0;color:#c7e9d1;background:#16392f;border:1px solid #547f70;border-radius:9px;font-size:12px;line-height:1.6}
+.member-merc-button,.equip-preview-name{border:0;border-bottom:1px dashed #b99962;background:transparent;color:#f3dfbe;cursor:pointer;font:inherit;text-align:left;padding:2px 0}
+.auc-mercrow[data-merc-preview]{cursor:pointer}.auc-mercrow[data-merc-preview]:hover{color:#f4d59f;background:#334457}.member-merc-button:hover,.equip-preview-name:hover{color:#fff;text-decoration:underline}
+.net-status-preview{position:fixed;inset:0;z-index:1700;display:flex;align-items:center;justify-content:center;padding:12px;background:#02091393}
+.net-status-preview-card{width:min(430px,96vw);max-height:87vh;overflow-y:auto;border:1px solid #c09c65;border-radius:16px;background:linear-gradient(150deg,#23364c,#111e2e);padding:16px;box-shadow:0 14px 55px #000a}
+.net-preview-head{display:flex;gap:12px;align-items:center}.net-preview-head img{width:84px;height:90px;object-fit:contain;background:#101d2b;border-radius:8px}.net-preview-close{margin-left:auto;align-self:start}
+.net-preview-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}.net-preview-stats div{background:#0c1d2c;border:1px solid #45566c;border-radius:8px;padding:6px;text-align:center;font-size:10px;color:#abc4d6}.net-preview-stats b{display:block;font-size:17px;color:#e7c98e}
+.net-preview-extra{font-size:12px;line-height:1.9;color:#d2dce7}.net-preview-skill{margin-top:10px;padding:10px;border:1px solid #988050;background:#59462345;border-radius:10px;line-height:1.75;font-size:12px}
+</style>
+<script id="v244-status-modal">
+(()=>{
+ const esc=v=>escapeHtml(String(v??''));
+ function show(m,team){if(!m)return;document.querySelector('.net-status-preview')?.remove();const stats=enhancedStats(m);
+ const skill=window.STORY_SKILLS?.[m.type]?.[m.specialChoice??0];const gear=slot=>m.gear?.[slot]?gearCatalog[slot]?.[m.gear[slot]-1]?.name||'なし':'なし';
+ const layer=document.createElement('div');layer.className='net-status-preview';layer.innerHTML=`<div class="net-status-preview-card" role="dialog" aria-modal="true" aria-label="${esc(m.name)}のステータス"><div class="net-preview-head"><img src="${artPortrait(m.type)}" alt=""><div style="min-width:0;flex:1"><div class="overline">MERCENARY STATUS</div><h2 style="margin:4px 0;font-size:20px">${esc(m.name)}</h2><div class="tiny muted">${esc(team||'')} / ${esc(cls[m.type]?.name)}</div></div><button class="btn sm net-preview-close" aria-label="閉じる">×</button></div><div class="net-preview-stats">${[['pa','物攻'],['pd','物防'],['ma','魔攻'],['md','魔防'],['ag','素早'],['dx','器用'],['hp','HP'],['mp','MP']].map(([key,label])=>`<div>${label}<b>${Math.round(stats[key]||0)}</b></div>`).join('')}</div><div class="net-preview-extra"><div>固有特性：${esc(m.trait?.n||'なし')} ${esc(m.trait?.d||'')}</div><div>武器：${esc(gear('weapon'))}</div><div>防具：${esc(gear('armor'))}</div><div>行動方針：${esc(m.tactic?.stance||'標準')} / ${esc(m.tactic?.target||'標準')}</div></div><div class="net-preview-skill"><strong>✦ ${esc(skill?.name||'スキルなし')}</strong><div>${esc(skill?.desc||'')}</div><div class="tiny muted">CT ${esc(skill?.cd??'—')}秒　消費MP ${esc(skill?.cost??'—')}</div></div><p class="tiny muted">戦闘時の能力値（装備反映済み）。変更はできません。</p></div>`;
+ layer.addEventListener('click',e=>{if(e.target===layer||e.target.closest('.net-preview-close'))layer.remove();});document.body.appendChild(layer);
+ }
+ window.mercPreviewRoster=show;
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('.net-status-preview')?.remove();});
+ app.addEventListener('click',e=>{
+  const clickable=e.target.closest('[data-merc-preview],.auc-mercrow,.lineup .unitname,.equip-main .mercname');if(!clickable||!app.contains(clickable)||screen==='battle')return;
+  let m,owner;
+  if(clickable.dataset.mercPreview){const key=clickable.dataset.mercPreview,idx=Number(clickable.dataset.playerIndex),p=window.mercRosterCache?.players?.[idx]||game?.players?.[idx];m=p?.units?.find(x=>String(x.id)===key);owner=p?.name;}
+  else if(clickable.classList.contains('auc-mercrow')){const txt=clickable.textContent?.trim()||'';const p=game?.players?.find(p=>p.units.some(m=>txt.includes(m.name)));m=p?.units?.find(m=>txt.includes(m.name));owner=p?.name;}
+  else{const p=game?.players?.[game?.equipOrder?.[game?.equipTurn]??0];const index=clickable.closest('[data-shop-unit]')?.dataset.shopUnit; m=index!==undefined?p?.units?.[+index]:p?.units?.[game?.shopSelected||0];owner=p?.name;}
+  if(m){e.preventDefault();e.stopPropagation();show(m,owner);}
+ },true);
 })();
 </script>
 </body></html>
