@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.26 — 逃走AIと仕事の優先順を改善</title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.27 — 撤去素材返却・宿屋評価・冒険者来訪を改善</title><style>
 
 
 :root{color-scheme:dark;--bg:#0e1719;--panel:#172325;--panel2:#1c2b2b;--panel3:#233331;--line:#344842;--text:#f1eddd;--muted:#a7b2a7;--accent:#e8c481;--teal:#8ac6ab;--red:#e59b83;--shadow:0 14px 45px #07101080}
@@ -308,7 +308,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
 @media(max-width:650px){.manager-table th:nth-child(3),.manager-table td:nth-child(3){display:none}.management-body{padding:7px}.manager-table select{max-width:130px}}
 .manager-category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:5px 0;border-bottom:1px solid #496353}.manager-category-tab{background:#213a31;border:1px solid #53745c;color:#cfdfd4;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer}.manager-category-tab.active{background:#755c35;color:#fff2c8;border-color:#dfbc76}.manager-category-tab:hover{border-color:#b5b88b}</style></head><body>
 <div class="page">
- <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.26</span></div></header>
+ <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.27</span></div></header>
  <div class="layout"><main class="workspace"><div class="panel">
   <div class="canvas-head"><div class="location">✥ はじまりの草原 <span class="subplace">/ 広域ファンタジー開拓地</span></div><div class="clock" id="clock">DAY 01　08:00</div></div>
   <div class="canvas-shell" id="canvasShell"><canvas id="world" aria-label="マス目状の開拓地。建築ツールを選び、クリックまたはドラッグして設計できます"></canvas>
@@ -2592,7 +2592,19 @@ function moveNPC(n,dt){let remain=dt*(1.45+n.stats.agility*.105)*brain(n)*(resid
 function particles(k,color,count=10){for(let i=0;i<count;i++){let p=pos(k);s.particles.push({x:p.x+.5+random(-.2,.2),y:p.y+.5+random(-.2,.2),vx:random(-.8,.8),vy:random(-1.4,-.3),life:random(.25,.6),color})}if(s.particles.length>230)s.particles.splice(0,s.particles.length-230)}
 function dropStorageContents(k){const slots=s.stores.get(k);if(!slots||!slots.length)return;const stacks=slots.filter(st=>st.qty>0).map(st=>freshStack(st.item,st.qty,st.age));if(stacks.length)addDrop(k,stacks);s.stores.delete(k);updateInventory();log(`保管場所を撤去。${stacks.map(st=>`${itemInfo[st.item]?.[1]||st.item}×${st.qty}`).join('、')}は地面に残りました。`)}
 function spillProductionStaging(k){const work=s.productionStaging?.get(k);if(!work)return;if(work.stacks?.some(st=>st.qty>0))addDrop(k,work.stacks.filter(st=>st.qty>0).map(st=>freshStack(st.item,st.qty,st.age)));s.productionStaging.delete(k)}
+function dropDismantledMaterials(k,oldType){
+ const stacks=Object.entries(recipe[oldType]||{}).filter(([,qty])=>qty>0)
+  .map(([item,qty])=>freshStack(item,qty));
+ if(stacks.length)addDrop(k,stacks);
+ return stacks.reduce((sum,st)=>sum+st.qty,0);
+}
 function completeBuild(n,j,k){const type=j.type,was=s.structures[k];
+ // Materials are returned on completed demolition, once only. A job that is
+ // merely cancelled cannot generate free items. Stored stock is spilled by the
+ // original storage cleanup below, independently from construction materials.
+ if(type===0){const removedType=was||FLOOR_TOOL_BY_CODE[s.floors[k]]||0;
+  if(removedType)dropDismantledMaterials(k,removedType);
+ }
  if(!isFloor(type)){
   if([4,5,66].includes(was)&&![4,5,66].includes(type)){dropStorageContents(k);s.storageRules.delete(k);s.storageMeta.delete(k);s.saleFlags.delete(k);s.transferOrders=s.transferOrders.filter(o=>o.src!==k&&o.dst!==k);}
   if([8,9,27,55,56].includes(was)&&was!==type)s.counterSettings.delete(k);if(was!==type&&[6,7,19,26,28].includes(was))spillProductionStaging(k);
@@ -3635,7 +3647,14 @@ function guildOfferSettlement(p){const housing=settlementHousing();if(!housing.i
 
 function guildDailySettlement(){for(const q of s.guildQuests||[]){if(q.status==='open'&&q.kind!=='gather'&&q.kind!=='boss'&&!guildTargetFor(q)){q.status='failed';s.gold+=Math.max(0,q.reward-(q.paid||0));log(`📜 ${guildQuestTitle(q)}は対象が消えたため取り消し、預託報酬を返しました。`)}}const inns=lodgings();for(const a of s.adventurers){if(!a.settled)continue;
  if(!a.alive){recordSettlementDeparture(a,'死亡したため','death');a.settled=false;a.homeInnK=-1;a.homeBedK=-1;a.campK=-1;continue;}
- let inn=inns.find(v=>v.k===a.homeInnK);let validBed=!!(inn&&s.structures[a.homeBedK]===3&&roomFeatures(roomAt(inn.k),3).includes(a.homeBedK)&&inn.price<=innBudget(a,inn.luxury)&&a.gold>=inn.price);if(!validBed){const opt=inns.filter(i=>i.price<=innBudget(a,i.luxury)&&a.gold>=i.price).map(i=>({inn:i,bed:selectBedForGuest(roomAt(i.k),a)})).find(v=>v.bed>=0);if(opt){inn=opt.inn;a.homeInnK=inn.k;a.homeBedK=opt.bed;validBed=true}else{a.homeInnK=-1;a.homeBedK=-1;validBed=false}}if(validBed&&s.day>(a.rentDay||0)){a.gold-=inn.price;s.gold+=inn.price;recordTrade('lodging','innStay',1,inn.price,a.name,inn.k);a.rentDay=s.day}const p=s.parties.find(v=>v.id===a.partyId);if(p?.state!=='settled')continue;if(validBed){a.campK=-1;a.badRestNights=0;a.wildRestNights=0;a.tentRestNights=0;if(s.day%5===0)changeSatisfaction(a,1);continue}a.campK=settlementCampFor(a);a.badRestNights=(a.badRestNights||0)+1;if(a.campK>=0){
+ let inn=inns.find(v=>v.k===a.homeInnK);let validBed=!!(inn&&s.structures[a.homeBedK]===3&&roomFeatures(roomAt(inn.k),3).includes(a.homeBedK)&&inn.price<=innBudget(a,inn.luxury)&&a.gold>=inn.price);if(!validBed){const opt=inns.filter(i=>i.price<=innBudget(a,i.luxury)&&a.gold>=i.price).map(i=>({inn:i,bed:selectBedForGuest(roomAt(i.k),a)})).find(v=>v.bed>=0);if(opt){inn=opt.inn;a.homeInnK=inn.k;a.homeBedK=opt.bed;validBed=true}else{a.homeInnK=-1;a.homeBedK=-1;validBed=false}}if(validBed&&s.day>(a.rentDay||0)){
+  a.gold-=inn.price;s.gold+=inn.price;
+  recordTrade('lodging','innStay',1,inn.price,a.name,inn.k);
+  const budget=Math.max(1,innBudget(a,inn.luxury));
+  const score=clamp(Math.round(40+inn.luxury*.55+(1-inn.price/budget)*24),1,100);
+  recordReview(inn.k,a,score,'定住中の宿泊');
+  a.rentDay=s.day;
+ }const p=s.parties.find(v=>v.id===a.partyId);if(p?.state!=='settled')continue;if(validBed){a.campK=-1;a.badRestNights=0;a.wildRestNights=0;a.tentRestNights=0;if(s.day%5===0)changeSatisfaction(a,1);continue}a.campK=settlementCampFor(a);a.badRestNights=(a.badRestNights||0)+1;if(a.campK>=0){
  // A tent is a neutral, sustainable home. It restores less than an inn but never harms satisfaction
  // or directly contributes to a settlement departure, regardless of how long it is used.
  a.wildRestNights=0;a.badRestNights=0;a.tentRestNights=(a.tentRestNights||0)+1;
@@ -4563,13 +4582,15 @@ function chooseDungeonLoot(floor,randomFn=Math.random){
  return weighted[weighted.length-1][0];
 }
 
-function spawnParty(force=false){if(!s.cave.revealed)return false;const active=s.parties.filter(p=>!['away','lost'].includes(p.state)).length;const desired=adventurerPopulationTarget(),present=activeAdventurerCount();if(!force&&(present>=Math.max(1,Math.ceil(desired*.96))||active>=Math.max(7,desired+3)))return false;const hasReturn=s.parties.filter(p=>p.state==='away'&&p.nextVisitDay<=s.day+s.minutes/1440&&p.ids.some(id=>s.adventurers.some(a=>a.id===id&&a.alive&&!a.recruited)));if(hasReturn.length&&Math.random()<.35&&!force){let p=hasReturn[rnd(hasReturn.length)];p.state='arriving';p.phase='exploring';p.clock=0;p.floor=1;p.waves=0;p.elapsed=0;p.objectiveClock=0;for(const id of p.ids){const a=s.adventurers.find(a=>a.id===id);if(a?.alive){a.state='arriving';a.x=CX-14+random(-3,3);a.y=CY+12+random(-2,2);a.hp=Math.max(45,Math.min(a.maxHp,a.hp+40));a.hunger=Math.min(25,a.hunger||20);a.path=[];a.loot=a.loot||{};a.visits=(a.visits||0)+1;changeSatisfaction(a,3+Math.min(5,colonyTier()*.3));}}log(`${partyLabel(p)}が再び村にやって来ました。`);return true}
+function spawnParty(force=false){if(!s.cave.revealed)return false;const desired=adventurerPopulationTarget(),present=activeAdventurerCount();
+ const availableVisitorSlots=Math.max(0,visitingAdventurerLimit()-visitingAdventurerCount());
+ if(!force&&availableVisitorSlots<=0)return false;const hasReturn=s.parties.filter(p=>p.state==='away'&&p.nextVisitDay<=s.day+s.minutes/1440&&p.ids.some(id=>s.adventurers.some(a=>a.id===id&&a.alive&&!a.recruited))&&p.ids.filter(id=>s.adventurers.some(a=>a.id===id&&a.alive&&!a.recruited)).length<=availableVisitorSlots);if(hasReturn.length&&Math.random()<.35&&!force){let p=hasReturn[rnd(hasReturn.length)];p.state='arriving';p.phase='exploring';p.clock=0;p.floor=1;p.waves=0;p.elapsed=0;p.objectiveClock=0;for(const id of p.ids){const a=s.adventurers.find(a=>a.id===id);if(a?.alive){a.state='arriving';a.x=CX-14+random(-3,3);a.y=CY+12+random(-2,2);a.hp=Math.max(45,Math.min(a.maxHp,a.hp+40));a.hunger=Math.min(25,a.hunger||20);a.path=[];a.loot=a.loot||{};a.visits=(a.visits||0)+1;changeSatisfaction(a,3+Math.min(5,colonyTier()*.3));}}log(`${partyLabel(p)}が再び村にやって来ました。`);return true}
  if(s.adventurers.length>=560&&!force){
   const away=s.adventurers.filter(a=>a.state==='away'&&!a.settled).sort((a,b)=>a.id-b.id);
   const retire=new Set(away.slice(0,Math.max(0,away.length-250)).map(a=>a.id));
   if(retire.size){s.adventurers=s.adventurers.filter(a=>!retire.has(a.id));for(const p of s.parties)p.ids=p.ids.filter(id=>!retire.has(id))}
  }
- if(s.adventurers.length>=600&&!force)return false;const tier=colonyTier(),baseSize=tier<3?(Math.random()<.68?2:1):(Math.random()<.18?1:(tier<8?2:2+rnd(2))),size=force?baseSize:Math.min(baseSize,Math.max(1,desired-present)),party={id:s.nextPartyId++,ids:[],state:'arriving',clock:0,floor:1,waves:0,elapsed:0,nextVisitDay:0,phase:'exploring',goal:'gather',targetFloor:1,objectiveClock:0};for(let i=0;i<size;i++){const level=clamp(1+Math.floor(tier*1.45+random(0,2.7))+Math.floor((s.cave.bestFloor||1)*.13),1,100);const id=s.nextId++,name=ADV_FIRST[rnd(ADV_FIRST.length)]+ADV_LAST[rnd(ADV_LAST.length)];const stats={strength:Math.floor(7+level*.45+random(0,15)),agility:Math.floor(8+level*.31+random(0,12)),intelligence:Math.floor(8+level*.46+random(0,17))},a={id,partyId:party.id,name,level,stats,maxHp:Math.round((50+level*2.4)*1.5),hp:Math.round((50+level*2.4)*1.5),gold:Math.round(60+level*9+Math.pow(Math.max(0,level-20),1.55)*8+random(0,160)),sword:level>10&&Math.random()<.4,armor:level>15&&Math.random()<.3,alive:true,resident:false,recruited:false,guest:false,satisfaction:clamp(Math.round(random(3,9)+tier*.35),0,100),xp:0,rejections:0,visits:1,nextRequestDay:0,scoutCooldownDay:0,requestPending:false,state:'arriving',x:CX-15+random(-2,2),y:CY+11+random(-2,2),path:[],anim:0,loot:{},rations:{},hunger:random(10,25),thirst:random(5,15),waterVessel:{type:level>=25?'largeCanteen':level>=8?'canteen':'waterskin',water:level>=25?18:level>=8?9:4},sleep:random(10,24),retreatPct:Math.round(random(30,70)),goal:rollAdventureGoal(level),targetFloor:1,runs:0,maxFloor:0,roomK:-1};initMagic(a);a.targetFloor=adventureGoalFloor(a.goal,level);party.ids.push(id);s.adventurers.push(a)}party.goal=choosePartyGoal(party.ids.map(id=>s.adventurers.find(a=>a.id===id)));party.targetFloor=Math.max(1,Math.min(100,Math.round(party.ids.reduce((v,id)=>v+(s.adventurers.find(a=>a.id===id)?.targetFloor||1),0)/party.ids.length)));s.parties.push(party);s.visitorCount+=size;log(`${partyLabel(party)}が洞窟の噂を聞いて村に到着しました。（${size}人／Lv${Math.max(...party.ids.map(id=>s.adventurers.find(a=>a.id===id).level))}）`);saveSoon();return true}
+ if(s.adventurers.length>=600&&!force)return false;const tier=colonyTier(),baseSize=tier<3?(Math.random()<.68?2:1):(Math.random()<.18?1:(tier<8?2:2+rnd(2))),size=force?baseSize:Math.min(baseSize,availableVisitorSlots,Math.max(1,desired-present)),party={id:s.nextPartyId++,ids:[],state:'arriving',clock:0,floor:1,waves:0,elapsed:0,nextVisitDay:0,phase:'exploring',goal:'gather',targetFloor:1,objectiveClock:0};for(let i=0;i<size;i++){const level=clamp(1+Math.floor(tier*1.45+random(0,2.7))+Math.floor((s.cave.bestFloor||1)*.13),1,100);const id=s.nextId++,name=ADV_FIRST[rnd(ADV_FIRST.length)]+ADV_LAST[rnd(ADV_LAST.length)];const stats={strength:Math.floor(7+level*.45+random(0,15)),agility:Math.floor(8+level*.31+random(0,12)),intelligence:Math.floor(8+level*.46+random(0,17))},a={id,partyId:party.id,name,level,stats,maxHp:Math.round((50+level*2.4)*1.5),hp:Math.round((50+level*2.4)*1.5),gold:Math.round(60+level*9+Math.pow(Math.max(0,level-20),1.55)*8+random(0,160)),sword:level>10&&Math.random()<.4,armor:level>15&&Math.random()<.3,alive:true,resident:false,recruited:false,guest:false,satisfaction:clamp(Math.round(random(3,9)+tier*.35),0,100),xp:0,rejections:0,visits:1,nextRequestDay:0,scoutCooldownDay:0,requestPending:false,state:'arriving',x:CX-15+random(-2,2),y:CY+11+random(-2,2),path:[],anim:0,loot:{},rations:{},hunger:random(10,25),thirst:random(5,15),waterVessel:{type:level>=25?'largeCanteen':level>=8?'canteen':'waterskin',water:level>=25?18:level>=8?9:4},sleep:random(10,24),retreatPct:Math.round(random(30,70)),goal:rollAdventureGoal(level),targetFloor:1,runs:0,maxFloor:0,roomK:-1};initMagic(a);a.targetFloor=adventureGoalFloor(a.goal,level);party.ids.push(id);s.adventurers.push(a)}party.goal=choosePartyGoal(party.ids.map(id=>s.adventurers.find(a=>a.id===id)));party.targetFloor=Math.max(1,Math.min(100,Math.round(party.ids.reduce((v,id)=>v+(s.adventurers.find(a=>a.id===id)?.targetFloor||1),0)/party.ids.length)));s.parties.push(party);s.visitorCount+=size;log(`${partyLabel(party)}が洞窟の噂を聞いて村に到着しました。（${size}人／Lv${Math.max(...party.ids.map(id=>s.adventurers.find(a=>a.id===id).level))}）`);saveSoon();return true}
 function partyMembers(p){return p.ids.map(id=>s.adventurers.find(a=>a.id===id)).filter(a=>a&&a.alive&&!a.recruited)}
 function partyLabel(p){const a=partyMembers(p);return a.length===1?`冒険者${a[0].name}`:a.length>1?`${a[0].name}隊 (${a.length}人)`:'冒険者一行'}
 function visitorGo(a,target,dt){if(!a.path)a.path=[];const here=idx(clamp(Math.floor(a.x),0,W-1),clamp(Math.floor(a.y),0,H-1));const p=pos(target),close=dist(a.x-(p.x+.5),a.y-(p.y+.5));if(close<.78)return true;if(!a.path.length||a.path[a.path.length-1]!==target){const tree=bfs(a),dest=passable(target)?access(tree,target,true):access(tree,target,false);a.path=dest?tracePath(tree,dest.destination)||[]:[]}const move=dt*(2+(a.stats?.agility||10)*.045),part=moveNPCVisitor(a,move);return close<1.9||dist(a.x-(p.x+.5),a.y-(p.y+.5))<.8}
@@ -4801,12 +4822,23 @@ function adventurerPopulationTarget(){
  return capacity?Math.max(1,Math.round(capacity*factor)):2;
 }
 function activeAdventurerCount(){return s.adventurers.filter(a=>a.alive&&!a.recruited&&a.state!=='away'&&a.state!=='dead').length}
+function visitingAdventurerCount(){
+ return s.adventurers.filter(a=>a.alive&&!a.recruited&&!a.settled&&a.state!=='away'&&a.state!=='dead').length;
+}
+function visitingAdventurerLimit(){
+ const target=adventurerPopulationTarget();
+ // House residents fill the permanent population; tourists have their own
+ // small slot even when the village is at/above the housing target.
+ return activeAdventurerCount()>=target
+  ?Math.max(2,Math.ceil(target*.18))
+  :Math.max(3,Math.ceil(target*.60));
+}
 function visitorInterval(){
  const target=adventurerPopulationTarget(),gap=target-activeAdventurerCount(),tier=colonyTier();
- if(gap<=0)return 950;
- if(gap<=Math.max(2,Math.ceil(target*.15)))return 380;
- if(gap<=Math.max(3,Math.ceil(target*.35)))return 195;
- return clamp(100/(1+tier*.04+Math.min(10,gap)*.12),35,110);
+ if(gap<=0)return clamp(190+target*2.5,190,340);
+ if(gap<=Math.max(2,Math.ceil(target*.15)))return 155;
+ if(gap<=Math.max(3,Math.ceil(target*.35)))return 110;
+ return clamp(95/(1+tier*.04+Math.min(10,gap)*.12),35,105);
 } // game seconds; around 2.7 days at tier 0
 function stopLocalAdventurerDefense(a){
  if(a.alive&&a.hp>0&&a.localDefensePreviousState!==undefined)a.state=a.localDefensePreviousState;
