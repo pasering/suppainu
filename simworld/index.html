@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.20 — 収納の自動整理・雑務改善</title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.23 — 討伐依頼の報酬調整</title><style>
 
 
 :root{color-scheme:dark;--bg:#0e1719;--panel:#172325;--panel2:#1c2b2b;--panel3:#233331;--line:#344842;--text:#f1eddd;--muted:#a7b2a7;--accent:#e8c481;--teal:#8ac6ab;--red:#e59b83;--shadow:0 14px 45px #07101080}
@@ -241,7 +241,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
 @media(max-width:650px){.manager-table th:nth-child(3),.manager-table td:nth-child(3){display:none}.management-body{padding:7px}.manager-table select{max-width:130px}}
 .manager-category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:5px 0;border-bottom:1px solid #496353}.manager-category-tab{background:#213a31;border:1px solid #53745c;color:#cfdfd4;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer}.manager-category-tab.active{background:#755c35;color:#fff2c8;border-color:#dfbc76}.manager-category-tab:hover{border-color:#b5b88b}</style></head><body>
 <div class="page">
- <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.20</span></div></header>
+ <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.23</span></div></header>
  <div class="layout"><main class="workspace"><div class="panel">
   <div class="canvas-head"><div class="location">✥ はじまりの草原 <span class="subplace">/ 広域ファンタジー開拓地</span></div><div class="clock" id="clock">DAY 01　08:00</div></div>
   <div class="canvas-shell" id="canvasShell"><canvas id="world" aria-label="マス目状の開拓地。建築ツールを選び、クリックまたはドラッグして設計できます"></canvas>
@@ -459,7 +459,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
     <article><span class="help-step">3</span><div><h4>壁・外扉・床で部屋を造る</h4><p>外壁をつないで囲み、出入り口には外扉を設置。床を敷き、まずはベッドや作業台を置こう。洞窟入口のすぐ近くは避ける。</p></div></article>
     <article><span class="help-step">4</span><div><h4>水と食料を確保する</h4><p>井戸・水辺を利用できるようにし、木の実・肉・畑の作物を確保。畑はShift＋クリックで複数選択し、作物をまとめて変更できる。焚き火や調理台で加工して食料を長持ちさせる。</p></div></article>
     <article><span class="help-step">5</span><div><h4>武器・防具・携帯食を作って売る</h4><p>作業台や金床で装備を製作し、収納の「売」をON。訪れた冒険者が購入・装備して洞窟に挑み、攻略しやすくなる。</p></div></article>
-    <article><span class="help-step">6</span><div><h4>ギルドで依頼を出す</h4><p>納品クエストで不足する材料を集め、群れ討伐やユニーク討伐で周囲の危険を減らす。無理な依頼は受けてもらえないこともある。</p></div></article>
+    <article><span class="help-step">6</span><div><h4>ギルドで依頼を出す</h4><p>納品クエストで不足する材料を集め、群れ討伐やユニーク討伐で周囲の危険を減らす。討伐依頼の報酬は、敵の強さに応じて自動計算される。無理な依頼は受けてもらえないこともある。</p></div></article>
     <article><span class="help-step">7</span><div><h4>宿屋・レストランを整え、洞窟を攻略</h4><p>休息・食事・装備・水を整えた冒険者が探索を進める。10階ごとのボス撃破で新素材や設備が解禁。さらに町を発展させよう。</p></div></article>
    </div>
    <div class="help-note">💡 序盤は洞窟に住民を無理に送らなくても大丈夫。外から来る冒険者に装備や食料を売ることが、攻略への近道になる。</div>
@@ -512,7 +512,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
   <section class="help-chapter" id="helpDungeon">
    <h3>07　洞窟100階と攻略の流れ</h3>
    <div class="help-stage-row"><div><strong>最初の目標</strong><span>B1～B10F</span><p>携帯食と基本装備を供給。浅い階層を探索して素材や経験値を集めよう。</p></div><div><strong>次の目標</strong><span>B11～B20F</span><p>鉄装備などを供給し、B20Fボスの突破へ。新しい材料や設備が増えていく。</p></div><div><strong>その先</strong><span>B21～B100F</span><p>強いボスに備えて装備、回復、食料、パーティ人数を整えよう。</p></div></div>
-   <p>洞窟は<b>10階ごとにボス</b>が出現する。撃破すると上位施設・武器・素材が段階的に解禁される。ボス戦の通知から現場へ移動して観戦できる。</p>
+   <p>洞窟は<b>10階ごとにボス</b>が出現する。撃破すると上位施設・武器・素材が段階的に解禁される。ボス戦の通知から現場へ移動して観戦できる。戦闘中はボスも後衛へ近づいてくるので、射程だけに頼らず退路を確保しよう。負傷者は仲間と離れて先に帰還できる。</p>
    <p>冒険者・住民はHP、食料、水分、戦闘力によって帰還することがある。深く進めないときは、まず販売品と補給を見直す。攻略済み階層は右メニュー上部から確認・クリックで洞窟画面を開ける。</p>
    <div class="help-note">⛏ 洞窟では木材・石材・皮・鉄鉱石・薬草・種などの基礎素材も入手できる。浅い階層で集めやすく、深い階層でも少量出る。上位素材や合金は階層ボス討伐後に追加される。洞窟の奥ほど敵も強い。</div>
   </section>
@@ -1285,8 +1285,8 @@ function drinkManaPotion(p){if(!p?.magicKnown)return false;const bag=manaBag(p);
 function restoreMp(p,dt,resting=false){if(!p?.magicKnown)return;p.maxMp=maxMagic(p);p.mp=Math.min(p.maxMp,(p.mp||0)+dt*(resting?1.2:.035))}
 function spellCast(p,healing=false){const tier=magicTier(p);if(!tier)return null;const def=MAGIC_TIERS[tier];const cost=def.cost+(healing?3:0);
  if((p.mp||0)<cost)drinkManaPotion(p);if((p.mp||0)<cost)return null;p.mp-=cost;
- return {type:healing?'heal':'spell',damage:(healing?def.heal:def.damage)*(isResidentFighter(p)?.78:1),range:def.range,cooldown:def.interval+(healing?.15:0),tier}}
-function rangedProfile(p){const bow=BOW_INFO[equippedWeapon(p)];if(magicTier(p)){const def=MAGIC_TIERS[magicTier(p)];if((p.mp||0)>=def.cost||(manaBag(p).manaPotion||0)>0)return {type:'spell',range:def.range,damage:def.damage,cooldown:def.interval}}
+ return {type:healing?'heal':'spell',damage:(healing?def.heal:def.damage*COMBAT_ATTACK_SCALE)*(isResidentFighter(p)?.78:1),range:def.range,cooldown:def.interval+(healing?.15:0),tier}}
+function rangedProfile(p){const bow=BOW_INFO[equippedWeapon(p)];if(magicTier(p)){const def=MAGIC_TIERS[magicTier(p)];if((p.mp||0)>=def.cost||(manaBag(p).manaPotion||0)>0)return {type:'spell',range:def.range,damage:def.damage*COMBAT_ATTACK_SCALE,cooldown:def.interval}}
  return bow?{type:'bow',range:bow.range,damage:bowPerformance(p,equippedWeapon(p)).damage,cooldown:Math.max(1.4,attackInterval(p)*1.7)}:{type:'melee',range:1.55,damage:attackDamage(p),cooldown:attackInterval(p)};
 }
 function canTraceLine(x1,y1,x2,y2,blocked){const dx=x2-x1,dy=y2-y1;const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)*3));for(let i=1;i<steps;i++){const x=Math.floor(x1+dx*i/steps),y=Math.floor(y1+dy*i/steps);if(blocked(x,y))return false}return true}
@@ -1380,7 +1380,8 @@ const buildSkill=n=>(.48+n.stats.strength*.032+n.stats.dexterity*.036)*brain(n)*
 const harvestSkill=n=>(.5+n.stats.dexterity*.058)*brain(n);
 const isResidentFighter=n=>!!n&&(n.expedition!==undefined||s?.npcs?.includes(n));
 const attackInterval=n=>Math.max(.22,1.35/(.65+n.stats.agility*.048)/skillMultiplier(n,'hunt')*(isResidentFighter(n)?1.12:1));
-const attackDamage=n=>(2.5+n.stats.strength*.54+(n.level-1)*.35)*brain(n)*(isResidentFighter(n)?.70:1)+(GEAR_BONUSES[equippedWeapon(n)]?.attack||0);
+const COMBAT_ATTACK_SCALE=.30; // v7.21: both sides deal 30% of previous attack damage
+const attackDamage=n=>((2.5+n.stats.strength*.54+(n.level-1)*.35)*brain(n)*(isResidentFighter(n)?.70:1)+(GEAR_BONUSES[equippedWeapon(n)]?.attack||0))*COMBAT_ATTACK_SCALE;
 const defenseFactor=n=>clamp((1-(GEAR_BONUSES[equippedArmor(n)]?.defense||0))*(isResidentFighter(n)?1.15:1),.22,1.4);
 const dirs=[[1,0],[-1,0],[0,1],[0,-1]], idx=(x,y)=>y*W+x, pos=k=>({x:k%W,y:Math.floor(k/W)}), valid=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), random=(a,b)=>a+Math.random()*(b-a), rnd=n=>Math.floor(Math.random()*n);
@@ -2156,7 +2157,7 @@ function localDefenseAttacker(person,keepTargetId=null){
 function localDefenseLifeRisk(person,m){
  const hp=Math.max(0,person.hp||0),max=Math.max(1,person.maxHp||1);
  const info=monsterInfo[m.type]||monsterInfo.slime;
- const strike=(info.damage||5)*difficultyRules().enemyDamage*(m.raidPower||1)*defenseFactor(person);
+ const strike=(info.damage||5)*COMBAT_ATTACK_SCALE*difficultyRules().enemyDamage*(m.raidPower||1)*defenseFactor(person);
  const emergency=!!((m.structureAttack&&s.time-m.structureAttack.at<=18)||(m.personAttack&&s.time-m.personAttack.at<=18));
  if(emergency){
   // Strong uniques used to trigger flight before anyone could shoot. A defender
@@ -2368,7 +2369,7 @@ function jobTick(n,dt){const t=n.task;if(!t){n.state='idle';return}if(t.kind==='
   }
   if(moved)saveSoon();
  }
-}if(t.kind==='hunt'){const a=s.animals.find(a=>a.id===t.key);if(!a||a.assigned!==n.id){cancelTask(n);return}n.state='working';n.attackCooldown-=dt;if(n.attackCooldown<=0){n.attackCooldown=attackInterval(n);a.hp-=attackDamage(n);particles(a.k,'#e5aa82',4);if(a.type==='boar'){const hp=n.hp;n.hp=Math.max(1,n.hp-3.5);if(hp>=65&&n.hp<65)log(`${n.name}がイノシシの反撃で負傷しました。`)}if(a.hp<=0)killAnimal(n,a)}}if(t.kind==='fight'){const m=s.monsters.find(m=>m.id===t.key);if(!m){cancelTask(n);return}if(!surfaceCanHit(n,m)){pathToTask(n);return}n.state='working';n.attackCooldown-=dt;if(n.attackCooldown<=0){let shot=useCombatAttack(n,{x:n.x,y:n.y},pos(m.k));n.attackCooldown=shot.cooldown;m.hp-=shot.damage;markMonsterSurfaceAggro(m,n);if(shot.type!=='melee'){const at=pos(m.k);spawnBattleEffect(n.x,n.y,at.x+.5,at.y+.5,shot.type,0,false)}particles(m.k,'#f5b2a8',6);if(m.hp<=0){s.monsters=s.monsters.filter(a=>a!==m);s.monsterKills++;addXP(n,35+(m.type==='goblin'?18:m.type==='wolf'?26:0),true);const loot=monsterDropStacks(m.type);addDrop(m.k,loot);particles(m.k,'#c8a8f2',18);log(`${n.name}が${monsterInfo[m.type].name}を討伐。${loot.map(v=>itemInfo[v.item][1]+'×'+v.qty).join('、')}を落としました。`);cancelTask(n);saveSoon()}}}}
+}if(t.kind==='hunt'){const a=s.animals.find(a=>a.id===t.key);if(!a||a.assigned!==n.id){cancelTask(n);return}n.state='working';n.attackCooldown-=dt;if(n.attackCooldown<=0){n.attackCooldown=attackInterval(n);a.hp-=attackDamage(n);particles(a.k,'#e5aa82',4);if(a.type==='boar'){const hp=n.hp;n.hp=Math.max(1,n.hp-3.5*COMBAT_ATTACK_SCALE);if(hp>=65&&n.hp<65)log(`${n.name}がイノシシの反撃で負傷しました。`)}if(a.hp<=0)killAnimal(n,a)}}if(t.kind==='fight'){const m=s.monsters.find(m=>m.id===t.key);if(!m){cancelTask(n);return}if(!surfaceCanHit(n,m)){pathToTask(n);return}n.state='working';n.attackCooldown-=dt;if(n.attackCooldown<=0){let shot=useCombatAttack(n,{x:n.x,y:n.y},pos(m.k));n.attackCooldown=shot.cooldown;m.hp-=shot.damage;markMonsterSurfaceAggro(m,n);if(shot.type!=='melee'){const at=pos(m.k);spawnBattleEffect(n.x,n.y,at.x+.5,at.y+.5,shot.type,0,false)}particles(m.k,'#f5b2a8',6);if(m.hp<=0){s.monsters=s.monsters.filter(a=>a!==m);s.monsterKills++;addXP(n,35+(m.type==='goblin'?18:m.type==='wolf'?26:0),true);const loot=monsterDropStacks(m.type);addDrop(m.k,loot);particles(m.k,'#c8a8f2',18);log(`${n.name}が${monsterInfo[m.type].name}を討伐。${loot.map(v=>itemInfo[v.item][1]+'×'+v.qty).join('、')}を落としました。`);cancelTask(n);saveSoon()}}}}
 
 function stepNPC(n,dt){if(n.expedition||n.fieldQuestId||(n.guildCallReserved&&n.task?.kind!=='fight')){return;}queueResidentSupplies(n);restoreMp(n,dt,n.state==='sleeping');castHealingAboveGround(n,dt);n.anim+=dt*2;n.hunger=clamp(n.hunger+dt*needDecay(.23),0,100);n.thirst=clamp((n.thirst||0)+dt*needDecay(.34),0,100);if(n.thirst>=100)n.hp=Math.max(0,n.hp-dt*.4);if(n.state!=='sleeping')n.sleep=clamp(n.sleep+dt*.36*(timeOfDay()==='night'?1.35:1),0,100);if(n.hunger>=100)n.hp=Math.max(0,n.hp-dt*.33);if(n.state!=='sleeping')n.hp=Math.min(n.maxHp,n.hp+dt*.016);eat(n,(n.returnPauseUntil||0)>nowDay()?Math.min(65,100-(n.retreatPolicy?.hunger??50)):65);
  // No resident ignores a monster inside the immediate 5x5 area unless fleeing.
@@ -2420,7 +2421,7 @@ function animalStep(a,dt){a.anim+=dt;a.moveTimer-=dt;if(a.moveTimer>0)return;a.m
 function demolishMonsterTarget(k,m){const t=s.structures[k];if(!t)return;
  // Remember the actual impact (including a final blow) so nearby allies can respond.
  m.structureAttack={k,at:s.time};const max=BASE_DURABILITY[t]||80;
- s.durability[k]=Math.max(0,(s.durability[k]||max)-Math.max(2,Math.round(monsterInfo[m.type].damage*difficultyRules().enemyDamage*(m.raidPower||1)*.95)));if(s.durability[k]>0)s.damagedBuildings.add(k);
+ s.durability[k]=Math.max(0,(s.durability[k]||max)-Math.max(1,Math.round(monsterInfo[m.type].damage*COMBAT_ATTACK_SCALE*difficultyRules().enemyDamage*(m.raidPower||1)*.95)));if(s.durability[k]>0)s.damagedBuildings.add(k);
  particles(k,'#e8aa86',4);
  if(s.durability[k]>0)return;
  if(storageCapacity(k))dropStorageContents(k);
@@ -2431,7 +2432,7 @@ function demolishMonsterTarget(k,m){const t=s.structures[k];if(!t)return;
  log(`💥 ${monsterInfo[m.type].name}が${structureNames[t]}を破壊。跡地を再建用の設計図に戻しました。`);soundEffect('danger');saveSoon();}
 let defenseCache=[],defenseCacheAt=-999;
 function defenseTargets(){if(!s||s.time<defenseCacheAt||s.time-defenseCacheAt>2){defenseCacheAt=s.time;defenseCache=[];for(let k=0;k<N;k++)if(s.structures[k]&&BASE_DURABILITY[s.structures[k]])defenseCache.push(k)}return defenseCache}
-const SPIKE_DAMAGE={73:26,74:38,75:54};
+const SPIKE_DAMAGE={73:13,74:19,75:27}; // v7.22: spike trap damage halved
 function triggerSpikeTrap(m){
  const k=m.k,type=s.structures[k];
  if(!SPIKE_DAMAGE[type]){m.spikeTrapKey=-1;return false;}
@@ -2602,7 +2603,7 @@ function monsterStep(m,dt){
  if(target&&best<=1.55&&m.attackTimer<=0){
   m.attackTimer=info.interval;
   if(target.person){
-   const n=target.person,damage=info.damage*difficultyRules().enemyDamage*(m.raidPower||1)*random(.82,1.18)*defenseFactor(n);
+   const n=target.person,damage=info.damage*COMBAT_ATTACK_SCALE*difficultyRules().enemyDamage*(m.raidPower||1)*random(.82,1.18)*defenseFactor(n);
    n.hp=Math.max(0,n.hp-damage);
    m.personAttack={at:s.time,x:n.x,y:n.y,kind:s.npcs.includes(n)?'resident':s.adventurers.includes(n)?'adventurer':'tourist',id:n.id};
    if(n.hp<=0){if(n.tourist){n.state='gone';log(`☠ 観光客${n.name}が魔物に襲われました。`)}else if('alive' in n){recordAdventurerDeath(n,`地上 X${Math.floor(n.x)+1}・Y${Math.floor(n.y)+1}`,`${info.name}の攻撃`);n.alive=false;n.state='dead';log(`☠ ${n.name}が地上で${info.name}に倒されました。`)}saveSoon()}
@@ -2700,11 +2701,15 @@ function caveGuardThreats(radius=17){
  const p=pos(s.cave.entrance);
  return s.monsters.filter(m=>m.hp>0&&Math.hypot(pos(m.k).x-p.x,pos(m.k).y-p.y)<=radius);
 }
+// v7.23: Newly posted monster hunting contracts pay 60% of the former bounty.
+// Existing contracts keep their escrow and payout unchanged.
+const GUILD_HUNT_REWARD_RATE=.60;
+function guildHuntReward(reward){return Math.round(reward*GUILD_HUNT_REWARD_RATE)}
 function guildRewardEstimate({kind='gather',item='wood',qty=1,target='',unlimited=false}){
  qty=clamp(Math.floor(Number(qty)||1),1,kind==='gather'?999:99);
  if(kind==='gather'&&unlimited)return GUILD_ITEMS.includes(item)?guildGatherUnitReward(item):0;
  if(kind==='caveGuard')return s.cave?.revealed?Math.ceil((135+raidTier()*40)/5)*5:0;
- if(kind==='boss'){const floor=Number(target);if(floor%10||floor<10||floor>100||hasBossDefeated(floor))return 0;return Math.ceil((140+floor*21+Math.pow(floor/10,1.5)*35)/10)*10;}
+ if(kind==='boss'){const floor=Number(target);if(floor%10||floor<10||floor>100||hasBossDefeated(floor))return 0;return guildHuntReward(Math.ceil((140+floor*21+Math.pow(floor/10,1.5)*35)/10)*10);}
  if(kind==='gather'){
   if(!GUILD_ITEMS.includes(item))return 0;
   const rare=['magicOre','obsidian','crystal','silver','carrotSeed','potatoSeed'];
@@ -2715,11 +2720,11 @@ function guildRewardEstimate({kind='gather',item='wood',qty=1,target='',unlimite
  const m=targetData.monster,info=monsterInfo[m?.type]||monsterInfo.slime;
  if(kind==='unique'){
   const power=Math.max(1,(m.maxHp||m.hp||info.hp)/Math.max(1,info.hp));
-  return Math.min(999999,Math.ceil((90+(info.hp*.55+info.damage*6+info.tier*40)*power)/10)*10);
+  return guildHuntReward(Math.min(999999,Math.ceil((90+(info.hp*.55+info.damage*6+info.tier*40)*power)/10)*10));
  }
  if(kind==='horde'){
   qty=targetData.qty||qty;
-  return Math.min(999999,Math.ceil((20+qty*(14+info.hp*.19+info.damage*1.9+info.tier*10))/5)*5);
+  return guildHuntReward(Math.min(999999,Math.ceil((20+qty*(14+info.hp*.19+info.damage*1.9+info.tier*10))/5)*5));
  }
  return 0;
 }
@@ -2935,11 +2940,31 @@ function bossRaidGroundInterception(actor,dt){
  moveNPCVisitor(actor,dt*(2+(actor.stats?.agility||10)*.045));
  return true;
 }
+function separateBossRaidRetreater(raid,member){
+ const {actor,resident}=member;
+ if(resident){
+  raid.residentIds=raid.residentIds.filter(id=>id!==actor.id);
+  const e=actor.expedition;if(!e)return;
+  e.bossQuestId=null;e.phase='returning';
+  const group={id:s.nextResidentGroupId++,members:[actor.id],phase:'returning',floor:raid.floor,clock:0,elapsed:raid.elapsed||0,waves:0,personalRetreat:true,bossDepartureCount:1};
+  e.groupId=group.id;e.floor=raid.floor;s.residentGroups.push(group);
+  actor.bossQuestReserved=null;
+  if(e.dungeonPos){e.dungeonPos.target=-1;e.dungeonPos.path=[];}
+ }else{
+  raid.adventurerIds=raid.adventurerIds.filter(id=>id!==actor.id);
+  const old=s.parties.find(p=>p.id===actor.partyId);
+  if(old)old.ids=old.ids.filter(id=>id!==actor.id);
+  const group={id:s.nextPartyId++,ids:[actor.id],state:'exploring',phase:'returning',floor:raid.floor,fromSettlement:!!old?.fromSettlement,clock:0,personalRetreat:true,goal:'gather',targetFloor:raid.floor,bossDepartureCount:1};
+  actor.partyId=group.id;actor.state='exploring';s.parties.push(group);
+  if(actor.dungeonPos){actor.dungeonPos.target=-1;actor.dungeonPos.path=[];}
+ }
+ log(`↩ ${actor.name}は討伐隊から離れ、単独で帰還します。`);saveSoon();
+}
 function stepBossRaids(dt){
  if(!s?.bossRaids?.length)return;
  const entrance=s.cave.entrance;
  for(const raid of [...s.bossRaids]){
-  const roster=bossRaidActors(raid),actors=roster.map(x=>x.actor),q=s.guildQuests.find(q=>q.id===raid.questId);
+  let roster=bossRaidActors(raid),actors=roster.map(x=>x.actor);const q=s.guildQuests.find(q=>q.id===raid.questId);
   if(!actors.length){finishBossQuestRaid(raid);continue}
   raid.elapsed=(raid.elapsed||0)+dt;
   if(raid.phase==='toCave'){
@@ -2960,12 +2985,15 @@ function stepBossRaids(dt){
   if(raid.elapsed>1600&&raid.phase==='exploring')bossRaidBeginRetreat(raid,'長期戦を避ける');
   const floor=raid.floor;
   for(const {actor} of roster){restoreMp(actor,dt);usePotionInDungeon(actor);hydrateDungeonActor(actor,dt,floor);actor.hunger=clamp((actor.hunger||0)+dt*(actor.expedition?.34:.17),0,100);actor.sleep=clamp((actor.sleep||0)+dt*.22,0,100);if(actor.hunger>=100)actor.hp=Math.max(0,actor.hp-dt*.18);eatCaveRation(actor)}
-  const healthy=roster.filter(o=>o.actor.hp>0),injured=healthy.filter(o=>o.actor.hp/o.actor.maxHp<.5);
   if(raid.phase==='exploring'){
-   const canFinish=raid.bossEngagedFloor===floor&&floor===raid.targetFloor&&bossFightViable(floor,healthy.map(o=>o.actor));
-   const critical=healthy.some(o=>o.actor.hp/o.actor.maxHp<.19)||injured.length>=Math.ceil((raid.initialTeamSize||raid.adventurerIds.length+raid.residentIds.length||healthy.length)*.75);
-   const supply=healthy.some(o=>partyWaterEnergy(o.actor)<11||partyFoodEnergy(o.actor)<10);
-   if((critical&&!canFinish)||(supply&&!canFinish))bossRaidBeginRetreat(raid,'負傷と物資の状況を判断した');
+   const healthy=roster.filter(o=>o.actor.hp>0);
+   const retreaters=healthy.filter(o=>shouldRetreat(o.actor));
+   if(retreaters.length&&retreaters.length===healthy.length){bossRaidBeginRetreat(raid,'全員が撤退条件に達した');}
+   else if(retreaters.length){
+    for(const member of retreaters)separateBossRaidRetreater(raid,member);
+    roster=bossRaidActors(raid);actors=roster.map(x=>x.actor);
+    if(!roster.length){bossRaidBeginRetreat(raid,'全員が離脱した');continue;}
+   }
   }
   if(raid.phase==='exploring'&&floor===raid.targetFloor&&!bossIsAlive(floor)){bossRaidBeginRetreat(raid,'ボスがいない');}
   const retreat=raid.phase==='returning',waypoint=retreat?'up':'down';
@@ -3012,7 +3040,7 @@ function guildHordeMonsters(q){
 function guildHordeIndividualRisk(m,party,margin=1){
  const actors=partyMembers(party).filter(a=>a.alive&&a.hp>0),at=pos(m.k);
  const neighbors=s.monsters.filter(other=>other.hp>0&&Math.hypot(pos(other.k).x-at.x,pos(other.k).y-at.y)<=5);
- const dps=neighbors.reduce((sum,enemy)=>{const info=monsterInfo[enemy.type]||monsterInfo.slime;return sum+(info.damage||5)*(enemy.raidPower||1)*difficultyRules().enemyDamage/Math.max(.5,info.interval||1.2)},0);
+ const dps=neighbors.reduce((sum,enemy)=>{const info=monsterInfo[enemy.type]||monsterInfo.slime;return sum+(info.damage||5)*COMBAT_ATTACK_SCALE*(enemy.raidPower||1)*difficultyRules().enemyDamage/Math.max(.5,info.interval||1.2)},0);
  const power=actors.reduce((sum,a)=>sum+Math.max(4,attackDamage(a))/1.1,0);
  const hpPool=actors.reduce((sum,a)=>sum+Math.max(0,a.hp)/Math.max(.38,defenseFactor(a)),0);
  const fightTime=(m.hp||monsterInfo[m.type]?.hp||50)/Math.max(1,power)+1.7;
@@ -3141,7 +3169,7 @@ function guildHuntParty(p,dt){
  if(!alive.length){guildAbortHunt(p,'仲間を失った');return}
  const huntTarget=q.kind==='horde'?(guildPickHordeTarget(p,q,1.08)||guildHordeMonsters(q)[0]):target;
  const nearbyThreat=s.monsters.filter(m=>m.hp>0&&alive.some(a=>Math.hypot(pos(m.k).x+.5-a.x,pos(m.k).y+.5-a.y)<4));
- const nearDps=nearbyThreat.reduce((sum,m)=>{const info=monsterInfo[m.type]||monsterInfo.slime;return sum+(info.damage||5)*(m.raidPower||1)/Math.max(.5,info.interval||1.2)},0),ownDps=alive.reduce((sum,a)=>sum+Math.max(3,attackDamage(a))/1.2,0);
+ const nearDps=nearbyThreat.reduce((sum,m)=>{const info=monsterInfo[m.type]||monsterInfo.slime;return sum+(info.damage||5)*COMBAT_ATTACK_SCALE*(m.raidPower||1)/Math.max(.5,info.interval||1.2)},0),ownDps=alive.reduce((sum,a)=>sum+Math.max(3,attackDamage(a))/1.2,0);
  p.huntInitialSize??=alive.length;const overwhelmed=nearbyThreat.length>Math.max(2,p.huntInitialSize)+1&&nearDps>ownDps*.65;
  const danger=alive.some(a=>a.hp/a.maxHp<(q.kind==='horde'?.55:.62))||overwhelmed||!huntTarget;
  if(danger){guildAbortHunt(p,q.kind==='horde'?'群れが密集して危険になった':'戦況が危険になった');return}
@@ -3871,7 +3899,7 @@ function bowPerformance(person,bowKey){const bow=BOW_INFO[bowKey];if(!bow)return
  const strength=person.stats?.strength||10,dexterity=person.stats?.dexterity||10;
  const drawPenalty=strength>=bow.requiredStrength?1:Math.max(.30,1-(bow.requiredStrength-strength)*.035);
  const aimBonus=Math.min(1.75,Math.max(.80,1+(dexterity-10)*.012));
- return {damage:Math.max(1,Math.round(bow.damage*drawPenalty*aimBonus)),drawPenalty,aimBonus,range:bow.range,requiredStrength:bow.requiredStrength};}
+ return {damage:Math.max(.3,Math.round(bow.damage*drawPenalty*aimBonus*COMBAT_ATTACK_SCALE*10)/10),drawPenalty,aimBonus,range:bow.range,requiredStrength:bow.requiredStrength};}
 
 for(const [key,name,unlock,station,ingredients,damage,weight] of BOW_TIERS){
  const row=[key,name,'weapon',unlock,station,ingredients,damage,weight];
@@ -4085,6 +4113,31 @@ function exploreTick(n,dt){if(!s.cave.revealed){cancelTask(n);return}const k=s.c
  let group=s.residentGroups.find(g=>g.phase==='waiting'&&g.members.length<4&&s.time<g.departAt);
  if(!group){group={id:s.nextResidentGroupId++,members:[],phase:'waiting',departAt:s.time+6.5,floor:1,clock:0,elapsed:0,waves:0};s.residentGroups.push(group)}
  group.members.push(n.id);n.expedition={floor:1,groupId:group.id,phase:'waiting',clock:0,loot:{},rations:{},elapsed:0,steps:0};provisionResident(n);n.state='exploring';log(`${n.name}が洞窟入口で${group.members.length>1?'仲間と合流しました':'同行者を待っています'}。`);saveSoon()}
+// An injured explorer can retreat alone; healthy companions keep their mission.
+function separateRetreatingResident(group,n){
+ if(group.phase!=='exploring'||!n.expedition||!group.members.includes(n.id))return false;
+ group.members=group.members.filter(id=>id!==n.id);
+ const home={id:s.nextResidentGroupId++,members:[n.id],phase:'returning',floor:group.floor,clock:0,elapsed:group.elapsed||0,waves:0,bossDepartureCount:1,personalRetreat:true};
+ n.expedition.groupId=home.id;n.expedition.phase='returning';
+ const dp=n.expedition.dungeonPos;if(dp){dp.target=-1;dp.path=[];}
+ s.residentGroups.push(home);log(`↩ ${n.name}は負傷・物資不足のため単独で帰還します。`);saveSoon();return true;
+}
+function separateRetreatingAdventurer(group,a){
+ if(group.phase!=='exploring'||!group.ids.includes(a.id))return false;
+ group.ids=group.ids.filter(id=>id!==a.id);
+ if(group.rallyOriginalIds)group.rallyOriginalIds=group.rallyOriginalIds.filter(id=>id!==a.id);
+ for(const q of s.parties)if(q!==group&&q.rallyLeaderId===group.id&&q.ids.includes(a.id))q.ids=q.ids.filter(id=>id!==a.id);
+ const home={id:s.nextPartyId++,ids:[a.id],state:'exploring',phase:'returning',floor:group.floor,clock:0,elapsed:group.elapsed||0,fromSettlement:!!group.fromSettlement,goal:'gather',targetFloor:group.floor,personalRetreat:true,bossDepartureCount:1};
+ a.partyId=home.id;a.state='exploring';if(a.dungeonPos){a.dungeonPos.target=-1;a.dungeonPos.path=[];}
+ s.parties.push(home);log(`↩ ${a.name}は負傷・物資不足のため単独で帰還します。`);saveSoon();return true;
+}
+function assessIndividualDungeonRetreat(group,actors,resident){
+ if(group.phase!=='exploring'||!actors.length)return;
+ const retreaters=actors.filter(a=>a.hp>0&&shouldRetreat(a));
+ if(!retreaters.length)return;
+ if(retreaters.length===actors.filter(a=>a.hp>0).length){beginDungeonRetreat(group,actors);return;}
+ for(const a of retreaters){if(resident)separateRetreatingResident(group,a);else separateRetreatingAdventurer(group,a);}
+}
 function stepResidentExpeditions(dt){
  for(const n of s.npcs){if(n.expedition&&!n.expedition.bossQuestId&&!s.residentGroups.some(g=>g.members.includes(n.id))){const g={id:s.nextResidentGroupId++,members:[n.id],bossDepartureCount:1,phase:n.expedition.phase==='returning'?'returning':'exploring',departAt:s.time,floor:n.expedition.floor||1,clock:0,elapsed:n.expedition.elapsed||0,waves:0};s.residentGroups.push(g);n.expedition.groupId=g.id}}
  for(const g of [...s.residentGroups]){
@@ -4097,8 +4150,8 @@ function stepResidentExpeditions(dt){
   if(g.clock>=3.8){g.clock=0;g.waves=(g.waves||0)+1;const floor=g.floor,teamPower=members.reduce((sum,n)=>sum+attackDamage(n)*2+n.stats.agility*.35+n.stats.intelligence*.3+(GEAR_BONUSES[equippedWeapon(n)]?.attack||0)*1.2+(n.armor?9:0),0),enemyPower=14+floor*5.1+floor*floor*.025;
    for(const n of members){const e=n.expedition,mitigation=1/defenseFactor(n);const hit=0;usePotionInDungeon(n);e.steps++;e.elapsed=g.elapsed;addXP(n,2.2+floor*.17,true);if(Math.random()<.21){const kind=floor<15?'slime':floor<37?'goblin':'wolf';for(const st of monsterDropStacks(kind))collectDungeonLoot(n,st.item,st.qty)}if(Math.random()<.55)collectDungeonLoot(n,chooseDungeonLoot(floor),1+(floor>24&&Math.random()<.3?1:0));n.maxFloor=Math.max(n.maxFloor||0,floor)}
   }
-  const ongoingBoss=g.bossEngagedFloor===g.floor&&bossIsAlive(g.floor)&&bossFightViable(g.floor,members);
-  if((members.some(shouldRetreat)&&!ongoingBoss)||(g.floor>=100&&!bossIsAlive(100))){beginDungeonRetreat(g,members);if(members.some(n=>n.hp/n.maxHp<.5))log('⚠ 探索隊が負傷者を連れて徒歩で撤退します。')}
+  if(g.floor>=100&&!bossIsAlive(100))beginDungeonRetreat(g,members);
+  else assessIndividualDungeonRetreat(g,members,true);
  }
 }
 function finishResidentExploration(n){const e=n.expedition;if(!e)return;for(const [key,qty] of Object.entries(e.loot||{}))if(qty>0)addDrop(s.cave.entrance,[freshStack(key,qty)]);for(const [key,qty] of Object.entries(e.rations||{}))if(qty>0)addDrop(s.cave.entrance,[freshStack(key,qty,e.rationAges?.[key]||0)]);n.expedition=null;n.nextCaveDay=nowDay()+.55;n.state='idle';n.cooldown=2;log(`${n.name}が徒歩で帰還。獲得品：${Object.entries(e.loot||{}).filter(([k,q])=>q>0).map(([key,q])=>`${itemInfo[key]?.[1]||key}×${q}`).join('、')||'なし'}`);saveSoon()}
@@ -4170,7 +4223,7 @@ function chooseDungeonLoot(floor,randomFn=Math.random){
  return weighted[weighted.length-1][0];
 }
 
-function spawnParty(force=false){if(!s.cave.revealed)return false;const active=s.parties.filter(p=>!['away','lost'].includes(p.state)).length;const desired=adventurerPopulationTarget(),present=activeAdventurerCount();if(!force&&(present>=desired||active>=Math.max(7,desired+3)))return false;const hasReturn=s.parties.filter(p=>p.state==='away'&&p.nextVisitDay<=s.day+s.minutes/1440&&p.ids.some(id=>s.adventurers.some(a=>a.id===id&&a.alive&&!a.recruited)));if(hasReturn.length&&Math.random()<.35&&!force){let p=hasReturn[rnd(hasReturn.length)];p.state='arriving';p.phase='exploring';p.clock=0;p.floor=1;p.waves=0;p.elapsed=0;p.objectiveClock=0;for(const id of p.ids){const a=s.adventurers.find(a=>a.id===id);if(a?.alive){a.state='arriving';a.x=CX-14+random(-3,3);a.y=CY+12+random(-2,2);a.hp=Math.max(45,Math.min(a.maxHp,a.hp+40));a.hunger=Math.min(25,a.hunger||20);a.path=[];a.loot=a.loot||{};a.visits=(a.visits||0)+1;changeSatisfaction(a,3+Math.min(5,colonyTier()*.3));}}log(`${partyLabel(p)}が再び村にやって来ました。`);return true}
+function spawnParty(force=false){if(!s.cave.revealed)return false;const active=s.parties.filter(p=>!['away','lost'].includes(p.state)).length;const desired=adventurerPopulationTarget(),present=activeAdventurerCount();if(!force&&(present>=Math.max(1,Math.ceil(desired*.96))||active>=Math.max(7,desired+3)))return false;const hasReturn=s.parties.filter(p=>p.state==='away'&&p.nextVisitDay<=s.day+s.minutes/1440&&p.ids.some(id=>s.adventurers.some(a=>a.id===id&&a.alive&&!a.recruited)));if(hasReturn.length&&Math.random()<.35&&!force){let p=hasReturn[rnd(hasReturn.length)];p.state='arriving';p.phase='exploring';p.clock=0;p.floor=1;p.waves=0;p.elapsed=0;p.objectiveClock=0;for(const id of p.ids){const a=s.adventurers.find(a=>a.id===id);if(a?.alive){a.state='arriving';a.x=CX-14+random(-3,3);a.y=CY+12+random(-2,2);a.hp=Math.max(45,Math.min(a.maxHp,a.hp+40));a.hunger=Math.min(25,a.hunger||20);a.path=[];a.loot=a.loot||{};a.visits=(a.visits||0)+1;changeSatisfaction(a,3+Math.min(5,colonyTier()*.3));}}log(`${partyLabel(p)}が再び村にやって来ました。`);return true}
  if(s.adventurers.length>=560&&!force){
   const away=s.adventurers.filter(a=>a.state==='away'&&!a.settled).sort((a,b)=>a.id-b.id);
   const retire=new Set(away.slice(0,Math.max(0,away.length-250)).map(a=>a.id));
@@ -4194,8 +4247,8 @@ function explorePartyTick(p,dt){const party=partyMembers(p);if(!party.length){p.
 }
 if(Math.random()<(p.goal==='gather'&&floor>=p.targetFloor?.88:.72))collectDungeonLoot(a,chooseDungeonLoot(floor),1+(floor>25&&Math.random()<.5?1:0));if(Math.random()<.20){const kind=floor<15?'slime':floor<37?'goblin':'wolf';for(const st of monsterDropStacks(kind))collectDungeonLoot(a,st.item,st.qty)}a.maxFloor=Math.max(a.maxFloor,floor);addXP(a,6+floor*.9+(p.goal==='train'&&floor>=p.targetFloor?5:0),false)}}
  const survivors=partyMembers(p);if(!survivors.length){p.state='lost';log('冒険者パーティが洞窟で全滅しました。');saveSoon();return}
- const ongoingBoss=p.bossEngagedFloor===p.floor&&bossIsAlive(p.floor)&&bossFightViable(p.floor,survivors);
- if((survivors.some(shouldRetreat)&&!ongoingBoss)||(p.floor>=100&&!bossIsAlive(100)))beginDungeonRetreat(p,survivors);
+ if(p.floor>=100&&!bossIsAlive(100))beginDungeonRetreat(p,survivors);
+ else assessIndividualDungeonRetreat(p,survivors,false);
 }
 function roomStockSpace(room,item){if(!room)return 0;let space=0;for(const k of room.cells){const cap=storageCapacity(k);if(!cap)continue;const slots=s.stores.get(k)||[];space+=Math.max(0,cap-slots.length)*MAX_STACK;for(const st of slots)if(st.item===item)space+=Math.max(0,MAX_STACK-st.qty)}return space}
 function putRoomGoods(room,item,qty){if(!room||qty<=0)return 0;let st=freshStack(item,qty);for(const k of room.cells){if(!st.qty)break;if(storageCapacity(k))storeAt(k,st)}return qty-st.qty}
@@ -4343,10 +4396,19 @@ function handleTownStay(p){let kept=false;const inns=lodgings(),occupancy=new Ma
   const inn=chooseLodging(a,inns,occupancy);
    for(const other of inns)if(other.k!==inn?.k&&other.price>innBudget(a,other.luxury))recordReview(other.k,a,0,'高額で利用できなかった');let booking=inn?evaluateInnForGuest(a,inn):null;
    if(inn&&booking){a.gold-=inn.price;s.gold+=inn.price;a.guest=true;a.guestInnK=inn.k;a.guestBedK=booking.bed;a.path=[];a.state='staying';occupancy.set(inn.k,(occupancy.get(inn.k)||0)+1);a.reviewPending={k:inn.k,score:booking.score,comment:booking.comment};kept=true;changeSatisfaction(a,Math.round(2+inn.luxury/18));log(`🛏 ${a.name}が${inn.price}Gで宿泊。客室へ移動します。`)}
-  else{a.guest=false;a.guestInnK=null;a.guestBedK=-1;for(const candidate of inns){if(candidate.k!==inn?.k&&candidate.price>innBudget(a,candidate.luxury))recordReview(candidate.k,a,0,'宿泊料金が高すぎる')}changeSatisfaction(a,-Math.round(4+(inns.length?1:2)));a.hp=Math.min(a.maxHp,a.hp+Math.max(2,a.maxHp*.07));log(`⛺ ${a.name}は料金に見合う宿を見つけられず野宿しました。（満足度低下）`)}
-
+  else{a.guest=false;a.guestInnK=null;a.guestBedK=-1;for(const candidate of inns){if(candidate.k!==inn?.k&&candidate.price>innBudget(a,candidate.luxury))recordReview(candidate.k,a,0,'宿泊料金が高すぎる')}
+   const housing=settlementHousing(),tentUsers=s.adventurers.filter(v=>v!==a&&v.alive&&!v.recruited&&v.campK>=0).length;const hasTent=housing.tents.length*3>tentUsers;
+   if(hasTent){const reserved=new Set(s.adventurers.filter(v=>v!==a&&v.alive&&v.campK>=0).map(v=>v.campK));a.campK=housing.tents.find(k=>!reserved.has(k))??housing.tents[0];a.tentRestNights=(a.tentRestNights||0)+1;a.wildRestNights=0;}
+   else{a.campK=-1;a.wildRestNights=(a.wildRestNights||0)+1;changeSatisfaction(a,-2);}
+   a.hp=Math.min(a.maxHp,a.hp+Math.max(6,a.maxHp*.10));
+   log(`⛺ ${a.name}は${hasTent?'テントで休息':'野営'}しました。${!hasTent&&a.wildRestNights>=4?'野宿が続いているため離脱を検討しています。':''}`);
+  }
+  if(booking){a.wildRestNights=0;a.tentRestNights=0;a.campK=-1;}
  }
- p.state=kept?'staying':'leaving';p.clock=kept?8+rnd(7):0;p.stayTravelTime=0;guildOfferSettlement(p);saveSoon()}
+ const sustainedWildCamp=!kept&&partyMembers(p).every(a=>(a.wildRestNights||0)>=4);
+ p.state=sustainedWildCamp?'leaving':'staying';p.clock=kept?8+rnd(7):11+rnd(6);p.stayTravelTime=0;
+ if(sustainedWildCamp)log(`${partyLabel(p)}は連日の野宿で村を離れることにしました。`);
+ guildOfferSettlement(p);saveSoon()}
 
 function touristFacilitiesReady(){return lodgings().length>0&&openRestaurants().length>0}
 const TOURIST_FIRST=['エマ','アデラ','クラウス','リディア','ヴァレリー','ユーリア','セオ','リナ','モニカ','リネット','ベルン','マリア'];
@@ -4400,9 +4462,11 @@ function adventurerPopulationTarget(){
 }
 function activeAdventurerCount(){return s.adventurers.filter(a=>a.alive&&!a.recruited&&a.state!=='away'&&a.state!=='dead').length}
 function visitorInterval(){
- const gap=adventurerPopulationTarget()-activeAdventurerCount(),tier=colonyTier();
- if(gap>0)return clamp(85/(1+tier*.06+Math.min(10,gap)*.18),16,85);
- return Math.max(110,450/(1+tier*.16));
+ const target=adventurerPopulationTarget(),gap=target-activeAdventurerCount(),tier=colonyTier();
+ if(gap<=0)return 950;
+ if(gap<=Math.max(2,Math.ceil(target*.15)))return 380;
+ if(gap<=Math.max(3,Math.ceil(target*.35)))return 195;
+ return clamp(100/(1+tier*.04+Math.min(10,gap)*.12),35,110);
 } // game seconds; around 2.7 days at tier 0
 function stopLocalAdventurerDefense(a){
  if(a.alive&&a.hp>0&&a.localDefensePreviousState!==undefined)a.state=a.localDefensePreviousState;
@@ -4725,7 +4789,7 @@ function stepRaidPreparationFieldwork(p,dt){
 
 function stepAdventurers(dt){if(!s.cave.revealed)return;applyRaidPreparation();stepResidentExpeditions(dt);s.visitorClock=(s.visitorClock??0)+dt;if(s.visitorClock>=visitorInterval()){s.visitorClock=0;spawnParty()}
  const town=idx(CX-7,CY+4),edge=idx(CX-17,CY+12);
- for(const p of s.parties){if(p.state==='lost'||p.state==='away'||p.state==='bossQueue'||p.state==='bossRaid'||p.state==='fieldQueue'||p.state==='fieldRaid'||p.state==='rallyJoined')continue;for(const person of partyMembers(p))if(p.state!=='exploring'){person.thirst=Math.min(100,(person.thirst||0)+dt*needDecay(.10));if(person.thirst>35)drinkFromBottle(person);if(person.thirst>=100)person.hp=Math.max(0,person.hp-dt*.22)}const alive=partyMembers(p);if(!alive.length){p.state='lost';continue}if(reassessDestroyedLodging(p,dt))continue;if(alive.some(a=>a.localDefenseTargetId||(a.localDefenseFleeUntil||0)>s.time))continue;if(p.state!=='exploring'&&stepAdventurerTownNeeds(p,dt))continue;if(['town','staying','settled'].includes(p.state)&&s.time>=(p.nextLootSaleTime||0)){autoLiquidateAdventurerLoot(p);p.nextLootSaleTime=s.time+24}if(raidPreparationBlocksDeparture()&&(p.state==='settled'||p.state==='town')){stepRaidPreparationFieldwork(p,dt);continue}if(p.state==='settled'){guildStepSettledParty(p,dt);continue}else if(p.state==='guildGuard'){guildGuardParty(p,dt);continue}else if(p.state==='guildHunt'){guildHuntParty(p,dt);continue}else if(p.state==='arriving'){if(groupDestination(p,dt,town,'arriving')){p.state='town';p.clock=2.5+rnd(4);for(const a of alive){a.dinedThisVisit=false;a.state='town';guildRegister(a);changeSatisfaction(a,Math.max(1,Math.round(satisfactionBoost(a)*.35)));}}}else if(p.state==='town'){for(const a of alive){if(a.dinedThisVisit)continue;const rr=openRestaurants().find(r=>restaurantChoice(r,a,false));if(rr){const chair=rr.chairs[0];if(chair!=null&&visitorGo(a,chair,dt)){serveRestaurant(rr,a,false);a.dinedThisVisit=true}else{a.state='town';continue}}else {rateRestaurantTooExpensive(a);a.dinedThisVisit=true}}p.clock-=dt;if(p.clock<=0){guildAssignQuest(p);prepareTownCaveDeparture(p)}}else if(p.state==='bossRally'){stepOrdinaryBossRally(p,dt)}else if(p.state==='toCave'){p.bossDepartureCount=Math.max(p.bossDepartureCount||0,alive.length);if(groupDestination(p,dt,s.cave.entrance,'toCave')){p.state='exploring';p.phase='exploring';p.floor=1;p.waves=0;p.elapsed=0;p.clock=0;for(const a of alive){a.state='exploring';a.path=[];a.runs++;placeAtStairs(a,1,'up',false)}log(`${partyLabel(p)}が入口からB1Fへ入りました。`)}}else if(p.state==='exploring'){explorePartyTick(p,dt)}else if(p.state==='returning'){for(const a of alive)pickupTravelDrops(a,true);if(groupDestination(p,dt,town,'returning')){if(p.guildCallPending){p.guildCallPending=false;if(s.guildCall&&s.guildCall.expires>s.time){p.state='guildGuard';p.clock=0;for(const a of alive){a.state='guildGuard';a.path=[]}log(`${partyLabel(p)}が洞窟から徒歩で帰り、防衛招集に合流しました。`);continue}}guildDeliverQuest(p);autoLiquidateAdventurerLoot(p);sellEquipment(p);if(p.rallyOriginalIds)releaseOrdinaryBossAllies(p);if(p.fromSettlement){p.state='settled';p.exploreClock=0;for(const a of alive){a.state='settled';a.path=[]}log(`${partyLabel(p)}が定住先の宿へ帰還しました。`)}else handleTownStay(p)}}else if(p.state==='staying'){let reached=true;for(const a of alive){if(a.guest&&a.guestBedK>=0){a.state='staying';if(!visitorGo(a,a.guestBedK,dt))reached=false}}p.stayTravelTime=(p.stayTravelTime||0)+dt;if(reached||p.stayTravelTime>=16)p.clock-=dt;if(p.clock<=0){for(const a of alive){if(a.guest){restoreMp(a,55,true);a.hp=Math.min(a.maxHp,a.hp+50);a.sleep=Math.max(5,(a.sleep||40)-70)}else{restoreMp(a,8,true);a.hp=Math.min(a.maxHp,a.hp+8);a.sleep=Math.max(5,(a.sleep||40)-8)}a.state='town';a.path=[];finishInnReview(a);a.guest=false;a.guestInnK=null;a.guestBedK=-1;}p.state='town';p.clock=4+rnd(8);log(`${partyLabel(p)}は村で休息し、再び冒険の準備を始めました。`)}}else if(p.state==='leaving'){if(groupDestination(p,dt,edge,'leaving')){p.state='away';p.nextVisitDay=s.day+s.minutes/1440+2+rnd(7);for(const a of alive){a.state='away';a.guest=false;a.guestBedK=-1;a.path=[];a.hp=Math.max(a.hp,a.maxHp*.7)}saveSoon()}}}
+ for(const p of s.parties){if(p.state==='lost'||p.state==='away'||p.state==='bossQueue'||p.state==='bossRaid'||p.state==='fieldQueue'||p.state==='fieldRaid'||p.state==='rallyJoined')continue;for(const person of partyMembers(p))if(p.state!=='exploring'){person.thirst=Math.min(100,(person.thirst||0)+dt*needDecay(.10));if(person.thirst>35)drinkFromBottle(person);if(person.thirst>=100)person.hp=Math.max(0,person.hp-dt*.22)}const alive=partyMembers(p);if(!alive.length){p.state='lost';continue}if(reassessDestroyedLodging(p,dt))continue;if(alive.some(a=>a.localDefenseTargetId||(a.localDefenseFleeUntil||0)>s.time))continue;if(p.state!=='exploring'&&stepAdventurerTownNeeds(p,dt))continue;if(['town','staying','settled'].includes(p.state)&&s.time>=(p.nextLootSaleTime||0)){autoLiquidateAdventurerLoot(p);p.nextLootSaleTime=s.time+24}if(raidPreparationBlocksDeparture()&&(p.state==='settled'||p.state==='town')){stepRaidPreparationFieldwork(p,dt);continue}if(p.state==='settled'){guildStepSettledParty(p,dt);continue}else if(p.state==='guildGuard'){guildGuardParty(p,dt);continue}else if(p.state==='guildHunt'){guildHuntParty(p,dt);continue}else if(p.state==='arriving'){if(groupDestination(p,dt,town,'arriving')){p.state='town';p.clock=2.5+rnd(4);for(const a of alive){a.dinedThisVisit=false;a.state='town';guildRegister(a);changeSatisfaction(a,Math.max(1,Math.round(satisfactionBoost(a)*.35)));}}}else if(p.state==='town'){for(const a of alive){if(a.dinedThisVisit)continue;const rr=openRestaurants().find(r=>restaurantChoice(r,a,false));if(rr){const chair=rr.chairs[0];if(chair!=null&&visitorGo(a,chair,dt)){serveRestaurant(rr,a,false);a.dinedThisVisit=true}else{a.state='town';continue}}else {rateRestaurantTooExpensive(a);a.dinedThisVisit=true}}p.clock-=dt;if(p.clock<=0){guildAssignQuest(p);prepareTownCaveDeparture(p)}}else if(p.state==='bossRally'){stepOrdinaryBossRally(p,dt)}else if(p.state==='toCave'){p.bossDepartureCount=Math.max(p.bossDepartureCount||0,alive.length);if(groupDestination(p,dt,s.cave.entrance,'toCave')){p.state='exploring';p.phase='exploring';p.floor=1;p.waves=0;p.elapsed=0;p.clock=0;for(const a of alive){a.state='exploring';a.path=[];a.runs++;placeAtStairs(a,1,'up',false)}log(`${partyLabel(p)}が入口からB1Fへ入りました。`)}}else if(p.state==='exploring'){explorePartyTick(p,dt)}else if(p.state==='returning'){for(const a of alive)pickupTravelDrops(a,true);if(groupDestination(p,dt,town,'returning')){if(p.guildCallPending){p.guildCallPending=false;if(s.guildCall&&s.guildCall.expires>s.time){p.state='guildGuard';p.clock=0;for(const a of alive){a.state='guildGuard';a.path=[]}log(`${partyLabel(p)}が洞窟から徒歩で帰り、防衛招集に合流しました。`);continue}}guildDeliverQuest(p);autoLiquidateAdventurerLoot(p);sellEquipment(p);if(p.rallyOriginalIds)releaseOrdinaryBossAllies(p);if(p.fromSettlement){p.state='settled';p.exploreClock=0;for(const a of alive){a.state='settled';a.path=[]}log(`${partyLabel(p)}が定住先の宿へ帰還しました。`)}else handleTownStay(p)}}else if(p.state==='staying'){let reached=true;for(const a of alive){if(a.guest&&a.guestBedK>=0){a.state='staying';if(!visitorGo(a,a.guestBedK,dt))reached=false}}p.stayTravelTime=(p.stayTravelTime||0)+dt;if(reached||p.stayTravelTime>=16)p.clock-=dt;if(p.clock<=0){for(const a of alive){if(a.guest){restoreMp(a,55,true);a.hp=Math.min(a.maxHp,a.hp+50);a.sleep=Math.max(5,(a.sleep||40)-70)}else{restoreMp(a,18,true);a.hp=Math.min(a.maxHp,a.hp+Math.max(12,a.maxHp*.13));a.sleep=Math.max(5,(a.sleep||40)-35)}a.state='town';a.path=[];finishInnReview(a);a.guest=false;a.guestInnK=null;a.guestBedK=-1;}p.state='town';p.clock=4+rnd(8);log(`${partyLabel(p)}は村で休息し、再び冒険の準備を始めました。`)}}else if(p.state==='leaving'){if(groupDestination(p,dt,edge,'leaving')){p.state='away';p.nextVisitDay=s.day+s.minutes/1440+2+rnd(7);for(const a of alive){a.state='away';a.guest=false;a.guestBedK=-1;a.path=[];a.hp=Math.max(a.hp,a.maxHp*.7)}saveSoon()}}}
  if(s.parties.length>80){const permanent=s.parties.filter(p=>p.state==='settled'||p.fromSettlement||p.guildGuardReturn==='settled');const others=s.parties.filter(p=>!permanent.includes(p)&&(p.state!=='lost'&&p.state!=='away'||p.nextVisitDay>s.day-30)).slice(-80);s.parties=[...permanent,...others]} }
 
 let trackedCharacter=null,followRosterCache='',lastRosterUpdate=0;
@@ -5057,10 +5121,10 @@ function bossFightViable(floor,members){
  const boss=generateFloor(floor).monsters.find(m=>m.bossFloor===floor&&m.hp>0);
  if(!boss)return true;
  if(!party.length)return false;
- const damage=party.reduce((sum,a)=>sum+Math.max(2,attackDamage(a))*bossEquipmentDamageScale(a,boss,rangedProfile(a).type)*(a.expedition?.75:1),0);
+ const damage=party.reduce((sum,a)=>sum+Math.max(.5,attackDamage(a))*bossEquipmentDamageScale(a,boss,rangedProfile(a).type)*(a.expedition?.75:1),0);
  const totalHp=party.reduce((sum,a)=>sum+a.hp,0);
  const avgRatio=party.reduce((sum,a)=>sum+a.hp/Math.max(1,a.maxHp),0)/party.length;
- const expectedHit=6.8+floor*.46;
+ const expectedHit=(6.8+floor*.46)*COMBAT_ATTACK_SCALE;
  const turnsLeft=boss.hp/Math.max(1,damage);
  const survivableTurns=totalHp/(expectedHit*Math.max(1,1.2+party.length*.23));
  return avgRatio>.26&&turnsLeft<=survivableTurns*.85||boss.hp/Math.max(1,boss.maxHp)<.17&&avgRatio>.20&&turnsLeft<=survivableTurns*1.25;
@@ -5193,7 +5257,7 @@ function dungeonPartyCombatChoice(actor,enemy,floor,returning){
 }
 function stepDungeonActors(dt){maybeDungeonAlliances(dt);for(const p of [...s.parties]){if(p.state!=='exploring'||p.floor<1)continue;const members=partyMembers(p);if(!members.length)continue;const atGoal=partyAtGoal(p,dt,members);const isWaiting=bossAwaiting(p,members,dt);const waypoint=atGoal?'objective':p.phase==='returning'||isWaiting?'up':'down';if(atGoal){const d=generateFloor(p.floor);d.objective=d.rooms[Math.min(3,d.rooms.length-1)]||d.down;}const enemy=dungeonGroupEnemy(p,members,false,isWaiting);let all=true;for(const a of members){a.state='exploring';restoreMp(a,dt);usePotionInDungeon(a);hydrateDungeonActor(a,dt,p.floor);
  const personal=(p.phase!=='returning'&&!isWaiting)?nearestDungeonFiveMonster(a,p.floor):null;
- const chosen=personal||enemy;
+ const chosen=p.personalRetreat?null:(personal||enemy);
  const fight=dungeonPartyCombatChoice(a,chosen,p.floor,p.phase==='returning');
  if((a.sleep>=100||a.forcedSleep)&&!fight){a.forcedSleep=true;a.sleep=Math.max(0,a.sleep-dt*2.8);all=false;if(a.sleep<=70)a.forcedSleep=false;continue}
  if(fight){a.forcedSleep=false;dungeonMoveToEnemy(a,p.floor,chosen,dt,false);all=false;continue}
@@ -5201,7 +5265,7 @@ function stepDungeonActors(dt){maybeDungeonAlliances(dt);for(const p of [...s.pa
  if(atGoal||!actorReachedStairs(a,p.floor,waypoint,false))all=false}if(all)advanceDungeonGroup(p,members,false)}
  for(const g of [...s.residentGroups]){if(!['exploring','returning'].includes(g.phase))continue;const members=g.members.map(id=>s.npcs.find(n=>n.id===id)).filter(n=>n?.expedition);if(!members.length)continue;const isWaiting=bossAwaiting(g,members,dt);const waypoint=g.phase==='returning'||isWaiting?'up':'down';const enemy=dungeonGroupEnemy(g,members,true,isWaiting);let all=true;for(const n of members){n.expedition.floor=g.floor;restoreMp(n,dt);usePotionInDungeon(n);hydrateDungeonActor(n,dt,g.floor);
  const personal=(g.phase!=='returning'&&!isWaiting)?nearestDungeonFiveMonster(n,g.floor):null;
- const chosen=personal||enemy;
+ const chosen=g.personalRetreat?null:(personal||enemy);
  const fight=dungeonPartyCombatChoice(n,chosen,g.floor,g.phase==='returning');
  if((n.sleep>=100||n.expedition.forcedSleep)&&!fight){n.expedition.forcedSleep=true;n.sleep=Math.max(0,n.sleep-dt*2.8);all=false;if(n.sleep<=70)n.expedition.forcedSleep=false;continue}
  if(fight){n.expedition.forcedSleep=false;dungeonMoveToEnemy(n,g.floor,chosen,dt,true);all=false;continue}
@@ -5226,7 +5290,7 @@ function dungeonWarnPack(floor,hit,attacker){
  const d=generateFloor(floor),dp=attacker.expedition?.dungeonPos||attacker.dungeonPos;
  if(!dp)return;
  for(const m of d.monsters){if(!m||m.hp<=0||Math.abs(m.x-hit.x)>5||Math.abs(m.y-hit.y)>5)continue;
-  m.warnedActorId=attacker.id;m.warnUntil=s.time+16;m.moveClock=0;
+  m.warnedActorId=attacker.id;m.warnUntil=s.time+16;m.moveClock=0;if(m.bossFloor)m.bossEngagedUntil=s.time+16;
  }
 }
 
@@ -5242,11 +5306,38 @@ function dungeonMonsterStep(dt){
    const nearbyActors=actors.filter(a=>a.hp>0&&(!a.expedition||a.expedition.phase!=='waiting')).map(a=>({a,dp:a.expedition?.dungeonPos||a.dungeonPos})).filter(o=>o.dp?.floor===floor).sort((a,b)=>Math.hypot(m.x+.5-a.dp.x,m.y+.5-a.dp.y)-Math.hypot(m.x+.5-b.dp.x,m.y+.5-b.dp.y));
    const closest=nearbyActors[0],inRange=closest?nearbyActors.filter(o=>Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<=Math.hypot(m.x+.5-closest.dp.x,m.y+.5-closest.dp.y)+.85):[];
    let nearest=inRange.length?inRange[(m.targetTurn||0)%inRange.length]:null;if(m.warnUntil>s.time){const warned=nearbyActors.find(o=>o.a.id===m.warnedActorId);if(warned)nearest=warned;}
+   // Bosses are mobile once provoked. While idle, they return to their original stair landing.
+   if(m.bossFloor){
+    const canFight=nearbyActors.some(o=>bossTeamAllowedAt(floor,o.a));
+    const alarm=(m.warnUntil||0)>s.time||(m.bossEngagedUntil||0)>s.time;
+    const visible=nearbyActors.some(o=>Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<7.2&&bossTeamAllowedAt(floor,o.a));
+    const active=canFight&&(alarm||visible);
+    if(!active){
+     const home=dungeon.down,away=Math.hypot(m.x-home.cx,m.y-home.cy);
+     if(away>.2&&m.moveClock<=0){
+      m.moveClock=.40;
+      const path=dungeonPath(floor,{x:m.x+.5,y:m.y+.5},{x:home.cx+.5,y:home.cy+.5});
+      if(path.length){const k=path[0],nx=k%FLOOR_W,ny=Math.floor(k/FLOOR_W);
+       if(!dungeon.monsters.some(o=>o!==m&&o.x===nx&&o.y===ny)){m.x=nx;m.y=ny;}}
+     }
+     continue;
+    }
+    const frontline=nearbyActors.find(o=>rangedProfile(o.a).type==='melee'&&Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<=3.1);
+    const provoker=nearbyActors.find(o=>o.a.id===m.warnedActorId);
+    const ranged=nearbyActors.find(o=>rangedProfile(o.a).type!=='melee');
+    nearest=frontline||provoker||ranged||nearbyActors[0];
+   }
    if(!nearest)continue;const distTo=Math.hypot(m.x+.5-nearest.dp.x,m.y+.5-nearest.dp.y);
-   if(distTo<1.55&&(!m.bossFloor||bossTeamAllowedAt(floor,nearest.a))){
-    if(m.attackClock<=0){if(m.bossFloor){markBossFightStarted(floor,nearest.a);notifyBossBattle(nearest.a,floor,m.name||FLOOR_BOSS_NAMES[floor]);}m.attackClock=Math.max(.6,1.7-floor*.004);const a=nearest.a;m.targetTurn=(m.targetTurn||0)+1;const damage=(floor<=20?2.4+floor*.45:3.2+floor*.8)*difficultyRules().enemyDamage*(m.bossFloor?1.30*(floor<=10?1.15:floor<=20?1.35:2.1)*bossAttackScale(floor):(floor<=10?.65:floor<=20?.78:1))*(m.type?.75+monsterInfo[m.type].tier*.07:1)*random(.78,1.25)*defenseFactor(a);a.hp=Math.max(0,a.hp-damage);usePotionInDungeon(a);
+   if(distTo<1.55){
+    if(m.attackClock<=0){if(m.bossFloor){m.bossEngagedUntil=s.time+13;markBossFightStarted(floor,nearest.a);notifyBossBattle(nearest.a,floor,m.name||FLOOR_BOSS_NAMES[floor]);}m.attackClock=Math.max(.6,1.7-floor*.004);const a=nearest.a;m.targetTurn=(m.targetTurn||0)+1;const damage=(floor<=20?2.4+floor*.45:3.2+floor*.8)*COMBAT_ATTACK_SCALE*difficultyRules().enemyDamage*(m.bossFloor?1.30*(floor<=10?1.15:floor<=20?1.35:2.1)*bossAttackScale(floor):(floor<=10?.65:floor<=20?.78:1))*(m.type?.75+monsterInfo[m.type].tier*.07:1)*random(.78,1.25)*defenseFactor(a);a.hp=Math.max(0,a.hp-damage);usePotionInDungeon(a);
      if(a.expedition){if(a.hp<=0)checkResidentHealth(a);else if(a.hp/a.maxHp<.48&&a.healthAlert!==2)checkResidentHealth(a)}else if(a.hp<=0){recordAdventurerDeath(a,`洞窟 B${floor}F`,`${m.name||monsterInfo[m.type]?.name||'魔物'}の攻撃`);a.alive=false;a.state='dead';log(`☠ ${a.name}は洞窟B${floor}Fで魔物に倒されました。`)}
     }
+   }else if(m.bossFloor&&m.moveClock<=0){
+    // Chase the exposed back line rather than standing motionless under arrows.
+    m.moveClock=random(.36,.62);
+    const route=dungeonPath(floor,{x:m.x+.5,y:m.y+.5},nearest.dp);
+    if(route.length){const k=route[0],nx=k%FLOOR_W,ny=Math.floor(k/FLOOR_W);
+     if(!dungeon.monsters.some(o=>o!==m&&o.x===nx&&o.y===ny)){m.x=nx;m.y=ny;}}
    }else if(!m.bossFloor&&(distTo<8.5||m.warnUntil>s.time)&&m.moveClock<=0){
     m.moveClock=random(.35,.85);const route=dungeonPath(floor,{x:m.x+.5,y:m.y+.5},nearest.dp);
     if(route.length){const next=route[0],nx=next%FLOOR_W,ny=Math.floor(next/FLOOR_W);if(!dungeon.monsters.some(o=>o!==m&&o.x===nx&&o.y===ny)){m.x=nx;m.y=ny}}
@@ -5256,7 +5347,7 @@ function dungeonMonsterStep(dt){
    if(castHealingInDungeon(a,actors,floor)){a.dungeonAttackClock=MAGIC_TIERS[magicTier(a)].interval;continue}
    const profile=rangedProfile(a);
    const near=dungeon.monsters.filter(m=>(!m.bossFloor||bossTeamAllowedAt(floor,a))&&dungeonCanHit(dp,m,floor,profile.range)).sort((m,n)=>Math.hypot(m.x+.5-dp.x,m.y+.5-dp.y)-Math.hypot(n.x+.5-dp.x,n.y+.5-dp.y))[0];if(!near)continue;
-   if(near.bossFloor){markBossFightStarted(floor,a);notifyBossBattle(a,floor,near.name||FLOOR_BOSS_NAMES[floor]);}const shot=useCombatAttack(a,dp,near);a.dungeonAttackClock=shot.cooldown;near.hp-=Math.max(2,shot.damage*(shot.type==='melee'?.8:1)*bossEquipmentDamageScale(a,near,shot.type));if(shot.type!=='melee')spawnBattleEffect(dp.x,dp.y,near.x+.5,near.y+.5,shot.type,floor,true);dungeonWarnPack(floor,near,a);if(near.hp<=0){dungeon.monsters=dungeon.monsters.filter(m=>m!==near);if(near.bossFloor){onBossDefeated(near.bossFloor,a);addXP(a,160+near.bossFloor*5,!!a.expedition)}addXP(a,11+floor*.6,!!a.expedition);if(a.expedition)addSkillXP(a,'explore',6);if(!near.bossFloor){const kind=near.type||dungeonMonsterType(floor);for(const stack of monsterDropStacks(kind))collectDungeonLoot(a,stack.item,stack.qty)}}
+   if(near.bossFloor){markBossFightStarted(floor,a);notifyBossBattle(a,floor,near.name||FLOOR_BOSS_NAMES[floor]);}const shot=useCombatAttack(a,dp,near);a.dungeonAttackClock=shot.cooldown;near.hp-=Math.max(.25,shot.damage*(shot.type==='melee'?.8:1)*bossEquipmentDamageScale(a,near,shot.type));if(shot.type!=='melee')spawnBattleEffect(dp.x,dp.y,near.x+.5,near.y+.5,shot.type,floor,true);dungeonWarnPack(floor,near,a);if(near.hp<=0){dungeon.monsters=dungeon.monsters.filter(m=>m!==near);if(near.bossFloor){onBossDefeated(near.bossFloor,a);addXP(a,160+near.bossFloor*5,!!a.expedition)}addXP(a,11+floor*.6,!!a.expedition);if(a.expedition)addSkillXP(a,'explore',6);if(!near.bossFloor){const kind=near.type||dungeonMonsterType(floor);for(const stack of monsterDropStacks(kind))collectDungeonLoot(a,stack.item,stack.qty)}}
   }
  }
 }
@@ -5313,7 +5404,7 @@ function inspectDungeonCell(event){
   add('h4','dungeon-info-heading',`${monster.bossFloor?'👑 階層ボス':'👾 魔物'}　${monster.name||info?.name||'魔物'}`);
   row('レベル・系統',`Lv${Math.round(monster.level||selectedFloor)} ／ ${info?.family||'ボス'}`);row('HP',`${Math.ceil(monster.hp??maxHp)} / ${Math.ceil(maxHp)}`);
   row('危険度',`${info?.tier!=null?'ランク '+info.tier:'階層ボス'} ／ 地下${selectedFloor}階`);
-  const damage=(3.2+selectedFloor*.8)*difficultyRules().enemyDamage*(monster.bossFloor?2.1*1.30:1)*(info?.tier?(.75+info.tier*.07):1);
+  const damage=(3.2+selectedFloor*.8)*COMBAT_ATTACK_SCALE*difficultyRules().enemyDamage*(monster.bossFloor?2.1*1.30:1)*(info?.tier?(.75+info.tier*.07):1);
   row('攻撃力の目安',`約${damage.toFixed(1)}ダメージ/回（防御前）`);
   if(info){const drops=MONSTER_LOOT[monster.type]||[];row('主な素材',drops.length?drops.map(([id,low,high])=>`${itemInfo[id]?.[1]||id} ${low}～${high}`).join('、'):'討伐時に階層に応じた戦利品');}
   else row('特徴','10階ごとの強敵。討伐すると次の階層を開拓できます。');
@@ -6533,7 +6624,7 @@ function renderManagementAdventurers(body){
 }
 function renderManagementModal(){const body=el('managementBody');if(!body||!managementMode)return;body.replaceChildren();el('managementTitle').textContent=managementMode==='equipment'?'⚔ 住民全員の装備':managementMode==='warehouse'?'📦 拠点の収納・販売':managementMode==='adventurers'?'⚔ 冒険者名簿・全員一覧':'🧳 旅商人との取引';if(managementMode==='equipment')renderManagementEquipment(body);else if(managementMode==='warehouse')renderManagementWarehouse(body);else if(managementMode==='merchant')renderManagementMerchant(body);else if(managementMode==='adventurers')renderManagementAdventurers(body)}
 function setupManagementModal(){el('openEquipmentOverview').addEventListener('click',()=>openManagementModal('equipment'));el('openWarehouseOverview').addEventListener('click',()=>openManagementModal('warehouse'));el('openAdventurerRoster').addEventListener('click',()=>openManagementModal('adventurers'));el('managementClose').addEventListener('click',closeManagementModal);el('managementRefresh').addEventListener('click',renderManagementModal);el('managementModal').addEventListener('pointerdown',e=>{if(e.target.id==='managementModal')closeManagementModal()});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('managementModal').hidden){e.preventDefault();e.stopImmediatePropagation();closeManagementModal()}},true)}
-decorateBuildingIcons();setupQuickbar();setupCharacterModal();setupManagementModal();el('raidPrepPolicy')?.addEventListener('change',e=>raidPreparationChange(e.target.value));el('caveBattleStart')?.addEventListener('click',()=>guildSummon(6,s.npcs.filter(n=>n.hp>0&&!n.expedition&&!n.fieldQuestId&&!n.bossQuestReserved).map(n=>n.id)));el('caveBattleCancel')?.addEventListener('click',()=>{cancelGuildSummon();refreshAdventureUI()});window.simworldDebug={chooseTransfer,chooseAutomaticStorageTransfer,storageAvailableRoom,automaticStorageOrderValid,reconcileAutomaticStorageOrders,nextCargoDelivery,unloadAllCargoHere,findStorageFor,DUNGEON_MATERIAL_TABLE,dungeonMaterialUnlocked,dungeonMaterialWeight,guildGatherFloor,GUILD_ITEMS,buildGroundDrops,buildMaterialsAvailable,consumeBuildMaterials,afford,affordRepair,payRepair,takeRecipe,jobTick,monsterPerceptionHalfSize,monsterCanNoticeAt,hordePatrolGoal,localDefenseAttacker,localPersonAttacker,stepEmergencySurfaceDefense,stepLocalAdventurerDefense,stepSurfaceAdventurerCombat,nearestFiveTileMonster,nearestDungeonFiveMonster,reassessDestroyedLodging,adventurerPopulationTarget,activeAdventurerCount,archiveDeadAdventurers,stepAdventurers,rebuildDamagedIndex,caveGuardThreats,fieldQuestGuardPost,guildCallPosition,fieldRaidAttackRoute,fieldRaidBreachRoute,fieldRaidClearObstacle,fieldRaidMoveToEnemy,fieldQuestRecruitStep,fieldQuestRaidStep,startFieldQuestRaid,fieldQuestAttackKill,settleFieldQuestEarnings,finalizeFieldQuest,cancelFieldQuest,expeditionCompanions,partyFoodEnergy,partyWaterEnergy,consumeSharedFood,consumeSharedMedical,eatCaveRation,usePotionInDungeon,guildSummon,cancelGuildSummon,stepGuildCallResidents,maybeStartRaidPreparation,stepRaidPreparationFieldwork,raidPreparationBlocksDeparture,raidPreparationChange,raidPreparationActive,raidPreparationRequestsRetreat,applyRaidPreparation,caveRaidBattleMonsters,summonCost,postGuildQuest,markMonsterSurfaceAggro,guildReady,buildSaveData,load,travelFoodEnergyTarget,adventurerFoodEnergy,travelFoodUsableQty,bossFightViable,markBossFightStarted,toggleFarmSelection,setFarmCrop,getSelectedFarms:()=>[...selectedFarms],marketPurchase,prepareOrdinaryBossRally,stepOrdinaryBossRally,recruitOrdinaryBossAllies,releaseOrdinaryBossAllies,travelFoodEnergyTarget,adventurerFoodEnergy,buyAdventurerTravelRations,travelFoodStock,bossQuestFloorAvailable,bossQuestRecruitStep,startBossQuestRaid,bossRaidActors,stepBossRaids,bossQuestBossDefeated,setBossQuestResident,dungeonGroupEnemy,dungeonMoveToEnemy,dungeonPartyCombatChoice,bossAwaiting,partyAtGoal,openManagementModal,closeManagementModal,renderManagementModal,warehouseItems,toggleWarehouseSale,triggerSpikeTrap,monsterStep,triggerFieldEvent,pickupTravelDrops,guildQuestViable,guildPartyCombatRating,guildDeliverQuest,cancelGuildQuest,guildReportQuest,renderAdventurerProfile,RESIDENT_PROFILES,selectInitialResidentPresets,renderDebugResidentSelection,spawnNPC,RESIDENT_PRESETS,repairResidentAppearances,residentPresetAppearance,drawResidentAvatarCanvas,bfs,chooseRest,beginRest,renderResidentDetail,inspectMapTile,defaultHotbar,normalizeHotbar,renderQuickbar,activateHotbarSlot,setHotbarSlot,autoLiquidateAdventurerLoot,adventurerLootIsPersonal,stepNPC,availableProduction,productionStage,advanceProduction,processProductionTask,productionStaging:()=>s.productionStaging,guildRewardEstimate,drawNightLights,guildState:()=>({quests:s.guildQuests,registry:s.guildRegistry,departures:s.settlementDepartures,call:s.guildCall}),recordSettlementDeparture,leaveSettlement,renderGuildSettlementRoster,guildRegister,guildAssignQuest,guildDeliverQuest,guildSummon,postGuildQuest,guildDailySettlement,guildOfferSettlement,guildReady,guildRooms,guildMonsterKilled,guildStepSettledParty,inspectTile,spawnParty,newDay,simulate,buildSaveData,load,fieldMonsterWeights,rollFieldMonster,raidMonsterType,bowPerformance,lightLevel,triggerFieldEvent,monsterInfo,MONSTER_LOOT,itemInfo,recipe,gearItems,productionRecipes,EXTRA_BUILDINGS,EXTRA_EQUIPMENT,EXTRA_MATERIALS,chooseDungeonLoot,priceFor,stepDungeonActors,dungeonMonsterStep,recordTrade,renderTradeHistory,bossTeamMinimum,bossTeamReady,bossAwaiting,showBossVictory,hasBossDefeated,structureUnlocked,onBossDefeated,maybeDungeonAlliances,partyAtGoal,adventureGoalFloor,renderRetreatEditor,residentRetreatState,refreshBuildTools,showBuildCategory,triggerCaveRaid,spawnMerchant,stepMerchant,merchantBuy,merchantSell,renderMerchantUI,marketPurchase,salesStock,takeFromSales,demolishMonsterTarget,restaurantMenuPrice,skillMultiplier,addSkillXP,skillNeed,storageAccepts,chooseTransfer,nextExtraPickup,usePotionInDungeon,toggleStorageSelection,getStorageRules:()=>s.storageRules,storagePermissionGroups,activeStorageSelection,getTransferOrders:()=>s.transferOrders,render,chooseFarm,farmTick,growFarms,purchaseLoot,roomStockSpace,putRoomGoods,pushAlert,checkResidentHealth,audioSettings,applyRectSelection,chooseGather,chooseBuild,bfs,claimTask,chooseHaul,chooseEmergencyFood,assignNext,simulate,focusTile,discoverCave:()=>{s.cave.revealed=true;refreshUI()},spawnVisitors:()=>spawnParty(true),setGold:v=>{s.gold=v;refreshUI()},getDungeon:floor=>generateFloor(floor),maxCarry,carriedWeight,foodRemainingPct,shouldRetreat,buyTravelFood,placeAtStairs,advanceDungeonGroup,productionRecipes,stationOrders,availableProduction,dungeonPath,getResidentGroups:()=>s.residentGroups,getState:()=>s,recruitTarget,recruitMeanDays,recruitmentSignKeys,residentRecruitmentDay,recruitSpawnCell,isRiverCell,isPoweredAt,GENERATOR_SIZES,isManaGenerator,generatorBounds,refreshWaterFacilities,totalWaterAvailable,takeTownWater,waterWorldStep,waterVesselInfo,handleResidentDrinking,hydrateDungeonActor,refreshResidents,renderResidents:refreshResidents,place,inspectTile,finishOpening,sellRoomGoods,lodgings,getCounter,goodsInRoom,dropStorageContents,spawnMonster,setStat:(id,key,v)=>{const n=s.npcs[id];if(n&&STAT_KEYS.includes(key)){n.stats[key]=clamp(Number(v)||1,1,100);refreshResidents();saveSoon()}},visitorInterval,step:(seconds)=>{for(let i=0;i<Math.ceil(seconds/.05);i++)simulate(Math.min(.05,seconds-i*.05));refreshUI()},reset,place,spawnAnimal,addDrop,storeAt,ageStack,mergeStacks,freshStack,updateInventory,saveNow,setResidentEquipment,roomLuxury,innBudget,chooseLodging,counterPrice,sensiblePurchase,handleTownStay,openRestaurants,restaurantMenus,serveRestaurant,recordReview,reviewAverage,spawnTourist,stepTourists,orderedStorageKeys,storagePriority,renderTouristUI,getRooms,roomAt,restaurantChoice,chooseResidentRestaurant,chooseBlockedBuildHarvest};
+decorateBuildingIcons();setupQuickbar();setupCharacterModal();setupManagementModal();el('raidPrepPolicy')?.addEventListener('change',e=>raidPreparationChange(e.target.value));el('caveBattleStart')?.addEventListener('click',()=>guildSummon(6,s.npcs.filter(n=>n.hp>0&&!n.expedition&&!n.fieldQuestId&&!n.bossQuestReserved).map(n=>n.id)));el('caveBattleCancel')?.addEventListener('click',()=>{cancelGuildSummon();refreshAdventureUI()});window.simworldDebug={assessIndividualDungeonRetreat,separateRetreatingResident,separateRetreatingAdventurer,separateBossRaidRetreater,handleTownStay,attackDamage,COMBAT_ATTACK_SCALE,chooseTransfer,chooseAutomaticStorageTransfer,storageAvailableRoom,automaticStorageOrderValid,reconcileAutomaticStorageOrders,nextCargoDelivery,unloadAllCargoHere,findStorageFor,DUNGEON_MATERIAL_TABLE,dungeonMaterialUnlocked,dungeonMaterialWeight,guildGatherFloor,GUILD_ITEMS,buildGroundDrops,buildMaterialsAvailable,consumeBuildMaterials,afford,affordRepair,payRepair,takeRecipe,jobTick,monsterPerceptionHalfSize,monsterCanNoticeAt,hordePatrolGoal,localDefenseAttacker,localPersonAttacker,stepEmergencySurfaceDefense,stepLocalAdventurerDefense,stepSurfaceAdventurerCombat,nearestFiveTileMonster,nearestDungeonFiveMonster,reassessDestroyedLodging,adventurerPopulationTarget,activeAdventurerCount,archiveDeadAdventurers,stepAdventurers,rebuildDamagedIndex,caveGuardThreats,fieldQuestGuardPost,guildCallPosition,fieldRaidAttackRoute,fieldRaidBreachRoute,fieldRaidClearObstacle,fieldRaidMoveToEnemy,fieldQuestRecruitStep,fieldQuestRaidStep,startFieldQuestRaid,fieldQuestAttackKill,settleFieldQuestEarnings,finalizeFieldQuest,cancelFieldQuest,expeditionCompanions,partyFoodEnergy,partyWaterEnergy,consumeSharedFood,consumeSharedMedical,eatCaveRation,usePotionInDungeon,guildSummon,cancelGuildSummon,stepGuildCallResidents,maybeStartRaidPreparation,stepRaidPreparationFieldwork,raidPreparationBlocksDeparture,raidPreparationChange,raidPreparationActive,raidPreparationRequestsRetreat,applyRaidPreparation,caveRaidBattleMonsters,summonCost,postGuildQuest,markMonsterSurfaceAggro,guildReady,buildSaveData,load,travelFoodEnergyTarget,adventurerFoodEnergy,travelFoodUsableQty,bossFightViable,markBossFightStarted,toggleFarmSelection,setFarmCrop,getSelectedFarms:()=>[...selectedFarms],marketPurchase,prepareOrdinaryBossRally,stepOrdinaryBossRally,recruitOrdinaryBossAllies,releaseOrdinaryBossAllies,travelFoodEnergyTarget,adventurerFoodEnergy,buyAdventurerTravelRations,travelFoodStock,bossQuestFloorAvailable,bossQuestRecruitStep,startBossQuestRaid,bossRaidActors,stepBossRaids,bossQuestBossDefeated,setBossQuestResident,dungeonGroupEnemy,dungeonMoveToEnemy,dungeonPartyCombatChoice,bossAwaiting,partyAtGoal,openManagementModal,closeManagementModal,renderManagementModal,warehouseItems,toggleWarehouseSale,triggerSpikeTrap,monsterStep,triggerFieldEvent,pickupTravelDrops,guildQuestViable,guildPartyCombatRating,guildDeliverQuest,cancelGuildQuest,guildReportQuest,renderAdventurerProfile,RESIDENT_PROFILES,selectInitialResidentPresets,renderDebugResidentSelection,spawnNPC,RESIDENT_PRESETS,repairResidentAppearances,residentPresetAppearance,drawResidentAvatarCanvas,bfs,chooseRest,beginRest,renderResidentDetail,inspectMapTile,defaultHotbar,normalizeHotbar,renderQuickbar,activateHotbarSlot,setHotbarSlot,autoLiquidateAdventurerLoot,adventurerLootIsPersonal,stepNPC,availableProduction,productionStage,advanceProduction,processProductionTask,productionStaging:()=>s.productionStaging,guildRewardEstimate,drawNightLights,guildState:()=>({quests:s.guildQuests,registry:s.guildRegistry,departures:s.settlementDepartures,call:s.guildCall}),recordSettlementDeparture,leaveSettlement,renderGuildSettlementRoster,guildRegister,guildAssignQuest,guildDeliverQuest,guildSummon,postGuildQuest,guildDailySettlement,guildOfferSettlement,guildReady,guildRooms,guildMonsterKilled,guildStepSettledParty,inspectTile,spawnParty,newDay,simulate,buildSaveData,load,fieldMonsterWeights,rollFieldMonster,raidMonsterType,bowPerformance,lightLevel,triggerFieldEvent,monsterInfo,MONSTER_LOOT,itemInfo,recipe,gearItems,productionRecipes,EXTRA_BUILDINGS,EXTRA_EQUIPMENT,EXTRA_MATERIALS,chooseDungeonLoot,priceFor,stepDungeonActors,dungeonMonsterStep,recordTrade,renderTradeHistory,bossTeamMinimum,bossTeamReady,bossAwaiting,showBossVictory,hasBossDefeated,structureUnlocked,onBossDefeated,maybeDungeonAlliances,partyAtGoal,adventureGoalFloor,renderRetreatEditor,residentRetreatState,refreshBuildTools,showBuildCategory,triggerCaveRaid,spawnMerchant,stepMerchant,merchantBuy,merchantSell,renderMerchantUI,marketPurchase,salesStock,takeFromSales,demolishMonsterTarget,restaurantMenuPrice,skillMultiplier,addSkillXP,skillNeed,storageAccepts,chooseTransfer,nextExtraPickup,usePotionInDungeon,toggleStorageSelection,getStorageRules:()=>s.storageRules,storagePermissionGroups,activeStorageSelection,getTransferOrders:()=>s.transferOrders,render,chooseFarm,farmTick,growFarms,purchaseLoot,roomStockSpace,putRoomGoods,pushAlert,checkResidentHealth,audioSettings,applyRectSelection,chooseGather,chooseBuild,bfs,claimTask,chooseHaul,chooseEmergencyFood,assignNext,simulate,focusTile,discoverCave:()=>{s.cave.revealed=true;refreshUI()},spawnVisitors:()=>spawnParty(true),setGold:v=>{s.gold=v;refreshUI()},getDungeon:floor=>generateFloor(floor),maxCarry,carriedWeight,foodRemainingPct,shouldRetreat,buyTravelFood,placeAtStairs,advanceDungeonGroup,productionRecipes,stationOrders,availableProduction,dungeonPath,getResidentGroups:()=>s.residentGroups,getState:()=>s,recruitTarget,recruitMeanDays,recruitmentSignKeys,residentRecruitmentDay,recruitSpawnCell,isRiverCell,isPoweredAt,GENERATOR_SIZES,isManaGenerator,generatorBounds,refreshWaterFacilities,totalWaterAvailable,takeTownWater,waterWorldStep,waterVesselInfo,handleResidentDrinking,hydrateDungeonActor,refreshResidents,renderResidents:refreshResidents,place,inspectTile,finishOpening,sellRoomGoods,lodgings,getCounter,goodsInRoom,dropStorageContents,spawnMonster,setStat:(id,key,v)=>{const n=s.npcs[id];if(n&&STAT_KEYS.includes(key)){n.stats[key]=clamp(Number(v)||1,1,100);refreshResidents();saveSoon()}},visitorInterval,step:(seconds)=>{for(let i=0;i<Math.ceil(seconds/.05);i++)simulate(Math.min(.05,seconds-i*.05));refreshUI()},reset,place,spawnAnimal,addDrop,storeAt,ageStack,mergeStacks,freshStack,updateInventory,saveNow,setResidentEquipment,roomLuxury,innBudget,chooseLodging,counterPrice,sensiblePurchase,handleTownStay,openRestaurants,restaurantMenus,serveRestaurant,recordReview,reviewAverage,spawnTourist,stepTourists,orderedStorageKeys,storagePriority,renderTouristUI,getRooms,roomAt,restaurantChoice,chooseResidentRestaurant,chooseBlockedBuildHarvest};
 })();
 
 
