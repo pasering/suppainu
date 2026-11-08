@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.27 — 撤去素材返却・宿屋評価・冒険者来訪を改善</title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.28 — 洞窟パーティ撤退・殲滅戦退避・旅商人通知</title><style>
 
 
 :root{color-scheme:dark;--bg:#0e1719;--panel:#172325;--panel2:#1c2b2b;--panel3:#233331;--line:#344842;--text:#f1eddd;--muted:#a7b2a7;--accent:#e8c481;--teal:#8ac6ab;--red:#e59b83;--shadow:0 14px 45px #07101080}
@@ -308,7 +308,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
 @media(max-width:650px){.manager-table th:nth-child(3),.manager-table td:nth-child(3){display:none}.management-body{padding:7px}.manager-table select{max-width:130px}}
 .manager-category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:5px 0;border-bottom:1px solid #496353}.manager-category-tab{background:#213a31;border:1px solid #53745c;color:#cfdfd4;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer}.manager-category-tab.active{background:#755c35;color:#fff2c8;border-color:#dfbc76}.manager-category-tab:hover{border-color:#b5b88b}</style></head><body>
 <div class="page">
- <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.27</span></div></header>
+ <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.28</span></div></header>
  <div class="layout"><main class="workspace"><div class="panel">
   <div class="canvas-head"><div class="location">✥ はじまりの草原 <span class="subplace">/ 広域ファンタジー開拓地</span></div><div class="clock" id="clock">DAY 01　08:00</div></div>
   <div class="canvas-shell" id="canvasShell"><canvas id="world" aria-label="マス目状の開拓地。建築ツールを選び、クリックまたはドラッグして設計できます"></canvas>
@@ -3197,6 +3197,7 @@ function bossRaidActors(raid){
 }
 function bossRaidBeginRetreat(raid,reason){
  if(!raid||['returning','toTown','finished'].includes(raid.phase))return;
+ for(const {actor} of bossRaidActors(raid))actor.dungeonHold=false;
  raid.phase=raid.floor>0?'returning':'toTown';raid.failed=true;
  for(const {actor,resident} of bossRaidActors(raid)){if(resident&&actor.expedition)actor.expedition.phase='returning';else actor.state='bossRaid';}
  if(reason)log(`↩ ${guildQuestTitle(s.guildQuests.find(q=>q.id===raid.questId)||{kind:'boss',target:raid.targetFloor})}：${reason}ため撤退します。`);
@@ -3296,14 +3297,9 @@ function stepBossRaids(dt){
   const floor=raid.floor;
   for(const {actor} of roster){restoreMp(actor,dt);usePotionInDungeon(actor);hydrateDungeonActor(actor,dt,floor);actor.hunger=clamp((actor.hunger||0)+dt*(actor.expedition?.34:.17),0,100);actor.sleep=clamp((actor.sleep||0)+dt*.22,0,100);if(actor.hunger>=100)actor.hp=Math.max(0,actor.hp-dt*.18);eatCaveRation(actor)}
   if(raid.phase==='exploring'){
-   const healthy=roster.filter(o=>o.actor.hp>0);
-   const retreaters=healthy.filter(o=>shouldRetreat(o.actor));
-   if(retreaters.length&&retreaters.length===healthy.length){bossRaidBeginRetreat(raid,'全員が撤退条件に達した');}
-   else if(retreaters.length){
-    for(const member of retreaters)separateBossRaidRetreater(raid,member);
-    roster=bossRaidActors(raid);actors=roster.map(x=>x.actor);
-    if(!roster.length){bossRaidBeginRetreat(raid,'全員が離脱した');continue;}
-   }
+   for(const {actor} of roster){if(dungeonWounded(actor))actor.dungeonHold=true;else if(actor.dungeonHold&&dungeonReadyAgain(actor))actor.dungeonHold=false;}
+   if(dungeonTeamAllCritical(actors))bossRaidBeginRetreat(raid,'全員が危険なHPになった');
+   else if(!dungeonNearbyBattle(raid,actors)&&dungeonTeamMustReturn(actors))bossRaidBeginRetreat(raid,'戦闘後に負傷者を連れて帰還する');
   }
   if(raid.phase==='exploring'&&floor===raid.targetFloor&&!bossIsAlive(floor)){bossRaidBeginRetreat(raid,'ボスがいない');}
   const retreat=raid.phase==='returning',waypoint=retreat?'up':'down';
@@ -3311,8 +3307,9 @@ function stepBossRaids(dt){
   if(!retreat&&floor===raid.targetFloor){const boss=generateFloor(floor).monsters.find(m=>m.bossFloor===floor&&m.hp!==0);if(boss)enemy=boss}
   let all=true;
   for(const {actor,resident} of roster){if(actor.hp<=0)continue;
-   const personal=!retreat?nearestDungeonFiveMonster(actor,floor):null;
+   const personal=nearestDungeonFiveMonster(actor,floor);
    const chosen=personal||enemy;
+   if(!retreat&&actor.dungeonHold){dungeonHoldPosition(actor,floor,chosen,dt,resident,actors);all=false;continue;}
    if(chosen&&dungeonPartyCombatChoice(actor,chosen,floor,retreat)){
     dungeonMoveToEnemy(actor,floor,chosen,dt,resident);all=false;continue;
    }
@@ -3600,15 +3597,27 @@ function cancelGuildSummon(completed=false){
  for(const id of s.guildCall.residentIds||[]){const n=s.npcs.find(n=>n.id===id);if(n){n.guildCallReserved=false;n.state='idle';n.path=[];n.cooldown=1}}
  if(s.tool===58)selectTool(-1);s.guildCall=null;log(completed?'🛡️ 殲滅戦を終了しました。':'⚔️ 殲滅戦を中止しました。支払い済みの報酬は返金されません。');saveSoon();return true;
 }
+function startGuildGuardEscape(actor,monster){
+ const tree=bfs(actor);
+ if(!startSurfaceEscape(actor,monster,tree,'殲滅戦で負傷'))return false;
+ actor.surfaceEscape.mode='home';
+ actor.surfaceEscape.target=surfaceEscapeHome(actor,tree);
+ actor.path=[];
+ return true;
+}
 function stepGuildCallResidents(dt){
  if(!s.guildCall)return;
  if(s.time>=s.guildCall.expires){cancelGuildSummon();return}
  const targets=caveRaidBattleMonsters();
  if(!targets.length){log('🛡️ 洞窟入口周辺の殲滅戦が終了しました。');pushAlert('🛡️ 洞窟入口周辺の魔物を撃退しました','success',null,s.cave.entrance);cancelGuildSummon(true);return;}
  for(const id of s.guildCall.residentIds||[]){const n=s.npcs.find(n=>n.id===id);if(!n||n.hp<=0||n.expedition)continue;
-  if(surfaceActorEscaping(n))continue;
+  if(surfaceActorEscaping(n)||(n.guildWithdrawUntil||0)>s.time)continue;
   const m=nearestFiveTileMonster(n)||localDefenseAttacker(n,n.localDefenseTargetId)||caveBattleTarget(n);
-  if(m){if(localDefenseLifeRisk(n,m)){retreatLocalDefender(n,m,bfs(n));continue;}
+  if(n.hp/Math.max(1,n.maxHp)<=.34){
+   n.guildWithdrawUntil=s.guildCall.expires;
+   startGuildGuardEscape(n,m);continue;
+  }
+  if(m){if(localDefenseLifeRisk(n,m)){n.guildWithdrawUntil=s.guildCall.expires;startGuildGuardEscape(n,m);continue;}
    if(n.task?.kind!=='fight'||n.task.key!==m.id)startFight(n,m);
    if(n.task?.kind==='fight'){
     if(surfaceCanHit(n,m)){n.path=[];n.state='working';jobTick(n,dt)}
@@ -3624,9 +3633,12 @@ function stepGuildCallResidents(dt){
 }
 function guildGuardParty(p,dt){if(!s.guildCall||s.time>=s.guildCall.expires){p.state=p.guildGuardReturn==='settled'?'settled':'town';p.clock=5;for(const a of partyMembers(p)){a.state=p.state;a.path=[]}return}
  for(const a of partyMembers(p)){
-  if(a.localDefenseTargetId||(a.localDefenseFleeUntil||0)>s.time||surfaceActorEscaping(a))continue;
+  if(a.localDefenseTargetId||(a.localDefenseFleeUntil||0)>s.time||surfaceActorEscaping(a)||(a.guildWithdrawUntil||0)>s.time)continue;
   a.state='guildGuard';const m=caveBattleTarget(a);
-  if(m&&localDefenseLifeRisk(a,m)){startSurfaceEscape(a,m,bfs(a),'殲滅戦で負傷');continue}
+  if(a.hp/Math.max(1,a.maxHp)<=.34||(m&&localDefenseLifeRisk(a,m))){
+   a.guildWithdrawUntil=s.guildCall.expires;
+   startGuildGuardEscape(a,m);continue;
+  }
   if(m){const route=groundCombatApproach(a,m,bfs(a));if(route){if(!surfaceCanHit(a,m))visitorGo(a,route.destination,dt);else a.path=[];continue}if(fieldRaidMoveToEnemy(a,[m],dt))continue;}
   visitorGo(a,s.cave.entrance,dt);
  }
@@ -4472,31 +4484,62 @@ function exploreTick(n,dt){if(!s.cave.revealed){cancelTask(n);return}const k=s.c
  let group=s.residentGroups.find(g=>g.phase==='waiting'&&g.members.length<4&&s.time<g.departAt);
  if(!group){group={id:s.nextResidentGroupId++,members:[],phase:'waiting',departAt:s.time+6.5,floor:1,clock:0,elapsed:0,waves:0};s.residentGroups.push(group)}
  group.members.push(n.id);n.expedition={floor:1,groupId:group.id,phase:'waiting',clock:0,loot:{},rations:{},elapsed:0,steps:0};provisionResident(n);n.state='exploring';log(`${n.name}が洞窟入口で${group.members.length>1?'仲間と合流しました':'同行者を待っています'}。`);saveSoon()}
-// An injured explorer can retreat alone; healthy companions keep their mission.
-function separateRetreatingResident(group,n){
- if(group.phase!=='exploring'||!n.expedition||!group.members.includes(n.id))return false;
- group.members=group.members.filter(id=>id!==n.id);
- const home={id:s.nextResidentGroupId++,members:[n.id],phase:'returning',floor:group.floor,clock:0,elapsed:group.elapsed||0,waves:0,bossDepartureCount:1,personalRetreat:true};
- n.expedition.groupId=home.id;n.expedition.phase='returning';
- const dp=n.expedition.dungeonPos;if(dp){dp.target=-1;dp.path=[];}
- s.residentGroups.push(home);log(`↩ ${n.name}は負傷・物資不足のため単独で帰還します。`);saveSoon();return true;
+// Cave parties stay together: an injured member withdraws from the fighting,
+// not from the group. The whole party walks home after the battle if needed.
+function dungeonHpRatio(actor){return Math.max(0,actor.hp||0)/Math.max(1,actor.maxHp||1)}
+function dungeonWounded(actor){return dungeonHpRatio(actor)<=Math.min(.49,Math.max(.30,retreatAt(actor)/100))}
+function dungeonReadyAgain(actor){return dungeonHpRatio(actor)>=Math.max(.66,Math.min(.82,retreatAt(actor)/100+.20))}
+function dungeonTeamAllCritical(members){return members.length>0&&members.every(a=>a.hp>0&&dungeonHpRatio(a)<=.32)}
+function dungeonTeamMustReturn(members){return members.some(a=>a.hp>0&&(shouldRetreat(a)||a.dungeonHold));}
+function dungeonNearbyBattle(group,members){
+ const floor=group.floor,d=generateFloor(floor),points=members.map(a=>a.expedition?.dungeonPos||a.dungeonPos).filter(dp=>dp?.floor===floor);
+ if(!points.length)return false;
+ return d.monsters.some(m=>m.hp>0&&(!m.bossFloor||group.bossEngagedFloor===floor||bossTeamReady(group,members))&&points.some(dp=>Math.hypot(m.x+.5-dp.x,m.y+.5-dp.y)<6.0));
 }
-function separateRetreatingAdventurer(group,a){
- if(group.phase!=='exploring'||!group.ids.includes(a.id))return false;
- group.ids=group.ids.filter(id=>id!==a.id);
- if(group.rallyOriginalIds)group.rallyOriginalIds=group.rallyOriginalIds.filter(id=>id!==a.id);
- for(const q of s.parties)if(q!==group&&q.rallyLeaderId===group.id&&q.ids.includes(a.id))q.ids=q.ids.filter(id=>id!==a.id);
- const home={id:s.nextPartyId++,ids:[a.id],state:'exploring',phase:'returning',floor:group.floor,clock:0,elapsed:group.elapsed||0,fromSettlement:!!group.fromSettlement,goal:'gather',targetFloor:group.floor,personalRetreat:true,bossDepartureCount:1};
- a.partyId=home.id;a.state='exploring';if(a.dungeonPos){a.dungeonPos.target=-1;a.dungeonPos.path=[];}
- s.parties.push(home);log(`↩ ${a.name}は負傷・物資不足のため単独で帰還します。`);saveSoon();return true;
+function dungeonHoldPosition(actor,floor,enemy,dt,resident,team=[]){
+ if(!enemy)return;
+ const point=actor.expedition?.dungeonPos||actor.dungeonPos;
+ if(!point||point.floor!==floor)return;
+ const distance=Math.hypot(point.x-enemy.x-.5,point.y-enemy.y-.5);
+ if(distance>=4.2){point.holdPath=[];return;} // safe: stay near the party
+ if(point.holdPath?.length&&s.time<(point.holdRecalcAt||0)){
+  const k=point.holdPath[0],tx=k%FLOOR_W+.5,ty=Math.floor(k/FLOOR_W)+.5;
+  const dist=Math.hypot(tx-point.x,ty-point.y),step=Math.min(dist,dt*clamp(1.3+(actor.stats?.agility||10)*.037,1.2,5.1));
+  if(dist>.001){point.x+=(tx-point.x)/dist*step;point.y+=(ty-point.y)/dist*step;}
+  if(dist<=step+.001)point.holdPath.shift();point.anim=(point.anim||0)+dt*6;return;
+ }
+ const d=generateFloor(floor), allies=team.filter(a=>a!==actor&&a.hp>0&&(a.expedition?.dungeonPos||a.dungeonPos)?.floor===floor);
+ const closest=allies.filter(a=>!(a.dungeonHold)).sort((a,b)=>{const p=a.expedition?.dungeonPos||a.dungeonPos,q=b.expedition?.dungeonPos||b.dungeonPos;return Math.hypot(p.x-point.x,p.y-point.y)-Math.hypot(q.x-point.x,q.y-point.y)})[0];
+ const ally=closest?.expedition?.dungeonPos||closest?.dungeonPos;
+ let best=null;
+ for(let y=Math.max(1,Math.floor(point.y)-7);y<Math.min(FLOOR_H-1,Math.floor(point.y)+8);y++)for(let x=Math.max(1,Math.floor(point.x)-7);x<Math.min(FLOOR_W-1,Math.floor(point.x)+8);x++){
+  if(d.cells[y*FLOOR_W+x]==='#')continue;
+  const away=Math.hypot(x-enemy.x,y-enemy.y),together=ally?Math.hypot(x+.5-ally.x,y+.5-ally.y):0;
+  if(away<4.4||together>7.5)continue;
+  const route=dungeonPath(floor,point,{x:x+.5,y:y+.5});if(!route.length)continue;
+  const score=route.length+Math.max(0,together-3)*1.6+Math.abs(away-5.7)*.5;
+  if(!best||score<best.score)best={x,y,route,score};
+ }
+ if(!best)return;
+ point.holdPath=best.route;point.holdRecalcAt=s.time+3;
+ const k=point.holdPath[0],tx=k%FLOOR_W+.5,ty=Math.floor(k/FLOOR_W)+.5;
+ const dist=Math.hypot(tx-point.x,ty-point.y),step=Math.min(dist,dt*clamp(1.3+(actor.stats?.agility||10)*.037,1.2,5.1));
+ if(dist>.001){point.x+=(tx-point.x)/dist*step;point.y+=(ty-point.y)/dist*step;}
+ if(dist<=step+.001)point.holdPath.shift();point.anim=(point.anim||0)+dt*6;
 }
 function assessIndividualDungeonRetreat(group,actors,resident){
  if(group.phase!=='exploring'||!actors.length)return;
- const retreaters=actors.filter(a=>a.hp>0&&shouldRetreat(a));
- if(!retreaters.length)return;
- if(retreaters.length===actors.filter(a=>a.hp>0).length){beginDungeonRetreat(group,actors);return;}
- for(const a of retreaters){if(resident)separateRetreatingResident(group,a);else separateRetreatingAdventurer(group,a);}
+ for(const actor of actors){
+  if(dungeonWounded(actor))actor.dungeonHold=true;
+  else if(actor.dungeonHold&&dungeonReadyAgain(actor))actor.dungeonHold=false;
+ }
+ if(dungeonTeamAllCritical(actors)){beginDungeonRetreat(group,actors);return;}
+ // Nobody separates while an encounter is underway.
+ if(dungeonNearbyBattle(group,actors))return;
+ if(dungeonTeamMustReturn(actors)){beginDungeonRetreat(group,actors);for(const a of actors)a.dungeonHold=false;}
 }
+function separateRetreatingResident(){return false}
+function separateRetreatingAdventurer(){return false}
 function stepResidentExpeditions(dt){
  for(const n of s.npcs){if(n.expedition&&!n.expedition.bossQuestId&&!s.residentGroups.some(g=>g.members.includes(n.id))){const g={id:s.nextResidentGroupId++,members:[n.id],bossDepartureCount:1,phase:n.expedition.phase==='returning'?'returning':'exploring',departAt:s.time,floor:n.expedition.floor||1,clock:0,elapsed:n.expedition.elapsed||0,waves:0};s.residentGroups.push(g);n.expedition.groupId=g.id}}
  for(const g of [...s.residentGroups]){
@@ -4797,20 +4840,57 @@ function stepTourists(dt){if(!touristFacilitiesReady()){s.touristClock=0}else{s.
 
 // Travelling merchants arrive from the map edge and trade with the player at fixed market prices.
 const MERCHANT_NAMES=['行商人ガルド','旅商人ラヴィ','行商人セシル','旅商人モルン','行商人エリー'];
+function merchantGuildMeetingPoint(merchant){
+ const boards=guildBoardKeys(),fallback=idx(CX-7,CY+4);
+ if(!boards.length)return fallback;
+ const tree=bfs(merchant);let best=null;
+ for(const board of boards){const center=pos(board);
+  for(let dy=-6;dy<=6;dy++)for(let dx=-6;dx<=6;dx++){
+   const distance=Math.hypot(dx,dy);if(distance<2.5||distance>6.3)continue;
+   const x=center.x+dx,y=center.y+dy;if(!valid(x,y))continue;
+   const k=idx(x,y);if(!passable(k)||s.structures[k]||isRiverCell(x,y))continue;
+   const route=access(tree,k,true);if(!route)continue;
+   const score=distance+route.distance*.045;
+   if(!best||score<best.score)best={k,score};
+  }
+ }
+ return best?.k??fallback;
+}
+function merchantBrowseNearby(m,dt){
+ if(s.time>=(m.nextWanderAt||0)||!Number.isInteger(m.wanderK)){
+  const home=pos(m.marketK),tree=bfs(m),choices=[];
+  for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+   const x=home.x+dx,y=home.y+dy;if(!valid(x,y)||Math.hypot(dx,dy)>4.5)continue;
+   const k=idx(x,y);if(!passable(k)||s.structures[k]||tree.dist[k]<0)continue;
+   choices.push(k);
+  }
+  m.wanderK=choices.length?choices[rnd(choices.length)]:m.marketK;
+  m.nextWanderAt=s.time+random(8,16);
+ }
+ if(m.wanderK>=0)visitorGo(m,m.wanderK,dt);
+}
+
 function spawnMerchant(force=false){if(s.merchant&&!force)return false;
  const offers=['waterskin','canteen','juice','herb','berries','meat','cookedMeat','seed','carrotSeed','potatoSeed','leather','iron','stone','wood','potion','club','leatherVest','sword','crystal'];
  for(const [item,name,icon,w,price,floor] of EXTRA_MATERIALS)if(floor>0&&hasBossDefeated(floor)&&Math.random()<.4)offers.push(item);const wares={};for(let i=0;i<7;i++){const item=offers[rnd(offers.length)];wares[item]=(wares[item]||0)+1+rnd(6)}
  const inn=lodgings().sort((a,b)=>b.luxury-a.luxury)[0];const likesInn=!!inn&&inn.luxury>40;
  s.merchant={id:s.nextId++,name:MERCHANT_NAMES[rnd(MERCHANT_NAMES.length)],x:CX-18,y:CY+12,path:[],stats:{agility:11},state:'arriving',gold:Math.round(random(600,2000)+colonyTier()*40),wares,remaining:likesInn?215+rnd(100):100+rnd(90),likesInn};
+ s.merchant.marketK=merchantGuildMeetingPoint(s.merchant);
  log(`🧳 ${s.merchant.name}が町へ向かっています。${likesInn?'評判の宿で長居するつもりのようです。':''}`);saveSoon();return true;
 }
 function merchantBuy(item,qty=1){const m=s.merchant;if(!m||m.state!=='staying')return false;const available=m.wares[item]||0,price=priceFor(item),take=Math.min(qty,available,Math.floor(s.gold/price));if(take<=0)return false;
  let parcel=freshStack(item,take);for(const key of orderedStorageKeys())if(parcel.qty)storeAt(key,parcel);if(parcel.qty)addDrop(idx(Math.floor(m.x),Math.floor(m.y)),[parcel]);m.wares[item]-=take;s.gold-=take*price;m.gold+=take*price;log(`🛍️ 旅商人から${itemInfo[item][1]}×${take}を${take*price}Gで購入しました。`);soundEffect('trade');saveSoon();return true}
 function merchantSell(item,qty=1,quiet=false){const m=s.merchant;if(!m||m.state!=='staying')return 0;const price=priceFor(item),qty0=Math.min(qty,s.inventory[item]||0,Math.floor(m.gold/price));if(qty0<=0)return 0;const taken=takeStored(item,qty0);if(!taken)return 0;m.wares[item]=(m.wares[item]||0)+taken;s.gold+=taken*price;m.gold-=taken*price;if(!quiet){log(`💰 旅商人に${itemInfo[item][1]}×${taken}を${taken*price}Gで売りました。`);soundEffect('trade')}saveSoon();return taken}
 function stepMerchant(dt){if(!s.merchant){s.merchantClock+=dt;if(s.merchantClock>=s.nextMerchantTime){s.merchantClock=0;s.nextMerchantTime=570+rnd(530);spawnMerchant()}return}
- const m=s.merchant,town=idx(CX-7,CY+4),exit=idx(CX-18,CY+12);
- if(m.state==='arriving'&&visitorGo(m,town,dt)){m.state='staying';m.path=[];log(`🛒 ${m.name}が拠点に到着し、露店を開きました。`);}
- if(m.state==='staying'){m.remaining-=dt;if(m.remaining<=0){m.state='leaving';m.path=[];log(`🧳 ${m.name}は商売を終えて帰り支度を始めました。`)}}
+ const m=s.merchant,exit=idx(CX-18,CY+12);
+ if(!Number.isInteger(m.marketK))m.marketK=merchantGuildMeetingPoint(m);
+ if(m.state==='arriving'&&visitorGo(m,m.marketK,dt)){
+  m.state='staying';m.path=[];m.nextWanderAt=s.time+3;
+  log(`🛒 ${m.name}が${guildReady()?'ギルドの近く':'拠点'}に到着し、露店を開きました。`);
+  pushAlert(`🧳 ${m.name}が到着しました。取引できます。`,'success',null,{x:m.x,y:m.y},{actionLabel:'🛒 旅商人と取引',onAction:()=>openManagementModal('merchant')});
+  saveSoon();
+ }
+ if(m.state==='staying'){merchantBrowseNearby(m,dt);m.remaining-=dt;if(m.remaining<=0){m.state='leaving';m.path=[];log(`🧳 ${m.name}は商売を終えて帰り支度を始めました。`)}}
  if(m.state==='leaving'&&visitorGo(m,exit,dt)){s.merchant=null;log('旅商人は次の町へ旅立ちました。');saveSoon()}
 }
 function renderMerchantUI(){}
@@ -5475,7 +5555,7 @@ function dungeonPoint(e){const b=el('dungeonCanvas').getBoundingClientRect(),x=e
 function dungeonPath(floor,from,to){const d=generateFloor(floor),size=FLOOR_W*FLOOR_H,prev=new Int32Array(size);prev.fill(-1);const start=Math.floor(from.y)*FLOOR_W+Math.floor(from.x),goal=Math.floor(to.y)*FLOOR_W+Math.floor(to.x);if(start===goal)return [];const q=new Int32Array(size);let head=0,tail=0;q[tail++]=start;prev[start]=start;while(head<tail){const k=q[head++];if(k===goal)break;const x=k%FLOOR_W,y=Math.floor(k/FLOOR_W);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy,nk=yy*FLOOR_W+xx;if(xx<0||yy<0||xx>=FLOOR_W||yy>=FLOOR_H||d.cells[nk]==='#'||prev[nk]!==-1)continue;prev[nk]=k;q[tail++]=nk}}if(prev[goal]===-1)return [];let k=goal,path=[];while(k!==start&&path.length<size){path.push(k);k=prev[k]}return path.reverse()}
 function dungeonActorPosition(person,floor){const d=generateFloor(floor),prev=person.dungeonPos;if(prev?.floor===floor&&d.cells[Math.floor(prev.y)*FLOOR_W+Math.floor(prev.x)]!== '#')return prev;const point={floor,x:d.up.cx+.5,y:d.up.cy+.5,target:-1,path:[],anim:0};person.dungeonPos=point;return point}
 function placeAtStairs(person,floor,which,resident){const d=generateFloor(floor),r=d[which],point={floor,x:r.cx+.5,y:r.cy+.5,target:-1,path:[],anim:0};if(resident)person.expedition.dungeonPos=point;else person.dungeonPos=point;return point}
-function beginDungeonRetreat(group,members){if(group.phase==='returning')return;group.phase='returning';group.clock=0;for(const a of members){if(a.expedition)a.expedition.phase='returning';else a.state='exploring'}log(`↩ ${members.map(a=>a.name).join('・')}がB${group.floor}Fから徒歩で撤退を開始しました。`);saveSoon()}
+function beginDungeonRetreat(group,members){if(group.phase==='returning')return;group.phase='returning';group.clock=0;for(const a of members){a.dungeonHold=false;if(a.expedition)a.expedition.phase='returning';else a.state='exploring'}log(`↩ ${members.map(a=>a.name).join('・')}がB${group.floor}Fから徒歩で撤退を開始しました。`);saveSoon()}
 function actorReachedStairs(person,floor,which,resident){const p=resident?person.expedition?.dungeonPos:person.dungeonPos;if(!p||p.floor!==floor)return false;const r=generateFloor(floor)[which];return Math.hypot(p.x-r.cx-.5,p.y-r.cy-.5)<.45}
 function advanceDungeonGroup(group,members,resident){const up=group.phase==='returning';if(up){if(group.floor===1){if(resident){for(const n of members)finishResidentExploration(n);s.residentGroups=s.residentGroups.filter(g=>g!==group)}else{group.floor=0;group.state='returning';for(const a of members){a.state='returning';const at=pos(s.cave.entrance);a.x=at.x+.5;a.y=at.y+.5;a.path=[]}log(`${partyLabel(group)}が洞窟を徒歩で脱出しました。戦利品：${partyLoot(group)}`)}saveSoon();return}
  group.floor--;for(const a of members){placeAtStairs(a,group.floor,'down',resident);if(resident)a.expedition.floor=group.floor}saveSoon();return}
@@ -5569,7 +5649,7 @@ function dungeonGroupEnemy(group,members,resident,waiting=false){
  const positions=members.filter(a=>a.hp>0).map(a=>a.expedition?.dungeonPos||a.dungeonPos).filter(p=>p?.floor===floor);
  if(!positions.length){dungeonEngagementTargets.delete(group);return null}
  const returning=group.phase==='returning',limit=returning?3.7:waiting?3.9:5.4;
- const valid=m=>m&&(m.hp==null||m.hp>0)&&dungeon.monsters.includes(m)&&(!m.bossFloor||(!returning&&!waiting&&(members.length>=bossTeamMinimum(floor)||group.bossDepartureCount>=bossTeamMinimum(floor)||group.bossEngagedFloor===floor)));
+ const valid=m=>m&&(m.hp==null||m.hp>0)&&dungeon.monsters.includes(m)&&(!m.bossFloor||(!waiting&&(members.length>=bossTeamMinimum(floor)||group.bossDepartureCount>=bossTeamMinimum(floor)||group.bossEngagedFloor===floor)&&(!returning||group.bossEngagedFloor===floor)));
  const distance=m=>Math.min(...positions.map(p=>Math.hypot(m.x+.5-p.x,m.y+.5-p.y)));
  const prior=dungeonEngagementTargets.get(group);
  if(valid(prior?.monster)&&prior.floor===floor&&distance(prior.monster)<=limit+1.2)return prior.monster;
@@ -5623,22 +5703,24 @@ function dungeonPartyCombatChoice(actor,enemy,floor,returning){
  if(!pos||pos.floor!==floor)return false;
  const d=Math.hypot(enemy.x+.5-pos.x,enemy.y+.5-pos.y);
  // On the way home, do not pursue distant enemies while critically injured.
- if(returning&&(actor.hp/Math.max(1,actor.maxHp)<.45||shouldRetreat(actor)))return false;
+ if(returning&&d>4.7)return false; // do not chase distant foes; fight enemies blocking the route
  return true;
 }
 function stepDungeonActors(dt){maybeDungeonAlliances(dt);for(const p of [...s.parties]){if(p.state!=='exploring'||p.floor<1)continue;const members=partyMembers(p);if(!members.length)continue;const atGoal=partyAtGoal(p,dt,members);const isWaiting=bossAwaiting(p,members,dt);const waypoint=atGoal?'objective':p.phase==='returning'||isWaiting?'up':'down';if(atGoal){const d=generateFloor(p.floor);d.objective=d.rooms[Math.min(3,d.rooms.length-1)]||d.down;}const enemy=dungeonGroupEnemy(p,members,false,isWaiting);let all=true;for(const a of members){a.state='exploring';restoreMp(a,dt);usePotionInDungeon(a);hydrateDungeonActor(a,dt,p.floor);
- if(p.phase==='exploring'&&shouldRetreat(a)){assessIndividualDungeonRetreat(p,partyMembers(p),false);all=false;continue;}
- const personal=(p.phase!=='returning'&&!isWaiting)?nearestDungeonFiveMonster(a,p.floor):null;
- const chosen=p.personalRetreat?null:(personal||enemy);
+ if(p.phase==='exploring'&&shouldRetreat(a))assessIndividualDungeonRetreat(p,partyMembers(p),false);
+ const personal=nearestDungeonFiveMonster(a,p.floor);
+ const chosen=personal||enemy;
+ if(p.phase==='exploring'&&a.dungeonHold){dungeonHoldPosition(a,p.floor,chosen,dt,false,members);all=false;continue;}
  const fight=dungeonPartyCombatChoice(a,chosen,p.floor,p.phase==='returning');
  if((a.sleep>=100||a.forcedSleep)&&!fight){a.forcedSleep=true;a.sleep=Math.max(0,a.sleep-dt*2.8);all=false;if(a.sleep<=70)a.forcedSleep=false;continue}
  if(fight){a.forcedSleep=false;dungeonMoveToEnemy(a,p.floor,chosen,dt,false);all=false;continue}
  moveDungeonActor(a,p.floor,waypoint,dt,false);
  if(atGoal||!actorReachedStairs(a,p.floor,waypoint,false))all=false}if(all)advanceDungeonGroup(p,members,false)}
  for(const g of [...s.residentGroups]){if(!['exploring','returning'].includes(g.phase))continue;const members=g.members.map(id=>s.npcs.find(n=>n.id===id)).filter(n=>n?.expedition);if(!members.length)continue;const isWaiting=bossAwaiting(g,members,dt);const waypoint=g.phase==='returning'||isWaiting?'up':'down';const enemy=dungeonGroupEnemy(g,members,true,isWaiting);let all=true;for(const n of members){n.expedition.floor=g.floor;restoreMp(n,dt);usePotionInDungeon(n);hydrateDungeonActor(n,dt,g.floor);
- if(g.phase==='exploring'&&shouldRetreat(n)){assessIndividualDungeonRetreat(g,g.members.map(id=>s.npcs.find(x=>x.id===id)).filter(x=>x?.hp>0&&x.expedition),true);all=false;continue;}
- const personal=(g.phase!=='returning'&&!isWaiting)?nearestDungeonFiveMonster(n,g.floor):null;
- const chosen=g.personalRetreat?null:(personal||enemy);
+ if(g.phase==='exploring'&&shouldRetreat(n))assessIndividualDungeonRetreat(g,g.members.map(id=>s.npcs.find(x=>x.id===id)).filter(x=>x?.hp>0&&x.expedition),true);
+ const personal=nearestDungeonFiveMonster(n,g.floor);
+ const chosen=personal||enemy;
+ if(g.phase==='exploring'&&n.dungeonHold){dungeonHoldPosition(n,g.floor,chosen,dt,true,members);all=false;continue;}
  const fight=dungeonPartyCombatChoice(n,chosen,g.floor,g.phase==='returning');
  if((n.sleep>=100||n.expedition.forcedSleep)&&!fight){n.expedition.forcedSleep=true;n.sleep=Math.max(0,n.sleep-dt*2.8);all=false;if(n.sleep<=70)n.expedition.forcedSleep=false;continue}
  if(fight){n.expedition.forcedSleep=false;dungeonMoveToEnemy(n,g.floor,chosen,dt,true);all=false;continue}
@@ -5677,7 +5759,8 @@ function dungeonMonsterStep(dt){
   for(const m of [...dungeon.monsters]){
    m.hp??=Math.round((floor<=20?22+floor*2.45:27+floor*4.5)*(m.type?(.85+monsterInfo[m.type].tier*.085):1)*difficultyRules().enemyHp);m.maxHp??=m.hp;if(m.bossFloor&&hasBossDefeated(m.bossFloor)){dungeon.monsters=dungeon.monsters.filter(q=>q!==m);continue;}m.attackClock=(m.attackClock||0)-dt;m.moveClock=(m.moveClock||0)-dt;
    const nearbyActors=actors.filter(a=>a.hp>0&&(!a.expedition||a.expedition.phase!=='waiting')).map(a=>({a,dp:a.expedition?.dungeonPos||a.dungeonPos})).filter(o=>o.dp?.floor===floor).sort((a,b)=>Math.hypot(m.x+.5-a.dp.x,m.y+.5-a.dp.y)-Math.hypot(m.x+.5-b.dp.x,m.y+.5-b.dp.y));
-   const closest=nearbyActors[0],inRange=closest?nearbyActors.filter(o=>Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<=Math.hypot(m.x+.5-closest.dp.x,m.y+.5-closest.dp.y)+.85):[];
+   const closest=nearbyActors[0],support=nearbyActors.filter(o=>!o.a.dungeonHold&&Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<6);
+   const nearestSafe=support[0]||closest,inRange=nearestSafe?nearbyActors.filter(o=>!support.length||!o.a.dungeonHold).filter(o=>Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<=Math.hypot(m.x+.5-nearestSafe.dp.x,m.y+.5-nearestSafe.dp.y)+.85):[];
    let nearest=inRange.length?inRange[(m.targetTurn||0)%inRange.length]:null;if(m.warnUntil>s.time){const warned=nearbyActors.find(o=>o.a.id===m.warnedActorId);if(warned)nearest=warned;}
    // Bosses are mobile once provoked. While idle, they return to their original stair landing.
    if(m.bossFloor){
@@ -5695,10 +5778,10 @@ function dungeonMonsterStep(dt){
      }
      continue;
     }
-    const frontline=nearbyActors.find(o=>rangedProfile(o.a).type==='melee'&&Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<=3.1);
-    const provoker=nearbyActors.find(o=>o.a.id===m.warnedActorId);
-    const ranged=nearbyActors.find(o=>rangedProfile(o.a).type!=='melee');
-    nearest=frontline||provoker||ranged||nearbyActors[0];
+    const frontline=nearbyActors.find(o=>!o.a.dungeonHold&&rangedProfile(o.a).type==='melee'&&Math.hypot(m.x+.5-o.dp.x,m.y+.5-o.dp.y)<=3.1);
+    const provoker=nearbyActors.find(o=>!o.a.dungeonHold&&o.a.id===m.warnedActorId);
+    const ranged=nearbyActors.find(o=>!o.a.dungeonHold&&rangedProfile(o.a).type!=='melee');
+    nearest=frontline||provoker||ranged||nearbyActors.find(o=>!o.a.dungeonHold)||nearbyActors[0];
    }
    if(!nearest)continue;const distTo=Math.hypot(m.x+.5-nearest.dp.x,m.y+.5-nearest.dp.y);
    if(distTo<1.55){
@@ -5724,6 +5807,7 @@ function dungeonMonsterStep(dt){
   }
   for(const a of actors){if(a.hp<=0)continue;const dp=a.expedition?.dungeonPos||a.dungeonPos;if(dp?.floor!==floor)continue;a.dungeonAttackClock=(a.dungeonAttackClock||0)-dt;if(a.dungeonAttackClock>0)continue;
    if(castHealingInDungeon(a,actors,floor)){a.dungeonAttackClock=MAGIC_TIERS[magicTier(a)].interval;continue}
+   if(a.dungeonHold)continue; // the wounded stay with the group but avoid fighting
    const profile=rangedProfile(a);
    const near=dungeon.monsters.filter(m=>(!m.bossFloor||bossTeamAllowedAt(floor,a))&&dungeonCanHit(dp,m,floor,profile.range)).sort((m,n)=>Math.hypot(m.x+.5-dp.x,m.y+.5-dp.y)-Math.hypot(n.x+.5-dp.x,n.y+.5-dp.y))[0];if(!near)continue;
    if(near.bossFloor){markBossFightStarted(floor,a);notifyBossBattle(a,floor,near.name||FLOOR_BOSS_NAMES[floor]);}const shot=useCombatAttack(a,dp,near);a.dungeonAttackClock=shot.cooldown;near.hp-=Math.max(.25,shot.damage*(shot.type==='melee'?.8:1)*bossEquipmentDamageScale(a,near,shot.type));if(shot.type!=='melee')spawnBattleEffect(dp.x,dp.y,near.x+.5,near.y+.5,shot.type,floor,true);dungeonWarnPack(floor,near,a);if(near.hp<=0){dungeon.monsters=dungeon.monsters.filter(m=>m!==near);if(near.bossFloor){onBossDefeated(near.bossFloor,a);addXP(a,160+near.bossFloor*5,!!a.expedition)}addXP(a,11+floor*.6,!!a.expedition);if(a.expedition)addSkillXP(a,'explore',6);if(!near.bossFloor){const kind=near.type||dungeonMonsterType(floor);for(const stack of monsterDropStacks(kind))collectDungeonLoot(a,stack.item,stack.qty)}}
