@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.37 — 冒険者の滞在上限</title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.38 — 洞窟撤退AIの改善</title><style>
 
 
 :root{color-scheme:dark;--bg:#0e1719;--panel:#172325;--panel2:#1c2b2b;--panel3:#233331;--line:#344842;--text:#f1eddd;--muted:#a7b2a7;--accent:#e8c481;--teal:#8ac6ab;--red:#e59b83;--shadow:0 14px 45px #07101080}
@@ -365,7 +365,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
 @media(max-width:650px){.manager-table th:nth-child(3),.manager-table td:nth-child(3){display:none}.management-body{padding:7px}.manager-table select{max-width:130px}}
 .manager-category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:5px 0;border-bottom:1px solid #496353}.manager-category-tab{background:#213a31;border:1px solid #53745c;color:#cfdfd4;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer}.manager-category-tab.active{background:#755c35;color:#fff2c8;border-color:#dfbc76}.manager-category-tab:hover{border-color:#b5b88b}</style></head><body>
 <div class="page">
- <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.37</span></div></header>
+ <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.38</span></div></header>
  <div class="layout"><main class="workspace"><div class="panel">
   <div class="canvas-head"><div class="location">✥ はじまりの草原 <span class="subplace">/ 広域ファンタジー開拓地</span></div><div class="clock" id="clock">DAY 01　08:00</div></div>
   <div class="canvas-shell" id="canvasShell"><canvas id="world" aria-label="マス目状の開拓地。建築ツールを選び、クリックまたはドラッグして設計できます"></canvas>
@@ -3492,6 +3492,7 @@ function bossRaidGroundInterception(actor,dt){
 }
 function separateBossRaidRetreater(raid,member){
  const {actor,resident}=member;
+ actor.dungeonHold=false;
  if(resident){
   raid.residentIds=raid.residentIds.filter(id=>id!==actor.id);
   const e=actor.expedition;if(!e)return;
@@ -3548,11 +3549,18 @@ function stepBossRaids(dt){
   for(const {actor,resident} of roster){if(actor.hp<=0)continue;
    const personal=nearestDungeonFiveMonster(actor,floor);
    const chosen=personal||enemy;
-   if(!retreat&&actor.dungeonHold){dungeonHoldPosition(actor,floor,chosen,dt,resident,actors);all=false;continue;}
+   if(!retreat&&actor.dungeonHold){
+    dungeonHoldPosition(actor,floor,chosen,dt,resident,actors);
+    if(actorReachedStairs(actor,floor,'up',resident)){
+     if(roster.length<=1)bossRaidBeginRetreat(raid,'負傷者が上り階段まで撤退した');
+     else separateBossRaidRetreater(raid,{actor,resident});
+    }
+    all=false;continue;
+   }
    if(chosen&&dungeonPartyCombatChoice(actor,chosen,floor,retreat)){
     dungeonMoveToEnemy(actor,floor,chosen,dt,resident);all=false;continue;
    }
-   if(!moveDungeonActor(actor,floor,waypoint,dt,resident))all=false;
+   if(!moveDungeonActor(actor,floor,waypoint,dt,resident,retreat?1.5:1))all=false;
   }
   if(!all)continue;
   if(retreat){
@@ -4738,36 +4746,37 @@ function dungeonNearbyBattle(group,members){
  if(!points.length)return false;
  return d.monsters.some(m=>m.hp>0&&(!m.bossFloor||group.bossEngagedFloor===floor||bossTeamReady(group,members))&&points.some(dp=>Math.hypot(m.x+.5-dp.x,m.y+.5-dp.y)<6.0));
 }
+// A wounded explorer withdraws along the actual corridor route to the UP staircase.
+// Avoid choosing a nearby tile just because it is farther from a monster: that
+// can be a cul-de-sac, and repeated re-evaluation causes fatal oscillation.
 function dungeonHoldPosition(actor,floor,enemy,dt,resident,team=[]){
- if(!enemy)return;
  const point=actor.expedition?.dungeonPos||actor.dungeonPos;
  if(!point||point.floor!==floor)return;
- const distance=Math.hypot(point.x-enemy.x-.5,point.y-enemy.y-.5);
- if(distance>=4.2){point.holdPath=[];return;} // safe: stay near the party
- if(point.holdPath?.length&&s.time<(point.holdRecalcAt||0)){
-  const k=point.holdPath[0],tx=k%FLOOR_W+.5,ty=Math.floor(k/FLOOR_W)+.5;
-  const dist=Math.hypot(tx-point.x,ty-point.y),step=Math.min(dist,dt*clamp(1.3+(actor.stats?.agility||10)*.037,1.2,5.1));
-  if(dist>.001){point.x+=(tx-point.x)/dist*step;point.y+=(ty-point.y)/dist*step;}
-  if(dist<=step+.001)point.holdPath.shift();point.anim=(point.anim||0)+dt*6;return;
+ // Continue toward the staircase even when the monster is momentarily out of view.
+ // The extra pace represents a fleeing character sprinting instead of fighting.
+ moveDungeonActor(actor,floor,'up',dt,resident,1.65);
+}
+// Once the wounded reach the UP stairs, let them climb out on their own instead
+// of waiting in the boss's attack range for every ally to retreat.
+function separateDungeonWoundedAtStairs(group,actor,resident){
+ if(group.phase!=='exploring'||!actor.dungeonHold||!actorReachedStairs(actor,group.floor,'up',resident))return false;
+ const members=resident?group.members:group.ids;
+ if(!members?.includes(actor.id))return false;
+ if(members.length<=1){beginDungeonRetreat(group,[actor]);return true;}
+ if(resident){
+  group.members=members.filter(id=>id!==actor.id);
+  const solo={id:s.nextResidentGroupId++,members:[actor.id],phase:'returning',floor:group.floor,clock:0,elapsed:group.elapsed||0,waves:0,personalRetreat:true,bossDepartureCount:1};
+  s.residentGroups.push(solo);actor.expedition.groupId=solo.id;actor.expedition.phase='returning';
+ }else{
+  group.ids=members.filter(id=>id!==actor.id);
+  const solo={id:s.nextPartyId++,ids:[actor.id],state:'exploring',phase:'returning',floor:group.floor,clock:0,personalRetreat:true,goal:'train',targetFloor:group.floor,bossDepartureCount:1,fromSettlement:!!group.fromSettlement};
+  s.parties.push(solo);actor.partyId=solo.id;
  }
- const d=generateFloor(floor), allies=team.filter(a=>a!==actor&&a.hp>0&&(a.expedition?.dungeonPos||a.dungeonPos)?.floor===floor);
- const closest=allies.filter(a=>!(a.dungeonHold)).sort((a,b)=>{const p=a.expedition?.dungeonPos||a.dungeonPos,q=b.expedition?.dungeonPos||b.dungeonPos;return Math.hypot(p.x-point.x,p.y-point.y)-Math.hypot(q.x-point.x,q.y-point.y)})[0];
- const ally=closest?.expedition?.dungeonPos||closest?.dungeonPos;
- let best=null;
- for(let y=Math.max(1,Math.floor(point.y)-7);y<Math.min(FLOOR_H-1,Math.floor(point.y)+8);y++)for(let x=Math.max(1,Math.floor(point.x)-7);x<Math.min(FLOOR_W-1,Math.floor(point.x)+8);x++){
-  if(d.cells[y*FLOOR_W+x]==='#')continue;
-  const away=Math.hypot(x-enemy.x,y-enemy.y),together=ally?Math.hypot(x+.5-ally.x,y+.5-ally.y):0;
-  if(away<4.4||together>7.5)continue;
-  const route=dungeonPath(floor,point,{x:x+.5,y:y+.5});if(!route.length)continue;
-  const score=route.length+Math.max(0,together-3)*1.6+Math.abs(away-5.7)*.5;
-  if(!best||score<best.score)best={x,y,route,score};
- }
- if(!best)return;
- point.holdPath=best.route;point.holdRecalcAt=s.time+3;
- const k=point.holdPath[0],tx=k%FLOOR_W+.5,ty=Math.floor(k/FLOOR_W)+.5;
- const dist=Math.hypot(tx-point.x,ty-point.y),step=Math.min(dist,dt*clamp(1.3+(actor.stats?.agility||10)*.037,1.2,5.1));
- if(dist>.001){point.x+=(tx-point.x)/dist*step;point.y+=(ty-point.y)/dist*step;}
- if(dist<=step+.001)point.holdPath.shift();point.anim=(point.anim||0)+dt*6;
+ actor.dungeonHold=false;
+ const point=actor.expedition?.dungeonPos||actor.dungeonPos;
+ if(point){point.target=-1;point.path=[];}
+ log(`↩ ${actor.name}は上り階段にたどり着き、隊を離れて地上へ撤退します。`);saveSoon();
+ return true;
 }
 function assessIndividualDungeonRetreat(group,actors,resident){
  if(group.phase!=='exploring'||!actors.length)return;
@@ -6028,9 +6037,9 @@ function actorReachedStairs(person,floor,which,resident){const p=resident?person
 function advanceDungeonGroup(group,members,resident){const up=group.phase==='returning';if(up){if(group.floor===1){if(resident){for(const n of members)finishResidentExploration(n);s.residentGroups=s.residentGroups.filter(g=>g!==group)}else{group.floor=0;group.state='returning';for(const a of members){a.state='returning';const at=pos(s.cave.entrance);a.x=at.x+.5;a.y=at.y+.5;a.path=[]}log(`${partyLabel(group)}が洞窟を徒歩で脱出しました。戦利品：${partyLoot(group)}`)}saveSoon();return}
  group.floor--;for(const a of members){placeAtStairs(a,group.floor,'down',resident);if(resident)a.expedition.floor=group.floor}saveSoon();return}
  if(group.floor>=100){if(!bossIsAlive(100))beginDungeonRetreat(group,members);return}if(resident&&group.floor>=residentDungeonSafeLimit()){beginDungeonRetreat(group,members);return}if(group.phase!=='returning'&&bossIsAlive(group.floor))return;group.floor++;s.cave.bestFloor=Math.max(group.floor,s.cave.bestFloor||1);for(const a of members){placeAtStairs(a,group.floor,'up',resident);if(resident){a.expedition.floor=group.floor;a.maxFloor=Math.max(a.maxFloor||0,group.floor);addSkillXP(a,'explore',4)}else a.maxFloor=Math.max(a.maxFloor||0,group.floor)}if(group.floor%10===0)log(`${members.map(a=>a.name).join('・')}がB${group.floor}Fへ降りました。`);saveSoon()}
-function moveDungeonActor(actor,floor,waypoint,dt,resident=false){const d=generateFloor(floor),position=resident?dungeonActorPosition(actor.expedition,floor):dungeonActorPosition(actor,floor),r=d[waypoint],goal=r.cy*FLOOR_W+r.cx;
+function moveDungeonActor(actor,floor,waypoint,dt,resident=false,pace=1){const d=generateFloor(floor),position=resident?dungeonActorPosition(actor.expedition,floor):dungeonActorPosition(actor,floor),r=d[waypoint],goal=r.cy*FLOOR_W+r.cx;
  if(position.target!==goal){position.target=goal;position.path=dungeonPath(floor,position,{x:r.cx,y:r.cy})}
- let left=dt*clamp(1.3+(actor.stats?.agility||10)*.037,1.2,5.1),steps=0;
+ let left=dt*pace*clamp(1.3+(actor.stats?.agility||10)*.037,1.2,5.1),steps=0;
  while(left>0&&position.path.length&&steps++<15){const k=position.path[0],tx=k%FLOOR_W+.5,ty=Math.floor(k/FLOOR_W)+.5,distance=Math.hypot(tx-position.x,ty-position.y);if(distance<=left+.001){position.x=tx;position.y=ty;left-=distance;position.path.shift()}else{position.x+=(tx-position.x)/distance*left;position.y+=(ty-position.y)/distance*left;left=0}}
  position.anim=(position.anim||0)+dt*6;return actorReachedStairs(actor,floor,waypoint,resident);
 }
@@ -6171,29 +6180,31 @@ function dungeonPartyCombatChoice(actor,enemy,floor,returning){
  if(!pos||pos.floor!==floor)return false;
  const d=Math.hypot(enemy.x+.5-pos.x,enemy.y+.5-pos.y);
  // On the way home, do not pursue distant enemies while critically injured.
- if(returning&&d>4.7)return false; // do not chase distant foes; fight enemies blocking the route
+ if(returning)return false; // keep moving toward the stairs; combat tick still fires defensively if in range
  return true;
 }
 function stepDungeonActors(dt){maybeDungeonAlliances(dt);for(const p of [...s.parties]){if(p.state!=='exploring'||p.floor<1)continue;const members=partyMembers(p);if(!members.length)continue;const atGoal=partyAtGoal(p,dt,members);const isWaiting=bossAwaiting(p,members,dt);const waypoint=atGoal?'objective':p.phase==='returning'||isWaiting?'up':'down';if(atGoal){const d=generateFloor(p.floor);d.objective=d.rooms[Math.min(3,d.rooms.length-1)]||d.down;}const enemy=dungeonGroupEnemy(p,members,false,isWaiting);let all=true;for(const a of members){a.state='exploring';restoreMp(a,dt);usePotionInDungeon(a);hydrateDungeonActor(a,dt,p.floor);
  if(p.phase==='exploring'&&shouldRetreat(a))assessIndividualDungeonRetreat(p,partyMembers(p),false);
  const personal=nearestDungeonFiveMonster(a,p.floor);
  const chosen=personal||enemy;
- if(p.phase==='exploring'&&a.dungeonHold){dungeonHoldPosition(a,p.floor,chosen,dt,false,members);all=false;continue;}
+ if(p.phase==='exploring'&&a.dungeonHold){dungeonHoldPosition(a,p.floor,chosen,dt,false,members);separateDungeonWoundedAtStairs(p,a,false);all=false;continue;}
  const fight=dungeonPartyCombatChoice(a,chosen,p.floor,p.phase==='returning');
- if((a.sleep>=100||a.forcedSleep)&&!fight){a.forcedSleep=true;a.sleep=Math.max(0,a.sleep-dt*2.8);all=false;if(a.sleep<=70)a.forcedSleep=false;continue}
+ if((a.sleep>=100||a.forcedSleep)&&!fight&&p.phase!=='returning'){a.forcedSleep=true;a.sleep=Math.max(0,a.sleep-dt*2.8);all=false;if(a.sleep<=70)a.forcedSleep=false;continue}
  if(fight){a.forcedSleep=false;dungeonMoveToEnemy(a,p.floor,chosen,dt,false);all=false;continue}
- moveDungeonActor(a,p.floor,waypoint,dt,false);
- if(atGoal||!actorReachedStairs(a,p.floor,waypoint,false))all=false}if(all)advanceDungeonGroup(p,members,false)}
+ const actualWaypoint=p.phase==='returning'?'up':waypoint;
+ moveDungeonActor(a,p.floor,actualWaypoint,dt,false,p.phase==='returning'?1.5:1);
+ if(atGoal||!actorReachedStairs(a,p.floor,actualWaypoint,false))all=false}if(all)advanceDungeonGroup(p,members,false)}
  for(const g of [...s.residentGroups]){if(!['exploring','returning'].includes(g.phase))continue;const members=g.members.map(id=>s.npcs.find(n=>n.id===id)).filter(n=>n?.expedition);if(!members.length)continue;const atGoal=residentDungeonAtGoal(g,members,dt);const isWaiting=bossAwaiting(g,members,dt);const waypoint=atGoal?'objective':g.phase==='returning'||isWaiting?'up':'down';if(atGoal){const d=generateFloor(g.floor);d.objective=d.rooms[Math.min(3,d.rooms.length-1)]||d.down;}const enemy=dungeonGroupEnemy(g,members,true,isWaiting);let all=true;for(const n of members){n.expedition.floor=g.floor;restoreMp(n,dt);usePotionInDungeon(n);hydrateDungeonActor(n,dt,g.floor);
  if(g.phase==='exploring'&&shouldRetreat(n))assessIndividualDungeonRetreat(g,g.members.map(id=>s.npcs.find(x=>x.id===id)).filter(x=>x?.hp>0&&x.expedition),true);
  const personal=nearestDungeonFiveMonster(n,g.floor);
  const chosen=personal||enemy;
- if(g.phase==='exploring'&&n.dungeonHold){dungeonHoldPosition(n,g.floor,chosen,dt,true,members);all=false;continue;}
+ if(g.phase==='exploring'&&n.dungeonHold){dungeonHoldPosition(n,g.floor,chosen,dt,true,members);separateDungeonWoundedAtStairs(g,n,true);all=false;continue;}
  const fight=dungeonPartyCombatChoice(n,chosen,g.floor,g.phase==='returning');
- if((n.sleep>=100||n.expedition.forcedSleep)&&!fight){n.expedition.forcedSleep=true;n.sleep=Math.max(0,n.sleep-dt*2.8);all=false;if(n.sleep<=70)n.expedition.forcedSleep=false;continue}
+ if((n.sleep>=100||n.expedition.forcedSleep)&&!fight&&g.phase!=='returning'){n.expedition.forcedSleep=true;n.sleep=Math.max(0,n.sleep-dt*2.8);all=false;if(n.sleep<=70)n.expedition.forcedSleep=false;continue}
  if(fight){n.expedition.forcedSleep=false;dungeonMoveToEnemy(n,g.floor,chosen,dt,true);all=false;continue}
- moveDungeonActor(n,g.floor,waypoint,dt,true);
- if(atGoal||!actorReachedStairs(n,g.floor,waypoint,true))all=false}if(all)advanceDungeonGroup(g,members,true)}
+ const actualWaypoint=g.phase==='returning'?'up':waypoint;
+ moveDungeonActor(n,g.floor,actualWaypoint,dt,true,g.phase==='returning'?1.5:1);
+ if(atGoal||!actorReachedStairs(n,g.floor,actualWaypoint,true))all=false}if(all)advanceDungeonGroup(g,members,true)}
 }
 
 // Monsters on each occupied floor actively seek and attack explorers. Their positions persist in the floor cache.
@@ -6275,7 +6286,7 @@ function dungeonMonsterStep(dt){
   }
   for(const a of actors){if(a.hp<=0)continue;const dp=a.expedition?.dungeonPos||a.dungeonPos;if(dp?.floor!==floor)continue;a.dungeonAttackClock=(a.dungeonAttackClock||0)-dt;if(a.dungeonAttackClock>0)continue;
    if(castHealingInDungeon(a,actors,floor)){a.dungeonAttackClock=MAGIC_TIERS[magicTier(a)].interval;continue}
-   if(a.dungeonHold)continue; // the wounded stay with the group but avoid fighting
+   if(a.dungeonHold)continue; // wounded fighters sprint for the UP stairs, not attack
    const profile=rangedProfile(a);
    const near=dungeon.monsters.filter(m=>(!m.bossFloor||bossTeamAllowedAt(floor,a))&&dungeonCanHit(dp,m,floor,profile.range)).sort((m,n)=>Math.hypot(m.x+.5-dp.x,m.y+.5-dp.y)-Math.hypot(n.x+.5-dp.x,n.y+.5-dp.y))[0];if(!near)continue;
    if(near.bossFloor){markBossFightStarted(floor,a);notifyBossBattle(a,floor,near.name||FLOOR_BOSS_NAMES[floor]);}const shot=useCombatAttack(a,dp,near);a.dungeonAttackClock=shot.cooldown;near.hp-=Math.max(.25,shot.damage*(shot.type==='melee'?.8:1)*bossEquipmentDamageScale(a,near,shot.type));if(shot.type!=='melee')spawnBattleEffect(dp.x,dp.y,near.x+.5,near.y+.5,shot.type,floor,true);dungeonWarnPack(floor,near,a);if(near.hp<=0){dungeon.monsters=dungeon.monsters.filter(m=>m!==near);if(near.bossFloor){onBossDefeated(near.bossFloor,a);addXP(a,160+near.bossFloor*5,!!a.expedition)}addXP(a,11+floor*.6,!!a.expedition);if(a.expedition)addSkillXP(a,'explore',6);if(!near.bossFloor){const kind=near.type||dungeonMonsterType(floor);for(const stack of monsterDropStacks(kind))collectDungeonLoot(a,stack.item,stack.qty)}}
