@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.38 — 洞窟撤退AIの改善</title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>異世界シムワールド v7.39 — 冒険者の移動停止を修正</title><style>
 
 
 :root{color-scheme:dark;--bg:#0e1719;--panel:#172325;--panel2:#1c2b2b;--panel3:#233331;--line:#344842;--text:#f1eddd;--muted:#a7b2a7;--accent:#e8c481;--teal:#8ac6ab;--red:#e59b83;--shadow:0 14px 45px #07101080}
@@ -365,7 +365,7 @@ button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2p
 @media(max-width:650px){.manager-table th:nth-child(3),.manager-table td:nth-child(3){display:none}.management-body{padding:7px}.manager-table select{max-width:130px}}
 .manager-category-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:5px 0;border-bottom:1px solid #496353}.manager-category-tab{background:#213a31;border:1px solid #53745c;color:#cfdfd4;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer}.manager-category-tab.active{background:#755c35;color:#fff2c8;border-color:#dfbc76}.manager-category-tab:hover{border-color:#b5b88b}</style></head><body>
 <div class="page">
- <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.38</span></div></header>
+ <header class="top"><div class="brand"><div class="crest">🌿</div><div><h1>異世界シムワールド</h1><p>ISEKAI SIM WORLD / AUTONOMOUS COLONY / THE ANCIENT DUNGEON</p></div></div><div class="top-right"><button class="help-open" id="openHelp" type="button" title="ゲームの流れと基本操作">📖 ヘルプ</button><span class="status">入植地 稼働中</span><div class="sound-controls" aria-label="サウンド設定"><label>♪ BGM <input id="bgmToggle" type="checkbox"></label><input id="bgmVolume" type="range" min="0" max="1" step="0.05" value="0.25" aria-label="BGM音量"><label>◉ SE <input id="seToggle" type="checkbox" checked></label><input id="seVolume" type="range" min="0" max="1" step="0.05" value="0.42" aria-label="効果音量"></div><span class="version">PROTOTYPE v7.39</span></div></header>
  <div class="layout"><main class="workspace"><div class="panel">
   <div class="canvas-head"><div class="location">✥ はじまりの草原 <span class="subplace">/ 広域ファンタジー開拓地</span></div><div class="clock" id="clock">DAY 01　08:00</div></div>
   <div class="canvas-shell" id="canvasShell"><canvas id="world" aria-label="マス目状の開拓地。建築ツールを選び、クリックまたはドラッグして設計できます"></canvas>
@@ -1796,6 +1796,7 @@ for(const job of data.jobs||[]){const [k,t,progress,reserved,rot]=job;const i=re
  }}
  for(const n of s.npcs)initMagic(n,true);for(const a of s.adventurers){a.satisfaction=Math.min(a.satisfaction,satisfactionCeiling(a));a.requestPending=false;}s.roomCache=null;repairResidentIdentities();
  for(const actor of [...s.npcs,...s.adventurers])restoreBrokenSurfaceRetreat(actor,true);
+ repairOrphanedAdventurerParties();
  updateInventory();renderQuickbar();refreshResidents();log(data.v>=5?'保存した入植地と冒険者の記録を読み込みました。':'以前の入植地を引き継ぎ、岩場と洞窟を追加しました。');return true}catch(e){console.warn('Load failed',e);return false}}
 // Alerts preserve their event location and use either mouse button to jump there.
 const bossBattleAlertKeys=new Set();
@@ -5042,6 +5043,84 @@ function partyMembers(p){
  return p.ids.map(id=>memberIndex.get(id)).filter(a=>a&&a.alive&&!a.recruited);
 }
 function partyLabel(p){const a=partyMembers(p);return a.length===1?`冒険者${a[0].name}`:a.length>1?`${a[0].name}隊 (${a.length}人)`:'冒険者一行'}
+
+// v7.39: The old 80-party archive trim also discarded active parties. Characters
+// remained in the town roster but had no party tick, and could stand still forever.
+// Repair that state on load (including old saves) without replacing the people,
+// their inventories, levels, equipment, or settlement status.
+function repairOrphanedAdventurerParties(){
+ if(!s||!Array.isArray(s.parties)||!Array.isArray(s.adventurers))return 0;
+ const attached=new Set();
+ for(const p of s.parties)for(const id of p.ids||[])attached.add(id);
+ const inActiveBossRaid=new Set();
+ for(const raid of s.bossRaids||[]){
+  if(['finished','cancelled','failed','complete','done'].includes(raid.phase))continue;
+  for(const id of raid.adventurerIds||[])inActiveBossRaid.add(id);
+ }
+ const missing=new Map();
+ for(const a of s.adventurers){
+  if(!a.alive||a.recruited||a.state==='dead'||a.state==='away'||attached.has(a.id)||inActiveBossRaid.has(a.id))continue;
+  const key=Number.isInteger(a.partyId)?'party:'+a.partyId:'single:'+a.id;
+  if(!missing.has(key))missing.set(key,[]);
+  missing.get(key).push(a);
+ }
+ if(!missing.size)return 0;
+ s.nextPartyId=Math.max(Number(s.nextPartyId)||1,1,...s.parties.map(p=>(Number(p.id)||0)+1));
+ let recovered=0;
+ for(const actors of missing.values()){
+  // Recreate small parties: the ordinary party AI assumes at most four members.
+  // Residents of the settlement retain their own permanent one-person parties.
+  const groups=[];
+  for(const a of actors){
+   if(a.settled){groups.push([a]);continue;}
+   let shared=groups.find(g=>!g[0].settled&&g.length<4);
+   if(!shared){shared=[];groups.push(shared)}
+   shared.push(a);
+  }
+  for(const members of groups){
+   const settled=members.every(a=>a.settled);
+   const phase=settled?'settled':members.every(a=>a.state==='leaving')?'leaving':members.every(a=>a.state==='arriving')?'arriving':'returning';
+   const originalId=members[0].partyId;
+   const p={id:s.nextPartyId++,ids:members.map(a=>a.id),state:phase,clock:0,floor:1,waves:0,
+    elapsed:0,phase:'exploring',goal:members[0].goal||'gather',
+    targetFloor:clamp(Number(members[0].targetFloor)||1,1,100),objectiveClock:0,
+    fromSettlement:settled,exploreClock:0,nextVisitDay:0};
+   // Restore gather quest ownership when its saved party was removed.
+   const quest=(s.guildQuests||[]).find(q=>q?.kind==='gather'&&q.status==='accepted'&&q.partyId===originalId);
+   if(quest){p.questId=quest.id;p.questPreviousGoal=p.goal;p.questPreviousFloor=p.targetFloor;}
+   s.parties.push(p);
+   for(const a of members){
+    a.partyId=p.id;a.state=phase;a.path=[];a.pathTarget=undefined;a.pathRetryAt=0;
+    a.survival=null;a.nextSurvivalCheckAt=0;
+    a.localDefenseTargetId=null;a.localDefenseFleeUntil=0;a.localDefensePreviousState=undefined;
+    a.localDefenseRetreatK=-1;a.localDefenseRouteTargetId=null;a.localDefenseRouteRefreshAt=0;
+    a.surfaceEscape=null;
+    a.x=clamp(Number.isFinite(a.x)?a.x:CX,1,W-2);
+    a.y=clamp(Number.isFinite(a.y)?a.y:CY,1,H-2);
+    recovered++;
+   }
+   if(quest)quest.partyId=p.id;
+  }
+ }
+ if(recovered){
+  log(`🧭 移動が止まっていた冒険者${recovered}人の行動を復旧しました。`);
+  // load() runs before gameStarted, so saveSoon alone may do nothing there.
+  s.saveDue=s.saveDue>0?s.saveDue:9;
+  saveSoon();
+ }
+ return recovered;
+}
+// Only archive inactive history. A live party must never be removed, even when
+// the settlement's 220-adventurer capacity yields well over 80 active parties.
+function pruneInactiveAdventurerPartyHistory(){
+ if(s.parties.length<=380)return;
+ const inactive=s.parties.filter(p=>p.state==='away'||p.state==='lost');
+ if(inactive.length<=140)return;
+ const recentAway=inactive.filter(p=>p.state==='away'&&Number(p.nextVisitDay)>=s.day-30).slice(-120);
+ const keep=new Set([...recentAway,...inactive.slice(-20)]);
+ s.parties=s.parties.filter(p=>(p.state!=='away'&&p.state!=='lost')||keep.has(p));
+}
+
 // v7.31: visitor navigation stops its breadth-first search as soon as it finds a
 // reachable destination. The former full-world bfs() visited up to 30,240 cells
 // per route, even when the guest was only walking a few blocks to an inn.
@@ -5715,10 +5794,12 @@ function stepRaidPreparationFieldwork(p,dt){
  }
 }
 
-function stepAdventurers(dt){if(!s.cave.revealed)return;applyRaidPreparation();stepResidentExpeditions(dt);s.visitorClock=(s.visitorClock??0)+dt;if(s.visitorClock>=visitorInterval()){s.visitorClock=0;spawnParty()}
+function stepAdventurers(dt){if(!s.cave.revealed)return;
+ if(!Number.isFinite(s.nextPartyRepairAt)||s.time>=s.nextPartyRepairAt){s.nextPartyRepairAt=s.time+35;repairOrphanedAdventurerParties()}
+ applyRaidPreparation();stepResidentExpeditions(dt);s.visitorClock=(s.visitorClock??0)+dt;if(s.visitorClock>=visitorInterval()){s.visitorClock=0;spawnParty()}
  const town=idx(CX-7,CY+4),edge=idx(CX-17,CY+12);
  for(const p of s.parties){if(p.state==='lost'||p.state==='away'||p.state==='bossQueue'||p.state==='bossRaid'||p.state==='fieldQueue'||p.state==='fieldRaid'||p.state==='rallyJoined')continue;for(const person of partyMembers(p))if(p.state!=='exploring'){person.thirst=Math.min(100,(person.thirst||0)+dt*needDecay(.10));if(person.thirst>35)drinkFromBottle(person);if(person.thirst>=100)person.hp=Math.max(0,person.hp-dt*.22)}const alive=partyMembers(p);if(!alive.length){p.state='lost';continue}if(reassessDestroyedLodging(p,dt))continue;if(alive.some(a=>a.surfaceEscape||a.localDefenseTargetId||(a.localDefenseFleeUntil||0)>s.time))continue;if(p.state!=='exploring'&&stepAdventurerTownNeeds(p,dt))continue;if(['town','staying','settled'].includes(p.state)&&s.time>=(p.nextLootSaleTime||0)){autoLiquidateAdventurerLoot(p);p.nextLootSaleTime=s.time+24}if(raidPreparationBlocksDeparture()&&(p.state==='settled'||p.state==='town')){stepRaidPreparationFieldwork(p,dt);continue}if(p.state==='settled'){guildStepSettledParty(p,dt);continue}else if(p.state==='guildGuard'){guildGuardParty(p,dt);continue}else if(p.state==='guildHunt'){guildHuntParty(p,dt);continue}else if(p.state==='arriving'){if(groupDestination(p,dt,town,'arriving')){p.state='town';p.clock=2.5+rnd(4);for(const a of alive){a.dinedThisVisit=false;a.state='town';guildRegister(a);changeSatisfaction(a,Math.max(1,Math.round(satisfactionBoost(a)*.35)));}}}else if(p.state==='town'){for(const a of alive){if(a.dinedThisVisit)continue;const rr=openRestaurants().find(r=>restaurantChoice(r,a,false));if(rr){const chair=rr.chairs[0];if(chair!=null&&visitorGo(a,chair,dt)){serveRestaurant(rr,a,false);a.dinedThisVisit=true}else{a.state='town';continue}}else {rateRestaurantTooExpensive(a);a.dinedThisVisit=true}}p.clock-=dt;if(p.clock<=0){guildAssignQuest(p);prepareTownCaveDeparture(p)}}else if(p.state==='bossRally'){stepOrdinaryBossRally(p,dt)}else if(p.state==='toCave'){p.bossDepartureCount=Math.max(p.bossDepartureCount||0,alive.length);if(groupDestination(p,dt,s.cave.entrance,'toCave')){p.state='exploring';p.phase='exploring';p.floor=1;p.waves=0;p.elapsed=0;p.clock=0;for(const a of alive){a.state='exploring';a.path=[];a.runs++;placeAtStairs(a,1,'up',false)}log(`${partyLabel(p)}が入口からB1Fへ入りました。`)}}else if(p.state==='exploring'){explorePartyTick(p,dt)}else if(p.state==='returning'){for(const a of alive)pickupTravelDrops(a,true);if(groupDestination(p,dt,town,'returning')){if(p.guildCallPending){p.guildCallPending=false;if(s.guildCall&&s.guildCall.expires>s.time){p.state='guildGuard';p.clock=0;for(const a of alive){a.state='guildGuard';a.path=[]}log(`${partyLabel(p)}が洞窟から徒歩で帰り、防衛招集に合流しました。`);continue}}guildDeliverQuest(p);autoLiquidateAdventurerLoot(p);sellEquipment(p);if(p.rallyOriginalIds)releaseOrdinaryBossAllies(p);if(p.fromSettlement){p.state='settled';p.exploreClock=0;for(const a of alive){a.state='settled';a.path=[]}log(`${partyLabel(p)}が定住先の宿へ帰還しました。`)}else handleTownStay(p)}}else if(p.state==='staying'){let reached=true;for(const a of alive){if(a.guest&&a.guestBedK>=0){a.state='staying';if(!visitorGo(a,a.guestBedK,dt))reached=false}}p.stayTravelTime=(p.stayTravelTime||0)+dt;if(reached||p.stayTravelTime>=16)p.clock-=dt;if(p.clock<=0){for(const a of alive){if(a.guest){restoreMp(a,55,true);a.hp=Math.min(a.maxHp,a.hp+50);a.sleep=Math.max(5,(a.sleep||40)-70)}else{restoreMp(a,18,true);a.hp=Math.min(a.maxHp,a.hp+Math.max(12,a.maxHp*.13));a.sleep=Math.max(5,(a.sleep||40)-35)}a.state='town';a.path=[];finishInnReview(a);a.guest=false;a.guestInnK=null;a.guestBedK=-1;}p.state='town';p.clock=4+rnd(8);log(`${partyLabel(p)}は村で休息し、再び冒険の準備を始めました。`)}}else if(p.state==='leaving'){if(groupDestination(p,dt,edge,'leaving')){p.state='away';p.nextVisitDay=s.day+s.minutes/1440+2+rnd(7);for(const a of alive){a.state='away';a.guest=false;a.guestBedK=-1;a.path=[];a.hp=Math.max(a.hp,a.maxHp*.7)}saveSoon()}}}
- if(s.parties.length>80){const permanent=s.parties.filter(p=>p.state==='settled'||p.fromSettlement||p.guildGuardReturn==='settled');const others=s.parties.filter(p=>!permanent.includes(p)&&(p.state!=='lost'&&p.state!=='away'||p.nextVisitDay>s.day-30)).slice(-80);s.parties=[...permanent,...others]} }
+ if(s.parties.length>380)pruneInactiveAdventurerPartyHistory(); }
 
 let trackedCharacter=null,followRosterCache='',lastRosterUpdate=0;
 function stopCharacterFollow(){if(!trackedCharacter)return;trackedCharacter=null;followRosterCache='';const pill=el('followPill');if(pill)pill.classList.remove('active');const text=el('dungeonTracking');if(text)text.textContent='';}
