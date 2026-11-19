@@ -545,11 +545,17 @@ function showResults(entries,uraIndicator){state.ended=true;clearInterval(state.
  state.compareRound=state.roundIndex;state.comparePlayer=state.playerId;renderCompare();
  $('againBtn').textContent=final?(state.mode==='host'?'同じ部屋で新しい東風戦':state.mode==='join'?'ロビーへ戻る':'新しい東風戦を開始'):'次の局へ（東'+(state.roundIndex+2)+'局）';
  $('againBtn').disabled=!final&&state.mode==='join';if(!final&&state.mode==='join')$('againBtn').textContent='部屋主が次の局を開始します';showView('results');}
+// 答え合わせではCPUの手牌だけを通常の理牌順（萬子→筒子→索子→字牌、各昇順）で表示する。
+// 表示順のみ変更し、得点・役・配牌記録やプレイヤーの並びには影響させない。
+function compareDisplayRow(row,deal,isCPU){
+ if(!isCPU)return row;
+ return row.slice().sort((a,b)=>deal[a]-deal[b]||a-b);
+}
 function renderCompare(){const r=state.history[state.compareRound];if(!r)return;
  $('compareRounds').innerHTML=state.history.filter(Boolean).map(x=>`<button type="button" class="small ${state.compareRound===x.roundIndex?'chosen':''}" data-compare-round="${x.roundIndex}">東${x.roundIndex+1}局</button>`).join('');
  $('comparePlayers').innerHTML=r.entries.map(e=>`<button type="button" class="small ${state.comparePlayer===e.id?'chosen':''}" data-compare-player="${esc(e.id)}">${esc(e.name)}（${NAMES[e.wind]}）</button>`).join('');
  const e=r.entries.find(x=>x.id===state.comparePlayer)||r.entries[0];if(!e)return;
- $('compareBoard').innerHTML=`<div style="font-size:12px;color:#c5dbe4">${esc(e.name)}｜${pts(e.score)}点｜ドラ ${NAMES[nextDora(r.doraIndicator)]} ／ 裏ドラ ${NAMES[nextDora(r.uraIndicator)]}</div>`+e.rows.map((row,i)=>`<div class="compare-hand"><div class="compare-hand-head"><span>第${i+1}面 ${row.length}牌</span><span>${pts(e.detail[i].score)}点</span></div><div class="compare-tiles">${row.map(uid=>`<span class="tile">${TILE_FACES[r.deal[uid]]}</span>`).join('')}</div><div class="compare-hand-detail">${esc(e.detail[i].yaku.join('・'))}</div></div>`).join('')+(e.bonus?`<div class="compare-hand-detail">全面完成ボーナス ＋${pts(e.bonus)}点</div>`:'');
+ $('compareBoard').innerHTML=`<div style="font-size:12px;color:#c5dbe4">${esc(e.name)}｜${pts(e.score)}点｜ドラ ${NAMES[nextDora(r.doraIndicator)]} ／ 裏ドラ ${NAMES[nextDora(r.uraIndicator)]}</div>`+e.rows.map((row,i)=>`<div class="compare-hand"><div class="compare-hand-head"><span>第${i+1}面 ${row.length}牌${e.cpu?' · 理牌済':''}</span><span>${pts(e.detail[i].score)}点</span></div><div class="compare-tiles">${compareDisplayRow(row,r.deal,e.cpu).map(uid=>`<span class="tile">${TILE_FACES[r.deal[uid]]}</span>`).join('')}</div><div class="compare-hand-detail">${esc(e.detail[i].yaku.join('・'))}</div></div>`).join('')+(e.bonus?`<div class="compare-hand-detail">全面完成ボーナス ＋${pts(e.bonus)}点</div>`:'');
 }
 $('results').addEventListener('click',ev=>{const rd=ev.target.closest('[data-compare-round]');const pl=ev.target.closest('[data-compare-player]');if(rd){state.compareRound=+rd.dataset.compareRound;state.comparePlayer=state.playerId;renderCompare();}else if(pl){state.comparePlayer=pl.dataset.comparePlayer;renderCompare();}});
 function nextRound(){if(state.roundIndex>=3){if(state.mode==='host'||state.mode==='join')resetLobby();else startLocal();return;}if(state.mode==='join'){toast('次の局は部屋主が開始します');return;}state.roundIndex++;if(state.isHost){launchHostedRound();}else beginLocalRound();}
